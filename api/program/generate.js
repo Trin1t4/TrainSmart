@@ -1,14 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import { generateProgram } from '../../server/programGenerator';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { generateProgram } from '../../server/programGenerator.js';
 
 // Inizializza Supabase con service role key (server-side)
-const supabaseUrl = process.env.VITE_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -59,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const onboarding = userData.onboarding_data;
+    const onboarding = userData.onboarding_data || {};
 
     // 3. Parse assessment results (1RM per esercizio)
     const assessments = [
@@ -131,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       program: savedProgram,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[API] Unexpected error:', error);
     return res.status(500).json({ 
       error: 'Internal server error', 
