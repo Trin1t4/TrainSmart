@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { generateProgram } from '../../server/programGenerator';
+import { generateProgram } from '../../server/programGenerator.js';
 
 // Inizializza Supabase con service role key (server-side)
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
