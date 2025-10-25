@@ -6,6 +6,7 @@ import BiomechanicsQuiz from "./pages/BiomechanicsQuiz";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Workout from '@/pages/Workout';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/workout" element={<Workout />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
