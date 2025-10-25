@@ -9,7 +9,7 @@ import {
   getDefaultReps,
   getDefaultRest,
   type Goal
-} from './exerciseDatabase';
+} from './exerciseDatabase.js';
 
 export type { Equipment };
 
