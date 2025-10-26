@@ -6,7 +6,7 @@ interface Props {
   onNext: (data: Partial<OnboardingData>) => void;
 }
 
-export function ActivityStep({ data, onNext }: Props) {
+export default function ActivityStep({ data, onNext }: Props) {
   const [frequency, setFrequency] = useState(data.activityLevel?.weeklyFrequency || 3);
   const [duration, setDuration] = useState<15 | 20 | 30 | 45 | 60 | 90>(data.activityLevel?.sessionDuration || 60);
 
@@ -53,7 +53,6 @@ export function ActivityStep({ data, onNext }: Props) {
         </div>
       </div>
 
-      {/* BOTTONE CONTINUA */}
       <button
         onClick={handleSubmit}
         className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition"
