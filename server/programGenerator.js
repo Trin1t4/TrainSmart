@@ -352,10 +352,11 @@ function createExercise(name, location, hasGym, equipment, baseWeight, level, go
     sets = type === "compound" ? 5 : 3;
   }
 
-  if (type === "compound") reps = "5-8";
-  else if (type === "accessory") reps = "8-12";
-  else if (type === "isolation") reps = "12-15";
-  else reps = "30-60s";
+  if (type === "compound") reps = "5";
+else if (type === "accessory") reps = "10";
+else if (type === "isolation") reps = "12";
+else if (type === "core") reps = "30-60s";
+else reps = "10";
 
   if (type === "compound") rest = 180;
   else if (type === "accessory") rest = 120;
