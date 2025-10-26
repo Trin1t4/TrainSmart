@@ -61,17 +61,18 @@ const TECHNICAL_QUESTIONS = [
     correctAnswer: 2,
     type: "technical"
   },
-  {
-    question: "Durante il rematore con bilanciere, qual è l'angolo corretto del busto?",
-    options: [
-      "Dipende dall'umore",
-      "Completamente verticale (90°)",
-      "Quasi orizzontale al pavimento (10-20° sopra)",
-      "Circa 45° rispetto al pavimento"
-    ],
-    correctAnswer: 2,
-    type: "technical"
-  },
+ {
+  question: "Nel pulley basso, qual è il movimento corretto delle scapole?",
+  options: [
+    "Devono rimanere completamente ferme",
+    "Solo elevazione verso le orecchie",
+    "Retrazione (avvicinamento) portando i gomiti indietro",
+    "Dipende dalla presa"
+  ],
+  correctAnswer: 2,
+  type: "technical"
+}
+
   {
     question: "Cos'è il 'valsalva' e quando si usa?",
     options: [
