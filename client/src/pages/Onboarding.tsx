@@ -18,14 +18,15 @@ export default function Onboarding() {
     setData({ ...data, ...stepData });
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      localStorage.setItem('onboarding_data', JSON.stringify(data));
-      navigate('/quiz');
-    }
-  };
+ const nextStep = () => {
+  if (currentStep < totalSteps) {
+    setCurrentStep(currentStep + 1);
+  } else {
+    // SALVA E VAI AL QUIZ
+    localStorage.setItem('onboarding_data', JSON.stringify(data));
+    navigate('/quiz');  // ← Assicurati che vada al quiz
+  }
+};
 
   const prevStep = () => {
     if (currentStep > 1) {
@@ -74,7 +75,7 @@ export default function Onboarding() {
             </button>
           )}
           <button onClick={nextStep} className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20">
-            {currentStep === totalSteps ? 'Completa →' : 'Avanti →'}
+            {currentStep === totalSteps ? 'Vai al Quiz →' : 'Avanti →'}
           </button>
         </div>
       </div>
