@@ -163,7 +163,11 @@ export default function Assessment() {
                   step="2.5" 
                 />
                 <p className="text-sm text-slate-400 mt-2 text-center">
-                  Peso partenza consigliato: ~{test.rm10 ? Math.round(test.rm10 * 0.7 * 2) / 2 : 0}kg (70% del 10RM)
+                  Peso partenza consigliato: ~{test.rm10 ? (() => {
+  const oneRM = test.rm10 * (36 / 27); // Brzycki da 10RM
+  const weight = oneRM * (30 / 36);     // 7RM (5 reps + RIR 2)
+  return Math.round(weight / 2.5) * 2.5;
+})() : 0}kg (5 reps, RIR 2)
                 </p>
               </div>
               <button 
