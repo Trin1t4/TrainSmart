@@ -78,15 +78,49 @@ export default function Dashboard() {
     try {
       setGeneratingProgram(true);
 
+      // ✅ LEGGI I DATI DELL'ONBOARDING DA LOCALSTORAGE
+      const onboardingDataRaw = localStorage.getItem('onboarding_data');
+      if (!onboardingDataRaw) {
+        alert('Dati onboarding mancanti. Rifai lo screening.');
+        navigate('/onboarding');
+        return;
+      }
+
+      const onboardingData = JSON.parse(onboardingDataRaw);
+
+      // ✅ PREPARA TUTTI I PARAMETRI NECESSARI
+      const programInput = {
+        userId,
+        assessmentId,
+        // Dati essenziali per location/equipment
+        location: onboardingData.trainingLocation || 'gym', // 'gym' | 'home'
+        hasGym: onboardingData.trainingLocation === 'gym',
+        equipment: onboardingData.equipment || {
+          barbell: false,
+          dumbbellMaxKg: 0,
+          kettlebellKg: [],
+          bands: false,
+          pullupBar: false,
+          bench: false
+        },
+        // Altri parametri
+        goal: onboardingData.goal || 'muscle_gain',
+        level: onboardingData.level || 'intermediate',
+        frequency: onboardingData.frequency || 3,
+        painAreas: onboardingData.painAreas || [],
+        disabilityType: onboardingData.disabilityType || null,
+        sportRole: onboardingData.sportRole || null,
+        specificBodyParts: onboardingData.specificBodyParts || []
+      };
+
+      console.log('📤 Sending program input:', programInput);
+
       const response = await fetch('/api/program/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          userId,
-          assessmentId,
-        }),
+        body: JSON.stringify(programInput),
       });
 
       if (!response.ok) {
@@ -95,7 +129,7 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      console.log('Program generated:', data);
+      console.log('✅ Program generated:', data);
 
       await checkUserProgress();
 
@@ -149,6 +183,7 @@ export default function Dashboard() {
       // 4. Cancella anche localStorage
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('quiz_answers');
+      localStorage.removeItem('assessment_data');
 
       // 5. Redirect automatico all'onboarding
       navigate('/onboarding');
@@ -181,47 +216,46 @@ export default function Dashboard() {
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent mb-2">
               Dashboard
             </h1>
-            <div className="absolute -top-4 -left-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+            <p className="text-gray-400 text-lg">Il tuo centro di controllo fitness</p>
           </div>
-          <p className="text-gray-400 text-lg">Il tuo hub di allenamento personalizzato</p>
         </div>
 
         {!hasAssessment ? (
-          <Card className="mb-8 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-2 border-emerald-500/30 backdrop-blur-sm hover:border-emerald-500/60 transition-all duration-300 animate-slide-up shadow-2xl shadow-emerald-500/20">
+          <Card className="mb-8 bg-gradient-to-r from-amber-900/30 to-gray-900/50 border-2 border-amber-500 backdrop-blur-sm hover:border-amber-400 transition-all duration-300 animate-slide-up shadow-2xl shadow-amber-500/30">
             <CardHeader>
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-500/20 rounded-xl animate-pulse-slow">
-                  <AlertCircle className="w-8 h-8 text-emerald-400" />
+                <div className="p-3 bg-amber-500/30 rounded-xl animate-pulse-slow">
+                  <AlertCircle className="w-8 h-8 text-amber-300" />
                 </div>
                 <div>
-                  <CardTitle className="text-white text-2xl">Completa lo Screening</CardTitle>
-                  <CardDescription className="text-gray-400 text-base">
-                    Inizia il tuo percorso con una valutazione biomeccanica
+                  <CardTitle className="text-white text-2xl">Assessment Richiesto</CardTitle>
+                  <CardDescription className="text-gray-300 text-base">
+                    Completa l'assessment per generare il tuo programma personalizzato
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <button
-                onClick={() => navigate('/onboarding')}
-                className="flex items-center justify-center w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg shadow-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/70 transition-all duration-300 hover:scale-105"
+                onClick={() => navigate('/assessment')}
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-6 py-4 text-lg rounded-lg shadow-lg shadow-amber-500/50 hover:shadow-xl hover:shadow-amber-500/70 transition-all duration-300 hover:scale-105"
               >
-                <Target className="w-5 h-5 mr-2 pointer-events-none" />
-                Inizia lo Screening
+                <Target className="w-5 h-5 mr-2 inline pointer-events-none" />
+                Inizia Assessment
               </button>
             </CardContent>
           </Card>
         ) : !hasProgram ? (
-          <Card className="mb-8 bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-2 border-emerald-500/30 backdrop-blur-sm hover:border-emerald-500/60 transition-all duration-300 animate-slide-up shadow-2xl shadow-emerald-500/20">
+          <Card className="mb-8 bg-gradient-to-r from-emerald-900/30 to-gray-900/50 border-2 border-emerald-500 backdrop-blur-sm hover:border-emerald-400 transition-all duration-300 animate-slide-up shadow-2xl shadow-emerald-500/30">
             <CardHeader>
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-500/20 rounded-xl">
-                  <CheckCircle className="w-8 h-8 text-emerald-400" />
+                <div className="p-3 bg-emerald-500/30 rounded-xl animate-pulse-slow">
+                  <CheckCircle className="w-8 h-8 text-emerald-300" />
                 </div>
                 <div>
-                  <CardTitle className="text-white text-2xl">Genera il Tuo Programma</CardTitle>
-                  <CardDescription className="text-gray-400 text-base">
-                    Assessment completato! Crea il tuo programma personalizzato
+                  <CardTitle className="text-white text-2xl">Assessment Completato!</CardTitle>
+                  <CardDescription className="text-gray-300 text-base">
+                    Genera il tuo programma personalizzato
                   </CardDescription>
                 </div>
               </div>
@@ -230,7 +264,7 @@ export default function Dashboard() {
               <button
                 onClick={handleGenerateProgram}
                 disabled={generatingProgram}
-                className="flex items-center justify-center w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg shadow-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/70 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-4 text-lg rounded-lg shadow-lg shadow-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/70 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
               >
                 {generatingProgram ? (
                   <>
