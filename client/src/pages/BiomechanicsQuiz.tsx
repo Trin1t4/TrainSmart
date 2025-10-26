@@ -71,7 +71,16 @@ export default function BiomechanicsQuiz() {
       const qr: QuizResult = { answers: finalAnswers, score, level, methodology };
       setResult(qr);
       setDone(true);
-      localStorage.setItem('quiz_result', JSON.stringify(qr));
+      
+      // ✅ CORRETTO: Salva in formato compatibile con Assessment
+      const quizData = {
+        level: qr.level,
+        technicalScore: qr.answers.filter(a => a.correct).length,
+        performanceScore: 0,
+        answers: qr.answers,
+        completedAt: new Date().toISOString()
+      };
+      localStorage.setItem('quiz_data', JSON.stringify(quizData));
     }
   };
 
