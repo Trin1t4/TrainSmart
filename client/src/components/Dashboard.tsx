@@ -78,53 +78,45 @@ export default function Dashboard() {
     try {
       setGeneratingProgram(true);
 
-      // ✅ LEGGI I DATI DELL'ONBOARDING DA LOCALSTORAGE
+      // ✅ LEGGI ONBOARDING + QUIZ + ASSESSMENT DA LOCALSTORAGE
       const onboardingDataRaw = localStorage.getItem('onboarding_data');
-      if (!onboardingDataRaw) {
-        alert('Dati onboarding mancanti. Rifai lo screening.');
+      const quizDataRaw = localStorage.getItem('quiz_data');
+      const assessmentDataRaw = localStorage.getItem('assessment_data');
+
+      if (!onboardingDataRaw || !quizDataRaw || !assessmentDataRaw) {
+        alert('Dati mancanti. Rifai lo screening.');
         navigate('/onboarding');
-       async function handleGenerateProgram() {
-  if (!userId || !assessmentId) {
-    alert('Dati mancanti. Riprova.');
-    return;
-  }
+        return;
+      }
 
-  try {
-    setGeneratingProgram(true);
+      const onboardingData = JSON.parse(onboardingDataRaw);
+      const quizData = JSON.parse(quizDataRaw);
+      const assessmentData = JSON.parse(assessmentDataRaw);
 
-    // ✅ LEGGI ONBOARDING + QUIZ + ASSESSMENT
-    const onboardingDataRaw = localStorage.getItem('onboarding_data');
-    const quizDataRaw = localStorage.getItem('quiz_data');
-    const assessmentDataRaw = localStorage.getItem('assessment_data');
+      // ✅ UNISCI TUTTI I DATI
+      const programInput = {
+        userId,
+        assessmentId,
+        location: onboardingData.trainingLocation || 'gym',
+        hasGym: onboardingData.trainingLocation === 'gym',
+        equipment: onboardingData.equipment || {},
+        goal: onboardingData.goal || 'muscle_gain',
+        level: quizData.level || assessmentData.level || 'intermediate',
+        frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
+        painAreas: onboardingData.painAreas || assessmentData.painAreas || [],
+        disabilityType: onboardingData.disabilityType || null,
+        sportRole: onboardingData.sportRole || null,
+        specificBodyParts: onboardingData.specificBodyParts || []
+      };
 
-    if (!onboardingDataRaw || !quizDataRaw || !assessmentDataRaw) {
-      alert('Dati mancanti. Rifai lo screening.');
-      navigate('/onboarding');
-      return;
-    }
+      console.log('📤 Sending program input:', programInput);
 
-    const onboardingData = JSON.parse(onboardingDataRaw);
-    const quizData = JSON.parse(quizDataRaw);
-    const assessmentData = JSON.parse(assessmentDataRaw);
-
-    // ✅ UNISCI TUTTI I DATI
-    const programInput = {
-      userId,
-      assessmentId,
-      location: onboardingData.trainingLocation || 'gym',
-      hasGym: onboardingData.trainingLocation === 'gym',
-      equipment: onboardingData.equipment || {},
-      goal: onboardingData.goal || 'muscle_gain',
-      level: quizData.level || assessmentData.level || 'intermediate',  // ← DA QUIZ!
-      frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
-      painAreas: onboardingData.painAreas || assessmentData.painAreas || [],
-      disabilityType: onboardingData.disabilityType || null,
-      sportRole: onboardingData.sportRole || null,
-      specificBodyParts: onboardingData.specificBodyParts || []
-    };
-
-    console.log('📤 Sending program input:', programInput);
-
+      const response = await fetch('/api/program/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(programInput),
       });
 
       if (!response.ok) {
@@ -174,22 +166,12 @@ export default function Dashboard() {
         console.error('Error deleting assessments:', assessmentError);
       }
 
-      // 3. Resetta onboarding_data
-      const { error: userError } = await supabase
-        .from('users')
-        .update({ onboarding_data: null })
-        .eq('id', user.id);
-
-      if (userError) {
-        console.error('Error resetting user data:', userError);
-      }
-
-      // 4. Cancella anche localStorage
+      // 3. Cancella localStorage
       localStorage.removeItem('onboarding_data');
-      localStorage.removeItem('quiz_answers');
+      localStorage.removeItem('quiz_data');
       localStorage.removeItem('assessment_data');
 
-      // 5. Redirect automatico all'onboarding
+      // 4. Redirect automatico all'onboarding
       navigate('/onboarding');
 
     } catch (error) {
