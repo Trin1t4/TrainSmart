@@ -3,13 +3,147 @@ import { useNavigate } from 'react-router-dom';
 import { AssessmentExercise } from '../types/onboarding.types';
 import { supabase } from '../lib/supabase';
 
+// 7 domande TECNICHE (tecnica esercizi)
+const TECHNICAL_QUESTIONS = [
+  {
+    question: "Durante lo squat, dove deve passare la linea del bilanciere vista di lato?",
+    options: [
+      "Dietro i talloni",
+      "Davanti alle punte dei piedi",
+      "Sul centro del piede, in linea con le caviglie",
+      "Non importa, basta scendere parallelo"
+    ],
+    correctAnswer: 2,
+    type: "technical"
+  },
+  {
+    question: "Nello stacco da terra, dove deve rimanere il bilanciere durante tutta la salita?",
+    options: [
+      "Deve toccare solo all'inizio",
+      "Lontano dal corpo per evitare di toccare le gambe",
+      "Deve oscillare liberamente",
+      "Attaccato al corpo o a pochi millimetri di distanza"
+    ],
+    correctAnswer: 3,
+    type: "technical"
+  },
+  {
+    question: "Cosa devono fare le scapole PRIMA di iniziare a tirare nelle trazioni?",
+    options: [
+      "Depresse (abbassate) e leggermente addotte (avvicinate)",
+      "Rimanere completamente rilassate",
+      "Non importa, basta tirare forte",
+      "Elevarsi completamente verso l'alto"
+    ],
+    correctAnswer: 0,
+    type: "technical"
+  },
+  {
+    question: "Nella panca piana, qual è la traiettoria corretta del bilanciere?",
+    options: [
+      "Orizzontale parallela al pavimento",
+      "Verticale dritta su e giù",
+      "Circolare intorno al petto",
+      "Leggermente diagonale verso i piedi in discesa, verso la testa in salita"
+    ],
+    correctAnswer: 3,
+    type: "technical"
+  },
+  {
+    question: "Nel military press, dove deve essere posizionato il bilanciere a inizio movimento?",
+    options: [
+      "All'altezza dell'ombelico",
+      "Appoggiato sulle spalle dietro la testa",
+      "All'altezza delle clavicole/parte alta petto",
+      "Sopra la testa"
+    ],
+    correctAnswer: 2,
+    type: "technical"
+  },
+  {
+    question: "Durante il rematore con bilanciere, qual è l'angolo corretto del busto?",
+    options: [
+      "Dipende dall'umore",
+      "Completamente verticale (90°)",
+      "Quasi orizzontale al pavimento (10-20° sopra)",
+      "Circa 45° rispetto al pavimento"
+    ],
+    correctAnswer: 2,
+    type: "technical"
+  },
+  {
+    question: "Cos'è il 'valsalva' e quando si usa?",
+    options: [
+      "Una marca di bilancieri",
+      "Un esercizio per i polpacci",
+      "Un tipo di squat bulgaro",
+      "Una tecnica di respirazione per stabilizzare il core sotto carico pesante"
+    ],
+    correctAnswer: 3,
+    type: "technical"
+  }
+];
+
+// 3 domande PRESTAZIONI (carichi e 1RM)
+const PERFORMANCE_QUESTIONS = [
+  {
+    question: "Quanto pesi e quanto fai di squat per 5 ripetizioni con buona tecnica?",
+    options: [
+      "Meno del mio peso corporeo",
+      "Uguale al mio peso corporeo",
+      "1.5x il mio peso corporeo",
+      "2x o più il mio peso corporeo"
+    ],
+    correctAnswer: -1,
+    scores: [0, 1, 2, 3],
+    type: "performance"
+  },
+  {
+    question: "Quanto fai di panca piana per 5 ripetizioni con buona tecnica?",
+    options: [
+      "Meno di 60kg",
+      "60-80kg",
+      "80-100kg",
+      "Oltre 100kg"
+    ],
+    correctAnswer: -1,
+    scores: [0, 1, 2, 3],
+    type: "performance"
+  },
+  {
+    question: "Conosci i tuoi massimali (1RM) negli esercizi fondamentali?",
+    options: [
+      "No, non li ho mai testati",
+      "Sì, ma sono stime approssimative",
+      "Sì, li ho calcolati con formule affidabili",
+      "Sì, li ho testati realmente e li aggiorno regolarmente"
+    ],
+    correctAnswer: -1,
+    scores: [0, 1, 2, 3],
+    type: "performance"
+  }
+];
+
+const ALL_QUIZ_QUESTIONS = [...TECHNICAL_QUESTIONS, ...PERFORMANCE_QUESTIONS];
+
 export default function Assessment() {
   const navigate = useNavigate();
   
-  // Step 0: Setup data collection
+  // STEP 0: Setup data collection
   const [setupComplete, setSetupComplete] = useState(false);
+  const [location, setLocation] = useState<'gym' | 'home'>('gym');
   const [frequency, setFrequency] = useState(3);
   const [duration, setDuration] = useState(45);
+  const [goal, setGoal] = useState('ipertrofia');
+  
+  // Quiz
+  const [quizComplete, setQuizComplete] = useState(false);
+  const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
+  const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
+  const [technicalScore, setTechnicalScore] = useState(0);
+  const [performanceScore, setPerformanceScore] = useState(0);
+  const [calculatedLevel, setCalculatedLevel] = useState('');
   
   // Physical tests
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -17,16 +151,31 @@ export default function Assessment() {
   const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
   const [saving, setSaving] = useState(false);
 
+  // Load onboarding data
   const onboardingData = JSON.parse(localStorage.getItem('onboarding_data') || '{}');
-  const isGym = onboardingData.trainingLocation === 'gym';
-  
-  // Biometric data from onboarding
   const { personalInfo } = onboardingData;
   const age = personalInfo?.age || 0;
   const weight = personalInfo?.weight || 0;
   const height = personalInfo?.height || 0;
   const gender = personalInfo?.gender || 'M';
   const bmi = personalInfo?.bmi || 0;
+  const photoUrl = onboardingData.photoUrl || null;
+
+  const isGym = location === 'gym';
+
+  // Goals options
+  const goalOptions = [
+    { value: 'forza', label: '💪 Forza', desc: 'Aumentare forza massimale' },
+    { value: 'ipertrofia', label: '🏋️ Ipertrofia', desc: 'Crescita muscolare' },
+    { value: 'tonificazione', label: '✨ Tonificazione', desc: 'Definizione muscolare' },
+    { value: 'dimagrimento', label: '🔥 Dimagrimento', desc: 'Perdita peso/grasso' },
+    { value: 'benessere', label: '🧘 Benessere', desc: 'Salute generale' },
+    { value: 'resistenza', label: '🏃 Resistenza', desc: 'Capacità aerobica' },
+    { value: 'gravidanza', label: '🤰 Gravidanza', desc: 'Pre/post parto' },
+    { value: 'disabilita', label: '♿ Disabilità', desc: 'Adattamenti specifici' }
+  ];
+
+  const durationOptions = [15, 20, 30, 45, 60, 90];
 
   const gymExercises = [
     { name: 'Squat', unit: 'kg' },
@@ -74,21 +223,80 @@ export default function Assessment() {
     ]}
   ];
 
-  const durationOptions = [15, 20, 30, 45, 60, 90];
-
   const list = isGym ? gymExercises : homeExercises;
   const current = list[currentIdx];
   const total = list.length;
 
   const completeSetup = () => {
-    // Save setup data to localStorage
-    const updatedOnboarding = {
-      ...onboardingData,
-      frequency,
-      duration
-    };
-    localStorage.setItem('onboarding_data', JSON.stringify(updatedOnboarding));
     setSetupComplete(true);
+  };
+
+  const handleQuizAnswer = (index: number) => {
+    setSelectedQuizAnswer(index);
+  };
+
+  const handleNextQuiz = () => {
+    if (selectedQuizAnswer === null) return;
+
+    const question = ALL_QUIZ_QUESTIONS[currentQuizQuestion];
+    const newAnswers = [...quizAnswers, selectedQuizAnswer];
+    setQuizAnswers(newAnswers);
+
+    // Calculate scores
+    let newTechnicalScore = technicalScore;
+    let newPerformanceScore = performanceScore;
+
+    if (question.type === "technical") {
+      if (selectedQuizAnswer === question.correctAnswer) {
+        newTechnicalScore = technicalScore + 1;
+        setTechnicalScore(newTechnicalScore);
+      }
+    } else if (question.type === "performance") {
+      const scores = (question as any).scores;
+      newPerformanceScore = performanceScore + scores[selectedQuizAnswer];
+      setPerformanceScore(newPerformanceScore);
+    }
+
+    if (currentQuizQuestion < ALL_QUIZ_QUESTIONS.length - 1) {
+      setCurrentQuizQuestion(currentQuizQuestion + 1);
+      setSelectedQuizAnswer(null);
+    } else {
+      // Quiz complete - calculate level
+      const technicalPercentage = Math.round((newTechnicalScore / TECHNICAL_QUESTIONS.length) * 100);
+      const maxPerformanceScore = PERFORMANCE_QUESTIONS.reduce((sum, q: any) => sum + Math.max(...q.scores), 0);
+      const performancePercentage = Math.round((newPerformanceScore / maxPerformanceScore) * 100);
+
+      // LOGICA DETERMINAZIONE LIVELLO (dal quiz originale)
+      let level: string;
+      if (technicalPercentage < 50) {
+        // TECNICA INSUFFICIENTE → PRINCIPIANTE (indipendentemente dai carichi)
+        level = "beginner";
+      } else if (performancePercentage < 40) {
+        // TECNICA OK ma carichi bassi → INTERMEDIO
+        level = "intermediate";
+      } else {
+        // TECNICA OK e carichi buoni → AVANZATO
+        level = "advanced";
+      }
+
+      setCalculatedLevel(level);
+
+      // Save all data to localStorage
+      const updatedOnboarding = {
+        ...onboardingData,
+        trainingLocation: location,
+        frequency,
+        duration,
+        goal,
+        level,
+        quizAnswers: newAnswers,
+        technicalScore: newTechnicalScore,
+        performanceScore: newPerformanceScore
+      };
+      localStorage.setItem('onboarding_data', JSON.stringify(updatedOnboarding));
+      
+      setQuizComplete(true);
+    }
   };
 
   const submit = () => {
@@ -128,30 +336,32 @@ export default function Assessment() {
     setSaving(true);
     
     try {
-      // Get updated onboarding data with frequency and duration
       const completeOnboardingData = JSON.parse(localStorage.getItem('onboarding_data') || '{}');
       
-      // Salva in localStorage (fallback)
       const assessmentData = { 
         exercises: final, 
         completedAt: new Date().toISOString(), 
         completed: true,
         frequency: completeOnboardingData.frequency,
-        duration: completeOnboardingData.duration
+        duration: completeOnboardingData.duration,
+        goal: completeOnboardingData.goal,
+        level: completeOnboardingData.level,
+        location: completeOnboardingData.trainingLocation
       };
       localStorage.setItem('assessment_data', JSON.stringify(assessmentData));
 
-      // Salva in Supabase
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Prima aggiorna user_profiles con tutti i dati
         const { error: profileError } = await supabase
           .from('user_profiles')
           .update({ 
             onboarding_completed: true,
             training_frequency: completeOnboardingData.frequency,
             session_duration: completeOnboardingData.duration,
+            training_goal: completeOnboardingData.goal,
+            training_level: completeOnboardingData.level,
+            training_location: completeOnboardingData.trainingLocation,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
@@ -160,7 +370,6 @@ export default function Assessment() {
           console.error('Error updating profile:', profileError);
         }
 
-        // Poi salva l'assessment
         const { error: assessmentError } = await supabase
           .from('assessments')
           .insert({
@@ -173,8 +382,6 @@ export default function Assessment() {
 
         if (assessmentError) {
           console.error('Error saving assessment:', assessmentError);
-        } else {
-          console.log('Assessment saved successfully!');
         }
       }
     } catch (error) {
@@ -191,8 +398,8 @@ export default function Assessment() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">📋 Dati Setup</h1>
-            <p className="text-slate-300">Conferma i tuoi dati prima di iniziare l'assessment</p>
+            <h1 className="text-3xl font-bold text-white mb-2">📋 Setup Allenamento</h1>
+            <p className="text-slate-300">Configura il tuo programma personalizzato</p>
           </div>
 
           <div className="space-y-6">
@@ -225,27 +432,48 @@ export default function Assessment() {
                   </div>
                 </div>
               )}
+              {photoUrl && (
+                <div className="mt-4">
+                  <p className="text-sm text-slate-400 mb-2">📸 Foto di riferimento caricata</p>
+                </div>
+              )}
             </div>
 
-            {/* Location Recap */}
+            {/* Location Selection */}
             <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-xl font-bold text-white mb-4">📍 Location</h2>
-              <div className="bg-slate-700/50 rounded-lg p-4">
-                <p className="text-lg font-semibold text-white">
-                  {isGym ? '🏋️ Palestra' : '🏠 Casa'}
-                </p>
-                {!isGym && onboardingData.equipment && (
-                  <p className="text-sm text-slate-400 mt-2">
-                    Equipment: {onboardingData.equipment.join(', ')}
-                  </p>
-                )}
+              <h2 className="text-xl font-bold text-white mb-4">📍 Dove ti alleni?</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setLocation('gym')}
+                  className={`p-6 rounded-lg border-2 transition ${
+                    location === 'gym'
+                      ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                      : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="text-4xl mb-2">🏋️</div>
+                  <div className="font-bold text-lg">Palestra</div>
+                  <div className="text-sm text-slate-400 mt-1">Attrezzatura completa</div>
+                </button>
+                <button
+                  onClick={() => setLocation('home')}
+                  className={`p-6 rounded-lg border-2 transition ${
+                    location === 'home'
+                      ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                      : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="text-4xl mb-2">🏠</div>
+                  <div className="font-bold text-lg">Casa</div>
+                  <div className="text-sm text-slate-400 mt-1">Corpo libero / minimo</div>
+                </button>
               </div>
             </div>
 
             {/* Training Frequency */}
             <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700">
               <h2 className="text-xl font-bold text-white mb-4">📅 Frequenza Settimanale</h2>
-              <p className="text-sm text-slate-400 mb-4">Quanti giorni a settimana ti alleni?</p>
+              <p className="text-sm text-slate-400 mb-4">Quanti giorni a settimana puoi allenarti?</p>
               <div className="grid grid-cols-7 gap-2">
                 {[1, 2, 3, 4, 5, 6, 7].map(day => (
                   <button
@@ -290,12 +518,95 @@ export default function Assessment() {
               </p>
             </div>
 
+            {/* Goal Selection */}
+            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">🎯 Obiettivo Principale</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {goalOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setGoal(opt.value)}
+                    className={`p-4 rounded-lg border-2 text-left transition ${
+                      goal === opt.value
+                        ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                        : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="font-bold text-lg mb-1">{opt.label}</div>
+                    <div className="text-sm text-slate-400">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Confirm Button */}
             <button
               onClick={completeSetup}
               className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition"
             >
-              Conferma e Inizia Assessment Fisico →
+              Continua al Quiz Tecnico →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Quiz Screen
+  if (!quizComplete) {
+    const quizQuestion = ALL_QUIZ_QUESTIONS[currentQuizQuestion];
+    const quizProgress = ((currentQuizQuestion + 1) / ALL_QUIZ_QUESTIONS.length) * 100;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden mb-4">
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all" style={{ width: `${quizProgress}%` }} />
+            </div>
+            <div className="flex justify-between text-sm text-slate-300">
+              <span>Domanda {currentQuizQuestion + 1} di {ALL_QUIZ_QUESTIONS.length}</span>
+              <span className="font-semibold">{quizQuestion.type === "technical" ? "🎯 Tecnica" : "💪 Prestazioni"}</span>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-slate-700">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-3">{quizQuestion.question}</h2>
+              <p className="text-sm text-slate-400">
+                {quizQuestion.type === "technical" ? "Seleziona la risposta tecnicamente corretta" : "Seleziona l'opzione che ti rappresenta"}
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {quizQuestion.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuizAnswer(index)}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition ${
+                    selectedQuizAnswer === index 
+                      ? 'border-emerald-500 bg-emerald-500/20 text-white' 
+                      : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      selectedQuizAnswer === index ? 'border-emerald-500 bg-emerald-500' : 'border-slate-500'
+                    }`}>
+                      {selectedQuizAnswer === index && <div className="w-2 h-2 rounded-full bg-white" />}
+                    </div>
+                    <span>{option}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleNextQuiz}
+              disabled={selectedQuizAnswer === null}
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition"
+            >
+              {currentQuizQuestion === ALL_QUIZ_QUESTIONS.length - 1 ? 'Inizia Test Fisici →' : 'Prossima Domanda →'}
             </button>
           </div>
         </div>
@@ -315,7 +626,7 @@ export default function Assessment() {
     );
   }
 
-  // STEP 1-5: Physical Tests
+  // Physical Tests
   const progress = ((currentIdx + 1) / total) * 100;
 
   return (
@@ -323,7 +634,7 @@ export default function Assessment() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-white">💪 Assessment Fisico</h1>
+            <h1 className="text-2xl font-bold text-white">💪 Test Fisici</h1>
             <span className="text-slate-300">{currentIdx + 1} / {total}</span>
           </div>
           <div className="h-2 bg-slate-700 rounded-full">
@@ -360,8 +671,8 @@ export default function Assessment() {
                 />
                 <p className="text-sm text-slate-400 mt-2 text-center">
                   Peso partenza consigliato: ~{test.rm10 ? (() => {
-                    const oneRM = test.rm10 * (36 / 27); // Brzycki da 10RM
-                    const weight = oneRM * (30 / 36);     // 7RM (5 reps + RIR 2)
+                    const oneRM = test.rm10 * (36 / 27);
+                    const weight = oneRM * (30 / 36);
                     return Math.round(weight / 2.5) * 2.5;
                   })() : 0}kg (5 reps, RIR 2)
                 </p>
