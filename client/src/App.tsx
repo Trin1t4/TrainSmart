@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Register from "./pages/Register"; // ✅ AGGIUNTO
 import Onboarding from "./pages/Onboarding";
 import BiomechanicsQuiz from "./pages/BiomechanicsQuiz";
 import Assessment from "./pages/Assessment";
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} /> {/* ✅ AGGIUNTO */}
         <Route
           path="/onboarding"
           element={
