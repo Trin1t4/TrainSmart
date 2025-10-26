@@ -108,7 +108,7 @@ export default function Dashboard() {
   }
 
   async function handleResetProgram() {
-    if (!confirm('Sei sicuro di voler cancellare il programma attuale? Dovrai rigenerarlo.')) {
+    if (!confirm('⚠️ RESET COMPLETO\n\nQuesto cancellerà TUTTO:\n• Programma di allenamento\n• Assessment\n• Dati onboarding\n\nDovrai rifare lo screening da zero.\n\nSei sicuro?')) {
       return;
     }
 
@@ -116,25 +116,48 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // 1. Cancella training programs
+      const { error: programError } = await supabase
         .from('training_programs')
         .delete()
-        .eq('user_id', user.id)
-        .eq('status', 'active');
+        .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Error resetting program:', error);
-        alert('Errore nel reset del programma');
-        return;
+      if (programError) {
+        console.error('Error deleting programs:', programError);
       }
 
-      // Ricarica lo stato
+      // 2. Cancella assessments
+      const { error: assessmentError } = await supabase
+        .from('assessments')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (assessmentError) {
+        console.error('Error deleting assessments:', assessmentError);
+      }
+
+      // 3. Resetta onboarding_data
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ onboarding_data: null })
+        .eq('id', user.id);
+
+      if (userError) {
+        console.error('Error resetting user data:', userError);
+      }
+
+      // 4. Cancella anche localStorage
+      localStorage.removeItem('onboarding_data');
+      localStorage.removeItem('quiz_answers');
+
+      // 5. Ricarica stato
       await checkUserProgress();
-      alert('Programma cancellato con successo!');
+      
+      alert('✅ Reset completo! Ora puoi rifare lo screening.');
 
     } catch (error) {
-      console.error('Error resetting program:', error);
-      alert('Errore nel reset del programma');
+      console.error('Error during reset:', error);
+      alert('Errore durante il reset. Riprova.');
     }
   }
 
@@ -252,7 +275,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleResetProgram}
                   className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50"
-                  title="Reset Programma"
+                  title="Reset Completo (cancella tutto)"
                 >
                   🔄 Reset
                 </button>
