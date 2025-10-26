@@ -60,7 +60,7 @@ export default function Assessment() {
     );
   }
 
-  const isGym = onboardingData.location === 'gym';
+  const isGym = onboardingData.trainingLocation === 'gym';
   const userLevel = quizData.level || 'beginner';
 
   // GYM: 6 ESERCIZI CON STACCO E PULLEY
