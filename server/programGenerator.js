@@ -555,7 +555,7 @@ function createPerformanceExercise(name, location, hasGym, equipment, baseLoad, 
     weight = null;
   }
   
-  const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, 'performance', level);
+  const exerciseOrGiantSet = getExerciseForLocation(name, location, hasGym, equipment, goal, level);
   
   if (typeof exerciseOrGiantSet !== 'string') {
     return exerciseOrGiantSet;
@@ -774,7 +774,7 @@ function createExercise(name, location, hasGym, equipment, baseWeight, level, go
   else if (type === "accessory") rest = 120;
   else rest = 60;
 
-  const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal, level);
+  const exerciseOrGiantSet = getExerciseForLocation(name, location, hasGym, equipment, 'performance', level);
 
   if (typeof exerciseOrGiantSet !== 'string') {
     if (goal === 'pregnancy' || goal === 'disability') {
