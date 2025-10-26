@@ -68,16 +68,7 @@ export default function Onboarding() {
         <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-slate-700">
           {renderStep()}
         </div>
-        <div className="flex gap-4 mt-6">
-          {currentStep > 1 && (
-            <button onClick={prevStep} className="flex-1 bg-slate-700 text-white py-3 rounded-lg font-semibold hover:bg-slate-600 transition">
-              ← Indietro
-            </button>
-          )}
-          <button onClick={nextStep} className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20">
-            {currentStep === totalSteps ? 'Vai al Quiz →' : 'Avanti →'}
-          </button>
-        </div>
+        
       </div>
     </div>
   );
