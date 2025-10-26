@@ -1,9 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AssessmentExercise } from '../types/onboarding.types';
 import { supabase } from '../lib/supabase';
 
-// 7 domande TECNICHE (tecnica esercizi)
+// Helper function to shuffle array deterministically
+const shuffleArray = <T,>(array: T[], seed: number): T[] => {
+  const arr = [...array];
+  let currentSeed = seed;
+  
+  for (let i = arr.length - 1; i > 0; i--) {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    const j = Math.floor((currentSeed / 233280) * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+// 7 domande TECNICHE (tecnica esercizi) - con "Non lo so"
 const TECHNICAL_QUESTIONS = [
   {
     question: "Durante lo squat, dove deve passare la linea del bilanciere vista di lato?",
@@ -11,7 +24,8 @@ const TECHNICAL_QUESTIONS = [
       "Dietro i talloni",
       "Davanti alle punte dei piedi",
       "Sul centro del piede, in linea con le caviglie",
-      "Non importa, basta scendere parallelo"
+      "Non importa, basta scendere parallelo",
+      "Non lo so"
     ],
     correctAnswer: 2,
     type: "technical"
@@ -22,7 +36,8 @@ const TECHNICAL_QUESTIONS = [
       "Deve toccare solo all'inizio",
       "Lontano dal corpo per evitare di toccare le gambe",
       "Deve oscillare liberamente",
-      "Attaccato al corpo o a pochi millimetri di distanza"
+      "Attaccato al corpo o a pochi millimetri di distanza",
+      "Non lo so"
     ],
     correctAnswer: 3,
     type: "technical"
@@ -33,7 +48,8 @@ const TECHNICAL_QUESTIONS = [
       "Depresse (abbassate) e leggermente addotte (avvicinate)",
       "Rimanere completamente rilassate",
       "Non importa, basta tirare forte",
-      "Elevarsi completamente verso l'alto"
+      "Elevarsi completamente verso l'alto",
+      "Non lo so"
     ],
     correctAnswer: 0,
     type: "technical"
@@ -44,7 +60,8 @@ const TECHNICAL_QUESTIONS = [
       "Orizzontale parallela al pavimento",
       "Verticale dritta su e giù",
       "Circolare intorno al petto",
-      "Leggermente diagonale verso i piedi in discesa, verso la testa in salita"
+      "Leggermente diagonale verso i piedi in discesa, verso la testa in salita",
+      "Non lo so"
     ],
     correctAnswer: 3,
     type: "technical"
@@ -55,7 +72,8 @@ const TECHNICAL_QUESTIONS = [
       "All'altezza dell'ombelico",
       "Appoggiato sulle spalle dietro la testa",
       "All'altezza delle clavicole/parte alta petto",
-      "Sopra la testa"
+      "Sopra la testa",
+      "Non lo so"
     ],
     correctAnswer: 2,
     type: "technical"
@@ -66,7 +84,8 @@ const TECHNICAL_QUESTIONS = [
       "Dipende dall'umore",
       "Completamente verticale (90°)",
       "Quasi orizzontale al pavimento (10-20° sopra)",
-      "Circa 45° rispetto al pavimento"
+      "Circa 45° rispetto al pavimento",
+      "Non lo so"
     ],
     correctAnswer: 2,
     type: "technical"
@@ -77,7 +96,8 @@ const TECHNICAL_QUESTIONS = [
       "Una marca di bilancieri",
       "Un esercizio per i polpacci",
       "Un tipo di squat bulgaro",
-      "Una tecnica di respirazione per stabilizzare il core sotto carico pesante"
+      "Una tecnica di respirazione per stabilizzare il core sotto carico pesante",
+      "Non lo so"
     ],
     correctAnswer: 3,
     type: "technical"
@@ -124,7 +144,21 @@ const PERFORMANCE_QUESTIONS = [
   }
 ];
 
-const ALL_QUIZ_QUESTIONS = [...TECHNICAL_QUESTIONS, ...PERFORMANCE_QUESTIONS];
+// Sports and roles
+const SPORTS_OPTIONS = [
+  { value: 'none', label: 'Nessuno', roles: [] },
+  { value: 'calcio', label: '⚽ Calcio', roles: ['Portiere', 'Difensore', 'Centrocampista', 'Attaccante'] },
+  { value: 'basket', label: '🏀 Basket', roles: ['Playmaker', 'Guardia', 'Ala', 'Centro'] },
+  { value: 'pallavolo', label: '🏐 Pallavolo', roles: ['Alzatore', 'Opposto', 'Centrale', 'Libero', 'Schiacciatore'] },
+  { value: 'rugby', label: '🏉 Rugby', roles: ['Trequarti', 'Mediano', 'Pilone', 'Tallonatore', 'Seconda Linea'] },
+  { value: 'tennis', label: '🎾 Tennis', roles: ['Singolo', 'Doppio'] },
+  { value: 'corsa', label: '🏃 Corsa', roles: ['Velocità (100-400m)', 'Mezzofondo (800-3000m)', 'Fondo (5km+)'] },
+  { value: 'nuoto', label: '🏊 Nuoto', roles: ['Stile Libero', 'Rana', 'Dorso', 'Farfalla', 'Misti'] },
+  { value: 'ciclismo', label: '🚴 Ciclismo', roles: ['Strada', 'MTB', 'Pista'] },
+  { value: 'crossfit', label: '💪 CrossFit', roles: [] },
+  { value: 'powerlifting', label: '🏋️ Powerlifting', roles: [] },
+  { value: 'altro', label: '🎯 Altro', roles: [] }
+];
 
 export default function Assessment() {
   const navigate = useNavigate();
@@ -135,8 +169,10 @@ export default function Assessment() {
   const [frequency, setFrequency] = useState(3);
   const [duration, setDuration] = useState(45);
   const [goal, setGoal] = useState('ipertrofia');
+  const [sport, setSport] = useState('none');
+  const [role, setRole] = useState('');
   
-  // Quiz
+  // Quiz - with shuffled options
   const [quizComplete, setQuizComplete] = useState(false);
   const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
   const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
@@ -144,6 +180,21 @@ export default function Assessment() {
   const [technicalScore, setTechnicalScore] = useState(0);
   const [performanceScore, setPerformanceScore] = useState(0);
   const [calculatedLevel, setCalculatedLevel] = useState('');
+  
+  // Shuffle questions once (deterministic)
+  const shuffledTechnicalQuestions = useMemo(() => {
+    return TECHNICAL_QUESTIONS.map((q, idx) => {
+      const shuffled = shuffleArray(q.options.map((opt, i) => ({ opt, originalIdx: i })), idx + 1);
+      const newCorrectAnswer = shuffled.findIndex(item => item.originalIdx === q.correctAnswer);
+      return {
+        ...q,
+        options: shuffled.map(item => item.opt),
+        correctAnswer: newCorrectAnswer
+      };
+    });
+  }, []);
+
+  const ALL_QUIZ_QUESTIONS = [...shuffledTechnicalQuestions, ...PERFORMANCE_QUESTIONS];
   
   // Physical tests
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -176,6 +227,9 @@ export default function Assessment() {
   ];
 
   const durationOptions = [15, 20, 30, 45, 60, 90];
+
+  const selectedSport = SPORTS_OPTIONS.find(s => s.value === sport);
+  const sportRoles = selectedSport?.roles || [];
 
   const gymExercises = [
     { name: 'Squat', unit: 'kg' },
@@ -251,6 +305,7 @@ export default function Assessment() {
         newTechnicalScore = technicalScore + 1;
         setTechnicalScore(newTechnicalScore);
       }
+      // "Non lo so" conta come sbagliata (non aggiunge punti)
     } else if (question.type === "performance") {
       const scores = (question as any).scores;
       newPerformanceScore = performanceScore + scores[selectedQuizAnswer];
@@ -262,20 +317,17 @@ export default function Assessment() {
       setSelectedQuizAnswer(null);
     } else {
       // Quiz complete - calculate level
-      const technicalPercentage = Math.round((newTechnicalScore / TECHNICAL_QUESTIONS.length) * 100);
+      const technicalPercentage = Math.round((newTechnicalScore / shuffledTechnicalQuestions.length) * 100);
       const maxPerformanceScore = PERFORMANCE_QUESTIONS.reduce((sum, q: any) => sum + Math.max(...q.scores), 0);
       const performancePercentage = Math.round((newPerformanceScore / maxPerformanceScore) * 100);
 
       // LOGICA DETERMINAZIONE LIVELLO (dal quiz originale)
       let level: string;
       if (technicalPercentage < 50) {
-        // TECNICA INSUFFICIENTE → PRINCIPIANTE (indipendentemente dai carichi)
         level = "beginner";
       } else if (performancePercentage < 40) {
-        // TECNICA OK ma carichi bassi → INTERMEDIO
         level = "intermediate";
       } else {
-        // TECNICA OK e carichi buoni → AVANZATO
         level = "advanced";
       }
 
@@ -288,6 +340,8 @@ export default function Assessment() {
         frequency,
         duration,
         goal,
+        sport,
+        role,
         level,
         quizAnswers: newAnswers,
         technicalScore: newTechnicalScore,
@@ -346,7 +400,9 @@ export default function Assessment() {
         duration: completeOnboardingData.duration,
         goal: completeOnboardingData.goal,
         level: completeOnboardingData.level,
-        location: completeOnboardingData.trainingLocation
+        location: completeOnboardingData.trainingLocation,
+        sport: completeOnboardingData.sport,
+        role: completeOnboardingData.role
       };
       localStorage.setItem('assessment_data', JSON.stringify(assessmentData));
 
@@ -362,6 +418,8 @@ export default function Assessment() {
             training_goal: completeOnboardingData.goal,
             training_level: completeOnboardingData.level,
             training_location: completeOnboardingData.trainingLocation,
+            sport: completeOnboardingData.sport,
+            sport_role: completeOnboardingData.role,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
@@ -539,6 +597,54 @@ export default function Assessment() {
               </div>
             </div>
 
+            {/* Sport Selection */}
+            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">⚽ Prestazioni Sportive</h2>
+              <p className="text-sm text-slate-400 mb-4">Pratichi uno sport specifico? (opzionale)</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Sport</label>
+                  <select
+                    value={sport}
+                    onChange={(e) => {
+                      setSport(e.target.value);
+                      setRole(''); // Reset role when sport changes
+                    }}
+                    className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  >
+                    {SPORTS_OPTIONS.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {sportRoles.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Ruolo/Posizione</label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                    >
+                      <option value="">Seleziona ruolo...</option>
+                      {sportRoles.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {sport !== 'none' && (
+                  <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3">
+                    <p className="text-sm text-blue-200">
+                      ℹ️ Il programma sarà ottimizzato per le esigenze del tuo sport
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Confirm Button */}
             <button
               onClick={completeSetup}
@@ -574,7 +680,7 @@ export default function Assessment() {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-3">{quizQuestion.question}</h2>
               <p className="text-sm text-slate-400">
-                {quizQuestion.type === "technical" ? "Seleziona la risposta tecnicamente corretta" : "Seleziona l'opzione che ti rappresenta"}
+                {quizQuestion.type === "technical" ? "Seleziona la risposta tecnicamente corretta (o 'Non lo so')" : "Seleziona l'opzione che ti rappresenta"}
               </p>
             </div>
 
@@ -595,7 +701,7 @@ export default function Assessment() {
                     }`}>
                       {selectedQuizAnswer === index && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
-                    <span>{option}</span>
+                    <span className={option === "Non lo so" ? "italic text-slate-400" : ""}>{option}</span>
                   </div>
                 </button>
               ))}
