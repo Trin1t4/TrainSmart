@@ -150,10 +150,8 @@ export default function Dashboard() {
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('quiz_answers');
 
-      // 5. Ricarica stato
-      await checkUserProgress();
-      
-      alert('✅ Reset completo! Ora puoi rifare lo screening.');
+      // 5. Redirect automatico all'onboarding
+      navigate('/onboarding');
 
     } catch (error) {
       console.error('Error during reset:', error);
@@ -274,10 +272,11 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={handleResetProgram}
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50"
+                  className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50"
                   title="Reset Completo (cancella tutto)"
                 >
-                  🔄 Reset
+                  <span className="text-xl">🔄</span>
+                  <span className="ml-2">Reset</span>
                 </button>
               </div>
             </CardContent>
