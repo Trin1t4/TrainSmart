@@ -97,7 +97,7 @@ export default function Dashboard() {
       const programInput = {
         userId,
         assessmentId,
-        location: onboardingData.trainingLocation || 'gym',
+        location: onboardingData.trainingLocation,
         hasGym: onboardingData.trainingLocation === 'gym',
         equipment: onboardingData.equipment || {},
         goal: onboardingData.goal || 'muscle_gain',
