@@ -224,6 +224,29 @@ export function selectExerciseVariant(
   const homeWithEq = variants.homeWithEquipment;
   const homeBodyweight = variants.homeBodyweight;
 
+  // ✅ CORREZIONE: Se equipment.none === true, SALTA direttamente a bodyweight
+  if (equipment.none === true) {
+    // Esercizio bodyweight puro
+    if (homeBodyweight.isGiantSet) {
+      if (homeBodyweight.name === 'GIANT_SET_DEADLIFT') {
+        return createDeadliftGiantSet(goal, 'intermediate');
+      }
+      if (homeBodyweight.name === 'GIANT_SET_PULLUP') {
+        return createPullupGiantSet(goal, 'intermediate');
+      }
+    }
+
+    return {
+      id: exerciseName.toLowerCase().replace(/\s/g, '_'),
+      name: homeBodyweight.name,
+      sets: getDefaultSets(goalType, true),
+      reps: getDefaultReps(goalType, true),
+      rest: getDefaultRest(goalType) - 20,
+      category: 'compound',
+      notes: 'Esercizio a corpo libero - compensato con volume aumentato'
+    };
+  }
+
   // Controlla se ha equipment necessario (AND+OR logic)
   const hasRequiredEquipment = checkEquipment(homeWithEq.equipment, equipment);
   
@@ -327,7 +350,7 @@ export function getExerciseForLocation(
   level: string
 ): string | GiantSet {
   
-  const eq = equipment || { barbell: false, dumbbellMaxKg: 0, kettlebellKg: [], bands: false, pullupBar: false, bench: false };
+  const eq = equipment || { barbell: false, dumbbellMaxKg: 0, kettlebellKg: [], bands: false, pullupBar: false, bench: false, none: false };
   const result = selectExerciseVariant(exerciseName, location, eq, goal);
   
   // Se è GiantSet, restituiscilo
