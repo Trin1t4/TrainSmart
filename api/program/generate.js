@@ -66,7 +66,9 @@ export default async function handler(req, res) {
       disabilityType: onboardingData.disabilityType || null,
       sportRole: onboardingData.sportRole || null,
       specificBodyParts: onboardingData.specificBodyParts || [],
-      assessmentResults: assessmentData.test_results || {}
+      assessments: Array.isArray(assessmentData.test_results) 
+        ? assessmentData.test_results 
+        : []
     };
 
     // ✅ LOG DEBUG - INPUT PROGRAM GENERATOR
@@ -79,10 +81,12 @@ export default async function handler(req, res) {
       frequency: programInput.frequency
     }, null, 2));
 
+    console.log('[API] 📊 Assessment Results:', JSON.stringify(programInput.assessments, null, 2));
+
     // Generate program
     const program = await generateProgram(programInput);
 
-    // Save program to database
+    // ✅ SAVE PROGRAM - SCHEMA CORRETTO
     const { data: savedProgram, error: saveError } = await supabase
       .from('training_programs')
       .insert({
@@ -90,11 +94,19 @@ export default async function handler(req, res) {
         assessment_id: assessmentId,
         name: program.name,
         description: program.description,
-        duration_weeks: program.durationWeeks,
+        split: program.split,
+        days_per_week: program.daysPerWeek,
+        weekly_schedule: program.weeklySchedule,
+        progression: program.progression,
+        includes_deload: program.includesDeload,
+        deload_frequency: program.deloadFrequency,
+        total_weeks: program.totalWeeks,
+        requires_end_cycle_test: program.requiresEndCycleTest,
         frequency: programInput.frequency,
-        program_data: program,
         status: 'active',
-        created_at: new Date().toISOString()
+        current_week: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .select()
       .single();
@@ -104,7 +116,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to save program' });
     }
 
-    console.log('[API] Program saved to database with ID:', savedProgram.id);
+    console.log('[API] ✅ Program saved to database with ID:', savedProgram.id);
 
     return res.status(200).json({ 
       success: true, 
