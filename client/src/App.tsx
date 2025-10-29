@@ -3,12 +3,13 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
+import BodyCompositionScan from "./pages/BodyCompositionScan"; // ✅ NUOVA IMPORT
 import BiomechanicsQuiz from "./pages/BiomechanicsQuiz";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from '@/pages/Workout';
-import WorkoutSession from '@/pages/WorkoutSession'; // ✅ NUOVA IMPORT
+import WorkoutSession from '@/pages/WorkoutSession';
 
 function App() {
   return (
@@ -22,6 +23,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Onboarding />
+            </ProtectedRoute>
+          }
+        />
+        {/* ✅ NUOVA ROUTE: Body Composition Scan */}
+        <Route
+          path="/body-scan"
+          element={
+            <ProtectedRoute>
+              <BodyCompositionScan />
             </ProtectedRoute>
           }
         />
@@ -50,7 +60,7 @@ function App() {
           }
         />
         <Route path="/workout" element={<Workout />} />
-        <Route path="/workout-session" element={<WorkoutSession />} /> {/* ✅ NUOVA ROUTE */}
+        <Route path="/workout-session" element={<WorkoutSession />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
