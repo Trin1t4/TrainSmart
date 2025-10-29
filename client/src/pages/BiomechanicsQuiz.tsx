@@ -72,11 +72,9 @@ export default function BiomechanicsQuiz() {
       setResult(qr);
       setDone(true);
       
-      // ✅ CORRETTO: Salva in formato compatibile con Assessment
+      // Salva SOLO il punteggio tecnico - livello finale calcolato DOPO screening
       const quizData = {
-        level: qr.level,
         technicalScore: qr.answers.filter(a => a.correct).length,
-        performanceScore: 0,
         answers: qr.answers,
         completedAt: new Date().toISOString()
       };
@@ -90,33 +88,42 @@ export default function BiomechanicsQuiz() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700">
             <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{result.score >= 80 ? '🏆' : result.score >= 40 ? '💪' : '📚'}</div>
+              <div className="text-6xl mb-4">📚</div>
               <h1 className="text-3xl font-bold text-white mb-2">Quiz Completato!</h1>
+              <p className="text-slate-400">Passiamo ora allo Screening Pratico</p>
             </div>
-            <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-500/20 border border-emerald-500/50 rounded-lg p-6 mb-6">
+            
+            <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-500/20 border border-emerald-500/50 rounded-lg p-6 mb-8">
               <div className="text-center">
                 <p className="text-sm text-slate-400 mb-2">Punteggio</p>
                 <p className="text-5xl font-bold text-white mb-2">{result.score}%</p>
                 <p className="text-slate-300">{result.answers.filter(a => a.correct).length} su {QUIZ_QUESTIONS.length}</p>
               </div>
             </div>
-            <div className="space-y-4 mb-8">
-              <div className="bg-slate-700/50 rounded-lg p-5">
-                <p className="text-sm text-slate-400 mb-1">Livello</p>
-                <p className="text-2xl font-bold text-white capitalize">
-                  {result.level === 'beginner' ? 'Principiante' : result.level === 'intermediate' ? 'Intermedio' : 'Avanzato'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-5">
-                <p className="text-sm text-slate-400 mb-1">Metodologia Consigliata</p>
-                <p className="text-xl font-semibold text-emerald-400">{result.methodology}</p>
+
+            {/* ✅ RIMOSSO: Sezione Livello e Metodologia */}
+
+            <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-5 mb-8">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">ℹ️</div>
+                <div>
+                  <p className="font-semibold text-blue-300 mb-2">Il tuo livello finale sarà calcolato:</p>
+                  <ul className="text-sm text-slate-300 space-y-1">
+                    <li>• <strong>70%</strong> basato sui test pratici di forza</li>
+                    <li>• <strong>30%</strong> basato sui tuoi parametri fisici (peso, età, BMI)</li>
+                  </ul>
+                  <p className="text-xs text-slate-400 mt-3">
+                    Il punteggio del quiz aiuta a personalizzare le spiegazioni, ma il livello reale viene determinato dalla tua performance negli esercizi.
+                  </p>
+                </div>
               </div>
             </div>
+
             <button 
               onClick={() => navigate('/assessment')} 
               className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition"
             >
-              Continua con l'Assessment →
+              Continua con lo Screening Pratico →
             </button>
           </div>
         </div>
