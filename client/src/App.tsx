@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Register from "./pages/Register"; // ✅ AGGIUNTO
+import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
 import BiomechanicsQuiz from "./pages/BiomechanicsQuiz";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from '@/pages/Workout';
+import WorkoutSession from '@/pages/WorkoutSession'; // ✅ NUOVA IMPORT
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* ✅ AGGIUNTO */}
+        <Route path="/register" element={<Register />} />
         <Route
           path="/onboarding"
           element={
@@ -49,6 +50,7 @@ function App() {
           }
         />
         <Route path="/workout" element={<Workout />} />
+        <Route path="/workout-session" element={<WorkoutSession />} /> {/* ✅ NUOVA ROUTE */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
