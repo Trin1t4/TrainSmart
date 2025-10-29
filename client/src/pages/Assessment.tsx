@@ -15,19 +15,16 @@ interface AssessmentExercise {
 export default function Assessment() {
   const navigate = useNavigate();
   
-  // Carica dati da localStorage
   const [onboardingData, setOnboardingData] = useState<any>(null);
   const [quizData, setQuizData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // Assessment state
   const [currentIdx, setCurrentIdx] = useState(0);
   const [exercises, setExercises] = useState<AssessmentExercise[]>([]);
   const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Carica dati salvati
     const storedOnboarding = localStorage.getItem('onboarding_data');
     const storedQuiz = localStorage.getItem('quiz_data');
     
@@ -61,9 +58,7 @@ export default function Assessment() {
   }
 
   const isGym = onboardingData.trainingLocation === 'gym';
-  const userLevel = quizData.level || 'beginner';
 
-  // GYM: 6 ESERCIZI CON STACCO E PULLEY
   const gymExercises = [
     { name: 'Squat', unit: 'kg', description: 'Bilanciere dietro, scendi parallelo o sotto' },
     { name: 'Stacco da terra', unit: 'kg', description: 'Bilanciere a terra, schiena neutra' },
@@ -73,7 +68,6 @@ export default function Assessment() {
     { name: 'Pulley basso', unit: 'kg', description: 'Tirata orizzontale, scapole retratte' }
   ];
 
-  // CASA: 5 ESERCIZI CON VARIANTI
   const homeExercises = [
     { 
       name: 'Squat', 
@@ -167,89 +161,180 @@ export default function Assessment() {
     }
   };
 
+  // ✅ CALCOLO LIVELLO FINALE CON FORMULA 70% + 30%
+  const calculateFinalLevel = (practicalExercises: AssessmentExercise[]) => {
+    console.log('[ASSESSMENT] 🧮 Calculating final level...');
+    
+    const bodyweight = onboardingData.personalInfo?.weight || 70;
+    const height = onboardingData.personalInfo?.height || 175;
+    const age = onboardingData.personalInfo?.age || 30;
+    const gender = onboardingData.personalInfo?.gender || 'male';
+
+    // ===== 1. PRACTICAL SCORE (70%) =====
+    let practicalScore = 0;
+    
+    if (isGym) {
+      // GYM: Forza relativa al peso corporeo
+      const standards = {
+        'Squat': gender === 'male' ? 1.5 : 1.0,
+        'Stacco da terra': gender === 'male' ? 2.0 : 1.3,
+        'Panca piana': gender === 'male' ? 1.0 : 0.6,
+        'Trazioni/Lat machine': gender === 'male' ? 1.0 : 0.8,
+        'Military press': gender === 'male' ? 0.75 : 0.5,
+        'Pulley basso': gender === 'male' ? 0.9 : 0.7
+      };
+      
+      let totalScore = 0;
+      let count = 0;
+      
+      practicalExercises.forEach(ex => {
+        if (ex.rm10 && ex.rm10 > 0) {
+          const estimated1RM = ex.rm10 * 1.33;
+          const relativeStrength = estimated1RM / bodyweight;
+          const standard = standards[ex.name as keyof typeof standards] || 1.0;
+          const percentOfStandard = (relativeStrength / standard) * 100;
+          
+          totalScore += Math.min(percentOfStandard, 150);
+          count++;
+          
+          console.log(`[ASSESSMENT] 🏋️ ${ex.name}: ${ex.rm10}kg × 1.33 = ${estimated1RM.toFixed(0)}kg 1RM → ${relativeStrength.toFixed(2)}x BW (${percentOfStandard.toFixed(0)}% standard)`);
+        }
+      });
+      
+      practicalScore = count > 0 ? totalScore / count : 50;
+      
+    } else {
+      // HOME: Media level normalizzata
+      let totalLevel = 0;
+      let count = 0;
+      
+      practicalExercises.forEach(ex => {
+        if (ex.variant) {
+          const level = ex.variant.level;
+          const maxReps = ex.variant.maxReps;
+          
+          // Punteggio da 0-100 basato su level (1-5) e reps
+          const levelScore = (level / 5) * 70; // Max 70 punti da level
+          const repsScore = Math.min(maxReps / 20, 1) * 30; // Max 30 punti da reps
+          const exerciseScore = levelScore + repsScore;
+          
+          totalLevel += exerciseScore;
+          count++;
+          
+          console.log(`[ASSESSMENT] 🏠 ${ex.name}: level ${level}, ${maxReps} reps → ${exerciseScore.toFixed(0)}% score`);
+        }
+      });
+      
+      practicalScore = count > 0 ? totalLevel / count : 50;
+    }
+    
+    console.log(`[ASSESSMENT] 💪 Practical Score (70%): ${practicalScore.toFixed(1)}%`);
+
+    // ===== 2. PHYSICAL PARAMS SCORE (30%) =====
+    const bmi = bodyweight / ((height / 100) ** 2);
+    const bmiScore = bmi >= 18.5 && bmi <= 25 ? 100 : 
+                     bmi < 18.5 ? Math.max(0, 50 + (bmi - 18.5) * 10) :
+                     Math.max(0, 100 - (bmi - 25) * 5);
+
+    const ageScore = age <= 30 ? 100 :
+                     age <= 40 ? 90 :
+                     age <= 50 ? 80 :
+                     age <= 60 ? 70 : 60;
+
+    const physicalScore = (bmiScore * 0.6 + ageScore * 0.4);
+    
+    console.log(`[ASSESSMENT] 📊 Physical Score (30%): BMI=${bmi.toFixed(1)} (${bmiScore.toFixed(0)}/100), Age=${age} (${ageScore}/100) → ${physicalScore.toFixed(1)}%`);
+
+    // ===== 3. WEIGHTED FINAL SCORE =====
+    const finalScore = (practicalScore * 0.7) + (physicalScore * 0.3);
+    
+    let finalLevel: string;
+    if (finalScore >= 75) {
+      finalLevel = 'advanced';
+    } else if (finalScore >= 50) {
+      finalLevel = 'intermediate';
+    } else {
+      finalLevel = 'beginner';
+    }
+    
+    console.log(`[ASSESSMENT] ⚖️ FINAL SCORE: ${practicalScore.toFixed(1)}% × 0.7 + ${physicalScore.toFixed(1)}% × 0.3 = ${finalScore.toFixed(1)}%`);
+    console.log(`[ASSESSMENT] 🎯 FINAL LEVEL: ${finalLevel.toUpperCase()}`);
+    
+    return {
+      level: finalLevel,
+      finalScore: finalScore.toFixed(1),
+      practicalScore: practicalScore.toFixed(1),
+      physicalScore: physicalScore.toFixed(1),
+      breakdown: {
+        bmi: bmi.toFixed(1),
+        bmiScore: bmiScore.toFixed(0),
+        age,
+        ageScore
+      }
+    };
+  };
+
   const complete = async (final: AssessmentExercise[]) => {
     setSaving(true);
     
     try {
-      // Prepara dati completi assessment
+      // ✅ CALCOLA LIVELLO FINALE
+      const levelResult = calculateFinalLevel(final);
+      
       const assessmentData = { 
-  exercises: final, 
-  completedAt: new Date().toISOString(), 
-  completed: true,
-  location: onboardingData.trainingLocation,  // 
-  frequency: onboardingData.activityLevel?.weeklyFrequency,  // 
-  duration: onboardingData.activityLevel?.sessionDuration,  // 
-  goal: onboardingData.goal,
-        level: userLevel,
+        exercises: final, 
+        completedAt: new Date().toISOString(), 
+        completed: true,
+        location: onboardingData.trainingLocation,
+        frequency: onboardingData.activityLevel?.weeklyFrequency,
+        duration: onboardingData.activityLevel?.sessionDuration,
+        goal: onboardingData.goal,
+        level: levelResult.level, // ✅ LIVELLO CORRETTO
+        finalScore: levelResult.finalScore,
+        practicalScore: levelResult.practicalScore,
+        physicalScore: levelResult.physicalScore,
+        breakdown: levelResult.breakdown,
         sport: onboardingData.sport || '',
         sportRole: onboardingData.sportRole || '',
         painScreening: onboardingData.painScreening,
         personalInfo: onboardingData.personalInfo,
-        quizScores: {
-          technical: quizData.technicalScore || 0,
-          performance: quizData.performanceScore || 0
-        }
+        quizScore: quizData.score || 0
       };
       
-      // Salva in localStorage
       localStorage.setItem('assessment_data', JSON.stringify(assessmentData));
 
-      // Salva su Supabase
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Update user profile
-        const { error: profileError } = await supabase
+        await supabase
           .from('user_profiles')
           .update({ 
             onboarding_completed: true,
             assessment_completed: true,
             training_frequency: onboardingData.activityLevel?.weeklyFrequency,
-session_duration: onboardingData.activityLevel?.sessionDuration,
-training_goal: onboardingData.goal,
-training_level: userLevel,
-training_location: onboardingData.trainingLocation,
+            session_duration: onboardingData.activityLevel?.sessionDuration,
+            training_goal: onboardingData.goal,
+            training_level: levelResult.level, // ✅ LIVELLO CORRETTO
+            training_location: onboardingData.trainingLocation,
             sport: onboardingData.sport || null,
             sport_role: onboardingData.sportRole || null,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
 
-        if (profileError) {
-          console.error('Error updating profile:', profileError);
-        }
-
-        // Insert assessment
-        const { error: assessmentError } = await supabase
+        await supabase
           .from('assessments')
           .insert({
             user_id: user.id,
             assessment_type: isGym ? 'gym' : 'home',
             exercises: final,
-            level: userLevel,
+            level: levelResult.level, // ✅ LIVELLO CORRETTO
+            final_score: parseFloat(levelResult.finalScore),
+            practical_score: parseFloat(levelResult.practicalScore),
+            physical_score: parseFloat(levelResult.physicalScore),
             completed: true,
             completed_at: new Date().toISOString()
           });
-
-        if (assessmentError) {
-          console.error('Error saving assessment:', assessmentError);
-        }
-
-        // Insert quiz results se non esistono già
-        const { error: quizError } = await supabase
-          .from('quiz_results')
-          .insert({
-            user_id: user.id,
-            technical_score: quizData.technicalScore || 0,
-            performance_score: quizData.performanceScore || 0,
-            level: userLevel,
-            answers: quizData.answers || [],
-            completed_at: new Date().toISOString()
-          });
-
-        if (quizError) {
-          console.error('Error saving quiz:', quizError);
-        }
       }
     } catch (error) {
       console.error('Error in complete:', error);
@@ -259,13 +344,12 @@ training_location: onboardingData.trainingLocation,
     }
   };
 
-  // Loading durante salvataggio
   if (saving) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg font-semibold mb-2">Salvataggio assessment...</p>
+          <p className="text-white text-lg font-semibold mb-2">Calcolo livello e salvataggio...</p>
           <p className="text-slate-400 text-sm">Stiamo creando il tuo programma personalizzato</p>
         </div>
       </div>
@@ -275,7 +359,6 @@ training_location: onboardingData.trainingLocation,
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header con progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-white">💪 Test Fisici</h1>
@@ -288,12 +371,11 @@ training_location: onboardingData.trainingLocation,
             />
           </div>
           <div className="flex justify-between text-sm text-slate-400 mt-2">
-            <span>Livello: <span className="text-emerald-400 font-semibold capitalize">{userLevel}</span></span>
             <span>Location: <span className="text-emerald-400 font-semibold">{isGym ? '🏋️ Palestra' : '🏠 Casa'}</span></span>
+            <span>Quiz: <span className="text-emerald-400 font-semibold">{quizData.score}%</span></span>
           </div>
         </div>
         
-        {/* Card principale */}
         <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-slate-700 shadow-2xl">
           <div className="mb-6">
             <h2 className="text-3xl font-bold text-white mb-2">{current.name}</h2>
@@ -302,7 +384,6 @@ training_location: onboardingData.trainingLocation,
             </p>
           </div>
           
-          {/* Info box */}
           <div className="bg-emerald-500/10 border border-emerald-500 rounded-lg p-4 mb-6">
             <p className="text-sm text-emerald-200">
               💡 {isGym 
@@ -311,7 +392,6 @@ training_location: onboardingData.trainingLocation,
             </p>
           </div>
           
-          {/* Form GYM */}
           {isGym ? (
             <div className="space-y-6">
               <div>
@@ -331,16 +411,16 @@ training_location: onboardingData.trainingLocation,
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">kg</span>
                 </div>
                 {test.rm10 > 0 && (
-  <div className="mt-4 bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-    <p className="text-sm text-slate-400 mb-1">📊 1RM Stimato:</p>
-    <div className="text-center mt-2">
-      <p className="text-3xl font-bold text-emerald-400">
-        {Math.round(test.rm10 * 1.33)}kg
-      </p>
-      <p className="text-xs text-slate-500 mt-1">Massimale teorico calcolato</p>
-    </div>
-  </div>
-)}
+                  <div className="mt-4 bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                    <p className="text-sm text-slate-400 mb-1">📊 1RM Stimato:</p>
+                    <div className="text-center mt-2">
+                      <p className="text-3xl font-bold text-emerald-400">
+                        {Math.round(test.rm10 * 1.33)}kg
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">Massimale teorico calcolato</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <button 
                 onClick={submit} 
@@ -351,7 +431,6 @@ training_location: onboardingData.trainingLocation,
               </button>
             </div>
           ) : (
-            /* Form CASA */
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-3">Seleziona la variante più difficile:</label>
@@ -414,7 +493,6 @@ training_location: onboardingData.trainingLocation,
           )}
         </div>
         
-        {/* Recap esercizi completati */}
         {exercises.length > 0 && (
           <div className="mt-6 bg-slate-800/30 backdrop-blur rounded-xl p-5 border border-slate-700">
             <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
