@@ -3,9 +3,9 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
-import BodyCompositionScan from "./pages/BodyCompositionScan"; // ✅ NUOVA IMPORT
+import BodyCompositionScan from "./pages/BodyCompositionScan";
 import BiomechanicsQuiz from "./pages/BiomechanicsQuiz";
-import Assessment from "./pages/Assessment";
+import Screening from "./pages/Screening"; // ✅ CAMBIATO DA Assessment
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from '@/pages/Workout';
@@ -26,7 +26,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* ✅ NUOVA ROUTE: Body Composition Scan */}
         <Route
           path="/body-scan"
           element={
@@ -43,11 +42,12 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* ✅ ROUTE AGGIORNATA */}
         <Route
-          path="/assessment"
+          path="/screening"
           element={
             <ProtectedRoute>
-              <Assessment />
+              <Screening />
             </ProtectedRoute>
           }
         />
