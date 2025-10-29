@@ -332,6 +332,8 @@ export function getDisabilitySafeAlternative(exerciseName) {
 export function generateProgram(input) {
   const { level, frequency, location, hasGym, equipment, painAreas, assessments, goal, disabilityType, sportRole } = input;
   
+  console.log('[PROGRAM] 🎯 generateProgram called with location:', location);
+  
   // SE PERFORMANCE → USA FILOSOFIA RUBINI
   if (goal === 'performance' && sportRole) {
     return generatePerformanceProgramRubini(input);
@@ -360,7 +362,7 @@ export function generateProgram(input) {
   else progression = "ondulata_giornaliera";
 
   const weeklySchedule = generateWeeklySchedule(
-    split, daysPerWeek, location || 'gym', hasGym, equipment, painAreas,
+    split, daysPerWeek, location || 'gym', equipment, painAreas,
     assessments, level, goal, specificBodyParts, disabilityType, sportRole
   );
 
@@ -390,7 +392,7 @@ export function generateProgram(input) {
 // ===== GENERAZIONE PROGRAMMA PERFORMANCE RUBINI =====
 
 function generatePerformanceProgramRubini(input) {
-  const { level, frequency, location, hasGym, equipment, painAreas, assessments, sportRole } = input;
+  const { level, frequency, location, equipment, painAreas, assessments, sportRole } = input;
   
   // Determina sport e ruolo
   const [sport, role] = sportRole ? sportRole.split('_') : ['calcio', 'centrocampista'];
@@ -408,7 +410,7 @@ function generatePerformanceProgramRubini(input) {
   
   // Genera schedule
   const weeklySchedule = generatePerformanceScheduleRubini(
-    sport, role, sportConfig, daysPerWeek, location, hasGym, equipment, 
+    sport, role, sportConfig, daysPerWeek, location, equipment, 
     painAreas, assessments, level
   );
   
@@ -428,7 +430,7 @@ function generatePerformanceProgramRubini(input) {
   };
 }
 
-function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek, location, hasGym, equipment, painAreas, assessments, level) {
+function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek, location, equipment, painAreas, assessments, level) {
   const schedule = [];
   const baseLoad = getBaseLoads(assessments);
   
@@ -444,10 +446,10 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
         dayName: "Forza Massima",
         exercises: [
           ...sportConfig.exercises.strength.slice(0, 3).map(ex => 
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'strength', RIR_STRENGTH)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'strength', RIR_STRENGTH)
           ),
           ...sportConfig.exercises.prevention.slice(0, 2).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'prevention', 2)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'prevention', 2)
           )
         ]
       });
@@ -457,10 +459,10 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
         dayName: "Potenza & Esplosività",
         exercises: [
           ...sportConfig.exercises.power.slice(0, 3).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'power', RIR_POWER)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'power', RIR_POWER)
           ),
           ...sportConfig.exercises.prevention.slice(0, 2).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'prevention', 2)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'prevention', 2)
           )
         ]
       });
@@ -470,10 +472,10 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
         dayName: "Forza & Prevenzione",
         exercises: [
           ...sportConfig.exercises.strength.slice(1, 3).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'strength', RIR_STRENGTH)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'strength', RIR_STRENGTH)
           ),
           ...sportConfig.exercises.prevention.map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'prevention', 2)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'prevention', 2)
           )
         ]
       });
@@ -485,10 +487,10 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
         dayName: "Potenza & Mobilità",
         exercises: [
           ...sportConfig.exercises.power.slice(1, 3).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'power', RIR_POWER)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'power', RIR_POWER)
           ),
-          createPerformanceExercise('Hip Mobility Flow', location, hasGym, equipment, baseLoad, level, 'mobility', 0),
-          createPerformanceExercise('Shoulder Mobility', location, hasGym, equipment, baseLoad, level, 'mobility', 0)
+          createPerformanceExercise('Hip Mobility Flow', location, equipment, baseLoad, level, 'mobility', 0),
+          createPerformanceExercise('Shoulder Mobility', location, equipment, baseLoad, level, 'mobility', 0)
         ]
       });
     }
@@ -498,10 +500,10 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
       dayName: "Forza Economia & Prevenzione",
       exercises: [
         ...sportConfig.exercises.strength.slice(0, 2).map(ex =>
-          createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'strength', 3) // RIR 3 sempre
+          createPerformanceExercise(ex, location, equipment, baseLoad, level, 'strength', 3) // RIR 3 sempre
         ),
         ...sportConfig.exercises.prevention.map(ex =>
-          createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'prevention', 2)
+          createPerformanceExercise(ex, location, equipment, baseLoad, level, 'prevention', 2)
         )
       ]
     });
@@ -511,7 +513,7 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
         dayName: "Potenza Breve",
         exercises: [
           ...sportConfig.exercises.power.slice(0, 2).map(ex =>
-            createPerformanceExercise(ex, location, hasGym, equipment, baseLoad, level, 'power', 2)
+            createPerformanceExercise(ex, location, equipment, baseLoad, level, 'power', 2)
           )
         ]
       });
@@ -521,8 +523,11 @@ function generatePerformanceScheduleRubini(sport, role, sportConfig, daysPerWeek
   return schedule;
 }
 
-function createPerformanceExercise(name, location, hasGym, equipment, baseLoad, level, type, RIR) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function createPerformanceExercise(name, location, equipment, baseLoad, level, type, RIR) {
   let sets, reps, rest, weight;
+  
+  console.log('[PROGRAM] 🏋️ createPerformanceExercise:', { name, location, type });
   
   // Volume Rubini: 3-4 serie (non 5)
   if (level === "beginner") {
@@ -555,7 +560,8 @@ function createPerformanceExercise(name, location, hasGym, equipment, baseLoad, 
     weight = null;
   }
   
-  const goal = 'performance'; // Fix: aggiungi goal
+  const goal = 'performance';
+  // ✅ FIX: Parametri corretti (name, location, equipment, goal, level)
   const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal, level);
   
   if (typeof exerciseOrGiantSet !== 'string') {
@@ -575,51 +581,54 @@ function createPerformanceExercise(name, location, hasGym, equipment, baseLoad, 
   };
 }
 
-// ===== PROGRAMMA STANDARD (resto invariato) =====
+// ===== PROGRAMMA STANDARD =====
 
-function generateWeeklySchedule(split, daysPerWeek, location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const schedule = [];
+  
+  console.log('[PROGRAM] 📅 generateWeeklySchedule with location:', location);
   
   if (split === "full_body") {
     for (let i = 0; i < daysPerWeek; i++) {
       schedule.push({
         dayName: i % 2 === 0 ? "Full Body A" : "Full Body B",
-        exercises: generateFullBodyDay(i % 2 === 0 ? "A" : "B", location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole),
+        exercises: generateFullBodyDay(i % 2 === 0 ? "A" : "B", location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole),
       });
     }
   } else if (split === "upper_lower") {
     schedule.push(
-      { dayName: "Upper A", exercises: generateUpperDay("A", location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-      { dayName: "Lower A", exercises: generateLowerDay("A", location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-      { dayName: "Upper B", exercises: generateUpperDay("B", location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-      { dayName: "Lower B", exercises: generateLowerDay("B", location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Upper A", exercises: generateUpperDay("A", location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Lower A", exercises: generateLowerDay("A", location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Upper B", exercises: generateUpperDay("B", location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Lower B", exercises: generateLowerDay("B", location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
     );
   } else {
     schedule.push(
-      { dayName: "Push", exercises: generatePushDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-      { dayName: "Pull", exercises: generatePullDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-      { dayName: "Legs", exercises: generateLegsDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Push", exercises: generatePushDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Pull", exercises: generatePullDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+      { dayName: "Legs", exercises: generateLegsDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
     );
     if (daysPerWeek >= 6) {
       schedule.push(
-        { dayName: "Push B", exercises: generatePushDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-        { dayName: "Pull B", exercises: generatePullDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
-        { dayName: "Legs B", exercises: generateLegsDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+        { dayName: "Push B", exercises: generatePushDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+        { dayName: "Pull B", exercises: generatePullDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
+        { dayName: "Legs B", exercises: generateLegsDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) },
       );
     }
   }
   return schedule;
 }
 
-function generateFullBodyDay(variant, location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generateFullBodyDay(variant, location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   
-  // ✅ VALIDAZIONE ASSESSMENTS
-  console.log('[PROGRAM] 🔍 Checking assessments in generateFullBodyDay:', {
+  console.log('[PROGRAM] 💪 generateFullBodyDay with location:', location);
+  console.log('[PROGRAM] 🔍 Checking assessments:', {
     exists: !!assessments,
     isArray: Array.isArray(assessments),
-    length: assessments?.length,
-    data: assessments
+    length: assessments?.length
   });
   
   const baseLoad = getBaseLoads(assessments || []);
@@ -631,31 +640,32 @@ function generateFullBodyDay(variant, location, hasGym, equipment, painAreas, as
   };
 
   if (!painAreas.includes("knee") && !painAreas.includes("lower_back")) {
-    exercises.push(createExercise(safeExercise("Squat"), location, hasGym, equipment, baseLoad.squat, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Squat"), location, equipment, baseLoad.squat, level, goal, "compound"));
   } else {
-    exercises.push(createExercise("Leg Press", location, hasGym, equipment, baseLoad.squat * 1.3, level, goal, "compound"));
+    exercises.push(createExercise("Leg Press", location, equipment, baseLoad.squat * 1.3, level, goal, "compound"));
   }
 
   if (!painAreas.includes("lower_back")) {
-    exercises.push(createExercise(safeExercise(variant === "A" ? "Stacco" : "Romanian Deadlift"), location, hasGym, equipment, baseLoad.deadlift, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise(variant === "A" ? "Stacco" : "Romanian Deadlift"), location, equipment, baseLoad.deadlift, level, goal, "compound"));
   }
 
   if (!painAreas.includes("shoulder")) {
-    exercises.push(createExercise(safeExercise(variant === "A" ? "Panca Piana" : "Panca Inclinata"), location, hasGym, equipment, baseLoad.bench, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise(variant === "A" ? "Panca Piana" : "Panca Inclinata"), location, equipment, baseLoad.bench, level, goal, "compound"));
   }
 
-  exercises.push(createExercise(variant === "A" ? "Trazioni" : "Rematore", location, hasGym, equipment, baseLoad.pull, level, goal, "compound"));
+  exercises.push(createExercise(variant === "A" ? "Trazioni" : "Rematore", location, equipment, baseLoad.pull, level, goal, "compound"));
 
   if (!painAreas.includes("shoulder")) {
-    exercises.push(createExercise("Military Press", location, hasGym, equipment, baseLoad.press, level, goal, "accessory"));
+    exercises.push(createExercise("Military Press", location, equipment, baseLoad.press, level, goal, "accessory"));
   }
 
-  exercises.push(createExercise(goal === 'pregnancy' ? 'Bird Dog' : 'Plank', location, hasGym, equipment, 0, level, goal, "core"));
+  exercises.push(createExercise(goal === 'pregnancy' ? 'Bird Dog' : 'Plank', location, equipment, 0, level, goal, "core"));
 
   return exercises;
 }
 
-function generateUpperDay(variant, location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generateUpperDay(variant, location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   const baseLoad = getBaseLoads(assessments || []);
 
@@ -666,20 +676,21 @@ function generateUpperDay(variant, location, hasGym, equipment, painAreas, asses
   };
 
   if (variant === "A") {
-    exercises.push(createExercise(safeExercise("Panca Piana"), location, hasGym, equipment, baseLoad.bench, level, goal, "compound"));
-    exercises.push(createExercise("Trazioni", location, hasGym, equipment, baseLoad.pull, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Panca Piana"), location, equipment, baseLoad.bench, level, goal, "compound"));
+    exercises.push(createExercise("Trazioni", location, equipment, baseLoad.pull, level, goal, "compound"));
   } else {
-    exercises.push(createExercise(safeExercise("Panca Inclinata"), location, hasGym, equipment, baseLoad.bench * 0.85, level, goal, "compound"));
-    exercises.push(createExercise("Rematore Bilanciere", location, hasGym, equipment, baseLoad.pull * 0.9, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Panca Inclinata"), location, equipment, baseLoad.bench * 0.85, level, goal, "compound"));
+    exercises.push(createExercise("Rematore Bilanciere", location, equipment, baseLoad.pull * 0.9, level, goal, "compound"));
   }
 
-  exercises.push(createExercise("Military Press", location, hasGym, equipment, baseLoad.press, level, goal, "accessory"));
-  exercises.push(createExercise(variant === "A" ? "Curl bilanciere" : "French Press", location, hasGym, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise("Military Press", location, equipment, baseLoad.press, level, goal, "accessory"));
+  exercises.push(createExercise(variant === "A" ? "Curl bilanciere" : "French Press", location, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
 
   return exercises;
 }
 
-function generateLowerDay(variant, location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generateLowerDay(variant, location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   const baseLoad = getBaseLoads(assessments || []);
 
@@ -690,23 +701,24 @@ function generateLowerDay(variant, location, hasGym, equipment, painAreas, asses
   };
 
   if (variant === "A") {
-    exercises.push(createExercise(safeExercise("Squat"), location, hasGym, equipment, baseLoad.squat, level, goal, "compound"));
-    exercises.push(createExercise(safeExercise("Romanian Deadlift"), location, hasGym, equipment, baseLoad.deadlift * 0.7, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Squat"), location, equipment, baseLoad.squat, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Romanian Deadlift"), location, equipment, baseLoad.deadlift * 0.7, level, goal, "compound"));
   } else {
-    exercises.push(createExercise(safeExercise("Front Squat"), location, hasGym, equipment, baseLoad.squat * 0.8, level, goal, "compound"));
-    exercises.push(createExercise(safeExercise("Stacco"), location, hasGym, equipment, baseLoad.deadlift, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Front Squat"), location, equipment, baseLoad.squat * 0.8, level, goal, "compound"));
+    exercises.push(createExercise(safeExercise("Stacco"), location, equipment, baseLoad.deadlift, level, goal, "compound"));
   }
 
-  exercises.push(createExercise("Leg Curl", location, hasGym, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise("Leg Curl", location, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
   
   if (!painAreas.includes("ankles")) {
-    exercises.push(createExercise("Calf Raises", location, hasGym, equipment, baseLoad.squat * 0.5, level, goal, "isolation"));
+    exercises.push(createExercise("Calf Raises", location, equipment, baseLoad.squat * 0.5, level, goal, "isolation"));
   }
 
   return exercises;
 }
 
-function generatePushDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generatePushDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   const baseLoad = getBaseLoads(assessments || []);
 
@@ -716,16 +728,17 @@ function generatePushDay(location, hasGym, equipment, painAreas, assessments, le
     return name;
   };
 
-  exercises.push(createExercise(safeExercise("Panca Piana"), location, hasGym, equipment, baseLoad.bench, level, goal, "compound"));
-  exercises.push(createExercise("Military Press", location, hasGym, equipment, baseLoad.press, level, goal, "compound"));
-  exercises.push(createExercise("Dips", location, hasGym, equipment, 0, level, goal, "compound"));
-  exercises.push(createExercise("Croci manubri", location, hasGym, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
-  exercises.push(createExercise("French Press", location, hasGym, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise(safeExercise("Panca Piana"), location, equipment, baseLoad.bench, level, goal, "compound"));
+  exercises.push(createExercise("Military Press", location, equipment, baseLoad.press, level, goal, "compound"));
+  exercises.push(createExercise("Dips", location, equipment, 0, level, goal, "compound"));
+  exercises.push(createExercise("Croci manubri", location, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise("French Press", location, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
 
   return exercises;
 }
 
-function generatePullDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generatePullDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   const baseLoad = getBaseLoads(assessments || []);
 
@@ -735,16 +748,17 @@ function generatePullDay(location, hasGym, equipment, painAreas, assessments, le
     return name;
   };
 
-  exercises.push(createExercise(safeExercise("Stacco"), location, hasGym, equipment, baseLoad.deadlift, level, goal, "compound"));
-  exercises.push(createExercise(safeExercise("Trazioni"), location, hasGym, equipment, baseLoad.pull, level, goal, "compound"));
-  exercises.push(createExercise(safeExercise("Rematore Bilanciere"), location, hasGym, equipment, baseLoad.pull * 0.9, level, goal, "compound"));
-  exercises.push(createExercise(safeExercise("Curl bilanciere"), location, hasGym, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
-  exercises.push(createExercise(safeExercise("Face Pull"), location, hasGym, equipment, baseLoad.pull * 0.2, level, goal, "isolation"));
+  exercises.push(createExercise(safeExercise("Stacco"), location, equipment, baseLoad.deadlift, level, goal, "compound"));
+  exercises.push(createExercise(safeExercise("Trazioni"), location, equipment, baseLoad.pull, level, goal, "compound"));
+  exercises.push(createExercise(safeExercise("Rematore Bilanciere"), location, equipment, baseLoad.pull * 0.9, level, goal, "compound"));
+  exercises.push(createExercise(safeExercise("Curl bilanciere"), location, equipment, baseLoad.bench * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise(safeExercise("Face Pull"), location, equipment, baseLoad.pull * 0.2, level, goal, "isolation"));
 
   return exercises;
 }
 
-function generateLegsDay(location, hasGym, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function generateLegsDay(location, equipment, painAreas, assessments, level, goal, specificBodyParts, disabilityType, sportRole) {
   const exercises = [];
   const baseLoad = getBaseLoads(assessments || []);
 
@@ -754,17 +768,20 @@ function generateLegsDay(location, hasGym, equipment, painAreas, assessments, le
     return name;
   };
 
-  exercises.push(createExercise(safeExercise("Squat"), location, hasGym, equipment, baseLoad.squat, level, goal, "compound"));
-  exercises.push(createExercise(safeExercise("Leg Press"), location, hasGym, equipment, baseLoad.squat * 1.5, level, goal, "compound"));
-  exercises.push(createExercise(safeExercise("Romanian Deadlift"), location, hasGym, equipment, baseLoad.deadlift * 0.7, level, goal, "compound"));
-  exercises.push(createExercise("Leg Curl", location, hasGym, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
-  exercises.push(createExercise("Leg Extension", location, hasGym, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise(safeExercise("Squat"), location, equipment, baseLoad.squat, level, goal, "compound"));
+  exercises.push(createExercise(safeExercise("Leg Press"), location, equipment, baseLoad.squat * 1.5, level, goal, "compound"));
+  exercises.push(createExercise(safeExercise("Romanian Deadlift"), location, equipment, baseLoad.deadlift * 0.7, level, goal, "compound"));
+  exercises.push(createExercise("Leg Curl", location, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
+  exercises.push(createExercise("Leg Extension", location, equipment, baseLoad.squat * 0.3, level, goal, "isolation"));
 
   return exercises;
 }
 
-function createExercise(name, location, hasGym, equipment, baseWeight, level, goal, type) {
+// ✅ FIX: Rimosso hasGym dai parametri
+function createExercise(name, location, equipment, baseWeight, level, goal, type) {
   let sets, reps, rest;
+
+  console.log('[PROGRAM] 🎯 createExercise:', { name, location, goal });
 
   if (level === "beginner") {
     sets = type === "compound" ? 3 : 2;
@@ -784,7 +801,10 @@ function createExercise(name, location, hasGym, equipment, baseWeight, level, go
   else if (type === "accessory") rest = 120;
   else rest = 60;
 
+  // ✅ FIX: Parametri corretti (name, location, equipment, goal, level)
   const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal || 'muscle_gain', level);
+
+  console.log('[PROGRAM] ✅ getExerciseForLocation returned:', exerciseOrGiantSet);
 
   if (typeof exerciseOrGiantSet !== 'string') {
     if (goal === 'pregnancy' || goal === 'disability') {
@@ -826,9 +846,7 @@ function createExercise(name, location, hasGym, equipment, baseWeight, level, go
   };
 }
 
-// ✅ VALIDAZIONE COMPLETA
 function getBaseLoads(assessments) {
-  // ✅ VALIDAZIONE
   if (!assessments || !Array.isArray(assessments)) {
     console.warn('[PROGRAM] ⚠️ assessments is undefined or not array, using default loads');
     return {
