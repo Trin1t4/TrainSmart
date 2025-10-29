@@ -304,13 +304,14 @@ export default function Dashboard() {
                   Vai all'Allenamento
                 </button>
                 <button
-                  onClick={handleResetProgram}
-                  className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50"
-                  title="Reset Completo (cancella tutto)"
-                >
-                  <span className="text-xl">🔄</span>
-                  <span className="ml-2">Reset</span>
-                </button>
+  onClick={handleResetProgram}
+  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 cursor-pointer"
+  title="Reset Completo (cancella tutto)"
+>
+  <span className="text-xl pointer-events-none">🔄</span>
+  <span className="ml-2 pointer-events-none">Reset</span>
+</button>
+
               </div>
             </CardContent>
           </Card>
