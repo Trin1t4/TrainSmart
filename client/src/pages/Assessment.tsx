@@ -37,7 +37,6 @@ export default function Assessment() {
   const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
   const [saving, setSaving] = useState(false);
   
-  // ✅ NUOVO: State per schermata risultati
   const [showResults, setShowResults] = useState(false);
   const [levelResult, setLevelResult] = useState<LevelResult | null>(null);
 
@@ -85,55 +84,56 @@ export default function Assessment() {
     { name: 'Pulley basso', unit: 'kg', description: 'Tirata orizzontale, scapole retratte' }
   ];
 
+  // ✅ NUOVE PROGRESSIONI CON FLOOR PULL
   const homeExercises = [
     { 
       name: 'Squat', 
       variants: [
-        { level: 1, name: 'Assistito', desc: 'Con sostegno (sedia/muro)' }, 
-        { level: 2, name: 'Completo', desc: 'Peso corporeo, parallelo' }, 
-        { level: 3, name: 'Jump squat', desc: 'Con salto esplosivo' }, 
-        { level: 4, name: 'Pistol assistito', desc: 'Una gamba con sostegno' }, 
-        { level: 5, name: 'Pistol completo', desc: 'Una gamba, libero' }
+        { level: 1, name: 'Assistito', desc: 'Con sostegno (sedia/muro)', coefficient: 0.80 }, 
+        { level: 2, name: 'Completo', desc: 'Peso corporeo, parallelo', coefficient: 1.00 }, 
+        { level: 3, name: 'Jump squat', desc: 'Con salto esplosivo', coefficient: 1.20 }, 
+        { level: 4, name: 'Pistol assistito', desc: 'Una gamba con sostegno', coefficient: 1.40 }, 
+        { level: 5, name: 'Pistol completo', desc: 'Una gamba, libero', coefficient: 1.60 }
       ]
     },
     { 
       name: 'Push-up', 
       variants: [
-        { level: 1, name: 'Su ginocchia', desc: 'Facilitato, petto a terra' }, 
-        { level: 2, name: 'Standard', desc: 'Classico, corpo dritto' }, 
-        { level: 3, name: 'Mani strette', desc: 'Diamond, focus tricipiti' }, 
-        { level: 4, name: 'Archer', desc: 'Peso spostato su un braccio' }, 
-        { level: 5, name: 'One-arm', desc: 'Un braccio solo' }
+        { level: 1, name: 'Su ginocchia', desc: 'Facilitato, petto a terra', coefficient: 0.50 }, 
+        { level: 2, name: 'Standard', desc: 'Classico, corpo dritto', coefficient: 0.65 }, 
+        { level: 3, name: 'Mani strette', desc: 'Diamond, focus tricipiti', coefficient: 0.75 }, 
+        { level: 4, name: 'Archer', desc: 'Peso spostato su un braccio', coefficient: 0.85 }, 
+        { level: 5, name: 'One-arm', desc: 'Un braccio solo', coefficient: 1.00 }
       ]
     },
     { 
       name: 'Trazioni', 
       variants: [
-        { level: 1, name: 'Australian row', desc: 'Corpo inclinato, barra bassa' }, 
-        { level: 2, name: 'Negative', desc: 'Solo fase eccentrica' }, 
-        { level: 3, name: 'Assistite', desc: 'Con banda elastica' }, 
-        { level: 4, name: 'Complete', desc: 'Full ROM, petto alla sbarra' }, 
-        { level: 5, name: 'Zavorrate', desc: 'Con peso aggiunto' }
+        { level: 1, name: 'Floor Pull (asciugamano)', desc: 'Tira il corpo a terra con asciugamano', coefficient: 0.40 }, 
+        { level: 2, name: 'Inverted Row 45°', desc: 'Corpo inclinato 45°, sotto tavolo', coefficient: 0.50 }, 
+        { level: 3, name: 'Inverted Row 30°', desc: 'Corpo più orizzontale', coefficient: 0.65 }, 
+        { level: 4, name: 'Australian Pull-up', desc: 'Corpo quasi orizzontale, barra bassa', coefficient: 0.75 }, 
+        { level: 5, name: 'Pull-up completa', desc: 'Full ROM, petto alla sbarra', coefficient: 0.93 }
       ]
     },
     { 
       name: 'Spalle vertical push', 
       variants: [
-        { level: 1, name: 'Plank to pike', desc: 'Mobilità spalle' }, 
-        { level: 2, name: 'Pike push-up', desc: 'Corpo a V invertita' }, 
-        { level: 3, name: 'Pike elevato', desc: 'Piedi su rialzo' }, 
-        { level: 4, name: 'Handstand assistito', desc: 'In verticale al muro' }, 
-        { level: 5, name: 'Handstand push-up', desc: 'Piegamenti in verticale' }
+        { level: 1, name: 'Plank to pike', desc: 'Mobilità spalle', coefficient: 0.40 }, 
+        { level: 2, name: 'Pike push-up', desc: 'Corpo a V invertita', coefficient: 0.55 }, 
+        { level: 3, name: 'Pike elevato', desc: 'Piedi su rialzo', coefficient: 0.70 }, 
+        { level: 4, name: 'Handstand assistito', desc: 'In verticale al muro', coefficient: 0.85 }, 
+        { level: 5, name: 'Handstand push-up', desc: 'Piegamenti in verticale', coefficient: 1.00 }
       ]
     },
     { 
       name: 'Gambe unilaterali', 
       variants: [
-        { level: 1, name: 'Affondi', desc: 'Base, avanti-indietro' }, 
-        { level: 2, name: 'Squat bulgaro', desc: 'Piede posteriore elevato' }, 
-        { level: 3, name: 'Single leg deadlift', desc: 'Una gamba, equilibrio' }, 
-        { level: 4, name: 'Jump lunge', desc: 'Affondi con salto' }, 
-        { level: 5, name: 'Pistol squat', desc: 'Squat completo una gamba' }
+        { level: 1, name: 'Affondi', desc: 'Base, avanti-indietro', coefficient: 0.60 }, 
+        { level: 2, name: 'Squat bulgaro', desc: 'Piede posteriore elevato', coefficient: 0.75 }, 
+        { level: 3, name: 'Single leg deadlift', desc: 'Una gamba, equilibrio', coefficient: 0.90 }, 
+        { level: 4, name: 'Jump lunge', desc: 'Affondi con salto', coefficient: 1.10 }, 
+        { level: 5, name: 'Pistol squat', desc: 'Squat completo una gamba', coefficient: 1.40 }
       ]
     }
   ];
@@ -158,12 +158,17 @@ export default function Assessment() {
       }
     } else {
       if (!test.variant || !test.maxReps || test.maxReps <= 0) return;
+      
+      // ✅ Trova il coefficient della variante selezionata
+      const selectedVariant = current.variants?.find(v => v.name === test.variant);
+      
       const ex: AssessmentExercise = { 
         name: current.name, 
         variant: { 
           level: test.variantLevel, 
           name: test.variant, 
-          maxReps: test.maxReps 
+          maxReps: test.maxReps,
+          coefficient: selectedVariant?.coefficient || 1.0
         } 
       };
       const updated = [...exercises, ex];
@@ -178,6 +183,7 @@ export default function Assessment() {
     }
   };
 
+  // ✅ CALCOLO LIVELLO CORRETTO CON COEFFICIENTI
   const calculateFinalLevel = (practicalExercises: AssessmentExercise[]): LevelResult => {
     console.log('[ASSESSMENT] 🧮 Calculating final level...');
     
@@ -218,26 +224,37 @@ export default function Assessment() {
       practicalScore = count > 0 ? totalScore / count : 50;
       
     } else {
-      let totalLevel = 0;
+      // ✅ HOME: Usa coefficienti per calcolo accurato
+      let totalScore = 0;
       let count = 0;
       
       practicalExercises.forEach(ex => {
         if (ex.variant) {
           const level = ex.variant.level;
           const maxReps = ex.variant.maxReps;
+          const coefficient = (ex.variant as any).coefficient || 1.0;
           
-          const levelScore = (level / 5) * 70;
-          const repsScore = Math.min(maxReps / 20, 1) * 30;
-          const exerciseScore = levelScore + repsScore;
+          // Peso virtuale basato su coefficient e bodyweight
+          const virtualWeight = bodyweight * coefficient;
+          const estimated1RM = virtualWeight * (1 + (maxReps / 30)); // Formula Brzycki semplificata
           
-          totalLevel += exerciseScore;
+          // Score basato su performance relativa
+          // Advanced = 1.5x BW, Intermediate = 1.0x BW, Beginner = 0.7x BW
+          const relativeStrength = estimated1RM / bodyweight;
+          let percentScore = 0;
+          
+          if (relativeStrength >= 1.5) percentScore = 100;
+          else if (relativeStrength >= 1.0) percentScore = 50 + ((relativeStrength - 1.0) / 0.5) * 50;
+          else percentScore = (relativeStrength / 1.0) * 50;
+          
+          totalScore += percentScore;
           count++;
           
-          console.log(`[ASSESSMENT] 🏠 ${ex.name}: level ${level}, ${maxReps} reps → ${exerciseScore.toFixed(0)}% score`);
+          console.log(`[ASSESSMENT] 🏠 ${ex.name}: level ${level}, ${maxReps} reps, coeff ${coefficient} → ${virtualWeight.toFixed(1)}kg virtual → 1RM ${estimated1RM.toFixed(0)}kg → ${percentScore.toFixed(0)}% score`);
         }
       });
       
-      practicalScore = count > 0 ? totalLevel / count : 50;
+      practicalScore = count > 0 ? totalScore / count : 50;
     }
     
     console.log(`[ASSESSMENT] 💪 Practical Score (70%): ${practicalScore.toFixed(1)}%`);
@@ -284,14 +301,12 @@ export default function Assessment() {
     };
   };
 
-  // ✅ MOSTRA SCHERMATA RISULTATI INVECE DI SALVARE SUBITO
   const completeAssessment = (final: AssessmentExercise[]) => {
     const result = calculateFinalLevel(final);
     setLevelResult(result);
     setShowResults(true);
   };
 
-  // ✅ SALVA E VAI ALLA DASHBOARD
   const saveAndContinue = async () => {
     if (!levelResult) return;
     
@@ -361,7 +376,6 @@ export default function Assessment() {
     }
   };
 
-  // ✅ SCHERMATA RISULTATI FINALI
   if (showResults && levelResult) {
     const levelEmoji = levelResult.level === 'advanced' ? '🔥' : levelResult.level === 'intermediate' ? '💪' : '🌱';
     const levelColor = levelResult.level === 'advanced' ? 'emerald' : levelResult.level === 'intermediate' ? 'blue' : 'amber';
@@ -377,7 +391,6 @@ export default function Assessment() {
               <p className="text-slate-400">Ecco il tuo profilo fitness completo</p>
             </div>
             
-            {/* LIVELLO FINALE */}
             <div className={`bg-gradient-to-r from-${levelColor}-500/20 to-${levelColor}-500/20 border border-${levelColor}-500/50 rounded-lg p-6 mb-6`}>
               <div className="text-center">
                 <p className="text-sm text-slate-400 mb-2">Il tuo livello</p>
@@ -386,7 +399,6 @@ export default function Assessment() {
               </div>
             </div>
 
-            {/* BREAKDOWN PUNTEGGI */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <p className="text-xs text-slate-400 mb-1">Quiz Teorico</p>
@@ -407,7 +419,6 @@ export default function Assessment() {
               </div>
             </div>
 
-            {/* SPIEGAZIONE */}
             <div className="bg-slate-700/30 rounded-lg p-5 mb-6">
               <p className="text-sm text-slate-300 leading-relaxed">
                 Il tuo livello <strong className="text-white">{levelText}</strong> è stato calcolato combinando la tua performance nei test pratici (70%) con i parametri fisici età e BMI (30%). 
@@ -467,6 +478,17 @@ export default function Assessment() {
               {isGym ? current.description : 'Scegli la variante più difficile che riesci a completare'}
             </p>
           </div>
+          
+          {/* ✅ ISTRUZIONI FLOOR PULL */}
+          {!isGym && current.name === 'Trazioni' && (
+            <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-4 mb-6">
+              <p className="text-sm font-semibold text-blue-300 mb-2">💡 Se non hai una barra:</p>
+              <p className="text-sm text-blue-200">
+                Usa un asciugamano resistente! Fallo passare sotto una porta chiusa, sdraiati a terra e tira il tuo corpo verso l'alto. 
+                Questo "Floor Pull" allena gli stessi muscoli delle trazioni.
+              </p>
+            </div>
+          )}
           
           <div className="bg-emerald-500/10 border border-emerald-500 rounded-lg p-4 mb-6">
             <p className="text-sm text-emerald-200">
