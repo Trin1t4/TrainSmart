@@ -14,6 +14,7 @@ const GOAL_OPTIONS = [
   { value: 'prestazioni_sportive', label: '⚽ Prestazioni Sportive', desc: 'Migliorare in uno sport' },
   { value: 'benessere', label: '🧘 Benessere', desc: 'Salute generale' },
   { value: 'resistenza', label: '🏃 Resistenza', desc: 'Capacità aerobica' },
+  { value: 'motor_recovery', label: '🔄 Recupero Motorio', desc: 'Post-riabilitazione', disclaimer: true }, // ✅ NUOVO
   { value: 'gravidanza', label: '🤰 Gravidanza', desc: 'Pre/post parto' },
   { value: 'disabilita', label: '♿ Disabilità', desc: 'Adattamenti specifici' }
 ];
@@ -82,6 +83,24 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
           </button>
         ))}
       </div>
+
+      {/* ✅ DISCLAIMER RECUPERO MOTORIO */}
+      {goal === 'motor_recovery' && (
+        <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-5 animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">⚕️</div>
+            <div>
+              <p className="text-sm font-semibold text-blue-300 mb-2">Importante da sapere</p>
+              <ul className="text-xs text-blue-200 space-y-1.5">
+                <li>✓ Questo programma è per il <strong>post-riabilitazione</strong></li>
+                <li>✓ Ideale dopo aver completato la fisioterapia</li>
+                <li>✓ <strong>Non sostituisce</strong> il trattamento medico o fisioterapico</li>
+                <li>⚠️ Se hai dolore acuto o non hai fatto riabilitazione, consulta prima un professionista</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sport Selection - CONDIZIONALE */}
       {goal === 'prestazioni_sportive' && (
