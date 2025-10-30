@@ -335,10 +335,7 @@ export function generateProgram(input) {
   });
   
   // ✅ PERFORMANCE SPORT A CASA
-  if (goal === 'performance' && sportRole) {
-    if (location === 'home' || !hasWeightedEquipment(equipment)) {
-      return generatePerformanceHomeProgram(input);
-    }
+ 
     return generatePerformanceProgramRubini(input);
   }
   
