@@ -80,26 +80,25 @@ export default function Dashboard() {
 
       // ✅ LEGGI ONBOARDING + QUIZ DA LOCALSTORAGE
       const onboardingDataRaw = localStorage.getItem('onboarding_data');
-const quizDataRaw = localStorage.getItem('quiz_data');
+      const quizDataRaw = localStorage.getItem('quiz_data');
 
-if (!onboardingDataRaw) {
-  alert('Dati onboarding mancanti. Rifai lo screening.');
-  navigate('/onboarding');
-  setGeneratingProgram(false);
-  return;
-}
+      if (!onboardingDataRaw) {
+        alert('Dati onboarding mancanti. Rifai lo screening.');
+        navigate('/onboarding');
+        setGeneratingProgram(false);
+        return;
+      }
 
-const onboardingData = JSON.parse(onboardingDataRaw);
-const quizData = quizDataRaw ? JSON.parse(quizDataRaw) : null;
+      const onboardingData = JSON.parse(onboardingDataRaw);
+      const quizData = quizDataRaw ? JSON.parse(quizDataRaw) : null;
 
-// ✅ Se goal !== motor_recovery, quiz_data DEVE esistere
-if (onboardingData.goal !== 'motor_recovery' && !quizDataRaw) {
-  alert('Dati quiz mancanti. Rifai lo screening.');
-  navigate('/quiz');
-  setGeneratingProgram(false);
-  return;
-}
-
+      // ✅ Se goal !== motor_recovery, quiz_data DEVE esistere
+      if (onboardingData.goal !== 'motor_recovery' && !quizDataRaw) {
+        alert('Dati quiz mancanti. Rifai lo screening.');
+        navigate('/quiz');
+        setGeneratingProgram(false);
+        return;
+      }
 
       // ✅ BRANCH CONDIZIONALE: Recovery vs Normale
       let programInput;
@@ -124,6 +123,18 @@ if (onboardingData.goal !== 'motor_recovery' && !quizDataRaw) {
           goal: 'motor_recovery',
           recoveryScreening: recoveryData
         };
+
+        // ✅ RECOVERY: NON CHIAMA API - BASTA SAVE E REFRESH
+        console.log('[DASHBOARD] 🔄 Recovery program detected - skipping API');
+        localStorage.setItem('recovery_program_data', JSON.stringify({
+          bodyArea: recoveryData.body_area,
+          phase: recoveryData.assigned_phase,
+          completedAt: new Date().toISOString()
+        }));
+        
+        await checkUserProgress();
+        setGeneratingProgram(false);
+        return;  // ← ESCE QUI, NON CONTINUA CON FETCH
         
       } else {
         // ✅ FLOW NORMALE (esistente)
@@ -238,7 +249,8 @@ if (onboardingData.goal !== 'motor_recovery' && !quizDataRaw) {
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('quiz_data');
       localStorage.removeItem('screening_data');
-      localStorage.removeItem('recovery_screening_data'); // ✅ Aggiunto
+      localStorage.removeItem('recovery_screening_data');
+      localStorage.removeItem('recovery_program_data');
 
       // 6. Redirect automatico all'onboarding
       navigate('/onboarding');
