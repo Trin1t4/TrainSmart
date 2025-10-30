@@ -93,6 +93,232 @@ function hasWeightedEquipment(equipment) {
     (equipment.kettlebellKg && equipment.kettlebellKg.length > 0)
   );
 }
+// ===== HELPER FUNCTIONS =====
+
+function isBodyweightExercise(exerciseName) {
+  const bodyweightKeywords = [
+    'corpo libero', 'bodyweight', 'push-up', 'pull-up', 'trazioni', 'dips', 
+    'plank', 'hollow body', 'superman', 'handstand', 'pike push-up',
+    'diamond push-up', 'archer push-up', 'nordic curl', 'pistol squat',
+    'jump', 'burpee', 'mountain climber', 'flutter kick', 'bicycle crunch',
+    'leg raise', 'australian pull-up', 'inverted row', 'floor pull',
+    'dead hang', 'scapular', 'floor slide', 'bird dog', 'l-sit', 'assistito',
+    'squat bulgaro', 'affondi', 'glute bridge', 'wall sit', 'calf raises', // ✅ AGGIUNTI
+    'chin-up', 'negative', 'isometric', 'hold', 'ytw' // ✅ AGGIUNTI
+  ];
+  
+  const name = exerciseName.toLowerCase();
+  return bodyweightKeywords.some(keyword => name.includes(keyword));
+}
+
+function hasWeightedEquipment(equipment) {
+  if (!equipment) return false;
+  
+  return !!(
+    equipment.barbell ||
+    (equipment.dumbbellMaxKg && equipment.dumbbellMaxKg > 0) ||
+    (equipment.kettlebellKg && equipment.kettlebellKg.length > 0)
+  );
+}
+
+// ✅ AGGIUNGI QUESTA FUNZIONE COMPLETA QUI
+function convertToBodyweight(exerciseName, level) {
+  const name = exerciseName.toLowerCase();
+  
+  console.log(`[CONVERT] Converting "${exerciseName}" to bodyweight for ${level}`);
+  
+  // GAMBE - SQUAT
+  if (name.includes('squat') && !name.includes('bulgaro') && !name.includes('pistol')) {
+    if (name.includes('front')) {
+      if (level === 'beginner') return 'Squat Assistito';
+      if (level === 'intermediate') return 'Squat Completo';
+      return 'Jump Squat';
+    }
+    if (level === 'beginner') return 'Squat Assistito';
+    if (level === 'intermediate') return 'Squat Completo';
+    return 'Pistol Assistito';
+  }
+  
+  if (name.includes('leg press')) {
+    if (level === 'beginner') return 'Squat Completo';
+    if (level === 'intermediate') return 'Squat Bulgaro';
+    return 'Pistol Assistito';
+  }
+  
+  // GAMBE - STACCHI
+  if (name.includes('stacco') || name.includes('deadlift')) {
+    if (name.includes('romanian') || name.includes('rumeno')) {
+      if (level === 'beginner') return 'Glute Bridge';
+      if (level === 'intermediate') return 'Single Leg Glute Bridge';
+      return 'Single Leg Deadlift';
+    }
+    if (name.includes('sumo')) {
+      if (level === 'beginner') return 'Squat Sumo';
+      if (level === 'intermediate') return 'Squat Sumo con Pausa';
+      return 'Jump Squat Sumo';
+    }
+    if (level === 'beginner') return 'Affondi';
+    if (level === 'intermediate') return 'Squat Bulgaro';
+    return 'Single Leg Deadlift';
+  }
+  
+  if (name.includes('good morning')) {
+    if (level === 'beginner') return 'Glute Bridge';
+    if (level === 'intermediate') return 'Hip Thrust a Corpo Libero';
+    return 'Nordic Curl Eccentrico';
+  }
+  
+  // GAMBE - ISOLAMENTO
+  if (name.includes('leg curl')) {
+    if (level === 'beginner') return 'Glute Bridge';
+    if (level === 'intermediate') return 'Single Leg Glute Bridge';
+    return 'Nordic Curl';
+  }
+  
+  if (name.includes('leg extension')) {
+    if (level === 'beginner') return 'Wall Sit';
+    if (level === 'intermediate') return 'Squat Isometrico';
+    return 'Pistol Squat Eccentrico';
+  }
+  
+  if (name.includes('calf')) {
+    if (level === 'beginner') return 'Calf Raises Doppia Gamba';
+    if (level === 'intermediate') return 'Calf Raises Singola Gamba';
+    return 'Calf Raises Saltellando';
+  }
+  
+  if (name.includes('hip thrust')) {
+    if (level === 'beginner') return 'Glute Bridge';
+    if (level === 'intermediate') return 'Hip Thrust a Corpo Libero';
+    return 'Single Leg Hip Thrust';
+  }
+  
+  if (name.includes('affondi') || name.includes('lunge')) {
+    if (name.includes('jump')) return 'Jump Lunge';
+    if (level === 'beginner') return 'Affondi';
+    if (level === 'intermediate') return 'Affondi Camminati';
+    return 'Jump Lunge';
+  }
+  
+  if (name.includes('bulgaro')) {
+    if (level === 'beginner') return 'Affondi';
+    if (level === 'intermediate') return 'Squat Bulgaro';
+    return 'Squat Bulgaro con Salto';
+  }
+  
+  // PUSH - PETTORALI
+  if (name.includes('panca') || name.includes('bench') || (name.includes('press') && !name.includes('leg'))) {
+    if (name.includes('inclinat')) {
+      if (level === 'beginner') return 'Pike Push-up';
+      if (level === 'intermediate') return 'Pike Push-up Elevato';
+      return 'Handstand Push-up Assistito';
+    }
+    if (level === 'beginner') return 'Push-up su Ginocchia';
+    if (level === 'intermediate') return 'Push-up Standard';
+    return 'Push-up Mani Strette';
+  }
+  
+  // PUSH - SPALLE
+  if (name.includes('military') || name.includes('shoulder') || name.includes('arnold') || (name.includes('press') && (name.includes('spalle') || name.includes('overhead')))) {
+    if (level === 'beginner') return 'Pike Push-up';
+    if (level === 'intermediate') return 'Pike Push-up Elevato';
+    return 'Handstand Push-up Assistito';
+  }
+  
+  if (name.includes('push press')) {
+    if (level === 'beginner') return 'Pike Push-up';
+    if (level === 'intermediate') return 'Pike Push-up con Salto';
+    return 'Handstand Push-up';
+  }
+  
+  // PUSH - DIPS E TRICIPITI
+  if (name.includes('dips')) {
+    if (level === 'beginner') return 'Dips su Sedia Assistiti';
+    if (level === 'intermediate') return 'Dips su Sedia';
+    return 'Dips Completi';
+  }
+  
+  if (name.includes('croci') || name.includes('fly') || name.includes('cavi')) {
+    if (level === 'beginner') return 'Plank Shoulder Taps';
+    if (level === 'intermediate') return 'Pseudo Planche Lean';
+    return 'Pseudo Planche Hold';
+  }
+  
+  if (name.includes('lateral raise') || name.includes('alzate laterali')) {
+    if (level === 'beginner') return 'Plank Shoulder Taps';
+    if (level === 'intermediate') return 'Pike Hold';
+    return 'L-Sit Progressione';
+  }
+  
+  if (name.includes('tricep') || name.includes('french')) {
+    if (level === 'beginner') return 'Diamond Push-up su Ginocchia';
+    if (level === 'intermediate') return 'Diamond Push-up';
+    return 'Triangle Push-up';
+  }
+  
+  // PULL - TRAZIONI
+  if (name.includes('trazioni') || name.includes('pull-up') || name.includes('pullup') || name.includes('lat machine') || name.includes('lat pull')) {
+    if (name.includes('chin') || name.includes('presa stretta')) {
+      if (level === 'beginner') return 'Chin-up Isometric Hold';
+      if (level === 'intermediate') return 'Chin-up Negative';
+      return 'Chin-up';
+    }
+    if (level === 'beginner') return 'Floor Pull (asciugamano)';
+    if (level === 'intermediate') return 'Inverted Row 45°';
+    return 'Australian Pull-up';
+  }
+  
+  // PULL - REMATORE
+  if (name.includes('rematore') || name.includes('row')) {
+    if (level === 'beginner') return 'Inverted Row 45°';
+    if (level === 'intermediate') return 'Inverted Row 30°';
+    return 'Inverted Row Orizzontale';
+  }
+  
+  // PULL - BICIPITI
+  if (name.includes('curl')) {
+    if (level === 'beginner') return 'Chin-up Isometric Hold';
+    if (level === 'intermediate') return 'Chin-up Negative';
+    return 'Archer Pull-up';
+  }
+  
+  // PULL - POSTERIORI SPALLA
+  if (name.includes('face pull') || name.includes('rear delt')) {
+    if (level === 'beginner') return 'Scapular Slides a Terra';
+    if (level === 'intermediate') return 'YTW su Pavimento';
+    return 'Scapular Pull-up';
+  }
+  
+  if (name.includes('shrug')) {
+    return 'Dead Hang';
+  }
+  
+  // CORE
+  if (name.includes('plank')) {
+    if (level === 'beginner') return 'Plank su Ginocchia';
+    if (level === 'intermediate') return 'Plank Standard';
+    return 'Plank con Sollevamenti';
+  }
+  
+  if (name.includes('crunch') || name.includes('sit-up') || name.includes('sit up')) {
+    if (level === 'beginner') return 'Dead Bug';
+    if (level === 'intermediate') return 'Bicycle Crunch';
+    return 'V-ups';
+  }
+  
+  if (name.includes('leg raise') || name.includes('leg raises')) {
+    if (level === 'beginner') return 'Knee Raises';
+    if (level === 'intermediate') return 'Leg Raises';
+    return 'Toes to Bar';
+  }
+  
+  // DEFAULT FALLBACK
+  console.warn(`[CONVERT] ⚠️ No bodyweight alternative for: "${exerciseName}"`);
+  if (level === 'beginner') return 'Plank';
+  if (level === 'intermediate') return 'Mountain Climbers';
+  return 'Burpees';
+}
+
 
 // ===== GENERAZIONE PROGRAMMA =====
 
