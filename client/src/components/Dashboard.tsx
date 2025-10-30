@@ -7,11 +7,11 @@ import { Activity, Calendar, TrendingUp, Dumbbell, Clock, CheckCircle, AlertCirc
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [hasAssessment, setHasAssessment] = useState(false);
+  const [hasScreening, setHasScreening] = useState(false); // ✅ CAMBIATO DA hasAssessment
   const [hasProgram, setHasProgram] = useState(false);
   const [generatingProgram, setGeneratingProgram] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [screeningId, setScreeningId] = useState<string | null>(null); // ✅ CAMBIATO DA assessmentId
 
   useEffect(() => {
     checkUserProgress();
@@ -29,8 +29,10 @@ export default function Dashboard() {
 
       setUserId(user.id);
 
-      const { data: assessmentData, error: assessmentError } = await supabase
-        .from('assessments')
+      // ✅ CAMBIATO: screenings invece di assessments (se hai la tabella)
+      // Se la tabella si chiama ancora "assessments" nel DB, lascia "assessments"
+      const { data: screeningData, error: screeningError } = await supabase
+        .from('assessments') // ← Lascia così se la tabella DB si chiama "assessments"
         .select('id, completed')
         .eq('user_id', user.id)
         .eq('completed', true)
@@ -38,13 +40,13 @@ export default function Dashboard() {
         .limit(1)
         .maybeSingle();
 
-      if (assessmentError) {
-        console.error('Error checking assessment:', assessmentError);
+      if (screeningError) {
+        console.error('Error checking screening:', screeningError);
       }
 
-      if (assessmentData) {
-        setHasAssessment(true);
-        setAssessmentId(assessmentData.id);
+      if (screeningData) {
+        setHasScreening(true);
+        setScreeningId(screeningData.id);
 
         const { data: programData, error: programError } = await supabase
           .from('training_programs')
@@ -70,7 +72,7 @@ export default function Dashboard() {
   }
 
   async function handleGenerateProgram() {
-    if (!userId || !assessmentId) {
+    if (!userId || !screeningId) {
       alert('Dati mancanti. Riprova.');
       return;
     }
@@ -78,12 +80,12 @@ export default function Dashboard() {
     try {
       setGeneratingProgram(true);
 
-      // ✅ LEGGI ONBOARDING + QUIZ + ASSESSMENT DA LOCALSTORAGE
+      // ✅ LEGGI ONBOARDING + QUIZ + SCREENING DA LOCALSTORAGE
       const onboardingDataRaw = localStorage.getItem('onboarding_data');
       const quizDataRaw = localStorage.getItem('quiz_data');
-      const assessmentDataRaw = localStorage.getItem('assessment_data');
+      const screeningDataRaw = localStorage.getItem('screening_data'); // ✅ CAMBIATO DA assessment_data
 
-      if (!onboardingDataRaw || !quizDataRaw || !assessmentDataRaw) {
+      if (!onboardingDataRaw || !quizDataRaw || !screeningDataRaw) {
         alert('Dati mancanti. Rifai lo screening.');
         navigate('/onboarding');
         return;
@@ -91,19 +93,19 @@ export default function Dashboard() {
 
       const onboardingData = JSON.parse(onboardingDataRaw);
       const quizData = JSON.parse(quizDataRaw);
-      const assessmentData = JSON.parse(assessmentDataRaw);
+      const screeningData = JSON.parse(screeningDataRaw);
 
       // ✅ UNISCI TUTTI I DATI
       const programInput = {
         userId,
-        assessmentId,
+        assessmentId: screeningId, // ← API si aspetta ancora "assessmentId"
         location: onboardingData.trainingLocation,
         hasGym: onboardingData.trainingLocation === 'gym',
         equipment: onboardingData.equipment || {},
         goal: onboardingData.goal || 'muscle_gain',
-        level: quizData.level || assessmentData.level || 'intermediate',
+        level: quizData.level || screeningData.level || 'intermediate',
         frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
-        painAreas: onboardingData.painAreas || assessmentData.painAreas || [],
+        painAreas: onboardingData.painAreas || screeningData.painAreas || [],
         disabilityType: onboardingData.disabilityType || null,
         sportRole: onboardingData.sportRole || null,
         specificBodyParts: onboardingData.specificBodyParts || []
@@ -138,7 +140,7 @@ export default function Dashboard() {
   }
 
   async function handleResetProgram() {
-    if (!confirm('⚠️ RESET COMPLETO\n\nQuesto cancellerà TUTTO:\n• Programma di allenamento\n• Assessment\n• Dati onboarding\n\nDovrai rifare lo screening da zero.\n\nSei sicuro?')) {
+    if (!confirm('⚠️ RESET COMPLETO\n\nQuesto cancellerà TUTTO:\n• Programma di allenamento\n• Screening\n• Dati onboarding\n\nDovrai rifare lo screening da zero.\n\nSei sicuro?')) {
       return;
     }
 
@@ -156,17 +158,17 @@ export default function Dashboard() {
         console.error('Error deleting programs:', programError);
       }
 
-      // 2. Cancella assessments
-      const { error: assessmentError } = await supabase
+      // 2. Cancella screenings (tabella ancora si chiama "assessments" nel DB)
+      const { error: screeningError } = await supabase
         .from('assessments')
         .delete()
         .eq('user_id', user.id);
 
-      if (assessmentError) {
-        console.error('Error deleting assessments:', assessmentError);
+      if (screeningError) {
+        console.error('Error deleting screenings:', screeningError);
       }
 
-      // ✅ 3. NUOVO - Reset onboarding_data nel database
+      // 3. Reset onboarding_data nel database
       const { error: onboardingError } = await supabase
         .from('user_profiles')
         .update({ 
@@ -182,7 +184,7 @@ export default function Dashboard() {
       // 4. Cancella localStorage
       localStorage.removeItem('onboarding_data');
       localStorage.removeItem('quiz_data');
-      localStorage.removeItem('assessment_data');
+      localStorage.removeItem('screening_data'); // ✅ CAMBIATO DA assessment_data
 
       // 5. Redirect automatico all'onboarding
       navigate('/onboarding');
@@ -219,7 +221,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {!hasAssessment ? (
+        {!hasScreening ? (
           <Card className="mb-8 bg-gradient-to-r from-amber-900/30 to-gray-900/50 border-2 border-amber-500 backdrop-blur-sm hover:border-amber-400 transition-all duration-300 animate-slide-up shadow-2xl shadow-amber-500/30">
             <CardHeader>
               <div className="flex items-center gap-4">
@@ -252,7 +254,7 @@ export default function Dashboard() {
                   <CheckCircle className="w-8 h-8 text-emerald-300" />
                 </div>
                 <div>
-                  <CardTitle className="text-white text-2xl">Assessment Completato!</CardTitle>
+                  <CardTitle className="text-white text-2xl">Screening Completato!</CardTitle>
                   <CardDescription className="text-gray-300 text-base">
                     Genera il tuo programma personalizzato
                   </CardDescription>
@@ -304,14 +306,13 @@ export default function Dashboard() {
                   Vai all'Allenamento
                 </button>
                 <button
-  onClick={handleResetProgram}
-  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 cursor-pointer"
-  title="Reset Completo (cancella tutto)"
->
-  <span className="text-xl pointer-events-none">🔄</span>
-  <span className="ml-2 pointer-events-none">Reset</span>
-</button>
-
+                  onClick={handleResetProgram}
+                  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 cursor-pointer"
+                  title="Reset Completo (cancella tutto)"
+                >
+                  <span className="text-xl pointer-events-none">🔄</span>
+                  <span className="ml-2 pointer-events-none">Reset</span>
+                </button>
               </div>
             </CardContent>
           </Card>
@@ -361,7 +362,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">---</div>
-              <p className="text-xs text-gray-500 mt-1">Completa l'assessment</p>
+              <p className="text-xs text-gray-500 mt-1">Completa lo screening</p>
               <div className="mt-2 flex items-end gap-1 h-12">
                 {[30, 50, 40, 60, 45, 70, 65].map((height, i) => (
                   <div key={i} className="flex-1 bg-gradient-to-t from-emerald-500/50 to-emerald-400/50 rounded-t animate-grow" style={{ height: `${height}%`, animationDelay: `${i * 0.1}s` }}></div>
