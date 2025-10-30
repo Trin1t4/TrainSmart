@@ -96,22 +96,61 @@ export default function Dashboard() {
       const screeningData = JSON.parse(screeningDataRaw);
 
       // ✅ UNISCI TUTTI I DATI
-      const programInput = {
-        userId,
-        assessmentId: screeningId, // ← API si aspetta ancora "assessmentId"
-        location: onboardingData.trainingLocation,
-        hasGym: onboardingData.trainingLocation === 'gym',
-        equipment: onboardingData.equipment || {},
-        goal: onboardingData.goal || 'muscle_gain',
-        level: quizData.level || screeningData.level || 'intermediate',
-        frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
-        painAreas: onboardingData.painAreas || screeningData.painAreas || [],
-        disabilityType: onboardingData.disabilityType || null,
-        sportRole: onboardingData.sportRole || null,
-        specificBodyParts: onboardingData.specificBodyParts || []
-      };
+     // ✅ BRANCH CONDIZIONALE: Recovery vs Normale
+let programInput;
 
-      console.log('📤 Sending program input:', programInput);
+if (onboardingData.goal === 'motor_recovery') {
+  // ✅ RECOVERY FLOW
+  const recoveryDataRaw = localStorage.getItem('recovery_screening_data');
+  
+  if (!recoveryDataRaw) {
+    alert('Dati recovery mancanti. Rifai lo screening.');
+    navigate('/recovery-screening');
+    setGeneratingProgram(false);
+    return;
+  }
+  
+  const recoveryData = JSON.parse(recoveryDataRaw);
+  
+  programInput = {
+    userId,
+    location: onboardingData.trainingLocation,
+    equipment: onboardingData.equipment || {},
+    goal: 'motor_recovery',
+    recoveryScreening: recoveryData  // ✅ Dati specifici recovery
+  };
+  
+} else {
+  // ✅ FLOW NORMALE (esistente)
+  const screeningDataRaw = localStorage.getItem('screening_data');
+  
+  if (!screeningDataRaw) {
+    alert('Dati screening mancanti. Rifai lo screening.');
+    navigate('/onboarding');
+    setGeneratingProgram(false);
+    return;
+  }
+  
+  const screeningData = JSON.parse(screeningDataRaw);
+  
+  programInput = {
+    userId,
+    assessmentId: screeningId,
+    location: onboardingData.trainingLocation,
+    hasGym: onboardingData.trainingLocation === 'gym',
+    equipment: onboardingData.equipment || {},
+    goal: onboardingData.goal || 'muscle_gain',
+    level: quizData.level || screeningData.level || 'intermediate',
+    frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
+    painAreas: onboardingData.painAreas || screeningData.painAreas || [],
+    disabilityType: onboardingData.disabilityType || null,
+    sportRole: onboardingData.sportRole || null,
+    specificBodyParts: onboardingData.specificBodyParts || []
+  };
+}
+
+console.log('📤 Sending program input:', programInput);
+
 
       const response = await fetch('/api/program/generate', {
         method: 'POST',
