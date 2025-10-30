@@ -68,73 +68,130 @@ const LEVEL_CONFIG = {
   }
 }
 
-// ===== MOTOR RECOVERY CONFIGURATION =====
+// ===== PRE-WORKOUT SCREENING QUESTIONNAIRE =====
+
+const PRE_WORKOUT_SCREENING = {
+  sleep: {
+    question: 'Quante ore hai dormito stanotte?',
+    options: [
+      { value: 'poor', label: 'Meno di 5 ore', intensity_reduction: 0.7 },
+      { value: 'fair', label: '5-7 ore', intensity_reduction: 0.85 },
+      { value: 'good', label: '7-9 ore', intensity_reduction: 1.0 },
+      { value: 'excellent', label: 'Più di 9 ore', intensity_reduction: 1.0 }
+    ]
+  },
+  stress: {
+    question: 'Come è il tuo livello di stress oggi? (1-5)',
+    options: [
+      { value: 1, label: 'Molto basso', intensity_reduction: 1.0 },
+      { value: 2, label: 'Basso', intensity_reduction: 0.95 },
+      { value: 3, label: 'Moderato', intensity_reduction: 0.9 },
+      { value: 4, label: 'Alto', intensity_reduction: 0.8 },
+      { value: 5, label: 'Molto alto', intensity_reduction: 0.6 }
+    ]
+  },
+  pain: {
+    question: 'Hai dolori attuali? Dove e quanto intensi? (1-10)',
+    options: [
+      { area: 'neck', intensity: 0, multiplier: 1.0 },
+      { area: 'shoulder', intensity: 0, multiplier: 1.0 },
+      { area: 'lower_back', intensity: 0, multiplier: 1.0 },
+      { area: 'knee', intensity: 0, multiplier: 1.0 },
+      { area: 'ankle', intensity: 0, multiplier: 1.0 },
+      { area: 'wrist', intensity: 0, multiplier: 1.0 }
+    ]
+  }
+}
+
+// ===== MOTOR RECOVERY CONFIGURATION (+ COLLO) =====
 
 const MOTOR_RECOVERY_GOALS = {
+  'neck_mobility': {
+    name: 'Recupero Collo - Mobilità',
+    exercises: [
+      { name: 'Neck Flexion/Extension', sets: 3, reps: '15 per direzione', rest: 45, weight: null, notes: 'Lento e controllato' },
+      { name: 'Cervical Lateral Flexion', sets: 3, reps: '12 per lato', rest: 60, weight: null, notes: 'Inclinazione laterale' },
+      { name: 'Neck Rotation', sets: 3, reps: '15 per lato', rest: 45, weight: null, notes: 'Rotazione controllata' },
+      { name: 'Shoulder Shrugs', sets: 3, reps: '15-20', rest: 60, weight: null, notes: 'Spallucce lente' },
+      { name: 'Scapular Retraction Hold', sets: 3, reps: '20-30s', rest: 60, weight: null, notes: 'Spalle indietro' },
+      { name: 'Chin Tucks', sets: 3, reps: '15-20', rest: 45, weight: null, notes: 'Mento in dentro' }
+    ]
+  },
+  'neck_stability': {
+    name: 'Recupero Collo - Stabilità',
+    exercises: [
+      { name: 'Isometric Neck Hold (Neutral)', sets: 3, reps: '30-45s', rest: 60, weight: null, notes: 'Tenuta posizione neutra' },
+      { name: 'Cervical Isometric Flexion', sets: 3, reps: '30s', rest: 60, weight: null, notes: 'Resistenza in avanti' },
+      { name: 'Cervical Isometric Extension', sets: 3, reps: '30s', rest: 60, weight: null, notes: 'Resistenza indietro' },
+      { name: 'Cervical Isometric Lateral (per lato)', sets: 3, reps: '25s per lato', rest: 60, weight: null, notes: 'Resistenza laterale' },
+      { name: 'Trapezius Activation Band Pull-Apart', sets: 3, reps: '20', rest: 60, weight: null, notes: 'Trapezio superiore' },
+      { name: 'Prone Cobra Hold', sets: 3, reps: '20-30s', rest: 60, weight: null, notes: 'Estensione dolce' }
+    ]
+  },
   'ankle_stability': {
     name: 'Stabilità Caviglia',
     exercises: [
-      { name: 'Single Leg Stance', sets: 3, reps: '30-60s', rest: 60 },
-      { name: 'Ankle Circles', sets: 3, reps: '15 per direzione', rest: 45 },
-      { name: 'Seated Ankle Dorsiflexion', sets: 3, reps: '20', rest: 60 },
-      { name: 'Calf Raises su Una Gamba', sets: 3, reps: '12-15', rest: 90 },
-      { name: 'Balance Board Work', sets: 3, reps: '45s', rest: 60 },
-      { name: 'Proprioceptive Training', sets: 3, reps: '30-45s', rest: 60 }
+      { name: 'Single Leg Stance', sets: 3, reps: '30-60s', rest: 60, weight: null, notes: 'Su una gamba' },
+      { name: 'Ankle Circles', sets: 3, reps: '15 per direzione', rest: 45, weight: null, notes: 'Movimenti circolari' },
+      { name: 'Seated Ankle Dorsiflexion', sets: 3, reps: '20', rest: 60, weight: null, notes: 'Flessione dorsale' },
+      { name: 'Calf Raises su Una Gamba', sets: 3, reps: '12-15', rest: 90, weight: null, notes: 'Single leg' },
+      { name: 'Balance Board Work', sets: 3, reps: '45s', rest: 60, weight: null, notes: 'Propriocezione' },
+      { name: 'Proprioceptive Training', sets: 3, reps: '30-45s', rest: 60, weight: null, notes: 'Equilibrio' }
     ]
   },
   'knee_stability': {
     name: 'Stabilità Ginocchio',
     exercises: [
-      { name: 'Isometric Quad Hold', sets: 3, reps: '30-45s', rest: 60 },
-      { name: 'Short Arc Quads', sets: 3, reps: '15-20', rest: 60 },
-      { name: 'VMO (Vastus Medialis Obliquus) Work', sets: 3, reps: '15', rest: 60 },
-      { name: 'Glute Bridge Isometric', sets: 3, reps: '30-45s', rest: 90 },
-      { name: 'Single Leg Balance', sets: 3, reps: '45s', rest: 60 },
-      { name: 'Step-Up Recovery', sets: 3, reps: '10 per lato', rest: 90 }
+      { name: 'Isometric Quad Hold', sets: 3, reps: '30-45s', rest: 60, weight: null, notes: 'Quadricipiti statici' },
+      { name: 'Short Arc Quads', sets: 3, reps: '15-20', rest: 60, weight: null, notes: 'Range limitato' },
+      { name: 'VMO Work', sets: 3, reps: '15', rest: 60, weight: null, notes: 'Vasto mediale' },
+      { name: 'Glute Bridge Isometric', sets: 3, reps: '30-45s', rest: 90, weight: null, notes: 'Ponte statico' },
+      { name: 'Single Leg Balance', sets: 3, reps: '45s', rest: 60, weight: null, notes: 'Equilibrio su gamba' },
+      { name: 'Step-Up Recovery', sets: 3, reps: '10 per lato', rest: 90, weight: null, notes: 'Scalini bassi' }
     ]
   },
   'hip_mobility': {
     name: 'Mobilità Anca',
     exercises: [
-      { name: 'Hip Flexor Stretch', sets: 3, reps: '45s', rest: 60 },
-      { name: 'Pigeon Pose', sets: 3, reps: '60s', rest: 90 },
-      { name: 'Clamshells', sets: 3, reps: '15', rest: 60 },
-      { name: 'Hip Rotations', sets: 3, reps: '12 per lato', rest: 60 },
-      { name: 'Glute Activation (Bridges)', sets: 3, reps: '15-20', rest: 90 },
-      { name: 'Fire Log Stretch', sets: 3, reps: '45-60s', rest: 90 }
+      { name: 'Hip Flexor Stretch', sets: 3, reps: '45s', rest: 60, weight: null, notes: 'Allungamento flessori' },
+      { name: 'Pigeon Pose', sets: 3, reps: '60s', rest: 90, weight: null, notes: 'Posizione piccione' },
+      { name: 'Clamshells', sets: 3, reps: '15', rest: 60, weight: null, notes: 'Aperture anca' },
+      { name: 'Hip Rotations', sets: 3, reps: '12 per lato', rest: 60, weight: null, notes: 'Rotazioni controllate' },
+      { name: 'Glute Activation Bridges', sets: 3, reps: '15-20', rest: 90, weight: null, notes: 'Attivazione glutei' },
+      { name: 'Fire Log Stretch', sets: 3, reps: '45-60s', rest: 90, weight: null, notes: 'Allungamento profondo' }
     ]
   },
   'shoulder_stability': {
     name: 'Stabilità Spalla',
     exercises: [
-      { name: 'Scapular Push-up', sets: 3, reps: '12-15', rest: 60 },
-      { name: 'Shoulder Blade Squeeze', sets: 3, reps: '15-20', rest: 60 },
-      { name: 'External Rotation (Prone)', sets: 3, reps: '15', rest: 60 },
-      { name: 'Band Pull-Apart', sets: 3, reps: '20', rest: 60 },
-      { name: 'Dead Hang Hold', sets: 3, reps: '20-30s', rest: 90 },
-      { name: 'Shoulder Shrugs (Isometric)', sets: 3, reps: '30-45s', rest: 60 }
+      { name: 'Scapular Push-up', sets: 3, reps: '12-15', rest: 60, weight: null, notes: 'Spalla protetta' },
+      { name: 'Shoulder Blade Squeeze', sets: 3, reps: '15-20', rest: 60, weight: null, notes: 'Contrazione scapola' },
+      { name: 'External Rotation Prone', sets: 3, reps: '15', rest: 60, weight: null, notes: 'Rotazione esterna' },
+      { name: 'Band Pull-Apart', sets: 3, reps: '20', rest: 60, weight: null, notes: 'Elastico strappo' },
+      { name: 'Dead Hang Hold', sets: 3, reps: '20-30s', rest: 90, weight: null, notes: 'Tenuta sbarra' },
+      { name: 'Shoulder Shrugs Isometric', sets: 3, reps: '30-45s', rest: 60, weight: null, notes: 'Spallucce statiche' }
     ]
   },
   'lower_back_rehabilitation': {
     name: 'Riabilitazione Schiena',
     exercises: [
-      { name: 'Quadruped Bird Dogs', sets: 3, reps: '12 per lato', rest: 60 },
-      { name: 'Dead Bugs', sets: 3, reps: '12-15', rest: 60 },
-      { name: 'Modified Planks', sets: 3, reps: '20-30s', rest: 60 },
-      { name: 'Glute Bridges', sets: 3, reps: '15-20', rest: 90 },
-      { name: 'Cat-Cow Stretches', sets: 3, reps: '10', rest: 60 },
-      { name: 'Child Pose Hold', sets: 3, reps: '45-60s', rest: 90 }
+      { name: 'Quadruped Bird Dogs', sets: 3, reps: '12 per lato', rest: 60, weight: null, notes: 'Coordinazione core' },
+      { name: 'Dead Bugs', sets: 3, reps: '12-15', rest: 60, weight: null, notes: 'Schiena protetta' },
+      { name: 'Modified Planks', sets: 3, reps: '20-30s', rest: 60, weight: null, notes: 'Plank sicuro' },
+      { name: 'Glute Bridges', sets: 3, reps: '15-20', rest: 90, weight: null, notes: 'Ponte completo' },
+      { name: 'Cat-Cow Stretches', sets: 3, reps: '10', rest: 60, weight: null, notes: 'Mobilità vertebrale' },
+      { name: 'Child Pose Hold', sets: 3, reps: '45-60s', rest: 90, weight: null, notes: 'Posizione riposo' }
     ]
   },
   'wrist_mobility': {
     name: 'Mobilità Polso',
     exercises: [
-      { name: 'Wrist Circles', sets: 3, reps: '15 per direzione', rest: 45 },
-      { name: 'Wrist Flexor Stretch', sets: 3, reps: '45s', rest: 60 },
-      { name: 'Wrist Extensor Stretch', sets: 3, reps: '45s', rest: 60 },
-      { name: 'Pronate/Supinate Movements', sets: 3, reps: '15', rest: 60 },
-      { name: 'Wall Wrist Holds', sets: 3, reps: '30-45s', rest: 90 },
-      { name: 'Wrist Curls (Light)', sets: 3, reps: '15-20', rest: 60 }
+      { name: 'Wrist Circles', sets: 3, reps: '15 per direzione', rest: 45, weight: null, notes: 'Movimenti circolari' },
+      { name: 'Wrist Flexor Stretch', sets: 3, reps: '45s', rest: 60, weight: null, notes: 'Flessori' },
+      { name: 'Wrist Extensor Stretch', sets: 3, reps: '45s', rest: 60, weight: null, notes: 'Estensori' },
+      { name: 'Pronate/Supinate Movements', sets: 3, reps: '15', rest: 60, weight: null, notes: 'Pronazione/supinazione' },
+      { name: 'Wall Wrist Holds', sets: 3, reps: '30-45s', rest: 90, weight: null, notes: 'Isometrico' },
+      { name: 'Wrist Curls Light', sets: 3, reps: '15-20', rest: 60, weight: null, notes: 'Carico leggero' }
     ]
   }
 }
@@ -366,16 +423,355 @@ function convertToBodyweight(exerciseName, level) {
   return 'Burpees'
 }
 
-// ===== MOTOR RECOVERY SCREENING & BRANCHING =====
+// ===== PRE-WORKOUT SCREENING & ADAPTATION =====
 
-export function generateMotorRecoveryProgram(input) {
+export function conductPreWorkoutScreening(completedScreening) {
+  const { sleepHours = 7, stressLevel = 3, painAreas = [] } = completedScreening
+
+  console.log('[SCREENING] 📋 Pre-workout assessment:', { sleepHours, stressLevel, painAreas })
+
+  // Calcola reduction factor da screening
+  const sleepReduction = calculateSleepReduction(sleepHours)
+  const stressReduction = calculateStressReduction(stressLevel)
+  const combinedReduction = Math.min(sleepReduction, stressReduction)
+
+  return {
+    screening: {
+      sleep: sleepHours,
+      stress: stressLevel,
+      painAreas: painAreas,
+      timestamp: new Date().toISOString()
+    },
+    recommendations: {
+      intensityMultiplier: combinedReduction,
+      shouldReduceVolume: combinedReduction < 0.85,
+      shouldFocusOnRecovery: painAreas.length > 0 && stressLevel >= 4,
+      volumeReduction: combinedReduction < 0.85 ? 1 - combinedReduction : 0
+    },
+    warnings: generateScreeningWarnings(sleepHours, stressLevel, painAreas)
+  }
+}
+
+function calculateSleepReduction(hours) {
+  if (hours < 5) return 0.7
+  if (hours < 6) return 0.80
+  if (hours < 7) return 0.90
+  if (hours <= 9) return 1.0
+  return 0.95 // Troppo sonno può ridurre energia
+}
+
+function calculateStressReduction(stressLevel) {
+  if (stressLevel <= 1) return 1.0
+  if (stressLevel === 2) return 0.95
+  if (stressLevel === 3) return 0.90
+  if (stressLevel === 4) return 0.80
+  return 0.60
+}
+
+function generateScreeningWarnings(sleepHours, stressLevel, painAreas) {
+  const warnings = []
+
+  if (sleepHours < 6) warnings.push('⚠️ Poco sonno: riduci volume e intensità')
+  if (stressLevel >= 4) warnings.push('⚠️ Stress alto: riduci carichi pesanti')
+  if (painAreas.length > 0) warnings.push(`⚠️ Dolori presenti: salta esercizi che li coinvolgono`)
+
+  return warnings
+}
+
+// ===== RUNTIME SESSION ADAPTATION =====
+
+export function adaptSessionToRuntimeContext(plannedSession, runtimeContext) {
+  const { actualLocation, emergingPainAreas = [], currentAssessments = [], detrainingFactor = 1.0, screeningResults = null } = runtimeContext
+
+  console.log('[RUNTIME] 🔄 Adapting session to runtime context:', {
+    actualLocation,
+    emergingPainAreas,
+    detrainingFactor,
+    hasScreening: !!screeningResults
+  })
+
+  let adaptedSession = { ...plannedSession }
+
+  // ===== STEP 1: SE LOCATION DIVERSA =====
+  if (actualLocation && actualLocation !== plannedSession.location) {
+    console.log(`[RUNTIME] 📍 Location change: ${plannedSession.location} → ${actualLocation}`)
+    adaptedSession = adaptLocationChange(adaptedSession, actualLocation, currentAssessments)
+  }
+
+  // ===== STEP 2: SE DOLORI EMERGENTI =====
+  if (emergingPainAreas.length > 0) {
+    console.log('[RUNTIME] 🩹 Pain areas detected:', emergingPainAreas)
+    adaptedSession = adaptToPain(adaptedSession, emergingPainAreas, actualLocation || plannedSession.location)
+  }
+
+  // ===== STEP 3: SE DETRAINING =====
+  if (detrainingFactor < 1.0) {
+    console.log('[RUNTIME] 📉 Detraining factor:', detrainingFactor)
+    adaptedSession = recalibrateSessionForDetraining(adaptedSession, detrainingFactor)
+  }
+
+  // ===== STEP 4: SE SCREENING RESULTS =====
+  if (screeningResults?.recommendations) {
+    console.log('[RUNTIME] 📋 Applying screening results:', screeningResults.recommendations)
+    adaptedSession = applyScreeningReductions(adaptedSession, screeningResults)
+  }
+
+  adaptedSession.isAdapted = JSON.stringify(adaptedSession) !== JSON.stringify(plannedSession)
+  adaptedSession.adaptedAt = new Date().toISOString()
+
+  return adaptedSession
+}
+
+// ===== RAMO 1: CAMBIO LOCATION =====
+
+function adaptLocationChange(plannedSession, newLocation, assessments) {
+  console.log(`[ADAPT] Location change: ${plannedSession.location} → ${newLocation}`)
+
+  const adaptedExercises = plannedSession.exercises.map(exercise => {
+    if (plannedSession.location === 'gym' && newLocation === 'home') {
+      return convertGymExerciseToHome(exercise, assessments)
+    }
+
+    if (plannedSession.location === 'home' && newLocation === 'gym') {
+      return convertHomeExerciseToGym(exercise, assessments)
+    }
+
+    return exercise
+  })
+
+  return {
+    ...plannedSession,
+    location: newLocation,
+    exercises: adaptedExercises,
+    notes: `⚠️ Runtime: ${plannedSession.location} → ${newLocation}`,
+    isAdapted: true
+  }
+}
+
+function convertGymExerciseToHome(exercise, assessments) {
+  console.log(`[ADAPT] Gym→Home: ${exercise.name}`)
+
+  if (exercise.weight && exercise.weight > 0) {
+    const estimatedLevel = exercise.weight > 80 ? 'advanced' : exercise.weight > 50 ? 'intermediate' : 'beginner'
+    const bodyweightName = convertToBodyweight(exercise.name, estimatedLevel)
+
+    return {
+      ...exercise,
+      name: bodyweightName,
+      weight: null,
+      notes: `🔄 ${exercise.name} (${exercise.weight}kg) → ${bodyweightName}`
+    }
+  }
+
+  return exercise
+}
+
+function convertHomeExerciseToGym(exercise, assessments) {
+  console.log(`[ADAPT] Home→Gym: ${exercise.name}`)
+
+  if (!isBodyweightExercise(exercise.name)) return exercise
+
+  const gymEquivalent = mapBodyweightToGymExercise(exercise.name)
+  const assessment = assessments?.find(a =>
+    exercise.name.toLowerCase().includes(a.exerciseName?.toLowerCase())
+  )
+
+  let estimatedWeight = 40
+  if (assessment?.oneRepMax) {
+    estimatedWeight = assessment.oneRepMax * 0.7
+  }
+
+  return {
+    ...exercise,
+    name: gymEquivalent,
+    weight: Math.round(estimatedWeight / 2.5) * 2.5,
+    notes: `🔄 ${exercise.name} → ${gymEquivalent} (${estimatedWeight}kg)`
+  }
+}
+
+function mapBodyweightToGymExercise(bodyweightName) {
+  const mapping = {
+    'Push-up Standard': 'Panca Piana',
+    'Push-up su Ginocchia': 'Panca Piana',
+    'Pike Push-up': 'Military Press',
+    'Handstand Push-up Assistito': 'Military Press',
+    'Dips su Sedia': 'Dips',
+    'Floor Pull (asciugamano)': 'Lat Pulldown',
+    'Inverted Row 45°': 'Rematore Bilanciere',
+    'Australian Pull-up': 'Trazioni Assistite',
+    'Squat Assistito': 'Squat',
+    'Squat Completo': 'Squat',
+    'Affondi': 'Leg Press',
+    'Glute Bridge': 'Hip Thrust',
+    'Plank': 'Ab Wheel'
+  }
+
+  return mapping[bodyweightName] || bodyweightName
+}
+
+// ===== RAMO 2: ADATTAMENTO DOLORI EMERGENTI =====
+
+function adaptToPain(plannedSession, painAreas, location) {
+  console.log('[ADAPT] Adapting to pain:', painAreas)
+
+  const adaptedExercises = plannedSession.exercises
+    .map(exercise => adaptExerciseForPain(exercise, painAreas))
+    .filter(ex => ex !== null)
+
+  if (adaptedExercises.length < plannedSession.exercises.length * 0.5) {
+    console.warn('[ADAPT] ⚠️ Too many exercises removed due to pain')
+    return {
+      ...plannedSession,
+      exercises: adaptedExercises,
+      isRecoverySession: true,
+      notes: `Pain-adapted session - reduced volume`
+    }
+  }
+
+  return {
+    ...plannedSession,
+    exercises: adaptedExercises,
+    isAdapted: true,
+    notes: `Adapted for: ${painAreas.join(', ')}`
+  }
+}
+
+function adaptExerciseForPain(exercise, painAreas) {
+  const name = exercise.name.toLowerCase()
+
+  const painContraindications = {
+    'neck': ['neck', 'heavy rows', 'shrugs'],
+    'shoulder': ['panca', 'press', 'lateral raise', 'dips', 'push-up', 'pull-up'],
+    'lower_back': ['stacco', 'deadlift', 'good morning', 'back squat', 'heavy rows'],
+    'knee': ['squat', 'leg press', 'leg curl', 'leg extension', 'lunge', 'jump'],
+    'ankle': ['calf raises', 'jump', 'single leg'],
+    'wrist': ['curl', 'tricep', 'close grip', 'push-up'],
+    'elbow': ['curl', 'tricep', 'close grip']
+  }
+
+  for (const painArea of painAreas) {
+    const contraindications = painContraindications[painArea] || []
+    if (contraindications.some(keyword => name.includes(keyword))) {
+      console.log(`[ADAPT] ❌ Removing ${exercise.name} due to ${painArea} pain`)
+      return null
+    }
+  }
+
+  // Riduci intensità se rimane l'esercizio
+  return {
+    ...exercise,
+    weight: exercise.weight ? exercise.weight * 0.7 : null,
+    sets: Math.max(exercise.sets - 1, 1),
+    notes: `⚠️ Pain-adapted: reduced intensity`
+  }
+}
+
+// ===== RAMO 3: ADATTAMENTO DETRAINING =====
+
+function recalibrateSessionForDetraining(plannedSession, detrainingFactor) {
+  console.log('[ADAPT] Detraining factor:', detrainingFactor)
+
+  const adaptedExercises = plannedSession.exercises.map(exercise => ({
+    ...exercise,
+    weight: exercise.weight ? Math.round(exercise.weight * detrainingFactor / 2.5) * 2.5 : null,
+    reps: adjustRepsForDetraining(exercise.reps, detrainingFactor),
+    sets: Math.max(Math.round(exercise.sets * detrainingFactor), 1),
+    notes: `📉 Detraining: ${(detrainingFactor * 100).toFixed(0)}%`
+  }))
+
+  return {
+    ...plannedSession,
+    exercises: adaptedExercises,
+    isAdapted: true
+  }
+}
+
+function adjustRepsForDetraining(repsString, detrainingFactor) {
+  if (typeof repsString !== 'string') return repsString
+  if (repsString.includes('-')) {
+    const [min, max] = repsString.split('-').map(Number)
+    const newMin = Math.round(min * detrainingFactor)
+    const newMax = Math.round(max * detrainingFactor)
+    return `${newMin}-${newMax}`
+  }
+  return Math.round(Number(repsString) * detrainingFactor).toString()
+}
+
+// ===== RAMO 4: ADATTAMENTO SCREENING RESULTS =====
+
+function applyScreeningReductions(plannedSession, screeningResults) {
+  const { intensityMultiplier, shouldReduceVolume } = screeningResults.recommendations
+
+  const adaptedExercises = plannedSession.exercises.map(exercise => {
+    let adaptedExercise = { ...exercise }
+
+    if (exercise.weight) {
+      adaptedExercise.weight = Math.round(exercise.weight * intensityMultiplier / 2.5) * 2.5
+    }
+
+    if (shouldReduceVolume) {
+      adaptedExercise.sets = Math.max(Math.round(exercise.sets * intensityMultiplier), 1)
+    }
+
+    return adaptedExercise
+  })
+
+  return {
+    ...plannedSession,
+    exercises: adaptedExercises,
+    isAdapted: true,
+    screeningApplied: true,
+    notes: `📋 Screening applied: ${(intensityMultiplier * 100).toFixed(0)}%`
+  }
+}
+
+// ===== MAIN BRANCHING LOGIC: ENTRY POINT =====
+
+export function generateProgram(input) {
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole } = input
+
+  console.log('[PROGRAM] 🎯 ENTRY POINT - generateProgram with:', {
+    level,
+    frequency,
+    location,
+    goal,
+    painAreasCount: painAreas?.length
+  })
+
+  // ===== RAMO 1: MOTOR RECOVERY / REHABILITATION =====
+  if (goal === 'motor_recovery' || goal === 'rehabilitation' || (painAreas?.length > 0 && goal !== 'standard')) {
+    console.log('[PROGRAM] 🏥 BRANCHING → MOTOR RECOVERY PROGRAM')
+    return generateMotorRecoveryProgram({ level, painAreas, location, goal })
+  }
+
+  // ===== RAMO 2: PERFORMANCE SPORT HOME =====
+  if (goal === 'performance' && (location === 'home' || !hasWeightedEquipment(equipment))) {
+    console.log('[PROGRAM] 🏃 BRANCHING → PERFORMANCE HOME PROGRAM')
+    return generatePerformanceHomeProgram({ level, frequency, assessments, sportRole })
+  }
+
+  // ===== RAMO 3: STANDARD TRAINING (GYM O HOME CON ATTREZZI) =====
+  console.log('[PROGRAM] 💪 BRANCHING → STANDARD TRAINING PROGRAM')
+  return generateStandardProgram({ level, frequency, location, equipment, painAreas, assessments, goal, disabilityType, sportRole })
+}
+
+// ===== RAMO 1: MOTOR RECOVERY PROGRAM =====
+
+function generateMotorRecoveryProgram(input) {
   const { level, painAreas = [], location, goal } = input
 
-  console.log('[PROGRAM] 🏥 Generating MOTOR RECOVERY program for:', { painAreas, goal })
+  console.log('[PROGRAM] 🏥 generateMotorRecoveryProgram with:', { painAreas, level, goal })
 
   if (!painAreas || painAreas.length === 0) {
     console.warn('[PROGRAM] ⚠️ No pain areas specified for motor recovery')
-    return null
+    return {
+      name: 'Recupero Motorio',
+      description: 'Nessun area dolente specificata',
+      split: 'motor_recovery',
+      daysPerWeek: 0,
+      weeklySchedule: [],
+      isRecoveryProgram: true
+    }
   }
 
   const weeklySchedule = []
@@ -391,17 +787,18 @@ export function generateMotorRecoveryProgram(input) {
     weeklySchedule.push({
       dayName: recoveryConfig.name,
       focus: area,
+      location: location || 'home',
       exercises: recoveryConfig.exercises.map(ex => ({
         ...ex,
         weight: null,
-        notes: '⚠️ Recupero motorio - NO carico'
+        notes: '🏥 Recupero motorio - NO carico'
       }))
     })
   })
 
   return {
-    name: `Riabilitazione ${level} - Recupero Motorio`,
-    description: `Programma specifico per ${painAreas.join(', ')}`,
+    name: `Riabilitazione ${level || 'beginner'} - Recupero Motorio`,
+    description: `Programma specifico per: ${painAreas.join(', ')}`,
     split: 'motor_recovery',
     daysPerWeek: painAreas.length,
     weeklySchedule,
@@ -414,84 +811,12 @@ export function generateMotorRecoveryProgram(input) {
   }
 }
 
-// ===== GENERAZIONE PROGRAMMA STANDARD =====
+// ===== RAMO 2: PERFORMANCE HOME PROGRAM =====
 
-export function generateProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole } = input
-
-  console.log('[PROGRAM] 🎯 generateProgram called with:', {
-    level,
-    frequency,
-    location,
-    equipment,
-    goal,
-    painAreas,
-    assessmentsCount: assessments?.length
-  })
-
-  // ===== BRANCHING: Se il goal è recupero motorio =====
-  if (goal === 'motor_recovery' || goal === 'rehabilitation') {
-    return generateMotorRecoveryProgram({ level, painAreas, location, goal })
-  }
-
-  let split, daysPerWeek
-
-  if (frequency <= 2) {
-    split = 'full_body'
-    daysPerWeek = frequency
-  } else if (frequency === 3) {
-    split = 'full_body'
-    daysPerWeek = 3
-  } else if (frequency === 4) {
-    split = 'upper_lower'
-    daysPerWeek = 4
-  } else if (frequency === 5) {
-    split = 'ppl_plus'
-    daysPerWeek = 5
-  } else {
-    split = 'ppl'
-    daysPerWeek = 6
-  }
-
-  let progression
-  if (level === 'beginner') progression = 'wave_loading'
-  else if (level === 'intermediate') progression = 'ondulata_settimanale'
-  else progression = 'ondulata_giornaliera'
-
-  const weeklySchedule = generateWeeklySchedule(
-    split, daysPerWeek, location || 'gym', equipment, painAreas,
-    assessments, level, goal, disabilityType, sportRole
-  )
-
-  const includesDeload = level === 'intermediate' || level === 'advanced'
-  const deloadFrequency = includesDeload ? 4 : undefined
-  const requiresEndCycleTest = goal === 'strength' || goal === 'muscle_gain' || goal === 'performance'
-
-  let totalWeeks = 4
-  if (goal === 'strength') totalWeeks = 8
-  else if (goal === 'muscle_gain') totalWeeks = 12
-  else if (goal === 'performance') totalWeeks = 8
-
-  return {
-    name: `Programma ${split.toUpperCase()} - ${level}`,
-    description: `${daysPerWeek}x/settimana, progressione ${progression}`,
-    split,
-    daysPerWeek,
-    weeklySchedule,
-    progression,
-    includesDeload,
-    deloadFrequency,
-    totalWeeks,
-    requiresEndCycleTest
-  }
-}
-
-// ===== PERFORMANCE HOME (PLIOMETRIA + ISOMETRIA) =====
-
-export function generatePerformanceHomeProgram(input) {
+function generatePerformanceHomeProgram(input) {
   const { level, frequency, assessments, sportRole } = input
 
-  console.log('[PROGRAM] 🏃 Generating PERFORMANCE HOME program for:', sportRole)
+  console.log('[PROGRAM] 🏃 generatePerformanceHomeProgram for:', sportRole)
 
   const weeklySchedule = []
 
@@ -545,12 +870,72 @@ export function generatePerformanceHomeProgram(input) {
   }
 }
 
-// ===== WEEKLY SCHEDULE =====
+// ===== RAMO 3: STANDARD TRAINING PROGRAM =====
+
+function generateStandardProgram(input) {
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole } = input
+
+  console.log('[PROGRAM] 💪 generateStandardProgram with:', { level, frequency, location })
+
+  let split, daysPerWeek
+
+  if (frequency <= 2) {
+    split = 'full_body'
+    daysPerWeek = frequency
+  } else if (frequency === 3) {
+    split = 'full_body'
+    daysPerWeek = 3
+  } else if (frequency === 4) {
+    split = 'upper_lower'
+    daysPerWeek = 4
+  } else if (frequency === 5) {
+    split = 'ppl_plus'
+    daysPerWeek = 5
+  } else {
+    split = 'ppl'
+    daysPerWeek = 6
+  }
+
+  let progression
+  if (level === 'beginner') progression = 'wave_loading'
+  else if (level === 'intermediate') progression = 'ondulata_settimanale'
+  else progression = 'ondulata_giornaliera'
+
+  const weeklySchedule = generateWeeklySchedule(
+    split, daysPerWeek, location || 'gym', equipment, painAreas,
+    assessments, level, goal, disabilityType, sportRole
+  )
+
+  const includesDeload = level === 'intermediate' || level === 'advanced'
+  const deloadFrequency = includesDeload ? 4 : undefined
+  const requiresEndCycleTest = goal === 'strength' || goal === 'muscle_gain' || goal === 'performance'
+
+  let totalWeeks = 4
+  if (goal === 'strength') totalWeeks = 8
+  else if (goal === 'muscle_gain') totalWeeks = 12
+  else if (goal === 'performance') totalWeeks = 8
+
+  return {
+    name: `Programma ${split.toUpperCase()} - ${level}`,
+    description: `${daysPerWeek}x/settimana, progressione ${progression}`,
+    split,
+    daysPerWeek,
+    location,
+    weeklySchedule,
+    progression,
+    includesDeload,
+    deloadFrequency,
+    totalWeeks,
+    requiresEndCycleTest
+  }
+}
+
+// ===== WEEKLY SCHEDULE GENERATOR =====
 
 function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAreas, assessments, level, goal, disabilityType, sportRole) {
   const schedule = []
 
-  console.log('[PROGRAM] 📅 generateWeeklySchedule with:', { split, daysPerWeek, location, level })
+  console.log('[PROGRAM] 📅 generateWeeklySchedule:', { split, daysPerWeek, location, level })
 
   if (split === 'full_body') {
     if (daysPerWeek === 1) {
@@ -811,7 +1196,7 @@ function generateLegsDay(variant, location, equipment, painAreas, assessments, l
   return exercises
 }
 
-// ===== CREATE EXERCISE CON RANGE RIDOTTO, PARTENZA GRADUALE E CONVERSIONE BODYWEIGHT =====
+// ===== CREATE EXERCISE =====
 
 function createExercise(name, location, equipment, baseWeight, level, goal, type, assessments) {
   const config = LEVEL_CONFIG[level] || LEVEL_CONFIG.intermediate
@@ -826,7 +1211,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     a.exerciseName && name.toLowerCase().includes(a.exerciseName.toLowerCase())
   )
 
-  // ===== 2. USA PROGRESSIONE BODYWEIGHT DA ASSESSMENT (se disponibile) =====
+  // ===== 2. USA PROGRESSIONE BODYWEIGHT DA ASSESSMENT =====
   if (assessment?.variant && assessment?.level && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
     const progressionName = BODYWEIGHT_PROGRESSIONS[assessment.exerciseName][assessment.level]
     const targetReps = assessment.maxReps || 12
@@ -864,10 +1249,9 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     }
   }
 
-  // ===== 4. ALTRIMENTI USA LOGICA STANDARD (gym o home con attrezzi) =====
+  // ===== 4. LOGICA STANDARD (gym o home con attrezzi) =====
   const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal || 'muscle_gain', level)
 
-  // Safety check per pregnancy/disability
   if (typeof exerciseOrGiantSet !== 'string') {
     if (goal === 'pregnancy' || goal === 'disability') {
       const safeAlternative = goal === 'pregnancy' ? getPregnancySafeAlternative(name) : getDisabilitySafeAlternative(name)
@@ -902,7 +1286,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     reps = range > 0 ? `${targetReps - range}-${targetReps + range}` : `${targetReps}`
   }
 
-  // ===== 6. CALCOLA PESO (solo per esercizi con carico) =====
+  // ===== 6. CALCOLA PESO =====
   let trainingWeight = null
 
   if (isBodyweight) {
@@ -910,7 +1294,6 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     console.log('[PROGRAM] ⭕ No weight (bodyweight exercise)')
   } else if (location === 'gym' || hasEquipment) {
     if (baseWeight > 0) {
-      // Partenza graduale principianti
       const startWeight = baseWeight * config.startPercentage
       const finalReps = typeof reps === 'string' && reps.includes('-')
         ? parseInt(reps.split('-')[1])
@@ -918,7 +1301,6 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
 
       trainingWeight = calculateTrainingWeight(startWeight, finalReps, config.RIR)
 
-      // Cap al massimo disponibile
       if (hasEquipment && equipment.dumbbellMaxKg && trainingWeight > equipment.dumbbellMaxKg) {
         trainingWeight = equipment.dumbbellMaxKg
       }
