@@ -764,32 +764,27 @@ function generateLegsDay(variant, location, equipment, painAreas, assessments, l
   return exercises;
 }
 
-// ✅ CREATE EXERCISE CON RANGE RIDOTTO E PARTENZA GRADUALE
+// ✅ CREATE EXERCISE CON RANGE RIDOTTO, PARTENZA GRADUALE E CONVERSIONE BODYWEIGHT
 function createExercise(name, location, equipment, baseWeight, level, goal, type, assessments) {
   const config = LEVEL_CONFIG[level] || LEVEL_CONFIG.intermediate;
   
   let sets = type === "compound" ? config.compoundSets : config.accessorySets;
   let rest = type === "compound" ? 180 : type === "accessory" ? 120 : 60;
 
-  console.log('[PROGRAM] 🎯 createExercise:', { name, level, type, sets });
+  console.log('[PROGRAM] 🎯 createExercise:', { name, level, type, location });
 
-  // Cerca assessment
+  // ===== 1. CERCA ASSESSMENT =====
   const assessment = assessments?.find(a => 
     a.exerciseName && name.toLowerCase().includes(a.exerciseName.toLowerCase())
   );
 
-  // ✅ USA PROGRESSIONE BODYWEIGHT
+  // ===== 2. USA PROGRESSIONE BODYWEIGHT DA ASSESSMENT (se disponibile) =====
   if (assessment?.variant && assessment?.level && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
     const progressionName = BODYWEIGHT_PROGRESSIONS[assessment.exerciseName][assessment.level];
     const targetReps = assessment.maxReps || 12;
     const range = config.repsRange;
     
-    console.log('[PROGRAM] ✅ Bodyweight progression:', {
-      base: assessment.exerciseName,
-      level: assessment.level,
-      progression: progressionName,
-      repsRange: `${targetReps - range}-${targetReps + range}`
-    });
+    console.log('[PROGRAM] ✅ Using bodyweight progression from assessment');
     
     return {
       name: progressionName,
@@ -797,9 +792,104 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
       reps: range > 0 ? `${targetReps - range}-${targetReps + range}` : `${targetReps}`,
       rest,
       weight: null,
-      notes: `Progressione livello ${assessment.level} - ${assessment.variant}`,
+      notes: `Progressione livello ${assessment.level}`,
     };
   }
+
+  // ===== 3. SE CASA SENZA ATTREZZI → CONVERTI A BODYWEIGHT =====
+  const hasEquipment = hasWeightedEquipment(equipment);
+  
+  if (location === 'home' && !hasEquipment) {
+    console.log('[PROGRAM] 🏠 HOME without equipment - converting to bodyweight');
+    
+    const bodyweightName = convertToBodyweight(name, level);
+    const targetReps = type === "compound" ? 12 : type === "accessory" ? 15 : 20;
+    const range = config.repsRange;
+    
+    return {
+      name: bodyweightName,
+      sets,
+      reps: type === "core" ? "30-60s" : (range > 0 ? `${targetReps - range}-${targetReps + range}` : `${targetReps}`),
+      rest,
+      weight: null,
+      notes: `Corpo libero - ${level}`,
+    };
+  }
+
+  // ===== 4. ALTRIMENTI USA LOGICA STANDARD (gym o home con attrezzi) =====
+  const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal || 'muscle_gain', level);
+
+  // Safety check per pregnancy/disability
+  if (typeof exerciseOrGiantSet !== 'string') {
+    if (goal === 'pregnancy' || goal === 'disability') {
+      const safeAlternative = goal === 'pregnancy' ? getPregnancySafeAlternative(name) : getDisabilitySafeAlternative(name);
+      return {
+        name: safeAlternative,
+        sets,
+        reps: type === "compound" ? "12-15" : "15-20",
+        rest,
+        weight: null,
+        notes: `Adattato per sicurezza`,
+      };
+    }
+    return exerciseOrGiantSet;
+  }
+
+  const isBodyweight = isBodyweightExercise(exerciseOrGiantSet);
+
+  // ===== 5. CALCOLA REPS =====
+  let targetReps = 10;
+  let reps;
+  
+  if (isBodyweight) {
+    targetReps = type === "compound" ? 12 : type === "accessory" ? 15 : 20;
+  } else {
+    targetReps = type === "compound" ? 5 : type === "accessory" ? 10 : 12;
+  }
+  
+  if (type === "core") {
+    reps = "30-60s";
+  } else {
+    const range = config.repsRange;
+    reps = range > 0 ? `${targetReps - range}-${targetReps + range}` : `${targetReps}`;
+  }
+
+  // ===== 6. CALCOLA PESO (solo per esercizi con carico) =====
+  let trainingWeight = null;
+  
+  if (isBodyweight) {
+    trainingWeight = null;
+    console.log('[PROGRAM] ⭕ No weight (bodyweight exercise)');
+    
+  } else if (location === 'gym' || hasEquipment) {
+    if (baseWeight > 0) {
+      // Partenza graduale principianti
+      const startWeight = baseWeight * config.startPercentage;
+      const finalReps = typeof reps === 'string' && reps.includes('-') 
+        ? parseInt(reps.split('-')[1]) 
+        : targetReps;
+      
+      trainingWeight = calculateTrainingWeight(startWeight, finalReps, config.RIR);
+      
+      // Cap al massimo disponibile
+      if (hasEquipment && equipment.dumbbellMaxKg && trainingWeight > equipment.dumbbellMaxKg) {
+        trainingWeight = equipment.dumbbellMaxKg;
+      }
+      
+      console.log(`[PROGRAM] ✅ Weight: ${trainingWeight}kg (${config.startPercentage * 100}% di ${baseWeight}kg, RIR ${config.RIR})`);
+    }
+  }
+
+  return {
+    name: exerciseOrGiantSet,
+    sets,
+    reps,
+    rest,
+    weight: trainingWeight,
+    notes: type === "compound" ? `RIR ${config.RIR} - Week 1-2 al ${config.startPercentage * 100}%` : "Complementare",
+  };
+}
+
 
   const exerciseOrGiantSet = getExerciseForLocation(name, location, equipment, goal || 'muscle_gain', level);
 
