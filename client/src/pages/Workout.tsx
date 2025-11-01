@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { X, Info, AlertCircle } from 'lucide-react';
-import { RecoveryScreening, RecoveryData } from '../components/RecoveryScreening';
+import RecoveryScreening from '../components/RecoveryScreening';
+import type { RecoveryData } from '../components/RecoveryScreening';
 
 export default function Workout() {
   const navigate = useNavigate();
@@ -210,9 +211,7 @@ export default function Workout() {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            {todayWorkout.dayName}
-          </h2>
+          <h2 className="text-3xl font-bold text-white mb-6">{todayWorkout.dayName}</h2>
 
           {todayWorkout.exercises.map((exercise: any, index: number) => (
             <div key={index}>
@@ -223,9 +222,7 @@ export default function Workout() {
                       <AlertCircle className="w-6 h-6 text-orange-400" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-orange-400">
-                        {exercise.name}
-                      </h3>
+                      <h3 className="text-2xl font-bold text-orange-400">{exercise.name}</h3>
                       <p className="text-gray-400 text-sm">
                         {exercise.rounds} giri • {exercise.restBetweenRounds}s recupero tra i giri
                       </p>
@@ -234,21 +231,14 @@ export default function Workout() {
 
                   <div className="space-y-3 mb-4">
                     {exercise.exercises?.map((subEx: any, subIdx: number) => (
-                      <div
-                        key={subIdx}
-                        className="bg-gray-900/50 rounded-lg p-4 border-l-4 border-emerald-500"
-                      >
+                      <div key={subIdx} className="bg-gray-900/50 rounded-lg p-4 border-l-4 border-emerald-500">
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-bold text-white text-lg">
                             {subIdx + 1}. {subEx.name}
                           </span>
-                          <span className="text-emerald-400 font-bold">
-                            {subEx.reps} reps
-                          </span>
+                          <span className="text-emerald-400 font-bold">{subEx.reps} reps</span>
                         </div>
-                        {subEx.notes && (
-                          <p className="text-sm text-gray-400 mb-2">{subEx.notes}</p>
-                        )}
+                        {subEx.notes && <p className="text-sm text-gray-400 mb-2">{subEx.notes}</p>}
                         {subEx.muscleGroup && (
                           <span className="inline-block bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded">
                             🎯 {subEx.muscleGroup}
@@ -276,18 +266,12 @@ export default function Workout() {
                 <div className="bg-gray-800/50 border border-emerald-500/30 rounded-xl p-6 hover:border-emerald-500/60 transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">
-                        {exercise.name}
-                      </h3>
-                      {exercise.notes && (
-                        <p className="text-gray-400 text-sm">{exercise.notes}</p>
-                      )}
+                      <h3 className="text-2xl font-bold text-white mb-2">{exercise.name}</h3>
+                      {exercise.notes && <p className="text-gray-400 text-sm">{exercise.notes}</p>}
                     </div>
                     {exercise.weight && (
                       <div className="bg-emerald-500/20 px-4 py-2 rounded-lg">
-                        <span className="text-emerald-400 font-bold text-lg">
-                          {exercise.weight}kg
-                        </span>
+                        <span className="text-emerald-400 font-bold text-lg">{exercise.weight}kg</span>
                       </div>
                     )}
                   </div>
