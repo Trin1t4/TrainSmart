@@ -1,4 +1,4 @@
-postset = """import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 interface PostSetScreeningProps {
@@ -314,18 +314,3 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
 };
 
 export default PostSetScreening;
-"""
-
-with open('PostSetScreening_FIXED.tsx', 'w') as f:
-    f.write(postset)
-
-print("✅ PostSetScreening.tsx RISCRITTO")
-print("\n🔧 CAMBIAMENTI PRINCIPALI:")
-print("   ✓ RPE buttons ora hanno colori CHIARI e VISIBILI")
-print("   ✓ Aggiunto 'cursor-pointer' a TUTTI i button")
-print("   ✓ Aggiunto 'transition-all' per smooth animations")
-print("   ✓ Button selezionato scala (scale-105) e ha ombra")
-print("   ✓ Target RPE evidenziato in EMERALD")
-print("   ✓ Button 'Sì/No' ora hanno ':hover'")
-print("   ✓ Input numbers più grandi e al centro")
-print("   ✓ Reason buttons cambiano colore quando selezionati")
