@@ -19,7 +19,16 @@ export default function Onboarding() {
   const progress = (currentStep / totalSteps) * 100;
 
   const updateData = (stepData: Partial<OnboardingData>) => {
-    setData({ ...data, ...stepData });
+    const newData = { ...data, ...stepData };
+    
+    // 🔍 DEBUG - Log OGNI update
+    console.log('[ONBOARDING] 📝 Step data received:', stepData);
+    console.log('[ONBOARDING] 📋 Current data state:', newData);
+    if (stepData.trainingLocation) {
+      console.log('[ONBOARDING] 🏠 Location updated to:', stepData.trainingLocation);
+    }
+    
+    setData(newData);
   };
 
   // ✅ Salva onboarding in Supabase
@@ -28,9 +37,13 @@ export default function Onboarding() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
-        console.error('User not authenticated:', userError);
+        console.error('[ONBOARDING] ❌ User not authenticated:', userError);
         throw new Error('User not authenticated');
       }
+
+      // 🔍 DEBUG - Stampa PRIMA di salvare
+      console.log('[ONBOARDING] 📤 Saving to Supabase:', JSON.stringify(onboardingData, null, 2));
+      console.log('[ONBOARDING] 🏠 Final location value:', onboardingData.trainingLocation);
 
       const { error } = await supabase
         .from('user_profiles')
@@ -42,41 +55,63 @@ export default function Onboarding() {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error saving onboarding to database:', error);
+        console.error('[ONBOARDING] ❌ Error saving to database:', error);
         throw error;
       }
 
-      console.log('✅ Onboarding saved to database successfully');
+      console.log('[ONBOARDING] ✅ Onboarding saved to database successfully');
+      console.log('[ONBOARDING] ✅ Location saved as:', onboardingData.trainingLocation);
     } catch (error) {
-      console.error('Failed to save onboarding:', error);
+      console.error('[ONBOARDING] ❌ Failed to save onboarding:', error);
       throw error;
     }
   };
 
   const nextStep = async () => {
     if (currentStep < totalSteps) {
+      console.log(`[ONBOARDING] ➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
       setCurrentStep(currentStep + 1);
     } else {
-      // ✅ Salva e naviga (con branch condizionale)
+      // ✅ STEP FINALE - Salva e naviga
       setIsSaving(true);
       try {
+        // 🔍 DEBUG CRITICO - Stampa TUTTO prima di salvare
+        console.log('[ONBOARDING] 🎯 ========== FINAL SAVE START ==========');
+        console.log('[ONBOARDING] 📋 COMPLETE DATA OBJECT:');
+        console.log('[ONBOARDING]', JSON.stringify(data, null, 2));
+        console.log('[ONBOARDING] 🏠 trainingLocation value:', data.trainingLocation);
+        console.log('[ONBOARDING] 🎯 (check above - is it "gym", "home", or undefined?)');
+        console.log('[ONBOARDING] 🎯 ========== END DEBUG ==========');
+
+        // Se location è undefined, c'è un bug in LocationStep!
+        if (!data.trainingLocation) {
+          console.error('[ONBOARDING] ❌ LOCATION IS MISSING! LocationStep.tsx has a bug!');
+          alert('⚠️ Errore: location non salvata. Riprova il step location.');
+          setIsSaving(false);
+          setCurrentStep(3); // Torna al step della location
+          return;
+        }
+
         // 1. Salva in localStorage
+        console.log('[ONBOARDING] 💾 Saving to localStorage...');
         localStorage.setItem('onboarding_data', JSON.stringify(data));
+        console.log('[ONBOARDING] ✅ Saved to localStorage');
         
         // 2. Salva in Supabase
+        console.log('[ONBOARDING] 🔄 Saving to Supabase...');
         await saveOnboardingToDatabase(data);
         
         // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Flow Normale
         if (data.goal === 'motor_recovery') {
-          console.log('[ONBOARDING] Motor recovery goal detected → navigating to /recovery-screening');
+          console.log('[ONBOARDING] 🏥 Motor recovery goal detected → navigating to /recovery-screening');
           navigate('/recovery-screening');
         } else {
-          console.log('[ONBOARDING] Standard goal → navigating to /body-scan');
+          console.log('[ONBOARDING] 💪 Standard goal → navigating to /body-scan');
           navigate('/body-scan');
         }
       } catch (error) {
-        console.error('Error saving onboarding:', error);
-        alert('Errore nel salvare i dati. Riprova.');
+        console.error('[ONBOARDING] ❌ Error saving onboarding:', error);
+        alert('❌ Errore nel salvare i dati. Riprova.');
         setIsSaving(false);
       }
     }
@@ -84,11 +119,13 @@ export default function Onboarding() {
 
   const prevStep = () => {
     if (currentStep > 1) {
+      console.log(`[ONBOARDING] ⬅️ Moving back from step ${currentStep} to ${currentStep - 1}`);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleStepComplete = (stepData: Partial<OnboardingData>) => {
+    console.log(`[ONBOARDING] ✅ Step ${currentStep} completed with data:`, stepData);
     updateData(stepData);
     nextStep();
   };
