@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import { generateProgram } from '../../server/programGenerator.js';
-
-// ✅ IMPORT le alternative HOME
 import { HOMEALTERNATIVES } from '../../server/exerciseSubstitutions.js';
 
 export default async function handler(req, res) {
@@ -28,7 +26,7 @@ export default async function handler(req, res) {
       .single();
 
     if (userError || !userData) {
-      console.error('[API] User fetch error:', userError);
+      console.error('[API] ❌ User fetch error:', userError);
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -40,13 +38,14 @@ export default async function handler(req, res) {
       .single();
 
     if (assessmentError || !assessmentData) {
-      console.error('[API] Assessment fetch error:', assessmentError);
+      console.error('[API] ❌ Assessment fetch error:', assessmentError);
       return res.status(404).json({ error: 'Assessment not found' });
     }
 
     const onboardingData = userData.onboarding_data || {};
 
     console.log('[API] 🎯 Starting intelligent level calculation...');
+    console.log('[API] 📍 Location from onboarding:', onboardingData.trainingLocation);
 
     // ✅ CALCOLO LIVELLO INTELLIGENTE
     const intelligentLevel = calculateIntelligentLevel(
@@ -103,14 +102,41 @@ export default async function handler(req, res) {
       }))
     });
 
+    // 🔥 DEBUG CRITICO - Controlla cosa arriva a generateProgram
+    console.log('[API] 🔥 ========== BEFORE GENERATE PROGRAM ==========');
+    console.log('[API] 🔥 programInput.location:', programInput.location);
+    console.log('[API] 🔥 (This should be "gym" if user selected palestra)');
+    console.log('[API] 🔥 ========== END DEBUG ==========');
+
     // ✅ GENERA PROGRAMMA
     let program = await generateProgram(programInput);
 
-    console.log('[API] ✅ Program generated, location:', programInput.location);
+    console.log('[API] ✅ Program generated');
+    console.log('[API] 🔥 First day name:', program.weeklySchedule?.[0]?.dayName);
+    console.log('[API] 🔥 First day location:', program.weeklySchedule?.[0]?.location);
+    console.log('[API] 🔥 First 3 exercises from generated program:');
+    program.weeklySchedule?.[0]?.exercises?.slice(0, 3).forEach(ex => {
+      console.log('[API] 🔥  - Exercise:', ex.name);
+    });
 
-    // ✅ APPLICA LOCATION ALTERNATIVES SE HOME/MIXED
+    // ✅ CONTROLLA SE ESERCIZI SONO GIÀ "HOME" (BUG!)
+    const firstExercise = program.weeklySchedule?.[0]?.exercises?.[0]?.name;
+    const isAlreadyBodyweight = 
+      firstExercise?.includes('Pistol') || 
+      firstExercise?.includes('Archer') || 
+      firstExercise?.includes('Australian') ||
+      firstExercise?.includes('Handstand');
+
+    if (isAlreadyBodyweight && programInput.location === 'gym') {
+      console.error('[API] 🚨 BUG DETECTED! generateProgram generated HOME exercises even though location is GYM!');
+      console.error('[API] 🚨 First exercise:', firstExercise);
+      console.error('[API] 🚨 This means programGenerator.js is IGNORING the location parameter!');
+    }
+
+    // ✅ APPLICA LOCATION ALTERNATIVES - MA SOLO SE LOCATION === 'HOME'
+    // Se location === 'gym' e ancora troviamo esercizi bodyweight, è un bug in generateProgram!
     if (programInput.location === 'home' || programInput.location === 'mixed') {
-      console.log(`[API] 🏠 Applying HOME alternatives for location: ${programInput.location}...`);
+      console.log(`[API] 🏠 Location is HOME/MIXED - checking for gym exercises to convert...`);
       
       program.weeklySchedule = program.weeklySchedule.map(day => ({
         ...day,
@@ -123,13 +149,12 @@ export default async function handler(req, res) {
             return { 
               ...exercise, 
               name: homeAlternative,
-              location: 'home'  // ← Marca come exercise HOME
+              location: 'home'
             };
           }
           
-          // Se non c'è alternativa e location === 'home', lascia come è
           if (programInput.location === 'home') {
-            console.log(`[API] ⚠️ No alternative found for ${exercise.name}, keeping bodyweight version`);
+            console.log(`[API] ⚠️ No alternative found for ${exercise.name}, keeping as is`);
           }
           
           return exercise;
@@ -137,8 +162,20 @@ export default async function handler(req, res) {
       }));
 
       console.log('[API] ✅ HOME alternatives applied successfully');
-    } else {
+    } else if (programInput.location === 'gym') {
       console.log('[API] 🏋️ Location is GYM - keeping all standard exercises');
+      
+      // 🔥 Aggiungi ulteriore debug se ancora troviamo esercizi bodyweight
+      const hasBodyweightExercises = program.weeklySchedule?.some(day => 
+        day.exercises?.some(ex => 
+          ex.name?.includes('Pistol') || ex.name?.includes('Archer')
+        )
+      );
+      
+      if (hasBodyweightExercises) {
+        console.error('[API] 🚨 ERROR! Found bodyweight exercises but location is GYM!');
+        console.error('[API] 🚨 This is a bug in generateProgram() - it ignores location!');
+      }
     }
 
     // ✅ SALVA PROGRAMMA IN DB
@@ -151,14 +188,14 @@ export default async function handler(req, res) {
         description: program.description,
         split: program.split,
         days_per_week: program.daysPerWeek,
-        weekly_schedule: program.weeklySchedule,  // ← QUI sono le esercizi con location!
+        weekly_schedule: program.weeklySchedule,
         progression: program.progression,
         includes_deload: program.includesDeload,
         deload_frequency: program.deloadFrequency,
         total_weeks: program.totalWeeks,
         requires_end_cycle_test: program.requiresEndCycleTest,
         frequency: programInput.frequency,
-        location: programInput.location,  // ← SALVA location nel DB
+        location: programInput.location,
         status: 'active',
         current_week: 1,
         created_at: new Date().toISOString(),
@@ -168,11 +205,13 @@ export default async function handler(req, res) {
       .single();
 
     if (saveError) {
-      console.error('[API] Error saving program:', saveError);
+      console.error('[API] ❌ Error saving program:', saveError);
       return res.status(500).json({ error: 'Failed to save program' });
     }
 
-    console.log('[API] ✅ Program saved with ID:', savedProgram.id, 'Location:', programInput.location);
+    console.log('[API] ✅ Program saved with ID:', savedProgram.id);
+    console.log('[API] ✅ Location saved:', programInput.location);
+    console.log('[API] ✅ First exercise:', savedProgram.weekly_schedule?.[0]?.exercises?.[0]?.name);
 
     return res.status(200).json({ 
       success: true, 
@@ -183,9 +222,41 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('[API] Error:', error);
+    console.error('[API] ❌ Unexpected error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
 
-// ... resto delle funzioni rimane uguale ...
+// ===== CALCOLO LIVELLO INTELLIGENTE =====
+function calculateIntelligentLevel(assessmentData, onboardingData) {
+  // [resto del codice rimane uguale - copy dal file originale]
+}
+
+// ===== CONVERSIONE HOME ASSESSMENT =====
+function convertHomeAssessmentToStandard(exercises, bodyweight) {
+  // [resto del codice rimane uguale - copy dal file originale]
+}
+
+// ===== CONVERSIONE GYM ASSESSMENT =====
+function convertGymAssessmentToStandard(assessmentData, bodyweight) {
+  // [resto del codice rimane uguale - copy dal file originale]
+}
+
+// ===== FORMULE E CALCOLI =====
+export function calculateOneRepMax(weight, reps) {
+  if (reps === 1) return weight;
+  return weight * (36 / (37 - reps));
+}
+
+export function calculateTargetWeight(oneRepMax, percentage) {
+  return Math.round((oneRepMax * percentage) / 2.5) * 2.5;
+}
+
+export function calculateTrainingWeight(oneRM, targetReps, RIR = 2) {
+  if (!oneRM || oneRM === 0) return null;
+  
+  const maxReps = targetReps + RIR;
+  const weight = oneRM * (37 - maxReps) / 36;
+  
+  return Math.round(weight / 2.5) * 2.5;
+}
