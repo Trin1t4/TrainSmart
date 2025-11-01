@@ -10,6 +10,7 @@ import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from '@/pages/Workout';
 import WorkoutSession from '@/pages/WorkoutSession';
+import RecoveryScreening from './components/RecoveryScreening';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+
         <Route
           path="/onboarding"
           element={
@@ -27,7 +28,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/body-scan"
           element={
@@ -36,7 +37,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/quiz"
           element={
@@ -45,7 +46,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/screening"
           element={
@@ -54,8 +55,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
-        {/* ✅ NUOVA ROUTE: Recovery Screening */}
+
         <Route
           path="/recovery-screening"
           element={
@@ -64,7 +64,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/dashboard"
           element={
@@ -73,7 +73,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route path="/workout" element={<Workout />} />
         <Route path="/workout-session" element={<WorkoutSession />} />
         <Route path="*" element={<Navigate to="/" replace />} />
