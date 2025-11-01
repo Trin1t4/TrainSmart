@@ -16,22 +16,17 @@ export interface RecoveryData {
   timestamp: string;
 }
 
-export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
+const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   onComplete,
   onSkip,
 }) => {
-  const [step, setStep] = useState<'sleep' | 'stress' | 'injury' | 'cycle' | 'summary'>(
-    'sleep'
-  );
+  const [step, setStep] = useState<'sleep' | 'stress' | 'injury' | 'cycle' | 'summary'>('sleep');
   const [sleepHours, setSleepHours] = useState<number>(7);
   const [stressLevel, setStressLevel] = useState<number>(5);
   const [hasInjury, setHasInjury] = useState<boolean>(false);
   const [injuryDetails, setInjuryDetails] = useState<string>('');
-  const [menstrualCycle, setMenstrualCycle] = useState<
-    'follicular' | 'ovulation' | 'luteal' | 'menstruation' | null
-  >(null);
+  const [menstrualCycle, setMenstrualCycle] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstruation' | null>(null);
   const [isFemale, setIsFemale] = useState<boolean>(false);
-  const [userGender, setUserGender] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUserGender();
@@ -129,7 +124,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Come sta la tua ripresa?</h2>
               <p className="text-sm text-gray-600">Iniziamo con qualche domanda rapida</p>
             </div>
-
             <div className="space-y-4">
               <p className="font-semibold text-gray-900">Quante ore hai dormito stanotte?</p>
               <input
@@ -146,7 +140,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 {sleepHours > 9 && '⚠️ Sonno eccessivo'}
               </div>
             </div>
-
             <div className="flex gap-3 pt-4">
               <button
                 onClick={onSkip}
@@ -169,7 +162,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Livello di stress</h2>
             </div>
-
             <div className="space-y-4">
               <p className="font-semibold text-gray-900">Quanto sei stressato oggi?</p>
               <div className="flex items-center gap-4">
@@ -183,9 +175,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 />
                 <span className="text-3xl font-bold text-gray-900 w-12 text-center">{stressLevel}</span>
               </div>
-              <div className="text-xs text-gray-500">
-                1 = Rilassato | 10 = Massimamente stressato
-              </div>
+              <div className="text-xs text-gray-500">1 = Rilassato | 10 = Massimamente stressato</div>
               {stressLevel >= 8 && (
                 <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                   <p className="text-sm text-yellow-800">
@@ -194,7 +184,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 </div>
               )}
             </div>
-
             <div className="flex gap-3 pt-4">
               <button
                 onClick={handleBack}
@@ -217,7 +206,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Dolori o fastidi?</h2>
             </div>
-
             <div className="space-y-4">
               <p className="font-semibold text-gray-900">Hai dolori o fastidi oggi?</p>
               <div className="flex gap-3">
@@ -227,9 +215,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                     setInjuryDetails('');
                   }}
                   className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
-                    !hasInjury
-                      ? 'bg-green-100 border-green-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    !hasInjury ? 'bg-green-100 border-green-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   ✅ No
@@ -237,15 +223,12 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 <button
                   onClick={() => setHasInjury(true)}
                   className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
-                    hasInjury
-                      ? 'bg-red-100 border-red-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    hasInjury ? 'bg-red-100 border-red-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   🩹 Sì
                 </button>
               </div>
-
               {hasInjury && (
                 <textarea
                   value={injuryDetails}
@@ -256,7 +239,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 />
               )}
             </div>
-
             <div className="flex gap-3 pt-4">
               <button
                 onClick={handleBack}
@@ -279,16 +261,13 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Fase del ciclo</h2>
             </div>
-
             <div className="space-y-3">
               <p className="font-semibold text-gray-900">In quale fase sei del ciclo mestruale?</p>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setMenstrualCycle('menstruation')}
                   className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
-                    menstrualCycle === 'menstruation'
-                      ? 'bg-red-100 border-red-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    menstrualCycle === 'menstruation' ? 'bg-red-100 border-red-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   🔴 Mestruazione (Giorni 1-5)
@@ -296,9 +275,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 <button
                   onClick={() => setMenstrualCycle('follicular')}
                   className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
-                    menstrualCycle === 'follicular'
-                      ? 'bg-green-100 border-green-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    menstrualCycle === 'follicular' ? 'bg-green-100 border-green-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   🟢 Follicolare (Giorni 6-12)
@@ -306,9 +283,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 <button
                   onClick={() => setMenstrualCycle('ovulation')}
                   className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
-                    menstrualCycle === 'ovulation'
-                      ? 'bg-yellow-100 border-yellow-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    menstrualCycle === 'ovulation' ? 'bg-yellow-100 border-yellow-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   🟡 Ovulazione (Giorni 13-15)
@@ -316,16 +291,13 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 <button
                   onClick={() => setMenstrualCycle('luteal')}
                   className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
-                    menstrualCycle === 'luteal'
-                      ? 'bg-orange-100 border-orange-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    menstrualCycle === 'luteal' ? 'bg-orange-100 border-orange-500' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   🟠 Luteale (Giorni 16-28)
                 </button>
               </div>
             </div>
-
             <div className="flex gap-3 pt-4">
               <button
                 onClick={handleBack}
@@ -348,7 +320,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Riepilogo</h2>
             </div>
-
             <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sonno:</span>
@@ -374,23 +345,16 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 </div>
               )}
             </div>
-
             {sleepHours < 6 && (
               <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ Sonno insufficiente: AdaptFlow ridurrà l'intensità
-                </p>
+                <p className="text-sm text-yellow-800">⚠️ Sonno insufficiente: AdaptFlow ridurrà l'intensità</p>
               </div>
             )}
-
             {stressLevel >= 8 && (
               <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ Stress elevato: considera un allenamento leggero
-                </p>
+                <p className="text-sm text-yellow-800">⚠️ Stress elevato: considera un allenamento leggero</p>
               </div>
             )}
-
             <button
               onClick={handleComplete}
               className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-lg font-bold text-lg"
@@ -403,3 +367,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
     </div>
   );
 };
+
+export default RecoveryScreening;
+export type { RecoveryData };
