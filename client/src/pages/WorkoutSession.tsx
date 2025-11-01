@@ -1,8 +1,7 @@
-codice_workout = '''// client/src/pages/WorkoutSession.tsx
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Play, Pause, Check, X, ChevronRight, Timer } from 'lucide-react';
+import { Check, X, Timer } from 'lucide-react';
 import { PostSetScreening, SetFeedback } from '../components/PostSetScreening';
 
 interface Exercise {
@@ -40,7 +39,6 @@ export default function WorkoutSession() {
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [sessionStartTime] = useState(new Date());
-  
   const [showPostSetScreening, setShowPostSetScreening] = useState(false);
   const [setFeedbackHistory, setSetFeedbackHistory] = useState<SetFeedback[]>([]);
 
@@ -265,14 +263,16 @@ export default function WorkoutSession() {
         </div>
       </div>
 
-      <PostSetScreening
-        workoutId={state.program.id || 'current'}
-        exerciseId={currentExercise.name}
-        setNumber={currentSet}
-        targetReps={parseInt(currentExercise.reps.split('-')[0])}
-        goalType={getGoalType()}
-        onComplete={handlePostSetFeedback}
-      />
+      {showPostSetScreening && (
+        <PostSetScreening
+          workoutId={state.program.id || 'current'}
+          exerciseId={currentExercise.name}
+          setNumber={currentSet}
+          targetReps={parseInt(currentExercise.reps.split('-')[0])}
+          goalType={getGoalType()}
+          onComplete={handlePostSetFeedback}
+        />
+      )}
     </div>
   );
 }
