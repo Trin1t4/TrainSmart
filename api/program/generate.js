@@ -1,3 +1,4 @@
+console.log('[API] 🔥 GENERATE.JS LOADED - Location:', programInput.location);
 import { createClient } from '@supabase/supabase-js';
 import { generateProgram } from '../../server/programGenerator.js';
 
