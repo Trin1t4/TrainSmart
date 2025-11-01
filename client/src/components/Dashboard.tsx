@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [hasScreening, setHasScreening] = useState(false);
   const [hasProgram, setHasProgram] = useState(false);
   const [generatingProgram, setGeneratingProgram] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [screeningId, setScreeningId] = useState<string | null>(null);
 
@@ -194,45 +195,61 @@ export default function Dashboard() {
   }
 
   async function handleResetProgram() {
-    if (!confirm('⚠️ RESET COMPLETO\n\nQuesto cancellerà TUTTO:\n• Programma di allenamento\n• Screening\n• Dati onboarding\n\nDovrai rifare lo screening da zero.\n\nSei sicuro?')) {
+    if (!window.confirm('⚠️ RESET COMPLETO\n\nQuesto cancellerà TUTTO:\n• Programma di allenamento\n• Screening\n• Dati onboarding\n• Location (casa/palestra)\n\nDovrai rifare lo screening da zero.\n\nSei sicuro?')) {
       return;
     }
 
+    setResetting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      console.log('[RESET] 🔄 Starting complete reset...');
 
-      // 1. Cancella training programs
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('[RESET] ❌ No user found');
+        return;
+      }
+
+      // ✅ STEP 1: CANCELLA TRAINING PROGRAMS
+      console.log('[RESET] 1️⃣ Deleting training programs...');
       const { error: programError } = await supabase
         .from('training_programs')
         .delete()
         .eq('user_id', user.id);
 
       if (programError) {
-        console.error('Error deleting programs:', programError);
+        console.error('[RESET] ❌ Error deleting programs:', programError);
+      } else {
+        console.log('[RESET] ✅ Training programs deleted');
       }
 
-      // 2. Cancella screenings
+      // ✅ STEP 2: CANCELLA ASSESSMENTS/SCREENINGS
+      console.log('[RESET] 2️⃣ Deleting assessments...');
       const { error: screeningError } = await supabase
         .from('assessments')
         .delete()
         .eq('user_id', user.id);
 
       if (screeningError) {
-        console.error('Error deleting screenings:', screeningError);
+        console.error('[RESET] ❌ Error deleting assessments:', screeningError);
+      } else {
+        console.log('[RESET] ✅ Assessments deleted');
       }
 
-      // 3. Cancella recovery screenings (se esistono)
+      // ✅ STEP 3: CANCELLA RECOVERY SCREENINGS
+      console.log('[RESET] 3️⃣ Deleting recovery screenings...');
       const { error: recoveryError } = await supabase
         .from('recovery_screenings')
         .delete()
         .eq('user_id', user.id);
 
       if (recoveryError) {
-        console.error('Error deleting recovery screenings:', recoveryError);
+        console.error('[RESET] ⚠️ Error deleting recovery screenings:', recoveryError);
+      } else {
+        console.log('[RESET] ✅ Recovery screenings deleted');
       }
 
-      // 4. Reset onboarding_data nel database
+      // ✅ STEP 4: RESET ONBOARDING DATA IN SUPABASE (INCLUDE LOCATION!)
+      console.log('[RESET] 4️⃣ Clearing onboarding_data from Supabase...');
       const { error: onboardingError } = await supabase
         .from('user_profiles')
         .update({ 
@@ -242,22 +259,45 @@ export default function Dashboard() {
         .eq('user_id', user.id);
 
       if (onboardingError) {
-        console.error('Error resetting onboarding:', onboardingError);
+        console.error('[RESET] ❌ Error resetting onboarding:', onboardingError);
+      } else {
+        console.log('[RESET] ✅ Onboarding data cleared from Supabase (including location!)');
       }
 
-      // 5. Cancella localStorage
-      localStorage.removeItem('onboarding_data');
-      localStorage.removeItem('quiz_data');
-      localStorage.removeItem('screening_data');
-      localStorage.removeItem('recovery_screening_data');
-      localStorage.removeItem('recovery_program_data');
+      // ✅ STEP 5: CLEAR LOCALSTORAGE
+      console.log('[RESET] 5️⃣ Clearing localStorage...');
+      const localStorageKeys = [
+        'onboarding_data',
+        'quiz_data',
+        'screening_data',
+        'recovery_screening_data',
+        'recovery_program_data'
+      ];
 
-      // 6. Redirect automatico all'onboarding
-      navigate('/onboarding');
+      localStorageKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`[RESET] ✅ Removed: ${key}`);
+      });
+
+      console.log('[RESET] ✅ ALL RESET COMPLETED!');
+
+      // ✅ STEP 6: RESET STATE E REDIRECT
+      setHasScreening(false);
+      setHasProgram(false);
+      setScreeningId(null);
+
+      alert('✅ Reset completato! Ricaricamento in corso...');
+      
+      setTimeout(() => {
+        navigate('/onboarding');
+        window.location.reload();
+      }, 1000);
 
     } catch (error) {
-      console.error('Error during reset:', error);
-      alert('Errore durante il reset. Riprova.');
+      console.error('[RESET] ❌ Unexpected error:', error);
+      alert('❌ Errore durante il reset. Riprova.');
+    } finally {
+      setResetting(false);
     }
   }
 
@@ -373,11 +413,21 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={handleResetProgram}
-                  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 cursor-pointer"
-                  title="Reset Completo (cancella tutto)"
+                  disabled={resetting}
+                  className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:opacity-50 text-white font-semibold px-8 py-6 rounded-lg transition-all duration-300 hover:scale-105 disabled:hover:scale-100 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 cursor-pointer"
+                  title="Reset Completo (cancella tutto inclusa location)"
                 >
-                  <span className="text-xl pointer-events-none">🔄</span>
-                  <span className="ml-2 pointer-events-none">Reset</span>
+                  {resetting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                      <span className="pointer-events-none">Reset...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xl pointer-events-none">🔄</span>
+                      <span className="ml-2 pointer-events-none">Reset</span>
+                    </>
+                  )}
                 </button>
               </div>
             </CardContent>
@@ -441,7 +491,7 @@ export default function Dashboard() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-300">Tempo Totale</CardTitle>
               <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Clock className="h-5 w-5 text-emerald-400" />
+                <Clock className="h-5 h-5 text-emerald-400" />
               </div>
             </CardHeader>
             <CardContent>
