@@ -1,8 +1,9 @@
-// src/pages/WorkoutSession.tsx
+codice_workout = '''// client/src/pages/WorkoutSession.tsx
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Play, Pause, Check, X, ChevronRight, Timer } from 'lucide-react';
+import { PostSetScreening, SetFeedback } from '../components/PostSetScreening';
 
 interface Exercise {
   name: string;
@@ -12,7 +13,7 @@ interface Exercise {
   weight?: number;
   notes?: string;
   type?: string;
-  exercises?: any[]; // Per giant sets
+  exercises?: any[];
   rounds?: number;
   restBetweenRounds?: number;
 }
@@ -39,6 +40,9 @@ export default function WorkoutSession() {
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [sessionStartTime] = useState(new Date());
+  
+  const [showPostSetScreening, setShowPostSetScreening] = useState(false);
+  const [setFeedbackHistory, setSetFeedbackHistory] = useState<SetFeedback[]>([]);
 
   useEffect(() => {
     if (!state || !state.program) {
@@ -68,29 +72,38 @@ export default function WorkoutSession() {
   );
   const currentExercise = exercises[currentExerciseIndex];
 
-  // Applica adjustment
   const adjustedSets = Math.ceil(currentExercise.sets * state.adjustment.volumeMultiplier);
-  const adjustedWeight = currentExercise.weight 
-    ? Math.round(currentExercise.weight * state.adjustment.intensityMultiplier) 
+  const adjustedWeight = currentExercise.weight
+    ? Math.round(currentExercise.weight * state.adjustment.intensityMultiplier)
     : null;
 
+  const getGoalType = (): 'hypertrophy' | 'strength' | 'endurance' | 'power' => {
+    const reps = parseInt(currentExercise.reps);
+    if (reps <= 5) return 'strength';
+    if (reps <= 8) return 'power';
+    if (reps <= 12) return 'hypertrophy';
+    return 'endurance';
+  };
+
   const handleCompleteSet = () => {
+    setShowPostSetScreening(true);
+  };
+
+  const handlePostSetFeedback = (feedback: SetFeedback) => {
+    setSetFeedbackHistory([...setFeedbackHistory, feedback]);
+    setShowPostSetScreening(false);
     setCompletedSets([...completedSets, currentSet]);
-    
+
     if (currentSet < adjustedSets) {
-      // Prossima serie - inizia rest
       setCurrentSet(currentSet + 1);
       setRestTimeLeft(currentExercise.rest);
       setIsResting(true);
     } else {
-      // Esercizio completato
       if (currentExerciseIndex < exercises.length - 1) {
-        // Prossimo esercizio
         setCurrentExerciseIndex(currentExerciseIndex + 1);
         setCurrentSet(1);
         setCompletedSets([]);
       } else {
-        // Allenamento completato
         handleCompleteWorkout();
       }
     }
@@ -98,35 +111,18 @@ export default function WorkoutSession() {
 
   const handleSkipRest = () => {
     setIsResting(false);
-    setRestTimeLeft(0);
   };
 
   const handleCompleteWorkout = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const sessionData = {
-        user_id: user.id,
-        program_id: state.program.id,
-        workout_name: workout.dayName,
-        exercises_completed: exercises.length,
-        total_sets: completedSets.length,
-        duration_minutes: Math.round((new Date().getTime() - sessionStartTime.getTime()) / 60000),
-        completed_at: new Date().toISOString()
-      };
-
-      await supabase.from('workout_sessions').insert(sessionData);
-
-      navigate('/dashboard', {
-        state: { message: '🎉 Allenamento completato!' }
-      });
-    } catch (error) {
-      console.error('Error saving workout:', error);
-    }
+    console.log('Allenamento completato!', {
+      startTime: sessionStartTime,
+      endTime: new Date(),
+      feedbackHistory: setFeedbackHistory,
+    });
+    navigate('/workout');
   };
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -135,7 +131,6 @@ export default function WorkoutSession() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold text-white">{workout.dayName}</h1>
@@ -150,8 +145,7 @@ export default function WorkoutSession() {
               <X className="w-8 h-8" />
             </button>
           </div>
-          
-          {/* Progress */}
+
           <div className="bg-gray-800/50 rounded-lg p-4">
             <div className="flex justify-between text-sm text-gray-400 mb-2">
               <span>Esercizio {currentExerciseIndex + 1} di {exercises.length}</span>
@@ -165,7 +159,6 @@ export default function WorkoutSession() {
             </div>
           </div>
 
-          {/* AdaptFlow Recommendation */}
           {(state.adjustment.volumeMultiplier < 1 || state.adjustment.intensityMultiplier < 1) && (
             <div className="mt-4 bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-4">
               <p className="text-yellow-300 text-sm">
@@ -175,7 +168,6 @@ export default function WorkoutSession() {
           )}
         </div>
 
-        {/* Rest Timer */}
         {isResting && (
           <div className="mb-6 bg-emerald-900/30 border-2 border-emerald-500 rounded-xl p-8 text-center animate-pulse">
             <Timer className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
@@ -192,7 +184,6 @@ export default function WorkoutSession() {
           </div>
         )}
 
-        {/* Current Exercise */}
         {!isResting && (
           <div className="bg-gray-800/50 border-2 border-emerald-500/50 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -212,7 +203,6 @@ export default function WorkoutSession() {
               <p className="text-gray-400 mb-4">{currentExercise.notes}</p>
             )}
 
-            {/* Giant Set Exercises */}
             {currentExercise.type === 'giant_set' && currentExercise.exercises && (
               <div className="space-y-2 mb-6 bg-gray-900/50 rounded-lg p-4">
                 <p className="text-emerald-400 font-semibold mb-3">
@@ -230,7 +220,6 @@ export default function WorkoutSession() {
               </div>
             )}
 
-            {/* Set Info */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-900/50 rounded-lg p-4 text-center">
                 <p className="text-gray-400 text-sm mb-1">Serie</p>
@@ -248,7 +237,6 @@ export default function WorkoutSession() {
               </div>
             </div>
 
-            {/* Complete Set Button */}
             <button
               onClick={handleCompleteSet}
               className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-lg font-bold text-lg shadow-lg flex items-center justify-center gap-2"
@@ -259,7 +247,6 @@ export default function WorkoutSession() {
           </div>
         )}
 
-        {/* Completed Sets Indicator */}
         <div className="flex gap-2 justify-center">
           {Array.from({ length: adjustedSets }).map((_, idx) => (
             <div
@@ -277,6 +264,15 @@ export default function WorkoutSession() {
           ))}
         </div>
       </div>
+
+      <PostSetScreening
+        workoutId={state.program.id || 'current'}
+        exerciseId={currentExercise.name}
+        setNumber={currentSet}
+        targetReps={parseInt(currentExercise.reps.split('-')[0])}
+        goalType={getGoalType()}
+        onComplete={handlePostSetFeedback}
+      />
     </div>
   );
 }
