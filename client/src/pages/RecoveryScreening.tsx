@@ -31,7 +31,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
     'follicular' | 'ovulation' | 'luteal' | 'menstruation' | null
   >(null);
   const [isFemale, setIsFemale] = useState<boolean>(false);
-  const [userGender, setUserGender] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUserGender();
