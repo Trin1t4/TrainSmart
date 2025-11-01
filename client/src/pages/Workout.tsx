@@ -2,19 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { X, Info, AlertCircle } from 'lucide-react';
+import { RecoveryScreening, RecoveryData } from '../components/RecoveryScreening';
 
 export default function Workout() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState(null);
   const [currentDay, setCurrentDay] = useState(0);
-  
-  // ✅ Pre-Workout Screening State
-  const [showScreening, setShowScreening] = useState(false);
-  const [sleepHours, setSleepHours] = useState(7);
-  const [stressLevel, setStressLevel] = useState(3);
-  const [painAreas, setPainAreas] = useState<string[]>([]);
-  const [painLevel, setPainLevel] = useState(0);
+
+  const [showRecoveryScreening, setShowRecoveryScreening] = useState(false);
+  const [recoveryData, setRecoveryData] = useState<RecoveryData | null>(null);
 
   useEffect(() => {
     loadProgram();
@@ -28,7 +25,6 @@ export default function Workout() {
         return;
       }
 
-      // Carica il programma attivo
       const { data, error } = await supabase
         .from('training_programs')
         .select('*')
@@ -51,114 +47,120 @@ export default function Workout() {
     }
   }
 
-  // ✅ Handler Inizia Allenamento
   function handleStartWorkout() {
-    setShowScreening(true);
+    setShowRecoveryScreening(true);
   }
 
-  // ✅ Submit Screening e Inizia
-  async function handleScreeningSubmit() {
+  async function handleRecoveryComplete(data: RecoveryData) {
+    setRecoveryData(data);
+    setShowRecoveryScreening(false);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const screening = {
-        user_id: user.id,
-        program_id: program.id,
-        sleep_hours: sleepHours,
-        stress_level: stressLevel,
-        pain_areas: painAreas,
-        pain_level: painLevel,
-        timestamp: new Date().toISOString()
-      };
-
-      // Salva screening
-      await supabase.from('pre_workout_screenings').insert(screening);
-
-      // Calcola adjustment AdaptFlow
-      const adjustment = calculateAdaptiveAdjustment(screening);
+      // Calcola adjustment AdaptFlow in base ai dati di recupero
+      const adjustment = calculateAdaptiveAdjustment(data);
 
       // Naviga a sessione allenamento con adjustment
       navigate('/workout-session', {
         state: {
           program,
           dayIndex: currentDay,
-          adjustment
+          adjustment,
+          recoveryData: data
         }
       });
     } catch (error) {
-      console.error('Error saving screening:', error);
-      alert('Errore nel salvare lo screening. Riprova.');
+      console.error('Error:', error);
+      alert('Errore nel caricamento della sessione. Riprova.');
     }
   }
 
-  // ✅ AdaptFlow Logic
-  function calculateAdaptiveAdjustment(screening: any) {
+  function calculateAdaptiveAdjustment(recovery: RecoveryData) {
     let volumeMultiplier = 1.0;
     let intensityMultiplier = 1.0;
     const skipExercises: string[] = [];
+    const warnings: string[] = [];
 
-    // Sonno < 6h → riduci volume 20%
-    if (screening.sleep_hours < 6) {
+    // Sonno insufficiente
+    if (recovery.sleepHours < 6) {
       volumeMultiplier = 0.8;
-    } else if (screening.sleep_hours < 5) {
+      warnings.push('Sonno insufficiente: volume ridotto 20%');
+    }
+    if (recovery.sleepHours < 5) {
       volumeMultiplier = 0.7;
       intensityMultiplier = 0.9;
+      warnings.push('Sonno molto insufficiente: volume -30%, intensità -10%');
     }
 
-    // Stress alto (4-5) → riduci intensità 10-20%
-    if (screening.stress_level >= 4) {
-      intensityMultiplier = 0.9;
-    }
-    if (screening.stress_level >= 5) {
+    // Stress elevato
+    if (recovery.stressLevel >= 8) {
       intensityMultiplier = 0.8;
-      volumeMultiplier = 0.9;
+      volumeMultiplier = 0.85;
+      warnings.push('Stress elevato: intensità -20%, volume -15%');
+    } else if (recovery.stressLevel >= 6) {
+      intensityMultiplier = 0.9;
+      warnings.push('Stress moderato: intensità -10%');
     }
 
-    // Dolore > 5/10 → riduci entrambi 30%
-    if (screening.pain_level > 5 && screening.pain_areas.length > 0) {
-      volumeMultiplier = 0.7;
-      intensityMultiplier = 0.7;
+    // Dolori/fastidi
+    if (recovery.hasInjury && recovery.injuryDetails) {
+      volumeMultiplier *= 0.85;
+      intensityMultiplier *= 0.85;
+      warnings.push(`Dolore rilevato (${recovery.injuryDetails}): riduzione 15%`);
 
-      // Identifica esercizi da saltare
-      screening.pain_areas.forEach((area: string) => {
-        if (area === 'shoulder') {
-          skipExercises.push('Military Press', 'Shoulder Press', 'Alzate');
-        }
-        if (area === 'lower_back') {
-          skipExercises.push('Stacco', 'Deadlift', 'Good Morning');
-        }
-        if (area === 'knee') {
-          skipExercises.push('Squat', 'Leg Press', 'Lunge');
-        }
-      });
+      // Logica per saltare esercizi in base al tipo di dolore
+      const injuryLower = recovery.injuryDetails.toLowerCase();
+      if (injuryLower.includes('spalla') || injuryLower.includes('shoulder')) {
+        skipExercises.push('Military Press', 'Shoulder Press', 'Alzate Laterali', 'Push Press');
+      }
+      if (injuryLower.includes('schiena') || injuryLower.includes('back') || injuryLower.includes('dorso')) {
+        skipExercises.push('Stacco', 'Deadlift', 'Good Morning', 'Row Pesante');
+      }
+      if (injuryLower.includes('ginocchio') || injuryLower.includes('knee')) {
+        skipExercises.push('Squat', 'Leg Press', 'Lunge', 'Jump Squat');
+      }
+      if (injuryLower.includes('polso') || injuryLower.includes('wrist')) {
+        skipExercises.push('Push Press', 'Military Press');
+      }
+    }
+
+    // Fase ciclo luteale (più fatica, performance ridotta)
+    if (recovery.isFemale && recovery.menstrualCycle === 'luteal') {
+      volumeMultiplier *= 0.9;
+      warnings.push('Fase luteale: volume -10% (può aumentare percezione di fatica)');
+    }
+
+    // Fase mestruazione (maggior flessibilità)
+    if (recovery.isFemale && recovery.menstrualCycle === 'menstruation') {
+      volumeMultiplier *= 0.8;
+      warnings.push('Fase mestruazione: volume -20% (adatta agli eventuali sintomi)');
     }
 
     return {
-      volumeMultiplier,
-      intensityMultiplier,
+      volumeMultiplier: Math.max(0.6, volumeMultiplier),
+      intensityMultiplier: Math.max(0.7, intensityMultiplier),
       skipExercises,
-      recommendation: getRecommendation(volumeMultiplier, intensityMultiplier)
+      recommendation: getRecommendation(volumeMultiplier, intensityMultiplier, warnings)
     };
   }
 
-  function getRecommendation(volume: number, intensity: number): string {
-    if (volume < 0.8 || intensity < 0.8) {
-      return 'Seduta leggera - Recupero attivo consigliato';
-    }
-    if (volume < 0.9 || intensity < 0.9) {
-      return 'Seduta moderata - Ascolta il tuo corpo';
-    }
-    return 'Seduta normale - Vai forte! 💪';
-  }
+  function getRecommendation(volume: number, intensity: number, warnings: string[]): string {
+    let baseMsg = '';
 
-  // ✅ Toggle Pain Area
-  function togglePainArea(area: string) {
-    setPainAreas(prev =>
-      prev.includes(area)
-        ? prev.filter(a => a !== area)
-        : [...prev, area]
-    );
+    if (volume < 0.75 || intensity < 0.75) {
+      baseMsg = '🔴 Seduta leggera - Recupero attivo consigliato';
+    } else if (volume < 0.9 || intensity < 0.9) {
+      baseMsg = '🟡 Seduta moderata - Ascolta il tuo corpo';
+    } else {
+      baseMsg = '🟢 Seduta normale - Vai forte! 💪';
+    }
+
+    if (warnings.length > 0) {
+      return baseMsg + ' | ' + warnings[0];
+    }
+    return baseMsg;
   }
 
   if (loading) {
@@ -228,7 +230,6 @@ export default function Workout() {
 
           {todayWorkout.exercises.map((exercise, index) => (
             <div key={index}>
-              {/* ✅ CHECK GIANT SET */}
               {exercise.type === 'giant_set' ? (
                 <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-500/50 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -245,7 +246,6 @@ export default function Workout() {
                     </div>
                   </div>
 
-                  {/* ✅ ESERCIZI DEL GIANT SET */}
                   <div className="space-y-3 mb-4">
                     {exercise.exercises?.map((subEx, subIdx) => (
                       <div
@@ -277,7 +277,6 @@ export default function Workout() {
                     ))}
                   </div>
 
-                  {/* ✅ NOTE TOTALI GIANT SET */}
                   {exercise.totalNotes && (
                     <div className="bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-4">
                       <div className="flex items-start gap-2">
@@ -288,7 +287,6 @@ export default function Workout() {
                   )}
                 </div>
               ) : (
-                /* ✅ ESERCIZIO NORMALE */
                 <div className="bg-gray-800/50 border border-emerald-500/30 rounded-xl p-6 hover:border-emerald-500/60 transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -345,139 +343,24 @@ export default function Workout() {
         </div>
       </div>
 
-      {/* ✅ PRE-WORKOUT SCREENING MODAL */}
-      {showScreening && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-2xl max-w-2xl w-full border border-emerald-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-gray-900 z-10">
-              <h2 className="text-2xl font-bold text-white">Check Pre-Allenamento</h2>
-              <button
-                onClick={() => setShowScreening(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Sonno */}
-              <div>
-                <label className="block text-white font-semibold mb-3">
-                  Ore di sonno stanotte
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="3"
-                    max="12"
-                    step="0.5"
-                    value={sleepHours}
-                    onChange={(e) => setSleepHours(parseFloat(e.target.value))}
-                    className="flex-1"
-                  />
-                  <span className="text-emerald-400 font-bold text-2xl w-16 text-center">
-                    {sleepHours}h
-                  </span>
-                </div>
-                {sleepHours < 6 && (
-                  <p className="text-yellow-400 text-sm mt-2">
-                    ⚠️ Sonno insufficiente - Ridurremo il volume dell'allenamento
-                  </p>
-                )}
-              </div>
-
-              {/* Stress */}
-              <div>
-                <label className="block text-white font-semibold mb-3">
-                  Livello di stress (1-5)
-                </label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => setStressLevel(level)}
-                      className={`flex-1 py-3 rounded-lg font-bold transition-all ${
-                        stressLevel === level
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-                {stressLevel >= 4 && (
-                  <p className="text-yellow-400 text-sm mt-2">
-                    ⚠️ Stress elevato - Ridurremo l'intensità dell'allenamento
-                  </p>
-                )}
-              </div>
-
-              {/* Dolori */}
-              <div>
-                <label className="block text-white font-semibold mb-3">
-                  Hai dolori o fastidi oggi?
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {['shoulder', 'lower_back', 'knee', 'elbow', 'wrist', 'ankle'].map((area) => (
-                    <button
-                      key={area}
-                      onClick={() => togglePainArea(area)}
-                      className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                        painAreas.includes(area)
-                          ? 'bg-red-500 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                      }`}
-                    >
-                      {area === 'shoulder' && '🦾 Spalle'}
-                      {area === 'lower_back' && '💢 Schiena bassa'}
-                      {area === 'knee' && '🦵 Ginocchia'}
-                      {area === 'elbow' && '💪 Gomiti'}
-                      {area === 'wrist' && '🤝 Polsi'}
-                      {area === 'ankle' && '🦶 Caviglie'}
-                    </button>
-                  ))}
-                </div>
-
-                {painAreas.length > 0 && (
-                  <div className="mt-4">
-                    <label className="block text-white font-semibold mb-2">
-                      Intensità dolore (1-10)
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={painLevel}
-                        onChange={(e) => setPainLevel(parseInt(e.target.value))}
-                        className="flex-1"
-                      />
-                      <span className={`font-bold text-2xl w-16 text-center ${
-                        painLevel > 5 ? 'text-red-400' : 'text-yellow-400'
-                      }`}>
-                        {painLevel}/10
-                      </span>
-                    </div>
-                    {painLevel > 5 && (
-                      <p className="text-red-400 text-sm mt-2">
-                        ⚠️ Dolore significativo - Salteremo gli esercizi problematici e ridurremo il carico
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Pulsante Inizia */}
-              <button
-                onClick={handleScreeningSubmit}
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-lg font-bold text-lg shadow-lg"
-              >
-                Conferma e Inizia Allenamento →
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Recovery Screening Modal */}
+      {showRecoveryScreening && (
+        <RecoveryScreening
+          onComplete={handleRecoveryComplete}
+          onSkip={() => {
+            setShowRecoveryScreening(false);
+            // Inizia allenamento senza screening
+            handleRecoveryComplete({
+              sleepHours: 7,
+              stressLevel: 5,
+              hasInjury: false,
+              injuryDetails: null,
+              menstrualCycle: null,
+              isFemale: false,
+              timestamp: new Date().toISOString(),
+            });
+          }}
+        />
       )}
     </div>
   );
