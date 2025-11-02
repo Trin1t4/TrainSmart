@@ -4,10 +4,17 @@
   "type": "module",
   "scripts": {
     "build": "cd client && npm install && npm run build",
-    "dev": "cd client && npm run dev --host"
+    "dev": "cd client && npm run dev --host",
+    "dev:api": "node api/program/generate.js",
+    "dev:frontend": "cd client && npm run dev --host",
+    "dev:all": "concurrently \"npm run dev:frontend\" \"npm run dev:api\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "@vercel/node": "^3.0.0",
     "react-router-dom": "^7.9.4"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
