@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "@vercel/node": "^5.5.3",
     "react-router-dom": "^7.9.4"
   }
 }
