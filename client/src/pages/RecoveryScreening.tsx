@@ -20,9 +20,6 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   onComplete,
   onSkip,
 }) => {
-  const [step, setStep] = useState<'sleep' | 'stress' | 'injury' | 'cycle' | 'summary'>(
-    'sleep'
-  );
   const [sleepHours, setSleepHours] = useState<number>(7);
   const [stressLevel, setStressLevel] = useState<number>(5);
   const [hasInjury, setHasInjury] = useState<boolean>(false);
@@ -42,11 +39,11 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
       if (userData.user) {
         const { data: profileData } = await supabase
           .from('user_profiles')
-          .select('gender')
+          .select('onboarding_data')
           .eq('user_id', userData.user.id)
           .single();
 
-        if (profileData?.gender === 'female') {
+        if (profileData?.onboarding_data?.personalInfo?.gender === 'F') {
           setIsFemale(true);
         }
       }
@@ -55,36 +52,34 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
     }
   };
 
-  const handleNext = () => {
-    if (step === 'sleep') {
-      setStep('stress');
-    } else if (step === 'stress') {
-      setStep('injury');
-    } else if (step === 'injury') {
-      if (isFemale) {
-        setStep('cycle');
-      } else {
-        setStep('summary');
-      }
-    } else if (step === 'cycle') {
-      setStep('summary');
+  // Calcola gli adattamenti in tempo reale
+  const getAdaptations = () => {
+    const adaptations: string[] = [];
+    
+    if (sleepHours < 6) {
+      const reduction = sleepHours < 5 ? 30 : 20;
+      adaptations.push(`🔻 Volume ridotto del ${reduction}% per sonno insufficiente`);
     }
-  };
-
-  const handleBack = () => {
-    if (step === 'stress') {
-      setStep('sleep');
-    } else if (step === 'injury') {
-      setStep('stress');
-    } else if (step === 'cycle') {
-      setStep('injury');
-    } else if (step === 'summary') {
-      if (isFemale) {
-        setStep('cycle');
-      } else {
-        setStep('injury');
-      }
+    
+    if (stressLevel >= 8) {
+      adaptations.push('🔻 Intensità ridotta del 20% per stress elevato');
+    } else if (stressLevel >= 6) {
+      adaptations.push('⚠️ Intensità ridotta del 10% per stress moderato');
     }
+    
+    if (hasInjury && injuryDetails) {
+      adaptations.push('🩹 Esercizi modificati per evitare zone doloranti');
+    }
+    
+    if (isFemale && menstrualCycle === 'menstruation') {
+      adaptations.push('🔴 Intensità ottimizzata per fase mestruale');
+    }
+    
+    if (adaptations.length === 0) {
+      return ['✅ Nessun adattamento necessario - Allenamento standard'];
+    }
+    
+    return adaptations;
   };
 
   const handleComplete = async () => {
@@ -119,285 +114,193 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
     onComplete(recoveryData);
   };
 
+  const adaptations = getAdaptations();
+  const hasWarnings = sleepHours < 6 || stressLevel >= 6 || hasInjury;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-        {step === 'sleep' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Come sta la tua ripresa?</h2>
-              <p className="text-sm text-gray-600">Iniziamo con qualche domanda rapida</p>
-            </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 my-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Check Pre-Allenamento</h2>
+          <p className="text-gray-600">Aiutaci a personalizzare l'allenamento di oggi</p>
+        </div>
 
-            <div className="space-y-4">
-              <p className="font-semibold text-gray-900">Quante ore hai dormito stanotte?</p>
-              <input
-                type="number"
-                min="0"
-                max="24"
-                value={sleepHours}
-                onChange={(e) => setSleepHours(parseFloat(e.target.value) || 0)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg text-lg font-bold"
-              />
-              <div className="text-xs text-gray-500">
-                {sleepHours < 6 && '⚠️ Sonno insufficiente'}
-                {sleepHours >= 6 && sleepHours <= 9 && '✅ Sonno ottimale'}
-                {sleepHours > 9 && '⚠️ Sonno eccessivo'}
+        <div className="space-y-8">
+          {/* Sonno */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-lg font-semibold text-gray-900">💤 Ore di sonno stanotte</span>
+              <div className="mt-3 flex items-center gap-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="12"
+                  step="0.5"
+                  value={sleepHours}
+                  onChange={(e) => setSleepHours(parseFloat(e.target.value))}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+                <span className="text-3xl font-bold text-emerald-600 w-16 text-center">{sleepHours}h</span>
               </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={onSkip}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 py-3 rounded-lg font-semibold"
-              >
-                Salta
-              </button>
-              <button
-                onClick={handleNext}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold"
-              >
-                Avanti
-              </button>
-            </div>
+              <div className="mt-2 text-sm">
+                {sleepHours < 6 && <span className="text-red-600 font-medium">⚠️ Sonno insufficiente</span>}
+                {sleepHours >= 6 && sleepHours <= 9 && <span className="text-emerald-600 font-medium">✅ Sonno ottimale</span>}
+                {sleepHours > 9 && <span className="text-amber-600 font-medium">⚠️ Sonno eccessivo</span>}
+              </div>
+            </label>
           </div>
-        )}
 
-        {step === 'stress' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Livello di stress</h2>
-            </div>
-
-            <div className="space-y-4">
-              <p className="font-semibold text-gray-900">Quanto sei stressato oggi?</p>
-              <div className="flex items-center gap-4">
+          {/* Stress */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-lg font-semibold text-gray-900">😰 Livello di stress</span>
+              <div className="mt-3 flex items-center gap-4">
                 <input
                   type="range"
                   min="1"
                   max="10"
                   value={stressLevel}
                   onChange={(e) => setStressLevel(parseInt(e.target.value))}
-                  className="flex-1"
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
-                <span className="text-3xl font-bold text-gray-900 w-12 text-center">{stressLevel}</span>
+                <span className="text-3xl font-bold text-emerald-600 w-16 text-center">{stressLevel}</span>
               </div>
-              <div className="text-xs text-gray-500">
-                1 = Rilassato | 10 = Massimamente stressato
+              <div className="mt-2 text-xs text-gray-500">
+                1 = Completamente rilassato | 10 = Stress massimo
               </div>
-              {stressLevel >= 8 && (
-                <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    ⚠️ Stress elevato: considera un allenamento leggero o deload
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={handleBack}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 py-3 rounded-lg font-semibold"
-              >
-                Indietro
-              </button>
-              <button
-                onClick={handleNext}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold"
-              >
-                Avanti
-              </button>
-            </div>
+            </label>
           </div>
-        )}
 
-        {step === 'injury' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Dolori o fastidi?</h2>
-            </div>
-
-            <div className="space-y-4">
-              <p className="font-semibold text-gray-900">Hai dolori o fastidi oggi?</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setHasInjury(false);
-                    setInjuryDetails('');
-                  }}
-                  className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
-                    !hasInjury
-                      ? 'bg-green-100 border-green-500'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  ✅ No
-                </button>
-                <button
-                  onClick={() => setHasInjury(true)}
-                  className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
-                    hasInjury
-                      ? 'bg-red-100 border-red-500'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  🩹 Sì
-                </button>
-              </div>
-
-              {hasInjury && (
-                <textarea
-                  value={injuryDetails}
-                  onChange={(e) => setInjuryDetails(e.target.value)}
-                  placeholder="Descrivi il fastidio (es. dolore alla spalla, mal di schiena)"
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm"
-                  rows={3}
-                />
-              )}
-            </div>
-
-            <div className="flex gap-3 pt-4">
+          {/* Dolori */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-lg font-semibold text-gray-900">🩹 Dolori o fastidi?</span>
+            </label>
+            <div className="flex gap-3">
               <button
-                onClick={handleBack}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 py-3 rounded-lg font-semibold"
+                onClick={() => {
+                  setHasInjury(false);
+                  setInjuryDetails('');
+                }}
+                className={`flex-1 p-4 border-2 rounded-xl font-semibold transition-all ${
+                  !hasInjury
+                    ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
               >
-                Indietro
+                ✅ Nessun dolore
               </button>
               <button
-                onClick={handleNext}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold"
+                onClick={() => setHasInjury(true)}
+                className={`flex-1 p-4 border-2 rounded-xl font-semibold transition-all ${
+                  hasInjury
+                    ? 'bg-red-100 border-red-500 text-red-900'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
               >
-                {isFemale ? 'Avanti' : 'Fatto'}
+                🩹 Ho dolori
               </button>
             </div>
+
+            {hasInjury && (
+              <textarea
+                value={injuryDetails}
+                onChange={(e) => setInjuryDetails(e.target.value)}
+                placeholder="Descrivi dove hai dolore (es. spalla destra, ginocchio sinistro, lombare...)"
+                className="w-full p-4 border-2 border-gray-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                rows={3}
+              />
+            )}
           </div>
-        )}
 
-        {step === 'cycle' && isFemale && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Fase del ciclo</h2>
-            </div>
-
+          {/* Ciclo Mestruale (solo donne) */}
+          {isFemale && (
             <div className="space-y-3">
-              <p className="font-semibold text-gray-900">In quale fase sei del ciclo mestruale?</p>
-              <div className="flex flex-col gap-2">
+              <label className="block">
+                <span className="text-lg font-semibold text-gray-900">🩸 Fase del ciclo mestruale</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setMenstrualCycle('menstruation')}
-                  className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
+                  className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'menstruation'
-                      ? 'bg-red-100 border-red-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-red-100 border-red-500 text-red-900'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  🔴 Mestruazione (Giorni 1-5)
+                  🔴 Mestruazione<br/><span className="text-xs font-normal">(Giorni 1-5)</span>
                 </button>
                 <button
                   onClick={() => setMenstrualCycle('follicular')}
-                  className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
+                  className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'follicular'
-                      ? 'bg-green-100 border-green-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  🟢 Follicolare (Giorni 6-12)
+                  🟢 Follicolare<br/><span className="text-xs font-normal">(Giorni 6-12)</span>
                 </button>
                 <button
                   onClick={() => setMenstrualCycle('ovulation')}
-                  className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
+                  className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'ovulation'
-                      ? 'bg-yellow-100 border-yellow-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-amber-100 border-amber-500 text-amber-900'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  🟡 Ovulazione (Giorni 13-15)
+                  🟡 Ovulazione<br/><span className="text-xs font-normal">(Giorni 13-15)</span>
                 </button>
                 <button
                   onClick={() => setMenstrualCycle('luteal')}
-                  className={`p-3 border-2 rounded-lg font-semibold text-sm transition ${
+                  className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'luteal'
-                      ? 'bg-orange-100 border-orange-500'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-orange-100 border-orange-500 text-orange-900'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  🟠 Luteale (Giorni 16-28)
+                  🟠 Luteale<br/><span className="text-xs font-normal">(Giorni 16-28)</span>
                 </button>
               </div>
             </div>
+          )}
 
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={handleBack}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 py-3 rounded-lg font-semibold"
-              >
-                Indietro
-              </button>
-              <button
-                onClick={handleNext}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold"
-              >
-                Fatto
-              </button>
+          {/* Box Adattamenti AdaptFlow */}
+          <div className={`p-5 rounded-xl border-2 ${
+            hasWarnings 
+              ? 'bg-amber-50 border-amber-300' 
+              : 'bg-emerald-50 border-emerald-300'
+          }`}>
+            <h3 className="font-bold text-lg mb-3 text-gray-900">
+              🎯 AdaptFlow - Adattamenti per oggi
+            </h3>
+            <div className="space-y-2">
+              {adaptations.map((adaptation, index) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <span className="text-gray-900 font-medium">{adaptation}</span>
+                </div>
+              ))}
             </div>
           </div>
-        )}
 
-        {step === 'summary' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Riepilogo</h2>
-            </div>
-
-            <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Sonno:</span>
-                <span className="font-bold text-gray-900">{sleepHours}h</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Stress:</span>
-                <span className="font-bold text-gray-900">{stressLevel}/10</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Dolori:</span>
-                <span className="font-bold text-gray-900">{hasInjury ? '🩹 Sì' : '✅ No'}</span>
-              </div>
-              {isFemale && menstrualCycle && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Ciclo:</span>
-                  <span className="font-bold text-gray-900">
-                    {menstrualCycle === 'menstruation' && 'Mestruazione'}
-                    {menstrualCycle === 'follicular' && 'Follicolare'}
-                    {menstrualCycle === 'ovulation' && 'Ovulazione'}
-                    {menstrualCycle === 'luteal' && 'Luteale'}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {sleepHours < 6 && (
-              <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ Sonno insufficiente: AdaptFlow ridurrà l'intensità
-                </p>
-              </div>
+          {/* Bottoni */}
+          <div className="flex gap-3 pt-4">
+            {onSkip && (
+              <button
+                onClick={onSkip}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors"
+              >
+                Salta
+              </button>
             )}
-
-            {stressLevel >= 8 && (
-              <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ Stress elevato: considera un allenamento leggero
-                </p>
-              </div>
-            )}
-
             <button
               onClick={handleComplete}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-lg font-bold text-lg"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all"
             >
-              Inizia Allenamento
+              🚀 Inizia Allenamento
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
