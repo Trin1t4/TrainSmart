@@ -48,21 +48,21 @@ const LEVEL_CONFIG = {
   beginner: {
     RIR: 3,
     repsRange: 2,
-    startPercentage: 0.60,
+    startPercentage: 0.60,  // OK per principianti
     compoundSets: 3,
     accessorySets: 2
   },
   intermediate: {
     RIR: 2,
     repsRange: 1,
-    startPercentage: 0.75,
+    startPercentage: 0.85,  // ← CAMBIA da 0.75 a 0.85
     compoundSets: 4,
     accessorySets: 3
   },
   advanced: {
     RIR: 1,
     repsRange: 0,
-    startPercentage: 0.85,
+    startPercentage: 0.90,  // ← CAMBIA da 0.85 a 0.90
     compoundSets: 5,
     accessorySets: 3
   }
@@ -1217,10 +1217,45 @@ function generateLegsDay(variant, location, equipment, painAreas, assessments, l
 
 // ===== CREATE EXERCISE =====
 
+
 function createExercise(name, location, equipment, baseWeight, level, goal, type, assessments) {
   const config = LEVEL_CONFIG[level] || LEVEL_CONFIG.intermediate
-
+  
+  // ✅ FIX TRAZIONI INTELLIGENTE basato su livello
+  if ((name.toLowerCase().includes('trazioni') || name.toLowerCase().includes('pull-up')) && 
+      location === 'gym' && 
+      baseWeight > 0) {
+    
+    // Trova bodyweight dagli assessments
+    const bodyweight = assessments?.find(a => a.bodyweight)?.bodyweight || 80;
+    const ratio = baseWeight / bodyweight;
+    
+    if (ratio < 0.9) { // Lat machine weight < 90% del peso corporeo
+      
+      if (level === 'beginner') {
+        // Principianti: lat machine sicura
+        name = 'Lat Machine';
+        console.log(`[PROGRAM] 🔄 Beginner: Trazioni → Lat Machine (${baseWeight}kg < ${bodyweight}kg)`);
+        
+      } else {
+        // Intermedi/Avanzati: progressioni tecniche
+        if (ratio < 0.6) {
+          name = 'Negative Pull-ups';
+          console.log(`[PROGRAM] 🔄 ${level}: Trazioni → Negative Pull-ups (ratio: ${ratio.toFixed(2)})`);
+        } else if (ratio < 0.75) {
+          name = 'Banded Pull-ups';
+          console.log(`[PROGRAM] 🔄 ${level}: Trazioni → Banded Pull-ups (ratio: ${ratio.toFixed(2)})`);
+        } else {
+          name = 'Pull-ups con Pausa';
+          console.log(`[PROGRAM] 🔄 ${level}: Trazioni → Pull-ups con Pausa (ratio: ${ratio.toFixed(2)})`);
+        }
+      }
+    }
+    // Se ratio >= 0.9 → trazioni complete
+  }
+  
   let sets = type === 'compound' ? config.compoundSets : config.accessorySets
+  // ... resto codice
   let rest = type === 'compound' ? 180 : type === 'accessory' ? 120 : 60
 
   console.log('[PROGRAM] 🎯 createExercise:', { name, level, type, location })
@@ -1229,7 +1264,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     a.exerciseName && name.toLowerCase().includes(a.exerciseName.toLowerCase())
   )
 
-  if (assessment?.variant && assessment?.level && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
+  if (assessment?.variant && assessment?.level && location === 'home' && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
     const levelMap = { beginner: 1, intermediate: 2, advanced: 3 };
     const progressionName = BODYWEIGHT_PROGRESSIONS[assessment.exerciseName][levelMap[assessment.level] || 2]
     const targetReps = assessment.maxReps || 12
@@ -1315,18 +1350,17 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     console.log('[PROGRAM] ⭕ No weight (bodyweight exercise)')
   } else if (location === 'gym' || hasEquipment) {
     if (baseWeight > 0) {
-      const startWeight = baseWeight * config.startPercentage
+// const startWeight = baseWeight * config.startPercentage  // ← COMMENTA QUESTA
       const finalReps = typeof reps === 'string' && reps.includes('-')
         ? parseInt(reps.split('-')[1])
         : targetReps
-
-      trainingWeight = calculateTrainingWeight(startWeight, finalReps, config.RIR)
-
+trainingWeight = calculateTrainingWeight(baseWeight, finalReps, config.RIR)
+      
       if (hasEquipment && equipment.dumbbellMaxKg && trainingWeight > equipment.dumbbellMaxKg) {
         trainingWeight = equipment.dumbbellMaxKg
       }
 
-      console.log(`[PROGRAM] ✅ Weight: ${trainingWeight}kg (${config.startPercentage * 100}% di ${baseWeight}kg, RIR ${config.RIR})`)
+      console.log('[PROGRAM] ✅ Weight:', trainingWeight, 'kg da 1RM', baseWeight, 'kg, RIR', config.RIR)
     }
   }
 
@@ -1336,7 +1370,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     reps,
     rest,
     weight: trainingWeight,
-    notes: type === 'compound' ? `RIR ${config.RIR} - Week 1-2 al ${config.startPercentage * 100}%` : 'Complementare'
+    notes: type === 'compound' ? `RIR ${config.RIR}` : 'Complementare'
   }
 }
 

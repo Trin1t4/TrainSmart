@@ -69,12 +69,39 @@ export default function WorkoutSession() {
     (ex: Exercise) => !state.adjustment.skipExercises.some(skip => ex.name.includes(skip))
   );
   const currentExercise = exercises[currentExerciseIndex];
+console.log("🎯 STATE RICEVUTO:", state.adjustment);
+console.log("⚙️ ESERCIZIO CORRENTE:", {
+  name: currentExercise.name,
+  sets: currentExercise.sets,
+  reps: currentExercise.reps,
+  weight: currentExercise.weight
+});
 
-  const adjustedSets = Math.ceil(currentExercise.sets * state.adjustment.volumeMultiplier);
-  const adjustedWeight = currentExercise.weight
-    ? Math.round(currentExercise.weight * state.adjustment.intensityMultiplier)
-    : null;
+const adjustedSets = Math.max(1, Math.round(currentExercise.sets * state.adjustment.volumeMultiplier));
 
+
+
+console.log("🔢 VOLUME ADJUSTMENT:", {
+  exerciseName: currentExercise.name,
+  originalSets: currentExercise.sets,
+  volumeMultiplier: state.adjustment.volumeMultiplier,
+  calculated: currentExercise.sets * state.adjustment.volumeMultiplier,
+  adjustedSets: adjustedSets,
+  wasReduced: adjustedSets < currentExercise.sets
+});
+console.log("✅ SETS CALCOLATI:", { originalSets: currentExercise.sets, adjustedSets });
+const adjustedWeight = currentExercise.weight 
+  ? Math.round(currentExercise.weight * state.adjustment.intensityMultiplier) 
+  : null;
+
+
+console.log("🏋️ PESO DEBUG:", {
+  exerciseName: currentExercise.name,
+  originalWeight: currentExercise.weight,
+  hasWeight: !!currentExercise.weight,
+  intensityMultiplier: state.adjustment.intensityMultiplier,
+  adjustedWeight: adjustedWeight
+});
   const getGoalType = (): 'hypertrophy' | 'strength' | 'endurance' | 'power' => {
     const reps = parseInt(currentExercise.reps);
     if (reps <= 5) return 'strength';

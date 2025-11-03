@@ -98,15 +98,44 @@ export default function AssessmentFlow({ onComplete }: { onComplete?: () => void
   const handleSave = async () => {
     if (!calculatedRM) return;
 
-    try {
-      await fetch("/api/assessment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          exerciseName: exercise.name,
-          weight: parseFloat(weight),
-          reps: REPS_10RM, // Test 10RM standardizzato
-          notes
+   try {
+  const handleSave = async () => {
+  if (!calculatedRM) return;
+  try {
+    console.log("📤 Sending to /api/assessment:", { 
+      exerciseName: exercise.name, 
+      weight: parseFloat(weight), 
+      reps: REPS_10RM 
+    });
+    
+    const response = await fetch("/api/assessment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exerciseName: exercise.name,
+        weight: parseFloat(weight),
+        reps: REPS_10RM,
+        notes
+      })
+    });
+    
+    console.log("✅ Response status:", response.status);
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("❌ Error response:", error);
+    }
+    console.log("📤 Sending to /api/assessment:", { exerciseName: exercise.name, weight, reps: REPS_10RM });
+  const response = await fetch("/api/assessment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      exerciseName: exercise.name,
+      weight: parseFloat(weight),
+      reps: REPS_10RM,
+      notes
+    })
+  });
+  console.log("✅ Response:", response.status, await response.text());
         })
       });
 
@@ -151,12 +180,15 @@ export default function AssessmentFlow({ onComplete }: { onComplete?: () => void
   };
 
   const generateProgram = async () => {
-    try {
-      // Genera programma personalizzato
-      const res = await fetch("/api/program/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
+  try {
+    // Genera programma personalizzato
+    const res = await fetch("/api/program/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        assessmentData: assessments 
+      })
+    });
 
       if (res.ok) {
         // Programma generato con successo - naviga alla home

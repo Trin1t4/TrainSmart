@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase';
 
 interface AssessmentExercise {
   name: string;
-  rm10?: number;
+  weight?: number;
+  reps?: number;
   variant?: {
     level: number;
     name: string;
@@ -36,7 +37,7 @@ export default function Screening() {
   
   const [currentIdx, setCurrentIdx] = useState(0);
   const [exercises, setExercises] = useState<AssessmentExercise[]>([]);
-  const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
+  const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
   const [saving, setSaving] = useState(false);
   
   const [showResults, setShowResults] = useState(false);
@@ -146,14 +147,19 @@ export default function Screening() {
 
   const submit = () => {
     if (isGym) {
-      if (!test.rm10 || test.rm10 <= 0) return;
-      const ex: AssessmentExercise = { name: current.name, rm10: test.rm10 };
+      if (!test.weight10rm || test.weight10rm <= 0) return;
+      
+      const ex: AssessmentExercise = { 
+        name: current.name, 
+        weight: test.weight10rm,
+        reps: 10
+      };
       const updated = [...exercises, ex];
       setExercises(updated);
       
       if (currentIdx < total - 1) {
         setCurrentIdx(currentIdx + 1);
-        setTest({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
+        setTest({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
       } else {
         completeAssessment(updated);
       }
@@ -176,14 +182,13 @@ export default function Screening() {
       
       if (currentIdx < total - 1) {
         setCurrentIdx(currentIdx + 1);
-        setTest({ variant: '', variantLevel: 1, maxReps: 0, rm10: 0 });
+        setTest({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
       } else {
         completeAssessment(updated);
       }
     }
   };
 
-  // ✅ NUOVO CALCOLO: 50% QUIZ + 30% TEST PRATICI + 20% AGE/BMI
   const calculateFinalLevel = (practicalExercises: AssessmentExercise[]): LevelResult => {
     console.log('[ASSESSMENT] 🧮 Calculating final level (NEW FORMULA)...');
     
@@ -192,11 +197,9 @@ export default function Screening() {
     const age = onboardingData.personalInfo?.age || 30;
     const gender = onboardingData.personalInfo?.gender || 'male';
     
-    // ===== 1. QUIZ SCORE (50%) =====
     const quizScore = quizData.score || 0;
     console.log(`[ASSESSMENT] 📚 Quiz Score (50%): ${quizScore}%`);
 
-    // ===== 2. PRACTICAL SCORE (30%) =====
     let practicalScore = 0;
     
     if (isGym) {
@@ -213,8 +216,8 @@ export default function Screening() {
       let count = 0;
       
       practicalExercises.forEach(ex => {
-        if (ex.rm10 && ex.rm10 > 0) {
-          const estimated1RM = ex.rm10 * 1.33;
+        if (ex.weight && ex.weight > 0) {
+          const estimated1RM = ex.weight * 1.33;
           const relativeStrength = estimated1RM / bodyweight;
           const standard = standards[ex.name as keyof typeof standards] || 1.0;
           const percentOfStandard = (relativeStrength / standard) * 100;
@@ -222,7 +225,7 @@ export default function Screening() {
           totalScore += Math.min(percentOfStandard, 150);
           count++;
           
-          console.log(`[ASSESSMENT] 🏋️ ${ex.name}: ${ex.rm10}kg × 1.33 = ${estimated1RM.toFixed(0)}kg 1RM → ${relativeStrength.toFixed(2)}x BW (${percentOfStandard.toFixed(0)}% standard)`);
+          console.log(`[ASSESSMENT] 🏋️ ${ex.name}: ${ex.weight}kg × 1.33 = ${estimated1RM.toFixed(0)}kg 1RM → ${relativeStrength.toFixed(2)}x BW (${percentOfStandard.toFixed(0)}% standard)`);
         }
       });
       
@@ -259,7 +262,6 @@ export default function Screening() {
     
     console.log(`[ASSESSMENT] 💪 Practical Score (30%): ${practicalScore.toFixed(1)}%`);
 
-    // ===== 3. AGE & BMI SCORE (20%) =====
     let ageBmiScore = 0;
     let bmiValue = 0;
     let bmiScore = 0;
@@ -315,7 +317,6 @@ export default function Screening() {
       console.log(`[ASSESSMENT] 📊 Age/BMI Score (20%): ${ageBmiScore.toFixed(1)}% (60% BMI + 40% Age)`);
     }
 
-    // ===== 4. FINAL SCORE = 50% QUIZ + 30% PRACTICAL + 20% AGE/BMI =====
     const finalScore = (quizScore * 0.5) + (practicalScore * 0.3) + (ageBmiScore * 0.2);
     
     let finalLevel: string;
@@ -560,8 +561,8 @@ export default function Screening() {
                 <div className="relative">
                   <input 
                     type="number" 
-                    value={test.rm10 || ''} 
-                    onChange={e => setTest({ ...test, rm10: +e.target.value })} 
+                    value={test.weight10rm || ''} 
+                    onChange={e => setTest({ ...test, weight10rm: +e.target.value })} 
                     className="w-full bg-slate-700/80 border-2 border-slate-600 text-white rounded-xl px-6 py-4 text-3xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
                     placeholder="0" 
                     min="0" 
@@ -569,12 +570,12 @@ export default function Screening() {
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">kg</span>
                 </div>
-                {test.rm10 > 0 && (
+                {test.weight10rm > 0 && (
                   <div className="mt-4 bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                     <p className="text-sm text-slate-400 mb-1">📊 1RM Stimato:</p>
                     <div className="text-center mt-2">
                       <p className="text-3xl font-bold text-emerald-400">
-                        {Math.round(test.rm10 * 1.33)}kg
+                        {Math.round(test.weight10rm * 1.33)}kg
                       </p>
                       <p className="text-xs text-slate-500 mt-1">Massimale teorico calcolato</p>
                     </div>
@@ -583,7 +584,7 @@ export default function Screening() {
               </div>
               <button 
                 onClick={submit} 
-                disabled={!test.rm10 || test.rm10 <= 0} 
+                disabled={!test.weight10rm || test.weight10rm <= 0} 
                 className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 {currentIdx < total - 1 ? 'Prossimo Esercizio →' : 'Vedi Risultati Finali →'}
@@ -662,7 +663,7 @@ export default function Screening() {
                 <div key={i} className="flex justify-between items-center text-sm bg-slate-700/50 rounded-lg px-4 py-3">
                   <span className="text-slate-300 font-medium">{ex.name}</span>
                   <span className="font-bold text-emerald-400">
-                    {ex.rm10 ? `${ex.rm10}kg × 10` : `${ex.variant?.name} × ${ex.variant?.maxReps}`}
+                    {ex.weight ? `${ex.weight}kg × 10` : `${ex.variant?.name} × ${ex.variant?.maxReps}`}
                   </span>
                 </div>
               ))}

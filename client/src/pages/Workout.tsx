@@ -73,6 +73,7 @@ export default function Workout() {
   }
 
   function calculateAdaptiveAdjustment(recovery: RecoveryData) {
+    console.log("🔍 RECOVERY DATA:", recovery);
     let volumeMultiplier = 1.0;
     let intensityMultiplier = 1.0;
     const skipExercises: string[] = [];
@@ -126,7 +127,7 @@ export default function Workout() {
       volumeMultiplier *= 0.8;
       warnings.push('Fase mestruazione: volume -20%');
     }
-
+console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
     return {
       volumeMultiplier: Math.max(0.6, volumeMultiplier),
       intensityMultiplier: Math.max(0.7, intensityMultiplier),
