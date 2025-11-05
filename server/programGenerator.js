@@ -208,9 +208,9 @@ const HOME_BODYWEIGHT_BY_GOAL = {
   }
 }
 
-// ===== RUBINI METHOD: SPORT-SPECIFIC PERFORMANCE =====
+// ===== PERFORMANCE METHOD: SPORT-SPECIFIC PERFORMANCE =====
 
-const RUBINI_SPORT_CONFIGS = {
+const PERFORMANCE_SPORT_CONFIGS = {
   calcio: {
     name: 'Calcio',
     focus: ['accelerazione', 'cambio_direzione', 'salto_verticale', 'endurance_anaerobica'],
@@ -1073,9 +1073,9 @@ export function generateProgram(input) {
     return generateMotorRecoveryProgram({ level, painAreas, location, goal })
   }
 
-  // ===== RAMO 2: PERFORMANCE RUBINI (GYM O HOME) =====
+  // ===== RAMO 2: PERFORMANCE (GYM O HOME) =====
   if (goal === 'performance') {
-    console.log('[PROGRAM] 🏃 BRANCHING → PERFORMANCE RUBINI')
+    console.log('[PROGRAM] 🏃 BRANCHING → PERFORMANCE')
     return generatePerformanceProgram({ 
       level, 
       frequency, 
@@ -1163,7 +1163,7 @@ function generateMotorRecoveryProgram(input) {
 function generatePerformanceProgram(input) {
   const { level, frequency, assessments, sportRole, location, equipment } = input
   
-  console.log('[PROGRAM] 🏃 RUBINI Performance for:', sportRole, location)
+  console.log('[PROGRAM] 🏃 Performance for:', sportRole, location)
   
   if (!sportRole || !sportRole.sport) {
     console.warn('[PROGRAM] ⚠️ No sport specified, using generic performance')
@@ -1173,9 +1173,9 @@ function generatePerformanceProgram(input) {
   const sport = sportRole.sport.toLowerCase()
   const role = sportRole.role?.toLowerCase() || 'singolo'
   
-  const sportConfig = RUBINI_SPORT_CONFIGS[sport]
+  const sportConfig = PERFORMANCE_SPORT_CONFIGS[sport]
   if (!sportConfig) {
-    console.warn(`[PROGRAM] ⚠️ Sport "${sport}" not in Rubini configs`)
+    console.warn(`[PROGRAM] ⚠️ Sport "${sport}" not in Performance configs`)
     return generateGenericPerformanceProgram(input)
   }
   
@@ -1186,34 +1186,34 @@ function generatePerformanceProgram(input) {
     roleConfig = sportConfig.roles[firstRole]
   }
   
-  console.log(`[RUBINI] ✅ ${sportConfig.name} - ${role} - Priority:`, roleConfig.priority)
+  console.log(`[PERFORMANCE] ✅ ${sportConfig.name} - ${role} - Priority:`, roleConfig.priority)
   
   const weeklySchedule = []
   
   weeklySchedule.push({
     dayName: `${sportConfig.name} - Esplosività Gambe`,
     location,
-    exercises: generateRubiniLowerBody(roleConfig, location, equipment, level)
+    exercises: generatePerformanceLowerBody(roleConfig, location, equipment, level)
   })
   
   weeklySchedule.push({
     dayName: `${sportConfig.name} - Potenza Busto`,
     location,
-    exercises: generateRubiniUpperBody(roleConfig, location, equipment, level)
+    exercises: generatePerformanceUpperBody(roleConfig, location, equipment, level)
   })
   
   if (frequency >= 3) {
     weeklySchedule.push({
       dayName: `${sportConfig.name} - Conditioning Specifico`,
       location,
-      exercises: generateRubiniConditioning(roleConfig, location, equipment, level)
+      exercises: generatePerformanceConditioning(roleConfig, location, equipment, level)
     })
   }
   
   return {
-    name: `Performance ${sportConfig.name} (Rubini) - ${role}`,
+    name: `Performance ${sportConfig.name} - ${role}`,
     description: `Focus: ${roleConfig.priority.join(', ')}`,
-    split: 'performance_rubini',
+    split: 'performance_sport_specific',
     daysPerWeek: frequency,
     location,
     weeklySchedule: weeklySchedule.slice(0, frequency),
@@ -1223,11 +1223,11 @@ function generatePerformanceProgram(input) {
     totalWeeks: 8,
     requiresEndCycleTest: true,
     sportSpecific: true,
-    rubiniMethod: true
+    sportSpecific: true
   }
 }
 
-function generateRubiniLowerBody(roleConfig, location, equipment, level) {
+function generatePerformanceLowerBody(roleConfig, location, equipment, level) {
   const exercises = []
   const isGym = location === 'gym'
   
@@ -1240,7 +1240,7 @@ function generateRubiniLowerBody(roleConfig, location, equipment, level) {
       reps: exerciseName.includes('Jump') || exerciseName.includes('Bound') ? '5-8' : '4-6',
       rest: 180,
       weight: null,
-      notes: 'Rubini - Max esplosività'
+      notes: 'Max esplosività'
     })
   })
   
@@ -1251,14 +1251,14 @@ function generateRubiniLowerBody(roleConfig, location, equipment, level) {
       reps: '3-5',
       rest: 240,
       weight: 'assessment-based',
-      notes: 'Rubini - Base forza'
+      notes: 'Base forza'
     })
   }
   
   return exercises
 }
 
-function generateRubiniUpperBody(roleConfig, location, equipment, level) {
+function generatePerformanceUpperBody(roleConfig, location, equipment, level) {
   const exercises = []
   
   roleConfig.exercises.filter(ex =>
@@ -1270,7 +1270,7 @@ function generateRubiniUpperBody(roleConfig, location, equipment, level) {
       reps: '6-8',
       rest: 120,
       weight: null,
-      notes: 'Rubini - Potenza'
+      notes: 'Potenza'
     })
   })
   
@@ -1280,13 +1280,13 @@ function generateRubiniUpperBody(roleConfig, location, equipment, level) {
     reps: '30-45s',
     rest: 60,
     weight: null,
-    notes: 'Rubini - Core stability'
+    notes: 'Core stability'
   })
   
   return exercises
 }
 
-function generateRubiniConditioning(roleConfig, location, equipment, level) {
+function generatePerformanceConditioning(roleConfig, location, equipment, level) {
   const exercises = []
   
   roleConfig.exercises.filter(ex =>
@@ -1298,7 +1298,7 @@ function generateRubiniConditioning(roleConfig, location, equipment, level) {
       reps: exerciseName.includes('Interval') ? '30s on / 30s off' : '10-15',
       rest: 60,
       weight: null,
-      notes: 'Rubini - Conditioning specifico'
+      notes: 'Conditioning specifico'
     })
   })
   
@@ -1936,6 +1936,3 @@ export function recalibrateProgram(assessments, detrainingFactor) {
   })) || []
 }
 
-export function generatePerformanceProgramRubini(input) {
-  return generateProgram({ ...input, goal: 'strength' })
-}
