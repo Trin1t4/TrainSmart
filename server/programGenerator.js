@@ -1755,11 +1755,41 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
   let rest = goalConfig.rest[type] || (type === 'compound' ? 180 : 120)
 
   // ✅ MANTIENI: Assessment bodyweight progressions
+  // ✅ ASSESSMENT BODYWEIGHT: usa variant se disponibile
   const assessment = assessments?.find(a =>
     a.exerciseName && name.toLowerCase().includes(a.exerciseName.toLowerCase())
   )
 
-  if (assessment?.variant && assessment?.level && location === 'home' && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
+  // 🆕 DEBUG: log assessment trovato
+  if (assessment) {
+    console.log('[ASSESSMENT] Found for "' + name + '":', {
+      exerciseName: assessment.exerciseName,
+      variant: assessment.variant,
+      level: assessment.level,
+      maxReps: assessment.maxReps
+    })
+  }
+
+  // 🆕 FIX: Usa variant direttamente se esiste (priorità massima)
+  if (assessment?.variant && location === 'home') {
+    console.log('[ASSESSMENT] ✅ Using variant directly: ' + assessment.variant)
+    
+    const targetReps = assessment.maxReps || 12
+    const range = config.repsRange
+    
+    return {
+      name: assessment.variant,
+      sets,
+      reps: range > 0 ? `${targetReps - range}-${targetReps + range}` : `${targetReps}`,
+      rest,
+      weight: null,
+      notes: `Da assessment: ${assessment.maxReps || '?'} reps max (${assessment.level || 'N/A'})`
+    }
+  }
+
+  // Fallback: usa BODYWEIGHT_PROGRESSIONS se variant non c'è
+  if (assessment?.level && location === 'home' && BODYWEIGHT_PROGRESSIONS[assessment.exerciseName]) {
+    console.log('[ASSESSMENT] Using BODYWEIGHT_PROGRESSIONS fallback')
     const levelMap = { beginner: 1, intermediate: 2, advanced: 3 };
     const progressionName = BODYWEIGHT_PROGRESSIONS[assessment.exerciseName][levelMap[assessment.level] || 2]
     const targetReps = assessment.maxReps || 12
