@@ -1823,13 +1823,36 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
       targetReps = Math.round((minReps + maxReps) / 2)
     }
 
+    // 🆕 TEMPO: Estrai valori se presente nel nome bodyweight
+    let tempoData = null
+    if (bodyweightName.toLowerCase().includes('tempo')) {
+      const tempoMatch = bodyweightName.match(/tempo\s*(\d+)-(\d+)-(\d+)/i)
+      if (tempoMatch) {
+        tempoData = {
+          eccentric: parseInt(tempoMatch[1]),
+          pause: parseInt(tempoMatch[2]),
+          concentric: parseInt(tempoMatch[3])
+        }
+        console.log('[TEMPO] Detected in bodyweight:', bodyweightName, '→', tempoData)
+      } else {
+        // Fallback: se c'è "Tempo" ma senza numeri, usa default 3-1-3
+        tempoData = {
+          eccentric: 3,
+          pause: 1,
+          concentric: 3
+        }
+        console.log('[TEMPO] Detected (no numbers, using default 3-1-3):', bodyweightName)
+      }
+    }
+
     return {
       name: bodyweightName,
       sets,
       reps: type === 'core' ? '30-60s' : `${targetReps}-${targetReps + 2}`,
       rest,
       weight: null,
-      notes: `${goalConfig.name} - ${goalConfig.homeStrategy}`
+      notes: `${goalConfig.name} - ${goalConfig.homeStrategy}`,
+      ...(tempoData && { tempo: tempoData })
     }
   }
 
@@ -1904,13 +1927,36 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     }
   }
 
+  // 🆕 TEMPO: Estrai valori tempo se presente nel nome
+  let tempoData = null
+  if (exerciseOrGiantSet.toLowerCase().includes('tempo')) {
+    const tempoMatch = exerciseOrGiantSet.match(/tempo\s*(\d+)-(\d+)-(\d+)/i)
+    if (tempoMatch) {
+      tempoData = {
+        eccentric: parseInt(tempoMatch[1]),
+        pause: parseInt(tempoMatch[2]),
+        concentric: parseInt(tempoMatch[3])
+      }
+      console.log('[TEMPO] Detected:', exerciseOrGiantSet, '→', tempoData)
+    } else {
+      // Fallback: se c'è "Tempo" ma senza numeri, usa default 3-1-3
+      tempoData = {
+        eccentric: 3,
+        pause: 1,
+        concentric: 3
+      }
+      console.log('[TEMPO] Detected (no numbers, using default 3-1-3):', exerciseOrGiantSet)
+    }
+  }
+
   return {
     name: exerciseOrGiantSet,
     sets,
     reps,
     rest,
     weight: trainingWeight,
-    notes: `${goalConfig.name} - ${type === 'compound' ? `RIR ${config.RIR}` : 'Complementare'}`
+    notes: `${goalConfig.name} - ${type === 'compound' ? `RIR ${config.RIR}` : 'Complementare'}`,
+    ...(tempoData && { tempo: tempoData })
   }
 }
 
