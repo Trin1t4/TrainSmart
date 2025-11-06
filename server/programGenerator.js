@@ -931,7 +931,7 @@ function convertGymExerciseToHome(exercise, assessments) {
 
     return {
       ...exercise,
-      name: bodyweightName,
+      name: realExerciseName,
       weight: null,
       notes: `🔄 ${exercise.name} (${exercise.weight}kg) → ${bodyweightName}`
     }
@@ -1846,7 +1846,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     }
 
     return {
-      name: bodyweightName,
+      name: realExerciseName,
       sets,
       reps: type === 'core' ? '30-60s' : `${targetReps}-${targetReps + 2}`,
       rest,
@@ -1892,6 +1892,19 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
 
   // 🎯 REPS BASATE SU GOAL
   const [minReps, maxReps] = goalConfig.repsRange.split('-').map(Number)
+  let realExerciseName = bodyweightName;
+if (!realExerciseName || realExerciseName.toLowerCase() === "bodyweight") {
+  if (name.toLowerCase().includes("panca") || name.toLowerCase().includes("push")) {
+    realExerciseName = "Push-up";
+  } else if (name.toLowerCase().includes("trazioni") || name.toLowerCase().includes("pull")) {
+    realExerciseName = "Australian Pull-up";
+  } else if (name.toLowerCase().includes("plank")) {
+    realExerciseName = "Plank";
+  } else {
+    realExerciseName = "Squat a corpo libero";
+  }
+}
+
   let targetReps
   
   if (isBodyweight) {
