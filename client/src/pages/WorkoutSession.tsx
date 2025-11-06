@@ -252,6 +252,7 @@ console.log("🏋️ PESO DEBUG:", {
               </div>
             )}
 
+                        <>
 {/* Timer TUT o Rep Counter normale */}
             {currentExercise.tempo ? (
               <TUTTimer 
@@ -295,6 +296,7 @@ console.log("🏋️ PESO DEBUG:", {
               <Check className="w-6 h-6" />
               {currentSet === adjustedSets ? 'Completa Esercizio' : 'Serie Completata'}
             </button>
+                        </>
           </div>
         )}
 
