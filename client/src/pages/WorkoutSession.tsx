@@ -287,7 +287,7 @@ console.log("🏋️ PESO DEBUG:", {
                 </div>
               </div>
             )}
-            </div>
+           
 
             <button
               onClick={handleCompleteSet}
