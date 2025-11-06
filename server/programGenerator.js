@@ -1,3 +1,19 @@
+
+// PATCH: Risoluzione bug naming esercizi bodyweight
+function convertToBodyweight(exerciseName, level) {
+  const name = exerciseName.toLowerCase();
+  let realExerciseName = null;
+  if (BODYWEIGHT_PROGRESSIONS.hasOwnProperty(exerciseName)) {
+    realExerciseName = BODYWEIGHT_PROGRESSIONS[exerciseName][level];
+  }
+  if (!realExerciseName || realExerciseName.trim().toLowerCase() === "bodyweight") {
+    realExerciseName = exerciseName;
+  }
+  if (realExerciseName.trim().toLowerCase().includes("bodyweight")) {
+    realExerciseName = `${exerciseName} (progressione livello ${level})`;
+  }
+  return realExerciseName;
+}
 import { 
   getExerciseForLocation 
 } from './exerciseSubstitutions.js'
