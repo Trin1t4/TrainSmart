@@ -1920,17 +1920,6 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
 
   // 🎯 REPS BASATE SU GOAL
   const [minReps, maxReps] = goalConfig.repsRange.split('-').map(Number)
-if (!bodyweightName || bodyweightName.toLowerCase() === "bodyweight") {
-  if (name.toLowerCase().includes("panca") || name.toLowerCase().includes("push")) {
-    bodyweightName = "Push-up";
-  } else if (name.toLowerCase().includes("trazioni") || name.toLowerCase().includes("pull")) {
-    bodyweightName = "Australian Pull-up";
-  } else if (name.toLowerCase().includes("plank")) {
-    bodyweightName = "Plank";
-  } else {
-    bodyweightName = "Squat a corpo libero";
-  }
-}
 
   let targetReps
   
