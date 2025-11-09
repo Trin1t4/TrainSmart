@@ -492,7 +492,7 @@ export default function Dashboard() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-300">Tempo Totale</CardTitle>
               <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Clock className="h-5 h-5 text-emerald-400" />
+                <Clock className="h-5 w-5 text-emerald-400" />
               </div>
             </CardHeader>
             <CardContent>
