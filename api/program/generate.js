@@ -254,7 +254,7 @@ function calculateIntelligentLevel(assessmentData, onboardingData) {
           'Trazioni': { beginner: 0.5, intermediate: 0.75, advanced: 1.0 }
         };
 
-        let level = 'beginner';
+         let level = 'beginner';
         for (const [exercise, thresholds] of Object.entries(standards)) {
           if (assessmentData.exercises[count].name?.includes(exercise)) {
             if (ratio >= thresholds.advanced) level = 'advanced';
