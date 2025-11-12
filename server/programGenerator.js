@@ -1730,7 +1730,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     }
 
     // Fallback se non trova
-    const variant = selectExerciseVariant(name, 'home', {}, goal, 0)    
+    const variant = selectExerciseVariant(name, 'home', {}, goal, 1, assessment)    
     // Se è un Giant Set, ritorna così com'è
     if (variant.type === 'giant_set' || variant.rounds) {
       return variant
