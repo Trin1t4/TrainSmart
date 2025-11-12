@@ -1,8 +1,12 @@
 
 import { 
   getExerciseForLocation,
-  selectExerciseVariant  // ✅ AGGIUNGI QUESTO
+  selectExerciseVariant
 } from './exerciseSubstitutions.js'
+
+// ✅ NUOVO: Import sistema multigoal
+import { selectExerciseByGoal } from './exerciseSelectionLogic.js'
+import { GOAL_CONFIGS as GOAL_CONFIGS_NEW } from './GOAL_CONFIGS_COMPLETE.js'
 
 // ===== MAPPING PROGRESSIONI BODYWEIGHT =====
 
@@ -69,7 +73,8 @@ const LEVEL_CONFIG = {
 }
 // ===== GOAL-BASED TRAINING CONFIGURATION (GYM + HOME) =====
 
-const GOAL_CONFIGS = {
+// ✅ USA NUOVO GOAL_CONFIGS
+const GOAL_CONFIGS = GOAL_CONFIGS_NEW
   strength: {
     name: 'Forza',
     repsRange: '3-6',
@@ -1740,6 +1745,21 @@ function convertToCircuit(exercises, goalConfig) {
   }))
 }
 
+// ===== HELPER FUNCTIONS =====
+
+function mapToBaseName(exerciseName) {
+  const name = exerciseName.toLowerCase()
+  
+  if (name.includes('squat')) return 'Squat'
+  if (name.includes('panca') || name.includes('push')) return 'Panca Piana'
+  if (name.includes('trazioni') || name.includes('pull')) return 'Trazioni'
+  if (name.includes('military') || name.includes('press') || name.includes('pike') || name.includes('hspu')) return 'Military Press'
+  if (name.includes('stacco') || name.includes('rdl') || name.includes('deadlift')) return 'Stacco Rumeno'
+  
+  return exerciseName
+}
+
+
 // ===== CREATE EXERCISE =====
 
 
@@ -1826,12 +1846,35 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
   const hasEquipment = hasWeightedEquipment(equipment)
 
   // 🏠 NUOVO: HOME BODYWEIGHT GOAL-SPECIFIC - USA selectExerciseVariant!
+  // 🏠 NUOVO: HOME BODYWEIGHT GOAL-SPECIFIC - USA selectExerciseByGoal!
   if (location === 'home' && !hasEquipment) {
-    console.log('[PROGRAM] 🏠 HOME without equipment - using selectExerciseVariant with goal:', goal)
+    console.log('[PROGRAM] 🏠 HOME without equipment - using selectExerciseByGoal with goal:', goal)
 
-    // ✅ USA LA NUOVA FUNZIONE CHE FA TUTTO AUTOMATICAMENTE
-    const variant = selectExerciseVariant(name, 'home', {}, goal, 0)
+    // ✅ Trova assessment per questo esercizio
+    const assessment = assessments?.find(a =>
+      a.exerciseName && name.toLowerCase().includes(a.exerciseName.toLowerCase())
+    )
     
+    // ✅ Mappa nome a base name
+    const baseName = mapToBaseName(name)
+    
+    // ✅ Usa nuova funzione multigoal
+    const selected = selectExerciseByGoal(baseName, assessment, goal, 1)  // weekNumber = 1 per ora
+    
+    if (selected) {
+      return {
+        name: selected.name,
+        sets: selected.sets,
+        reps: selected.reps,
+        rest: selected.rest,
+        weight: null,
+        category: type,
+        notes: selected.notes  // ✅ Note pulite e corrette
+      }
+    }
+
+    // Fallback se non trova
+    const variant = selectExerciseVariant(name, 'home', {}, goal, 0)    
     // Se è un Giant Set, ritorna così com'è
     if (variant.type === 'giant_set' || variant.rounds) {
       return variant
