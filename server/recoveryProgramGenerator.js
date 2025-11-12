@@ -413,7 +413,7 @@ export function generateRecoveryProgram(input) {
   });
   
   // Ottieni programma base
-  const areaPrograms = RECOVERY_PROGRAMS[body_area as keyof typeof RECOVERY_PROGRAMS];
+  const areaPrograms = RECOVERY_PROGRAMS[body_area];
   if (!areaPrograms) {
     throw new Error(`No recovery program for area: ${body_area}`);
   }

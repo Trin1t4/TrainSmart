@@ -68,18 +68,7 @@ const LEVEL_CONFIG = {
 // ===== GOAL-BASED TRAINING CONFIGURATION (GYM + HOME) =====
 
 // ✅ USA NUOVO GOAL_CONFIGS
-const GOAL_CONFIGS = GOAL_CONFIGS_NEW
-  strength: {
-    name: 'Forza',
-    repsRange: '3-6',
-    rest: { compound: 240, accessory: 180, isolation: 120 },
-    intensity: 'high',
-    focus: 'compound_heavy',
-    setsMultiplier: 1.0,
-    notes: 'Focus carichi massimali',
-    homeStrategy: 'progressive_overload_advanced_variations'
-  },
-  muscle_gain: {
+const GOAL_CONFIGS = GOAL_CONFIGS_NEW;
     name: 'Ipertrofia',
     repsRange: '8-12',
     rest: { compound: 120, accessory: 90, isolation: 60 },
