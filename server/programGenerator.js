@@ -1715,7 +1715,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     const baseName = mapToBaseName(name)
     
     // ✅ Usa nuova funzione multigoal
-    const selected = selectExerciseByGoal(baseName, assessment, goal, 1)  // weekNumber = 1 per ora
+    const selected = selectExerciseByGoal(baseName, level, goal, assessment)  // weekNumber = 1 per ora
     
     if (selected) {
       return {

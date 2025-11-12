@@ -1,676 +1,298 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
-interface AssessmentExercise {
-  name: string;
-  weight?: number;
-  reps?: number;
-  variant?: {
-    level: number;
-    name: string;
-    maxReps: number;
-    coefficient?: number;
-  };
-}
-
-interface LevelResult {
-  level: string;
-  finalScore: string;
-  practicalScore: string;
-  physicalScore: string;
-  breakdown: {
-    bmi: string;
-    bmiScore: string;
-    bodyFat: string;
-    age: number;
-    ageScore: number;
-  };
-}
-
-export default function Screening() {
+export function Screening() {
+  const { userId } = useParams();
   const navigate = useNavigate();
-  
-  const [onboardingData, setOnboardingData] = useState<any>(null);
-  const [quizData, setQuizData] = useState<any>(null);
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
-  
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [exercises, setExercises] = useState<AssessmentExercise[]>([]);
-  const [test, setTest] = useState({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
-  const [saving, setSaving] = useState(false);
-  
-  const [showResults, setShowResults] = useState(false);
-  const [levelResult, setLevelResult] = useState<LevelResult | null>(null);
+  const [generatingProgram, setGeneratingProgram] = useState(false);
+  const [quizData, setQuizData] = useState(null);
+  const [levelResult, setLevelResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedOnboarding = localStorage.getItem('onboarding_data');
-    const storedQuiz = localStorage.getItem('quiz_data');
-    
-    if (!storedOnboarding) {
-      navigate('/onboarding');
-      return;
-    }
-    
-    if (!storedQuiz) {
-      navigate('/quiz');
-      return;
-    }
-    
-    const parsedOnboarding = JSON.parse(storedOnboarding);
-    const parsedQuiz = JSON.parse(storedQuiz);
-    
-    setOnboardingData(parsedOnboarding);
-    setQuizData(parsedQuiz);
-    setLoading(false);
-  }, [navigate]);
-
-  if (loading || !onboardingData || !quizData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Caricamento assessment...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isGym = onboardingData.trainingLocation === 'gym';
-
-  const gymExercises = [
-    { name: 'Squat', unit: 'kg', description: 'Bilanciere dietro, scendi parallelo o sotto' },
-    { name: 'Stacco da terra', unit: 'kg', description: 'Bilanciere a terra, schiena neutra' },
-    { name: 'Panca piana', unit: 'kg', description: 'Bilanciere al petto, gomiti 45°' },
-    { name: 'Trazioni/Lat machine', unit: 'kg', description: 'Se non fai trazioni, usa lat machine' },
-    { name: 'Military press', unit: 'kg', description: 'Bilanciere sopra la testa, in piedi' },
-    { name: 'Pulley basso', unit: 'kg', description: 'Tirata orizzontale, scapole retratte' }
-  ];
-
-  const homeExercises = [
-    { 
-      name: 'Squat', 
-      variants: [
-        { level: 1, name: 'Assistito', desc: 'Con sostegno (sedia/muro)', coefficient: 0.80 }, 
-        { level: 2, name: 'Completo', desc: 'Peso corporeo, parallelo', coefficient: 1.00 }, 
-        { level: 3, name: 'Jump squat', desc: 'Con salto esplosivo', coefficient: 1.20 }, 
-        { level: 4, name: 'Pistol assistito', desc: 'Una gamba con sostegno', coefficient: 1.40 }, 
-        { level: 5, name: 'Pistol completo', desc: 'Una gamba, libero', coefficient: 1.60 }
-      ]
-    },
-    { 
-      name: 'Push-up', 
-      variants: [
-        { level: 1, name: 'Su ginocchia', desc: 'Facilitato, petto a terra', coefficient: 0.50 }, 
-        { level: 2, name: 'Standard', desc: 'Classico, corpo dritto', coefficient: 0.65 }, 
-        { level: 3, name: 'Mani strette', desc: 'Diamond, focus tricipiti', coefficient: 0.75 }, 
-        { level: 4, name: 'Archer', desc: 'Peso spostato su un braccio', coefficient: 0.85 }, 
-        { level: 5, name: 'One-arm', desc: 'Un braccio solo', coefficient: 1.00 }
-      ]
-    },
-    { 
-      name: 'Trazioni', 
-      variants: [
-        { level: 1, name: 'Floor Pull (asciugamano)', desc: 'Tira il corpo a terra con asciugamano', coefficient: 0.40 }, 
-        { level: 2, name: 'Inverted Row 45°', desc: 'Corpo inclinato 45°, sotto tavolo', coefficient: 0.50 }, 
-        { level: 3, name: 'Inverted Row 30°', desc: 'Corpo più orizzontale', coefficient: 0.65 }, 
-        { level: 4, name: 'Australian Pull-up', desc: 'Corpo quasi orizzontale, barra bassa', coefficient: 0.75 }, 
-        { level: 5, name: 'Pull-up completa', desc: 'Full ROM, petto alla sbarra', coefficient: 0.93 }
-      ]
-    },
-    { 
-      name: 'Spalle vertical push', 
-      variants: [
-        { level: 1, name: 'Plank to pike', desc: 'Mobilità spalle', coefficient: 0.40 }, 
-        { level: 2, name: 'Pike push-up', desc: 'Corpo a V invertita', coefficient: 0.55 }, 
-        { level: 3, name: 'Pike elevato', desc: 'Piedi su rialzo', coefficient: 0.70 }, 
-        { level: 4, name: 'Handstand assistito', desc: 'In verticale al muro', coefficient: 0.85 }, 
-        { level: 5, name: 'Handstand push-up', desc: 'Piegamenti in verticale', coefficient: 1.00 }
-      ]
-    },
-    { 
-      name: 'Gambe unilaterali', 
-      variants: [
-        { level: 1, name: 'Affondi', desc: 'Base, avanti-indietro', coefficient: 0.60 }, 
-        { level: 2, name: 'Squat bulgaro', desc: 'Piede posteriore elevato', coefficient: 0.75 }, 
-        { level: 3, name: 'Single leg deadlift', desc: 'Una gamba, equilibrio', coefficient: 0.90 }, 
-        { level: 4, name: 'Jump lunge', desc: 'Affondi con salto', coefficient: 1.10 }, 
-        { level: 5, name: 'Pistol squat', desc: 'Squat completo una gamba', coefficient: 1.40 }
-      ]
-    }
-  ];
-
-  const list = isGym ? gymExercises : homeExercises;
-  const current = list[currentIdx];
-  const total = list.length;
-  const progress = ((currentIdx + 1) / total) * 100;
-
-  const submit = () => {
-    if (isGym) {
-      if (!test.weight10rm || test.weight10rm <= 0) return;
-      
-      const ex: AssessmentExercise = { 
-        name: current.name, 
-        weight: test.weight10rm,
-        reps: 10
-      };
-      const updated = [...exercises, ex];
-      setExercises(updated);
-      
-      if (currentIdx < total - 1) {
-        setCurrentIdx(currentIdx + 1);
-        setTest({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
-      } else {
-        completeAssessment(updated);
-      }
-    } else {
-      if (!test.variant || !test.maxReps || test.maxReps <= 0) return;
-      
-      const selectedVariant = current.variants?.find(v => v.name === test.variant);
-      
-      const ex: AssessmentExercise = { 
-        name: current.name, 
-        variant: { 
-          level: test.variantLevel, 
-          name: test.variant, 
-          maxReps: test.maxReps,
-          coefficient: selectedVariant?.coefficient || 1.0
-        } 
-      };
-      const updated = [...exercises, ex];
-      setExercises(updated);
-      
-      if (currentIdx < total - 1) {
-        setCurrentIdx(currentIdx + 1);
-        setTest({ variant: '', variantLevel: 1, maxReps: 0, weight10rm: 0 });
-      } else {
-        completeAssessment(updated);
-      }
-    }
-  };
-
-  const calculateFinalLevel = (practicalExercises: AssessmentExercise[]): LevelResult => {
-    console.log('[ASSESSMENT] 🧮 Calculating final level (NEW FORMULA)...');
-    
-    const bodyweight = onboardingData.personalInfo?.weight || 70;
-    const height = onboardingData.personalInfo?.height || 175;
-    const age = onboardingData.personalInfo?.age || 30;
-    const gender = onboardingData.personalInfo?.gender || 'male';
-    
-    const quizScore = quizData.score || 0;
-    console.log(`[ASSESSMENT] 📚 Quiz Score (50%): ${quizScore}%`);
-
-    let practicalScore = 0;
-    
-    if (isGym) {
-      const standards = {
-        'Squat': gender === 'male' ? 1.5 : 1.0,
-        'Stacco da terra': gender === 'male' ? 2.0 : 1.3,
-        'Panca piana': gender === 'male' ? 1.0 : 0.6,
-        'Trazioni/Lat machine': gender === 'male' ? 1.0 : 0.8,
-        'Military press': gender === 'male' ? 0.75 : 0.5,
-        'Pulley basso': gender === 'male' ? 0.9 : 0.7
-      };
-      
-      let totalScore = 0;
-      let count = 0;
-      
-      practicalExercises.forEach(ex => {
-        if (ex.weight && ex.weight > 0) {
-          const estimated1RM = ex.weight * 1.33;
-          const relativeStrength = estimated1RM / bodyweight;
-          const standard = standards[ex.name as keyof typeof standards] || 1.0;
-          const percentOfStandard = (relativeStrength / standard) * 100;
-          
-          totalScore += Math.min(percentOfStandard, 150);
-          count++;
-          
-          console.log(`[ASSESSMENT] 🏋️ ${ex.name}: ${ex.weight}kg × 1.33 = ${estimated1RM.toFixed(0)}kg 1RM → ${relativeStrength.toFixed(2)}x BW (${percentOfStandard.toFixed(0)}% standard)`);
+    const fetchUserData = async () => {
+      try {
+        console.log('[SCREENING] 🔍 Extracting userId...');
+        
+        // ✅ OPZIONE 1: userId dai URL params
+        let idToUse = userId;
+        
+        // ✅ OPZIONE 2: Se params fallisce, prova da session state
+        if (!idToUse && location.state?.userId) {
+          idToUse = location.state.userId;
+          console.log('[SCREENING] ✅ userId dal location state:', idToUse);
         }
-      });
-      
-      practicalScore = count > 0 ? totalScore / count : 50;
-      
-    } else {
-      let totalScore = 0;
-      let count = 0;
-      
-      practicalExercises.forEach(ex => {
-        if (ex.variant) {
-          const level = ex.variant.level;
-          const maxReps = ex.variant.maxReps;
-          const coefficient = ex.variant.coefficient || 1.0;
-          
-          const virtualWeight = bodyweight * coefficient;
-          const estimated1RM = virtualWeight * (1 + (maxReps / 30));
-          const relativeStrength = estimated1RM / bodyweight;
-          
-          let percentScore = 0;
-          if (relativeStrength >= 1.5) percentScore = 100;
-          else if (relativeStrength >= 1.0) percentScore = 50 + ((relativeStrength - 1.0) / 0.5) * 50;
-          else percentScore = (relativeStrength / 1.0) * 50;
-          
-          totalScore += percentScore;
-          count++;
-          
-          console.log(`[ASSESSMENT] 🏠 ${ex.name}: level ${level}, ${maxReps} reps, coeff ${coefficient} → ${virtualWeight.toFixed(1)}kg → ${percentScore.toFixed(0)}% score`);
+
+        // ✅ OPZIONE 3: Se ancora non c'è, prova da localStorage
+        if (!idToUse) {
+          idToUse = localStorage.getItem('userId');
+          console.log('[SCREENING] ✅ userId da localStorage:', idToUse);
         }
-      });
-      
-      practicalScore = count > 0 ? totalScore / count : 50;
-    }
-    
-    console.log(`[ASSESSMENT] 💪 Practical Score (30%): ${practicalScore.toFixed(1)}%`);
 
-    let ageBmiScore = 0;
-    let bmiValue = 0;
-    let bmiScore = 0;
-    
-    bmiValue = bodyweight / ((height / 100) ** 2);
-    
-    const bodyComposition = onboardingData.bodyComposition;
-    const hasBodyScan = bodyComposition?.bodyFatPercentage;
-    
-    if (hasBodyScan) {
-      const bf = bodyComposition.bodyFatPercentage;
-      
-      let bfScore = 0;
-      if (gender === 'male') {
-        if (bf <= 13) bfScore = 100;
-        else if (bf <= 17) bfScore = 80;
-        else if (bf <= 22) bfScore = 60;
-        else bfScore = 40;
-      } else {
-        if (bf <= 20) bfScore = 100;
-        else if (bf <= 24) bfScore = 80;
-        else if (bf <= 30) bfScore = 60;
-        else bfScore = 40;
-      }
-      
-      let ageScore = 100;
-      if (age < 20 || age > 50) {
-        ageScore = Math.max(50, 100 - Math.abs(age - 35) * 2);
-      } else if (age >= 20 && age <= 50) {
-        ageScore = 100 - Math.abs(age - 30) * 2;
-      }
-      
-      ageBmiScore = (bfScore * 0.7) + (ageScore * 0.3);
-      
-      console.log(`[ASSESSMENT] 📸 Body Fat from photo: ${bf}% → ${bfScore}/100, Age ${age} → ${ageScore}/100`);
-      console.log(`[ASSESSMENT] 📊 Age/BMI Score (20%): ${ageBmiScore.toFixed(1)}% (70% BF + 30% Age)`);
-      
-    } else {
-      bmiScore = bmiValue >= 18.5 && bmiValue <= 25 ? 100 : 
-                 bmiValue < 18.5 ? Math.max(50, 100 - (18.5 - bmiValue) * 10) :
-                 Math.max(50, 100 - (bmiValue - 25) * 5);
-      
-      let ageScore = 100;
-      if (age < 20 || age > 50) {
-        ageScore = Math.max(50, 100 - Math.abs(age - 35) * 2);
-      } else if (age >= 20 && age <= 50) {
-        ageScore = 100 - Math.abs(age - 30) * 2;
-      }
-      
-      ageBmiScore = (bmiScore * 0.6) + (ageScore * 0.4);
-      
-      console.log(`[ASSESSMENT] 📊 BMI: ${bmiValue.toFixed(1)} → ${bmiScore.toFixed(0)}/100, Age ${age} → ${ageScore}/100`);
-      console.log(`[ASSESSMENT] 📊 Age/BMI Score (20%): ${ageBmiScore.toFixed(1)}% (60% BMI + 40% Age)`);
-    }
+        if (!idToUse) {
+          console.error('[SCREENING] ❌ NO userId found anywhere!');
+          setError('❌ User ID non trovato. Torna alla login.');
+          setLoading(false);
+          return;
+        }
 
-    const finalScore = (quizScore * 0.5) + (practicalScore * 0.3) + (ageBmiScore * 0.2);
-    
-    let finalLevel: string;
-    if (finalScore >= 70) {
-      finalLevel = 'advanced';
-    } else if (finalScore >= 50) {
-      finalLevel = 'intermediate';
-    } else {
-      finalLevel = 'beginner';
-    }
-    
-    console.log(`[ASSESSMENT] ⚖️ FINAL SCORE: ${quizScore.toFixed(1)}% × 0.5 + ${practicalScore.toFixed(1)}% × 0.3 + ${ageBmiScore.toFixed(1)}% × 0.2 = ${finalScore.toFixed(1)}%`);
-    console.log(`[ASSESSMENT] 🎯 FINAL LEVEL: ${finalLevel.toUpperCase()}`);
-    
-    return {
-      level: finalLevel,
-      finalScore: finalScore.toFixed(1),
-      practicalScore: practicalScore.toFixed(1),
-      physicalScore: ageBmiScore.toFixed(1),
-      breakdown: {
-        bmi: hasBodyScan ? 'N/A' : bmiValue.toFixed(1),
-        bmiScore: hasBodyScan ? 'N/A' : bmiScore.toFixed(0),
-        bodyFat: hasBodyScan ? bodyComposition.bodyFatPercentage.toFixed(1) : 'N/A',
-        age,
-        ageScore: age < 20 ? 50 : age > 50 ? 50 : Math.round(100 - Math.abs(age - 30) * 2)
+        console.log('[SCREENING] ✅ Using userId:', idToUse);
+
+        // ✅ Fetch user data da Supabase
+        console.log('[SCREENING] 📡 Fetching from Supabase...');
+        const { data: userData, error: userError } = await supabase
+          .from('user_profiles')
+          .select('onboarding_data, assessment_data')
+          .eq('user_id', idToUse)
+          .single();
+
+        if (userError) {
+          console.error('[SCREENING] ❌ Supabase Query Error:', userError);
+          setError(`❌ Errore caricamento dati: ${userError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        if (!userData) {
+          console.error('[SCREENING] ❌ User data is null!');
+          setError('❌ Utente non trovato nel database.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('[SCREENING] ✅ User data fetched:', userData);
+
+        // ✅ Set onboarding data
+        setData(userData.onboarding_data);
+
+        // ✅ Set assessment data se esiste
+        if (userData.assessment_data) {
+          console.log('[SCREENING] ✅ Assessment data found');
+          setQuizData(userData.assessment_data.quizData);
+          setLevelResult(userData.assessment_data.levelResult);
+        } else {
+          console.warn('[SCREENING] ⚠️ No assessment_data found');
+        }
+
+        console.log('[SCREENING] ✅ All data loaded successfully');
+        setLoading(false);
+      } catch (err) {
+        console.error('[SCREENING] ❌ Exception:', err);
+        setError(`❌ Errore: ${err.message}`);
+        setLoading(false);
       }
     };
-  };
 
-  const completeAssessment = (final: AssessmentExercise[]) => {
-    const result = calculateFinalLevel(final);
-    setLevelResult(result);
-    setShowResults(true);
-  };
+    fetchUserData();
+  }, [userId, location.state]);
 
-  const saveAndContinue = async () => {
-    if (!levelResult) return;
+  const handleGenerateProgram = async () => {
+    console.log('[SCREENING] 🎯 Generating program...');
     
-    setSaving(true);
-    
+    if (!userId && !localStorage.getItem('userId')) {
+      setError('❌ User ID non disponibile');
+      return;
+    }
+
+    if (!levelResult || !data) {
+      setError('❌ Dati assessment non disponibili');
+      return;
+    }
+
+    setGeneratingProgram(true);
+
     try {
-      const assessmentData = { 
-        exercises: exercises, 
-        completedAt: new Date().toISOString(), 
+      const assessmentId = data.assessmentId;
+      const userIdToUse = userId || localStorage.getItem('userId');
+
+      console.log('[SCREENING] 📤 Sending to API:', {
+        userId: userIdToUse,
+        assessmentId,
+        level: levelResult.level,
+      });
+
+      const response = await fetch('/api/program/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userIdToUse,
+          assessmentId,
+          level: levelResult.level,
+          trainingLocation: data?.trainingLocation || 'gym',
+          equipment: data?.equipment || {},
+          goal: data?.goal || 'muscle_gain',
+          homeType: data?.homeType || 'bodyweight',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[SCREENING] ❌ API Error:', errorData);
+        setError(`❌ Errore API: ${errorData.error || response.statusText}`);
+        setGeneratingProgram(false);
+        return;
+      }
+
+      const programData = await response.json();
+      console.log('[SCREENING] ✅ Program generated:', programData);
+
+      // ✅ Salva in Supabase
+      const assessmentData = {
+        exercises: programData.exercises || [],
+        completedAt: new Date().toISOString(),
         completed: true,
-        location: onboardingData.trainingLocation,
-        frequency: onboardingData.activityLevel?.weeklyFrequency,
-        duration: onboardingData.activityLevel?.sessionDuration,
-        goal: onboardingData.goal,
+        location: data.trainingLocation,
+        frequency: data.activityLevel?.weeklyFrequency,
+        duration: data.activityLevel?.sessionDuration,
+        goal: data.goal,
         level: levelResult.level,
         finalScore: levelResult.finalScore,
         practicalScore: levelResult.practicalScore,
         physicalScore: levelResult.physicalScore,
-        breakdown: levelResult.breakdown,
-        sport: onboardingData.sport || '',
-        sportRole: onboardingData.sportRole || '',
-        painScreening: onboardingData.painScreening,
-        personalInfo: onboardingData.personalInfo,
-        quizScore: quizData.score || 0
       };
-      
-      localStorage.setItem('screening_data', JSON.stringify(assessmentData));
 
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        await supabase
-          .from('user_profiles')
-          .update({ 
-            onboarding_completed: true,
-            assessment_completed: true,
-            training_frequency: onboardingData.activityLevel?.weeklyFrequency,
-            session_duration: onboardingData.activityLevel?.sessionDuration,
-            training_goal: onboardingData.goal,
-            training_level: levelResult.level,
-            training_location: onboardingData.trainingLocation,
-            sport: onboardingData.sport || null,
-            sport_role: onboardingData.sportRole || null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ assessment_data: assessmentData })
+        .eq('user_id', userIdToUse);
 
-        await supabase
-          .from('assessments')
-          .insert({
-            user_id: user.id,
-            assessment_type: isGym ? 'gym' : 'home',
-            exercises: exercises,
-            level: levelResult.level,
-            final_score: parseFloat(levelResult.finalScore),
-            practical_score: parseFloat(levelResult.practicalScore),
-            physical_score: parseFloat(levelResult.physicalScore),
-            completed: true,
-            completed_at: new Date().toISOString()
-          });
+      if (updateError) {
+        console.error('[SCREENING] ⚠️ DB Update Error:', updateError);
+      } else {
+        console.log('[SCREENING] ✅ Assessment saved to DB');
       }
-    } catch (error) {
-      console.error('[ASSESSMENT] Error:', error);
+
+      // ✅ Navigate to Dashboard
+      navigate(`/dashboard/${userIdToUse}`, {
+        state: { program: programData, assessment: levelResult },
+      });
+    } catch (err) {
+      console.error('[SCREENING] ❌ Error:', err);
+      setError(`❌ Errore: ${err.message}`);
     } finally {
-      setSaving(false);
-      navigate('/dashboard');
+      setGeneratingProgram(false);
     }
   };
 
-  if (showResults && levelResult) {
-    const levelEmoji = levelResult.level === 'advanced' ? '🔥' : levelResult.level === 'intermediate' ? '💪' : '🌱';
-    const levelColor = levelResult.level === 'advanced' ? 'emerald' : levelResult.level === 'intermediate' ? 'blue' : 'amber';
-    const levelText = levelResult.level === 'advanced' ? 'Avanzato' : levelResult.level === 'intermediate' ? 'Intermedio' : 'Principiante';
-    
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{levelEmoji}</div>
-              <h1 className="text-3xl font-bold text-white mb-2">Assessment Completato!</h1>
-              <p className="text-slate-400">Ecco il tuo profilo fitness completo</p>
-            </div>
-            
-            <div className={`bg-gradient-to-r from-${levelColor}-500/20 to-${levelColor}-500/20 border border-${levelColor}-500/50 rounded-lg p-6 mb-6`}>
-              <div className="text-center">
-                <p className="text-sm text-slate-400 mb-2">Il tuo livello</p>
-                <p className="text-5xl font-bold text-white mb-2">{levelText}</p>
-                <p className="text-slate-300">Punteggio totale: {levelResult.finalScore}%</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                <p className="text-xs text-slate-400 mb-1">📚 Quiz Teorico</p>
-                <p className="text-2xl font-bold text-white">{quizData.score}%</p>
-                <p className="text-xs text-slate-500 mt-1">50% del calcolo</p>
-              </div>
-              
-              <div className="bg-emerald-500/20 rounded-lg p-4 border border-emerald-500/50">
-                <p className="text-xs text-emerald-300 mb-1">💪 Test Pratici</p>
-                <p className="text-2xl font-bold text-white">{levelResult.practicalScore}%</p>
-                <p className="text-xs text-emerald-200 mt-1">30% del calcolo</p>
-              </div>
-              
-              <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-500/50 md:col-span-2">
-                <p className="text-xs text-blue-300 mb-1">
-                  📊 Parametri Fisici (20%)
-                </p>
-                <p className="text-2xl font-bold text-white">{levelResult.physicalScore}%</p>
-                <p className="text-xs text-blue-200 mt-1">
-                  {levelResult.breakdown.bodyFat !== 'N/A' 
-                    ? `BF ${levelResult.breakdown.bodyFat}%, ${levelResult.breakdown.age} anni`
-                    : `BMI ${levelResult.breakdown.bmi}, ${levelResult.breakdown.age} anni`
-                  }
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-700/30 rounded-lg p-5 mb-6">
-              <p className="text-sm text-slate-300 mb-3 font-semibold">La formula di calcolo:</p>
-              <ul className="text-sm text-slate-300 space-y-2 list-disc list-inside">
-                <li><strong>50%</strong> Quiz teoria (conoscenze base)</li>
-                <li><strong>30%</strong> Test pratici (forza relativa)</li>
-                <li><strong>20%</strong> Parametri fisici ({levelResult.breakdown.age} anni, {levelResult.breakdown.bodyFat !== 'N/A' ? `BF ${levelResult.breakdown.bodyFat}%` : `BMI ${levelResult.breakdown.bmi}`})</li>
-              </ul>
-              <p className="text-xs text-slate-400 mt-3">Il programma di allenamento sarà calibrato su questo livello per garantire progressi ottimali e sicuri.</p>
-            </div>
-
-            <button 
-              onClick={saveAndContinue}
-              disabled={saving}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50"
-            >
-              {saving ? 'Salvataggio...' : 'Genera il Mio Programma →'}
-            </button>
-          </div>
-        </div>
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>⏳ Caricamento assessment...</h2>
+        <p>userId: {userId || 'NOT FOUND'}</p>
       </div>
     );
   }
 
-  if (saving) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg font-semibold mb-2">Creazione programma...</p>
-          <p className="text-slate-400 text-sm">Personalizzazione in corso</p>
-        </div>
+      <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+        <h2>{error}</h2>
+        <button 
+          onClick={() => navigate('/login')}
+          style={{
+            padding: '10px 20px',
+            background: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Torna a Login
+        </button>
       </div>
     );
   }
+
+  if (!levelResult || !data) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>⚠️ Dati non disponibili</h2>
+        <p>levelResult: {levelResult ? '✅' : '❌'}</p>
+        <p>data: {data ? '✅' : '❌'}</p>
+      </div>
+    );
+  }
+
+  const levelText = levelResult.level === 'beginner' 
+    ? 'Principiante' 
+    : levelResult.level === 'intermediate' 
+    ? 'Intermedio' 
+    : 'Avanzato';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-white">💪 Test Fisici</h1>
-            <span className="text-slate-300 font-medium">{currentIdx + 1} / {total}</span>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h1>Ecco il tuo profilo fitness completo</h1>
+
+        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
+          <h2>Il tuo livello</h2>
+          <p style={{ fontSize: '32px', fontWeight: 'bold' }}>{levelText}</p>
+          <p style={{ fontSize: '18px', color: '#666' }}>Punteggio totale: {levelResult.finalScore}%</p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+          <div style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+            <h3>📚 Quiz Teorico</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#2196F3' }}>{quizData?.score || 0}%</p>
+            <small>50% del calcolo</small>
           </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300" 
-              style={{ width: `${progress}%` }} 
-            />
+
+          <div style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+            <h3>💪 Test Pratici</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#2196F3' }}>{levelResult.practicalScore}%</p>
+            <small>30% del calcolo</small>
           </div>
-          <div className="flex justify-between text-sm text-slate-400 mt-2">
-            <span>Location: <span className="text-emerald-400 font-semibold">{isGym ? '🏋️ Palestra' : '🏠 Casa'}</span></span>
-            <span>Quiz: <span className="text-emerald-400 font-semibold">{quizData.score}%</span></span>
+
+          <div style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+            <h3>📊 Parametri Fisici</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#2196F3' }}>{levelResult.physicalScore}%</p>
+            <small>20% del calcolo</small>
           </div>
         </div>
-        
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-slate-700 shadow-2xl">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-white mb-2">{current.name}</h2>
-            <p className="text-slate-300">
-              {isGym ? current.description : 'Scegli la variante più difficile che riesci a completare'}
-            </p>
-          </div>
-          
-          {!isGym && current.name === 'Trazioni' && (
-            <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-4 mb-6">
-              <p className="text-sm font-semibold text-blue-300 mb-2">💡 Se non hai una barra:</p>
-              <p className="text-sm text-blue-200">
-                Usa un asciugamano resistente! Fallo passare sotto una porta chiusa, sdraiati a terra e tira il tuo corpo verso l'alto. 
-                Questo "Floor Pull" allena gli stessi muscoli delle trazioni.
-              </p>
-            </div>
-          )}
-          
-          <div className="bg-emerald-500/10 border border-emerald-500 rounded-lg p-4 mb-6">
-            <p className="text-sm text-emerald-200">
-              💡 {isGym 
-                ? 'Fai 2-3 tentativi progressivi. Il 10RM è il peso massimo con cui riesci a fare ESATTAMENTE 10 ripetizioni con tecnica perfetta.' 
-                : 'Testa le varianti in ordine crescente. Registra la più difficile che riesci a fare con almeno 3-5 ripetizioni pulite.'}
-            </p>
-          </div>
-          
-          {isGym ? (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">
-                  Inserisci il tuo 10RM (peso massimo per 10 reps)
-                </label>
-                <div className="relative">
-                  <input 
-                    type="number" 
-                    value={test.weight10rm || ''} 
-                    onChange={e => setTest({ ...test, weight10rm: +e.target.value })} 
-                    className="w-full bg-slate-700/80 border-2 border-slate-600 text-white rounded-xl px-6 py-4 text-3xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
-                    placeholder="0" 
-                    min="0" 
-                    step="2.5" 
-                  />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">kg</span>
-                </div>
-                {test.weight10rm > 0 && (
-                  <div className="mt-4 bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                    <p className="text-sm text-slate-400 mb-1">📊 1RM Stimato:</p>
-                    <div className="text-center mt-2">
-                      <p className="text-3xl font-bold text-emerald-400">
-                        {Math.round(test.weight10rm * 1.33)}kg
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">Massimale teorico calcolato</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <button 
-                onClick={submit} 
-                disabled={!test.weight10rm || test.weight10rm <= 0} 
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {currentIdx < total - 1 ? 'Prossimo Esercizio →' : 'Vedi Risultati Finali →'}
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">Seleziona la variante più difficile:</label>
-                <div className="space-y-2">
-                  {current.variants?.map(v => (
-                    <button 
-                      key={v.level} 
-                      type="button" 
-                      onClick={() => setTest({ ...test, variant: v.name, variantLevel: v.level })} 
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:scale-[1.02] ${
-                        test.variant === v.name 
-                          ? 'border-emerald-500 bg-emerald-500/20 text-white shadow-lg shadow-emerald-500/20' 
-                          : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0 text-lg ${
-                          test.variant === v.name ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-300'
-                        }`}>
-                          {v.level}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold mb-1 text-base">{v.name}</div>
-                          <div className="text-sm text-slate-400">{v.desc}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {test.variant && (
-                <div className="bg-slate-700/50 rounded-xl p-5 border border-slate-600 animate-in fade-in duration-300">
-                  <label className="block text-sm font-medium text-slate-300 mb-3">
-                    Quante ripetizioni pulite riesci a fare?
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type="number" 
-                      value={test.maxReps || ''} 
-                      onChange={e => setTest({ ...test, maxReps: +e.target.value })} 
-                      className="w-full bg-slate-700 border-2 border-slate-600 text-white rounded-xl px-6 py-4 text-3xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
-                      placeholder="0" 
-                      min="1" 
-                      max="50" 
-                    />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">reps</span>
-                  </div>
-                </div>
-              )}
-              
-              <button 
-                onClick={submit} 
-                disabled={!test.variant || !test.maxReps || test.maxReps <= 0} 
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {currentIdx < total - 1 ? 'Prossimo Esercizio →' : 'Vedi Risultati Finali →'}
-              </button>
-            </div>
-          )}
+
+        <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #2196F3' }}>
+          <h3>La formula di calcolo</h3>
+          <p>Il programma di allenamento sarà calibrato su questo livello per garantire progressi ottimali e sicuri.</p>
         </div>
-        
-        {exercises.length > 0 && (
-          <div className="mt-6 bg-slate-800/30 backdrop-blur rounded-xl p-5 border border-slate-700">
-            <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-              <span className="text-lg">✅</span> Esercizi completati:
-            </h3>
-            <div className="space-y-2">
-              {exercises.map((ex, i) => (
-                <div key={i} className="flex justify-between items-center text-sm bg-slate-700/50 rounded-lg px-4 py-3">
-                  <span className="text-slate-300 font-medium">{ex.name}</span>
-                  <span className="font-bold text-emerald-400">
-                    {ex.weight ? `${ex.weight}kg × 10` : `${ex.variant?.name} × ${ex.variant?.maxReps}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      </div>
+
+      <div style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
+        <h2>{generatingProgram ? '⏳ Creazione programma...' : '🎯 Personalizzazione in corso'}</h2>
+
+        <button
+          onClick={handleGenerateProgram}
+          disabled={generatingProgram}
+          style={{
+            background: generatingProgram ? '#ccc' : '#4CAF50',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            fontSize: '16px',
+            borderRadius: '8px',
+            cursor: generatingProgram ? 'not-allowed' : 'pointer',
+            marginTop: '20px',
+          }}
+        >
+          {generatingProgram ? 'Generazione in corso...' : 'Genera Programma Personalizzato'}
+        </button>
+
+        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
+      </div>
+
+      {/* DEBUG INFO */}
+      <div style={{ marginTop: '40px', padding: '10px', background: '#f0f0f0', borderRadius: '5px', fontSize: '12px' }}>
+        <h4>🐛 Debug Info:</h4>
+        <pre>{JSON.stringify({ userId, hasLevelResult: !!levelResult, hasData: !!data }, null, 2)}</pre>
       </div>
     </div>
   );
 }
+
+export default Screening;
