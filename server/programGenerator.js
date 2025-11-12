@@ -69,15 +69,6 @@ const LEVEL_CONFIG = {
 
 // ✅ USA NUOVO GOAL_CONFIGS
 const GOAL_CONFIGS = GOAL_CONFIGS_NEW;
-    name: 'Ipertrofia',
-    repsRange: '8-12',
-    rest: { compound: 120, accessory: 90, isolation: 60 },
-    intensity: 'medium-high',
-    focus: 'volume',
-    setsMultiplier: 1.0,
-    notes: 'Focus volume e pump',
-    homeStrategy: 'time_under_tension'
-  },
   fat_loss: {
     name: 'Dimagrimento',
     repsRange: '15-20',

@@ -418,7 +418,7 @@ export function generateRecoveryProgram(input) {
     throw new Error(`No recovery program for area: ${body_area}`);
   }
   
-  const phaseKey = `phase${assigned_phase}` as keyof typeof areaPrograms;
+  const phaseKey = `phase${assigned_phase}`;
   const phaseProgram = areaPrograms[phaseKey];
   
   // ✅ ADATTA ESERCIZI A LOCATION/EQUIPMENT
@@ -479,7 +479,7 @@ export function generateRecoveryProgram(input) {
 
 // ===== HELPER FUNCTIONS =====
 
-function checkEquipmentAvailable(equipment: any, needed: string | null): boolean {
+function checkEquipmentAvailable(equipment, needed) {
   if (!needed) return true; // Corpo libero, sempre disponibile
   
   const hasResistanceBand = equipment?.resistanceBand || false;
@@ -516,12 +516,12 @@ function checkEquipmentAvailable(equipment: any, needed: string | null): boolean
 }
 
 function customizeForPainProfile(
-  exercises: any[], 
-  bodyArea: string, 
-  painLocation: string, 
-  painTriggers: string[], 
-  painSymptoms: string[]
-): any[] {
+  exercises[], 
+  bodyArea, 
+  painLocation, 
+  painTriggers[], 
+  painSymptoms[]
+)[] {
   // Esempio personalizzazione spalla
   if (bodyArea === 'shoulder') {
     if (painLocation === 'anterior') {
