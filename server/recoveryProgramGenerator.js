@@ -516,12 +516,12 @@ function checkEquipmentAvailable(equipment, needed) {
 }
 
 function customizeForPainProfile(
-  exercises[], 
+  exercises, 
   bodyArea, 
   painLocation, 
-  painTriggers[], 
-  painSymptoms[]
-)[] {
+  painTriggers, 
+  painSymptoms
+) {
   // Esempio personalizzazione spalla
   if (bodyArea === 'shoulder') {
     if (painLocation === 'anterior') {

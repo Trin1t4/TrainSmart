@@ -21,7 +21,7 @@ const STEPS = [
   { id: "bodyweight", title: "Peso", icon: TrendingUp },
   { id: "availability", title: "Disponibilità", icon: Calendar },
   { id: "location", title: "Location", icon: Dumbbell },
-  { id: "equipment", title: "Attrezzatura", icon: Dumbbell }, // Solo se home/mixed
+  { id: "equipment", title: "Attrezzatura", icon: Dumbbell }, // Solo se home
   { id: "injuries", title: "Infortuni", icon: AlertCircle },
 ];
 
@@ -219,7 +219,7 @@ export default function ScreeningFlow({ onComplete }: ScreeningFlowProps) {
       return data.goal === "pregnancy";
     }
     if (step.id === "equipment") {
-      return data.location === "home" || data.location === "mixed";
+      return data.location === "home";
     }
     return true;
   });
@@ -828,19 +828,19 @@ export default function ScreeningFlow({ onComplete }: ScreeningFlowProps) {
                 </p>
               </button>
               <button
-                onClick={() => setData({ ...data, location: "mixed", hasGym: true })}
-                className={`w-full p-6 rounded-xl border-2 transition-all ${
-                  data.location === "mixed"
-                    ? "border-emerald-600 bg-emerald-600/10"
-                    : "border-slate-700 hover:border-slate-600"
-                }`}
-                data-testid="button-location-mixed"
-              >
-                <p className="text-2xl mb-2">🔀</p>
-                <p className="font-semibold mb-1">Misto</p>
-                <p className="text-sm text-slate-400">
-                  Alcuni giorni palestra, altri giorni casa
-                </p>
+//                 onClick={() => setData({ ...data, location: "mixed", hasGym: true })}
+//                 className={`w-full p-6 rounded-xl border-2 transition-all ${
+//                   data.location === "mixed"
+//                     ? "border-emerald-600 bg-emerald-600/10"
+//                     : "border-slate-700 hover:border-slate-600"
+//                 }`}
+//                 data-testid="button-location-mixed"
+//               >
+//                 <p className="text-2xl mb-2">🔀</p>
+//                 <p className="font-semibold mb-1">Misto</p>
+//                 <p className="text-sm text-slate-400">
+//                   Alcuni giorni palestra, altri giorni casa
+//                 </p>
               </button>
             </div>
           )}
