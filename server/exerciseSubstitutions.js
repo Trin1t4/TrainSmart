@@ -2,17 +2,30 @@
 // Gestione conversioni esercizi e varianti goal-specific
 
 import { EXERCISE_DATABASE } from './exerciseDatabase.js';
+import { selectExerciseByGoal } from './exerciseSelectionLogic_CJS.js';
 
 /**
- * Seleziona la variante corretta di un esercizio basata su location, equipment, goal
+ * Seleziona la variante corretta usando selectExerciseByGoal (assessment-aware)
  */
-export function selectExerciseVariant(exerciseName, location, equipment = {}, goal = 'muscle_gain', weekNumber = 1) {
-  // Se location è home senza equipment, ritorna variante bodyweight
+export function selectExerciseVariant(exerciseName, location, equipment = {}, goal = 'muscle_gain', weekNumber = 1, assessment = null) {
+  // Se home senza equipment, usa selectExerciseByGoal per logica intelligente
   if (location === 'home' && !hasEquipment(equipment)) {
-    return getBodyweightVariant(exerciseName, goal);
+    const baseName = mapToBaseName(exerciseName);
+    const selected = selectExerciseByGoal(baseName, assessment, goal, weekNumber);
+    
+    if (selected) {
+      return {
+        name: selected.name,
+        sets: selected.sets,
+        reps: selected.reps,
+        rest: selected.rest,
+        category: 'compound',
+        notes: selected.notes || `${goal} - Week ${weekNumber}`
+      };
+    }
   }
   
-  // Se location è gym o home con equipment, ritorna esercizio standard
+  // Fallback: ritorna esercizio standard
   return {
     name: exerciseName,
     sets: 3,
@@ -33,17 +46,17 @@ export function getExerciseForLocation(exerciseName, location, equipment = {}, g
     return exerciseName;
   }
   
-  // Se location è gym, ritorna variante gym
+  // Se gym, ritorna variante gym
   if (location === 'gym' && exerciseData.gym) {
     return exerciseData.gym.name || exerciseName;
   }
   
-  // Se location è home con equipment
+  // Se home con equipment
   if (location === 'home' && hasEquipment(equipment) && exerciseData.homeEquipment) {
     return exerciseData.homeEquipment[goal]?.[level] || exerciseData.homeEquipment.name || exerciseName;
   }
   
-  // Se location è home bodyweight
+  // Se home bodyweight
   if (location === 'home' && exerciseData.homeBodyweight) {
     return exerciseData.homeBodyweight[goal]?.[level] || exerciseData.homeBodyweight.name || exerciseName;
   }
@@ -61,53 +74,15 @@ function hasEquipment(equipment) {
   );
 }
 
-// Helper: ottiene variante bodyweight per goal
-function getBodyweightVariant(exerciseName, goal) {
+// Helper: mappa nome esercizio a nome base
+function mapToBaseName(exerciseName) {
   const name = exerciseName.toLowerCase();
-  
-  // Mapping bodyweight per goal
-  const bodyweightMapping = {
-    'strength': {
-      'squat': 'Pistol Squat Assistito',
-      'panca': 'One-Arm Push-up Eccentrico',
-      'trazioni': 'Archer Pull-up',
-      'stacco': 'Nordic Curl'
-    },
-    'muscle_gain': {
-      'squat': 'Squat Bulgaro Tempo',
-      'panca': 'Diamond Push-up Tempo',
-      'trazioni': 'Pull-up Tempo',
-      'stacco': 'Single Leg RDL'
-    },
-    'fat_loss': {
-      'squat': 'Jump Squat',
-      'panca': 'Clap Push-up',
-      'trazioni': 'Pull-up Esplosive',
-      'stacco': 'Jump Lunge'
-    },
-    'performance': {
-      'squat': 'Box Jump',
-      'panca': 'Plyometric Push-up',
-      'trazioni': 'Muscle-up Progressione',
-      'stacco': 'Broad Jump'
-    }
-  };
-  
-  let category = null;
-  if (name.includes('squat')) category = 'squat';
-  else if (name.includes('panca') || name.includes('push')) category = 'panca';
-  else if (name.includes('trazioni') || name.includes('pull')) category = 'trazioni';
-  else if (name.includes('stacco') || name.includes('deadlift')) category = 'stacco';
-  
-  const variantName = bodyweightMapping[goal]?.[category] || exerciseName;
-  
-  return {
-    name: variantName,
-    sets: goal === 'strength' ? 4 : 3,
-    reps: goal === 'strength' ? '3-5' : goal === 'fat_loss' ? '15-20' : '8-12',
-    rest: goal === 'strength' ? 180 : goal === 'fat_loss' ? 45 : 90,
-    category: 'compound'
-  };
+  if (name.includes('squat')) return 'Squat';
+  if (name.includes('panca') || name.includes('push')) return 'Panca';
+  if (name.includes('trazioni') || name.includes('pull')) return 'Trazioni';
+  if (name.includes('military') || name.includes('press') || name.includes('pike') || name.includes('hspu')) return 'Military Press';
+  if (name.includes('stacco') || name.includes('rdl') || name.includes('deadlift')) return 'Stacco Rumeno';
+  return exerciseName;
 }
 
-console.log('✅ Exercise substitutions loaded (full implementation)');
+console.log('✅ Exercise substitutions loaded (selectExerciseByGoal integrated)');
