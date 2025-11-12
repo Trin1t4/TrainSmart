@@ -81,7 +81,7 @@ export default async function handler(req, res) {
       location: onboardingData.trainingLocation || 'gym',
       equipment: onboardingData.equipment || {},
       goal: onboardingData.goal || 'muscle_gain',
-      level: intelligentLevel.finalLevel,
+      level: userLevel || intelligentLevel.finalLevel,
       frequency: onboardingData.activityLevel?.weeklyFrequency || 3,
       painAreas: onboardingData.painAreas || [],
       disabilityType: onboardingData.disabilityType || null,
