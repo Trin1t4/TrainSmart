@@ -1,6 +1,6 @@
 // ===== IMPORTS =====
 import { selectExerciseByGoal } from './exerciseSelectionLogic_CJS.js'
-import { selectExerciseVariant } from './exerciseSubstitutions.js';
+import { selectExerciseVariant, getExerciseForLocation } from './exerciseSubstitutions.js';
 import { GOAL_CONFIGS as GOAL_CONFIGS_NEW } from './GOAL_CONFIGS_COMPLETE_CJS.js'
 
 // ===== MAPPING PROGRESSIONI BODYWEIGHT =====
