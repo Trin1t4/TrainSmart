@@ -1,7 +1,6 @@
 {
   "name": "trainsmart",
   "version": "3.1.0",
-  "type": "module",
   "scripts": {
     "build": "cd client && npm install && npm run build",
     "start:frontend": "cd client && npm run dev --host",
