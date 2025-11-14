@@ -1,19 +1,20 @@
 {
   "name": "trainsmart",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "type": "module",
   "scripts": {
+    "dev": "cd client && npm run dev",
     "build": "cd client && npm install && npm run build",
-    "start:frontend": "cd client && npm run dev --host",
-    "dev:api": "node api/program/generate.js",
-    "dev:all": "concurrently \"npm run start:frontend\" \"npm run dev:api\""
+    "preview": "cd client && npm run preview",
+    "test:api": "node --test api/**/*.test.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "@vercel/node": "^3.0.0",
-    "react-router-dom": "^7.9.4"
+    "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@vercel/node": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
