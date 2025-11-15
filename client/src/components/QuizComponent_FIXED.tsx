@@ -233,7 +233,7 @@ export default function QuizComponent() {
         });
         
         // Vai all'assessment
-        navigate('/assessment');
+        navigate('/dashboard');
       } catch (error) {
         console.error("Error saving quiz:", error);
         alert("Errore nel salvataggio. Riprova.");
