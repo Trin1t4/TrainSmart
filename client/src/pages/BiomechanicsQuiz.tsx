@@ -76,6 +76,7 @@ export default function BiomechanicsQuiz() {
         completedAt: new Date().toISOString()
       };
       
+      quizData.level = score >= 80 ? "advanced" : score >= 50 ? "intermediate" : "beginner";
       localStorage.setItem('quiz_data', JSON.stringify(quizData));
       
       // ✅ VAI DIRETTAMENTE ALLO SCREENING (nessuna schermata intermedia)
