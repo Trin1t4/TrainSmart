@@ -103,22 +103,6 @@ export default function Dashboard() {
         program: data.program || data
       }));
       
-      // INSERT TO SUPABASE
-      try {
-        const program = data.program || data;
-        await supabase
-          .from('training_programs')
-          .insert([
-            {
-              user_id: userId,
-              ...program,
-              status: 'active'
-            }
-          ]);
-        console.log('[API] Program inserted to Supabase');
-      } catch (dbError) {
-        console.error('[API] Error inserting to Supabase:', dbError);
-      }
       
 
       setHasProgram(true);
