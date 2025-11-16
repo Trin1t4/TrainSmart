@@ -50,31 +50,29 @@ export default async function handler(req, res) {
 
     const { data: dbData, error: dbError } = await adminSupabase
       .from('training_programs')
-      .insert([{
-        user_id: userId,
-        ...program,
-        status: 'active',
-        created_at: new Date().toISOString()
-      }]).insert([{
+.insert({
     user_id: userId,
     assessment_id: assessmentId,
-    name: `${calculatedLevel.charAt(0).toUpperCase() + calculatedLevel.slice(1)} Program`,
-    description: `Personalized ${calculatedLevel} training program for ${goal}`,
-    level: calculatedLevel,
-    goal: goal,
-    location: location,
-    frequency: frequency,
-    days_per_week: frequency,
-    total_weeks: 12,
+    name: program.name,
+    description: program.description,
+    level: program.level,
+    goal: program.goal,
+    location: program.location,
+    frequency: program.frequency,
+    split: program.split,
+    days_per_week: program.days_per_week,
+    total_weeks: program.total_weeks,
+    weekly_schedule: program.weekly_schedule,
+    progression: program.progression,
+    includes_deload: program.includes_deload,
+    deload_frequency: program.deload_frequency,
+    metadata: program.metadata,
     status: 'active',
-    split: 'full_body',
-    weekly_schedule: {},
     created_at: new Date().toISOString(),
-    metadata: {
-      generated_at: new Date().toISOString(),
-      assessment_data: assessmentData || null
-    }
-  }])
+    updated_at: new Date().toISOString()
+  })
+  .select()
+  .single();
 
     if (dbError) {
       console.error('[API] Supabase INSERT Error:', dbError);
