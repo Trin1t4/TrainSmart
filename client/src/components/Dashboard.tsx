@@ -115,14 +115,6 @@ export default function Dashboard() {
       setGeneratingProgram(false);
     }
   }
-        // Protezione: assicura che program.weekly_schedule sia sempre un array con almeno un elemento
-  if (program && (!program.weekly_schedule || program.weekly_schedule.length === 0)) {
-    program.weekly_schedule = [{
-      dayName: 'Giorno 1',
-      exercises: []
-    }];
-    console.warn('[Dashboard] Program had empty weekly_schedule, initialized with default');
-  }
 
 
   return (
