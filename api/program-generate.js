@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -20,49 +22,17 @@ export default async function handler(req, res) {
     let calculatedLevel = level || 'intermediate';
 
     if (assessmentData && typeof assessmentData === 'object' && Object.keys(assessmentData).length > 0) {
-      try {
-        const exercises = Object.values(assessmentData);
-        const validOneRepMaxes = exercises
-          .map(e => e && e.oneRepMax)
-          .filter(rm => rm && !isNaN(rm) && rm > 0);
-
-        console.log('[LEVEL] Valid 1RMs:', validOneRepMaxes);
-
-        if (validOneRepMaxes && validOneRepMaxes.length > 0) {
-          const avgStrength = validOneRepMaxes.reduce((a, b) => a + b, 0) / validOneRepMaxes.length;
-          console.log('[LEVEL] Avg strength:', avgStrength);
-
-          if (avgStrength > 100) {
-            calculatedLevel = 'advanced';
-          } else if (avgStrength > 60) {
-            calculatedLevel = 'intermediate';
-          } else {
-            calculatedLevel = 'beginner';
-          }
-        }
-      } catch (error) {
-        console.error('[LEVEL] Error:', error);
-      }
+      const levels = Object.values(assessmentData).map((test) => test.oneRepMax > 80 ? 'advanced' : 'intermediate');
+      calculatedLevel = levels.includes('advanced') ? 'advanced' : 'intermediate';
     }
 
-    console.log('[API] Calculated level:', calculatedLevel);
+    console.log('Level calculated from score:', calculatedLevel);
 
     const program = {
       level: calculatedLevel,
-      goal: goal || 'strength',
-      location: location || 'gym',
-      frequency: frequency || 3,
-      split: calculatedLevel === 'advanced' ? 'UPPER_LOWER' : 'FULL_BODY',
-      daysPerWeek: frequency || 3,
-      totalWeeks: 8,
-      exercises: calculatedLevel === 'advanced' ? [
-        { name: 'Squat', sets: 4, reps: 6 },
-        { name: 'Bench Press', sets: 4, reps: 6 },
-        { name: 'Deadlift', sets: 3, reps: 3 },
-      ] : [
-        { name: 'Squat', sets: 3, reps: 8 },
-        { name: 'Bench Press', sets: 3, reps: 8 },
-      ],
+      goal: goal,
+      location: location,
+      frequency: frequency,
       generatedAt: new Date().toISOString(),
       assessmentData: assessmentData || null,
       assessmentId: assessmentId,
@@ -71,12 +41,7 @@ export default async function handler(req, res) {
 
     console.log('[API] Generated:', program);
 
-    return res.status(200).json({
-      success: true,
-      program: program,
-
-          // SAVE TO SUPABASE WITH SERVICE ROLE
-    const { createClient } = await import('@supabase/supabase-js');
+    // SAVE TO SUPABASE WITH SERVICE ROLE
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -97,12 +62,16 @@ export default async function handler(req, res) {
     } else {
       console.log('[API] Program saved to Supabase:', dbData);
     }
+
+    return res.status(200).json({
+      success: true,
+      program: program
     });
   } catch (error) {
     console.error('[API] Error:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error',
+      error: error.message || 'Internal server error'
     });
   }
 }
