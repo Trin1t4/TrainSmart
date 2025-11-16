@@ -56,7 +56,6 @@ export default async function handler(req, res) {
         status: 'active',
         created_at: new Date().toISOString()
       }])
-      .select();
 
     if (dbError) {
       console.error('[API] Supabase INSERT Error:', dbError);
