@@ -84,26 +84,76 @@ export default function Workout() {
 
       schedule.push({
         dayName: dayName,
-        exercises: exercises.map((ex: string) => {
-          // Parse "Exercise: 3x12-15" format
-          const parts = ex.split(':');
-          const name = parts[0].trim();
-          const setsReps = parts[1]?.trim() || '3x10';
-          const [sets, reps] = setsReps.split('x');
+        exercises: exercises.map((ex: any) => {
+          // ✅ Gestione NUOVO formato oggetti da Dashboard.tsx (baseline-aware)
+          if (typeof ex === 'object' && ex.name) {
+            // Nuovo formato: oggetto con { name, sets, reps, rest, intensity, notes, baseline }
+            return {
+              name: ex.name,
+              sets: ex.sets || 3,
+              reps: ex.reps?.toString() || '10',
+              rest: parseRestToSeconds(ex.rest) || 90,
+              notes: ex.notes || '',
+              type: 'standard',
+              intensity: ex.intensity,
+              baseline: ex.baseline
+            };
+          } else if (typeof ex === 'string') {
+            // Vecchio formato: stringa "Exercise: 3x12-15"
+            const parts = ex.split(':');
+            const name = parts[0].trim();
+            const setsReps = parts[1]?.trim() || '3x10';
+            const [sets, reps] = setsReps.split('x');
 
-          return {
-            name: name,
-            sets: parseInt(sets) || 3,
-            reps: reps || '10',
-            rest: 90,
-            notes: '',
-            type: 'standard'
-          };
+            return {
+              name: name,
+              sets: parseInt(sets) || 3,
+              reps: reps || '10',
+              rest: 90,
+              notes: '',
+              type: 'standard'
+            };
+          } else {
+            // Fallback
+            return {
+              name: 'Unknown Exercise',
+              sets: 3,
+              reps: '10',
+              rest: 90,
+              notes: '',
+              type: 'standard'
+            };
+          }
         })
       });
     }
 
     return schedule;
+  }
+
+  // Helper: converte rest da formato "2-3min" o "90s" a secondi
+  function parseRestToSeconds(rest: string | number): number {
+    if (typeof rest === 'number') return rest;
+    if (!rest) return 90;
+
+    // Formato: "2-3min" → prendi valore medio
+    if (rest.includes('-') && rest.includes('min')) {
+      const [min, max] = rest.replace('min', '').split('-').map(s => parseInt(s.trim()));
+      return ((min + max) / 2) * 60;
+    }
+
+    // Formato: "90s" → rimuovi 's'
+    if (rest.includes('s')) {
+      return parseInt(rest.replace('s', ''));
+    }
+
+    // Formato: "2min" → converti a secondi
+    if (rest.includes('min')) {
+      return parseInt(rest.replace('min', '')) * 60;
+    }
+
+    // Default
+    return 90;
   }
 
   function handleStartWorkout() {

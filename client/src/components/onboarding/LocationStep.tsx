@@ -3,7 +3,7 @@ import { Home, Dumbbell, CheckCircle, Circle } from 'lucide-react';
 
 interface OnboardingData {
   trainingLocation?: 'gym' | 'home';
-  trainingType?: 'bodyweight' | 'equipment';
+  trainingType?: 'bodyweight' | 'equipment' | 'machines';
   equipment?: {
     pullupBar?: boolean;
     loopBands?: boolean;
@@ -111,11 +111,11 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
         </button>
       </div>
 
-      {/* Sub-step: Tipo di allenamento */}
-      {selectedLocation && (
+      {/* Sub-step: Tipo di allenamento (CASA) o Area (PALESTRA) */}
+      {selectedLocation === 'home' && (
         <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
           <div>
-            <h3 className="font-semibold text-white mb-3">Che tipo di allenamento fai?</h3>
+            <h3 className="font-semibold text-white mb-3">Che tipo di allenamento fai a casa?</h3>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -128,7 +128,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
               }`}
             >
               <p className="font-semibold text-white text-sm">A Corpo Libero</p>
-              <p className="text-xs text-slate-400 mt-1">Calisthenics, bodyweight</p>
+              <p className="text-xs text-slate-400 mt-1">Solo bodyweight, no attrezzi</p>
             </button>
 
             <button
@@ -139,18 +139,132 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">Con Attrezzi</p>
-              <p className="text-xs text-slate-400 mt-1">Pesi, bilancieri, ecc.</p>
+              <p className="font-semibold text-white text-sm">Piccoli Attrezzi</p>
+              <p className="text-xs text-slate-400 mt-1">Manubri, elastici, ecc.</p>
             </button>
           </div>
         </div>
       )}
 
-      {/* Selezione Attrezzatura (se equipment) */}
-      {trainingType === 'equipment' && (
+      {selectedLocation === 'gym' && (
         <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
           <div>
-            <h3 className="font-semibold text-white mb-3">Quali attrezzi hai a disposizione?</h3>
+            <h3 className="font-semibold text-white mb-3">Che area della palestra usi principalmente?</h3>
+            <p className="text-xs text-slate-400 mb-3">Scegli in base al tuo livello e preferenze</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Area Calisthenics */}
+            <button
+              onClick={() => {
+                setTrainingType('bodyweight');
+                // Pre-configura equipaggiamento per area calisthenics
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: false,
+                  dumbbellMaxKg: 0,
+                  barbell: false,
+                  kettlebell: false,
+                  kettlebellKg: 0,
+                  bench: false,
+                  rings: true,
+                  parallelBars: true
+                });
+              }}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                trainingType === 'bodyweight'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm">Calisthenics</p>
+              <p className="text-xs text-slate-400 mt-1">Barra, anelli, parallele</p>
+              <p className="text-xs text-emerald-400 mt-1">Intermedio/Avanzato</p>
+            </button>
+
+            {/* Sala Pesi - Pesi Liberi */}
+            <button
+              onClick={() => {
+                setTrainingType('equipment');
+                // Pre-configura per pesi liberi (bilanciere, manubri)
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: true,
+                  dumbbellMaxKg: 50,
+                  barbell: true,
+                  kettlebell: true,
+                  kettlebellKg: 32,
+                  bench: true,
+                  rings: false,
+                  parallelBars: false
+                });
+              }}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                trainingType === 'equipment'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm">Pesi Liberi</p>
+              <p className="text-xs text-slate-400 mt-1">Bilanciere, manubri, squat rack</p>
+              <p className="text-xs text-emerald-400 mt-1">Tutti i livelli</p>
+            </button>
+
+            {/* Sala Pesi - Macchine (per principianti) */}
+            <button
+              onClick={() => {
+                setTrainingType('machines');
+                // Pre-configura per macchine guidate
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: true,
+                  dumbbellMaxKg: 30, // Manubri leggeri come complemento
+                  barbell: false, // NO bilanciere per chi sceglie macchine
+                  kettlebell: false,
+                  kettlebellKg: 0,
+                  bench: true,
+                  rings: false,
+                  parallelBars: false
+                });
+              }}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                trainingType === 'machines'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm">Macchine</p>
+              <p className="text-xs text-slate-400 mt-1">Leg press, chest press, lat machine</p>
+              <p className="text-xs text-yellow-400 mt-1">Consigliato principianti</p>
+            </button>
+          </div>
+
+          {/* Conferma equipaggiamento auto-configurato */}
+          {trainingType && (
+            <div className="bg-emerald-900/20 border border-emerald-500/50 rounded-lg p-4 mt-4">
+              <p className="text-sm text-emerald-300 font-medium mb-2">
+                ✅ Equipaggiamento configurato:
+              </p>
+              <p className="text-xs text-emerald-200">
+                {trainingType === 'bodyweight'
+                  ? 'Barra trazioni, Anelli, Parallele, Elastici - Focus: skill calisthenics avanzate'
+                  : trainingType === 'equipment'
+                  ? 'Bilanciere, Manubri (50kg), Panca, Kettlebell (32kg), Barra - Focus: forza e massa con pesi liberi'
+                  : 'Macchine guidate, Manubri leggeri (30kg), Panca, Barra assistita - Focus: sicurezza e tecnica per principianti'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Selezione Attrezzatura (solo per CASA + equipment) */}
+      {selectedLocation === 'home' && trainingType === 'equipment' && (
+        <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+          <div>
+            <h3 className="font-semibold text-white mb-3">Quali attrezzi hai a disposizione a casa?</h3>
             <p className="text-xs text-slate-400 mb-4">Seleziona tutto ciò che hai disponibile</p>
           </div>
 
