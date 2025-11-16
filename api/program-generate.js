@@ -74,6 +74,29 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       program: program,
+
+          // SAVE TO SUPABASE WITH SERVICE ROLE
+    const { createClient } = await import('@supabase/supabase-js');
+    const adminSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    const { data: dbData, error: dbError } = await adminSupabase
+      .from('training_programs')
+      .insert([{
+        user_id: userId,
+        ...program,
+        status: 'active',
+        created_at: new Date().toISOString()
+      }])
+      .select();
+
+    if (dbError) {
+      console.error('[API] Supabase INSERT Error:', dbError);
+    } else {
+      console.log('[API] Program saved to Supabase:', dbData);
+    }
     });
   } catch (error) {
     console.error('[API] Error:', error);
