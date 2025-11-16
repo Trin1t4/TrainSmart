@@ -55,7 +55,26 @@ export default async function handler(req, res) {
         ...program,
         status: 'active',
         created_at: new Date().toISOString()
-      }])
+      }]).insert([{
+    user_id: userId,
+    assessment_id: assessmentId,
+    name: `${calculatedLevel.charAt(0).toUpperCase() + calculatedLevel.slice(1)} Program`,
+    description: `Personalized ${calculatedLevel} training program for ${goal}`,
+    level: calculatedLevel,
+    goal: goal,
+    location: location,
+    frequency: frequency,
+    days_per_week: frequency,
+    total_weeks: 12,
+    status: 'active',
+    split: 'full_body',
+    weekly_schedule: {},
+    created_at: new Date().toISOString(),
+    metadata: {
+      generated_at: new Date().toISOString(),
+      assessment_data: assessmentData || null
+    }
+  }])
 
     if (dbError) {
       console.error('[API] Supabase INSERT Error:', dbError);
