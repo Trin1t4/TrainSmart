@@ -183,6 +183,15 @@ console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
     );
   }
 
+    // Safety guard: ensure program.weekly_schedule exists and has data
+    if (!program.weekly_schedule || program.weekly_schedule.length === 0) {
+          return (
+                  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+                            <p className="text-xl text-gray-300">Nessun programma disponibile</p>
+                          </div>
+                );
+        }
+  
   const todayWorkout = program.weekly_schedule[currentDay];
 
   return (
