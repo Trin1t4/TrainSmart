@@ -21,10 +21,19 @@ export default function Screening() {
         localStorage.setItem('userId', currentUserId);
       }
       setUserId(currentUserId);
-      const localData = localStorage.getItem('onboardingData');
+
+      // FIX: Usa la chiave corretta 'onboarding_data' (con underscore)
+      const localData = localStorage.getItem('onboarding_data');
       if (localData) {
-        setUserData(JSON.parse(localData));
+        const parsedData = JSON.parse(localData);
+        setUserData(parsedData);
+        console.log('[SCREENING] ✅ Loaded onboarding data:', parsedData);
+        console.log('[SCREENING] 🏠 Training location:', parsedData.trainingLocation);
+        console.log('[SCREENING] 🎯 Training type:', parsedData.trainingType);
+      } else {
+        console.warn('[SCREENING] ⚠️ No onboarding_data found in localStorage');
       }
+
       setLoading(false);
     } catch (error) {
       console.error('[SCREENING] Error:', error);
