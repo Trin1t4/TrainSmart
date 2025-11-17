@@ -379,7 +379,7 @@ export default function Dashboard() {
         frequency: generatedProgram.frequency || 3,
         split: generatedProgram.split,
         days_per_week: generatedProgram.frequency || 3,
-        weekly_split: generatedProgram.weeklySplit || [],
+        weekly_split: generatedProgram.weeklySplit || { days: [] },
         exercises: generatedProgram.exercises || [],
         total_weeks: generatedProgram.totalWeeks || 8,
         start_date: new Date().toISOString(),
@@ -681,10 +681,10 @@ export default function Dashboard() {
                   </div>
 
                   {/* NUOVO: Visualizza split settimanale se disponibile */}
-                  {program.weeklySplit ? (
+                  {program.weekly_split?.days?.length > 0 ? (
                     <div>
                       <h4 className="font-display font-semibold text-lg mb-4">Programma Settimanale:</h4>
-                      <WeeklySplitView weeklySplit={program.weeklySplit} showDetails={true} />
+                      <WeeklySplitView weeklySplit={program.weekly_split} showDetails={true} />
                     </div>
                   ) : (
                     <div>
