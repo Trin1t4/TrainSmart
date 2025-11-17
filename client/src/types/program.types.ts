@@ -77,7 +77,7 @@ export interface Program {
   exercises: Exercise[];
   correctiveExercises?: Exercise[];
   notes: string;
-  createdAt: string;
+  created_at: string; // Changed from createdAt to match Supabase schema
   weeklySplit?: WeeklySplit; // NUOVO: Split dettagliato per giorni
 }
 

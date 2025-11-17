@@ -112,7 +112,7 @@ export interface ProgramGeneratorOptions {
  * @param options - Configurazione completa per generazione programma
  * @returns - Programma completo con esercizi e correttivi
  */
-export function generateProgram(options: ProgramGeneratorOptions): Omit<Program, 'createdAt'> {
+export function generateProgram(options: ProgramGeneratorOptions): Omit<Program, 'created_at'> {
   const { level, goal, location, trainingType, frequency, baselines, painAreas, equipment } = options;
 
   console.log('🎯 GENERAZIONE PROGRAMMA BASELINE-AWARE + EQUIPMENT-AWARE');
