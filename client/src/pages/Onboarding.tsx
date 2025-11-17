@@ -45,13 +45,14 @@ export default function Onboarding() {
       console.log('[ONBOARDING] 📤 Saving to Supabase:', JSON.stringify(onboardingData, null, 2));
       console.log('[ONBOARDING] 🏠 Final location value:', onboardingData.trainingLocation);
 
-      // ✅ FIX: UPSERT con onConflict su user_id
+      // ✅ FIX: UPSERT con onConflict su user_id + email (NOT NULL)
       // onConflict: 'user_id' → Usa UNIQUE constraint su user_id invece di PRIMARY KEY (id)
       // Quindi: se user_id esiste già → UPDATE, altrimenti → INSERT
       const { error } = await supabase
         .from('user_profiles')
         .upsert({
           user_id: user.id,
+          email: user.email || '',  // ← FIX: email è NOT NULL nella tabella!
           onboarding_data: onboardingData,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
