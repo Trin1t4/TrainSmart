@@ -45,19 +45,20 @@ export default function Onboarding() {
       console.log('[ONBOARDING] 📤 Saving to Supabase:', JSON.stringify(onboardingData, null, 2));
       console.log('[ONBOARDING] 🏠 Final location value:', onboardingData.trainingLocation);
 
-      // ✅ FIX: UPSERT invece di UPDATE
-      // UPSERT = INSERT se non esiste, UPDATE se esiste
-      // Questo risolve il problema per nuovi utenti senza profilo
+      // ✅ FIX: UPSERT con onConflict su user_id
+      // onConflict: 'user_id' → Usa UNIQUE constraint su user_id invece di PRIMARY KEY (id)
+      // Quindi: se user_id esiste già → UPDATE, altrimenti → INSERT
       const { error } = await supabase
         .from('user_profiles')
         .upsert({
-          user_id: user.id,  // ← Necessario per UPSERT (chiave primaria)
+          user_id: user.id,
           onboarding_data: onboardingData,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
-          created_at: new Date().toISOString()  // ← Per nuovi record
+          created_at: new Date().toISOString()
         }, {
-          onUpdate: ['onboarding_data', 'onboarding_completed', 'updated_at']  // ← Campi da aggiornare se esiste già
+          onConflict: 'user_id',  // ← KEY FIX: usa user_id per conflict detection
+          ignoreDuplicates: false  // ← UPDATE se esiste, non ignorare
         });
 
       if (error) {
