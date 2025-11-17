@@ -33,10 +33,24 @@ export default function Dashboard() {
     screening: null as any
   });
 
+  const [analytics, setAnalytics] = useState({
+    daysActive: 0,
+    totalVolume: 0,
+    weeklyVolume: 0,
+    progression: 0,
+    lastWorkout: null as string | null
+  });
+
   useEffect(() => {
     loadData();
     initializePrograms();
   }, []);
+
+  useEffect(() => {
+    if (program) {
+      calculateAnalytics();
+    }
+  }, [program]);
 
   // NEW: Initialize programs from Supabase with migration
   async function initializePrograms() {
@@ -96,6 +110,121 @@ export default function Dashboard() {
     } catch (error) {
       console.error('❌ Error loading program history:', error);
     }
+  }
+
+  // ✅ CALCOLA ANALYTICS REALI DAL PROGRAMMA
+  function calculateAnalytics() {
+    if (!program) return;
+
+    console.log('📊 Calculating real analytics from program...');
+
+    // 1. CALCOLA GIORNI ATTIVI (dal programma start_date)
+    let daysActive = 0;
+    if (program.start_date || program.created_at) {
+      const startDate = new Date(program.start_date || program.created_at);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - startDate.getTime());
+      daysActive = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // 2. CALCOLA VOLUME SETTIMANALE TEORICO (somma sets × reps per tutti gli esercizi)
+    let weeklyVolume = 0;
+    let totalSets = 0;
+
+    // Se ha weekly_split, usa quello
+    if (program.weekly_split && program.weekly_split.days) {
+      program.weekly_split.days.forEach((day: any) => {
+        day.exercises.forEach((ex: any) => {
+          if (ex.sets && ex.reps) {
+            // Converti reps (può essere "8-12" o 8)
+            const repsValue = typeof ex.reps === 'string'
+              ? parseInt(ex.reps.split('-')[0])
+              : ex.reps;
+
+            weeklyVolume += ex.sets * repsValue;
+            totalSets += ex.sets;
+          }
+        });
+      });
+    } else if (program.exercises) {
+      // Fallback: usa exercises array
+      program.exercises.forEach((ex: any) => {
+        if (ex.sets && ex.reps) {
+          const repsValue = typeof ex.reps === 'string'
+            ? parseInt(ex.reps.split('-')[0])
+            : ex.reps;
+
+          weeklyVolume += ex.sets * repsValue;
+          totalSets += ex.sets;
+        }
+      });
+
+      // Moltiplica per frequenza settimanale
+      const frequency = program.frequency || 3;
+      weeklyVolume = weeklyVolume * frequency;
+    }
+
+    // 3. CALCOLA VOLUME TOTALE (weekly × settimane attive)
+    const weeksActive = Math.max(1, Math.ceil(daysActive / 7));
+    const totalVolume = weeklyVolume * weeksActive;
+
+    // 4. CALCOLA PROGRESSIONE (baseline vs target)
+    let progression = 0;
+    if (dataStatus.screening?.patternBaselines && program.exercises) {
+      // Confronta baseline reps con target reps
+      const baselines = dataStatus.screening.patternBaselines;
+      let baselineTotal = 0;
+      let targetTotal = 0;
+      let count = 0;
+
+      Object.values(baselines).forEach((baseline: any) => {
+        if (baseline && baseline.reps) {
+          baselineTotal += baseline.reps;
+          count++;
+        }
+      });
+
+      program.exercises.forEach((ex: any) => {
+        if (ex.baseline && ex.reps) {
+          const targetReps = typeof ex.reps === 'string'
+            ? parseInt(ex.reps.split('-')[0])
+            : ex.reps;
+          targetTotal += targetReps;
+        }
+      });
+
+      if (count > 0 && targetTotal > 0) {
+        progression = Math.round(((targetTotal - baselineTotal) / baselineTotal) * 100);
+      }
+    }
+
+    // 5. LAST WORKOUT (usa updated_at o last_accessed_at)
+    let lastWorkout = null;
+    if (program.last_accessed_at || program.updated_at) {
+      const lastDate = new Date(program.last_accessed_at || program.updated_at);
+      const today = new Date();
+      const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) lastWorkout = 'Oggi';
+      else if (diffDays === 1) lastWorkout = 'Ieri';
+      else lastWorkout = `${diffDays} giorni fa`;
+    }
+
+    setAnalytics({
+      daysActive,
+      totalVolume,
+      weeklyVolume,
+      progression: Math.max(0, progression), // Non negativo
+      lastWorkout
+    });
+
+    console.log('✅ Analytics calculated:', {
+      daysActive,
+      totalVolume,
+      weeklyVolume,
+      progression,
+      lastWorkout
+    });
   }
 
   function loadData() {
@@ -635,20 +764,22 @@ export default function Dashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-display flex items-center gap-2 text-emerald-300">
                   <Activity className="w-5 h-5" />
-                  Allenamenti
+                  Giorni Attivi
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-emerald-400">12</span>
-                  <span className="text-sm text-emerald-300/60">completati</span>
+                  <span className="text-4xl font-bold text-emerald-400">{analytics.daysActive}</span>
+                  <span className="text-sm text-emerald-300/60">giorni</span>
                 </div>
-                <p className="text-xs text-emerald-300/50 mt-2">Ultimo: 2 giorni fa</p>
+                <p className="text-xs text-emerald-300/50 mt-2">
+                  {analytics.lastWorkout ? `Ultimo accesso: ${analytics.lastWorkout}` : 'Programma appena creato'}
+                </p>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Total Weight Lifted */}
+          {/* Total Volume */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -663,10 +794,14 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-blue-400">3,850</span>
-                  <span className="text-sm text-blue-300/60">kg</span>
+                  <span className="text-4xl font-bold text-blue-400">
+                    {analytics.totalVolume > 0 ? analytics.totalVolume.toLocaleString() : '0'}
+                  </span>
+                  <span className="text-sm text-blue-300/60">reps</span>
                 </div>
-                <p className="text-xs text-blue-300/50 mt-2">Media: 320 kg/sessione</p>
+                <p className="text-xs text-blue-300/50 mt-2">
+                  Settimanale: {analytics.weeklyVolume > 0 ? analytics.weeklyVolume.toLocaleString() : '0'} reps/week
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -686,11 +821,16 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-purple-400">+18%</span>
-                  <span className="text-sm text-purple-300/60">vs mese scorso</span>
+                  <span className="text-4xl font-bold text-purple-400">
+                    {analytics.progression > 0 ? `+${analytics.progression}%` : '0%'}
+                  </span>
+                  <span className="text-sm text-purple-300/60">vs baseline</span>
                 </div>
                 <div className="mt-3 h-2 bg-purple-900/30 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" style={{ width: '72%' }}></div>
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, analytics.progression)}%` }}
+                  ></div>
                 </div>
               </CardContent>
             </Card>
