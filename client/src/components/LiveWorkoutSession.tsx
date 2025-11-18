@@ -83,7 +83,7 @@ export default function LiveWorkoutSession({
   const [selectedPainArea, setSelectedPainArea] = useState<string | null>(null);
 
   // Menstrual cycle tracking state (for female athletes)
-  const [menstrualPhase, setMenstrualPhase] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstrual' | 'none'>('none');
+  const [menstrualPhase, setMenstrualPhase] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstrual' | 'menopause' | 'none'>('none');
   const [cycleDayNumber, setCycleDayNumber] = useState<number>(14);
   const [showCycleTracker, setShowCycleTracker] = useState(false);
 
@@ -536,6 +536,12 @@ export default function LiveWorkoutSession({
         intensityAdjustment = 'RPE 4-6 (leggero)';
         cycleNotes.push('🩸 Mestruale: Riduci intensità, ascolta il corpo');
         break;
+
+      case 'menopause': // Menopausa: focus resistenza, recupero, bone density
+        volumeMultiplier = 0.95; // Slight reduction (-5%)
+        intensityAdjustment = 'RPE 6-7 (moderato, focus resistenza)';
+        cycleNotes.push('🧘‍♀️ Menopausa: Focus resistenza e densità ossea, +20% rest');
+        break;
     }
 
     return exercisesToAdapt.map(ex => {
@@ -559,6 +565,10 @@ export default function LiveWorkoutSession({
           adapted.intensity = 'RPE 3-4 (molto leggero)';
           adapted.notes = '🩸 Crampi? Sostituisci con stretching dolce | ' + (ex.notes || '');
         }
+      } else if (menstrualPhase === 'menopause') {
+        // Menopause: slight volume reduction, increased rest for recovery
+        adapted.sets = Math.max(Math.floor(ex.sets * volumeMultiplier), 2);
+        adapted.rest = increaseRest(ex.rest); // +30s rest
       }
 
       // Update intensity recommendation
@@ -786,8 +796,12 @@ export default function LiveWorkoutSession({
     if (currentSet < currentTargetSets) {
       setCurrentSet(prev => prev + 1);
 
-      // Start rest timer
-      const restSeconds = parseInt(currentExercise.rest.replace(/\D/g, ''));
+      // Start rest timer (aumentato +20% per menopausa)
+      let restSeconds = parseInt(currentExercise.rest.replace(/\D/g, ''));
+      if (menstrualPhase === 'menopause') {
+        restSeconds = Math.round(restSeconds * 1.2); // +20% rest per menopausa
+        console.log('🧘‍♀️ Menopause: increased rest time by 20%');
+      }
       setRestTimeRemaining(restSeconds);
       setRestTimerActive(true);
     } else {

@@ -267,6 +267,14 @@ export default function Workout() {
       volumeMultiplier *= 0.8;
       warnings.push('Fase mestruazione: volume -20%');
     }
+
+    // MENOPAUSE ADAPTATIONS: focus resistenza, più rest, bone density
+    if (recovery.isFemale && recovery.menstrualCycle === 'menopause') {
+      volumeMultiplier *= 0.95; // Volume leggermente ridotto (-5%)
+      intensityMultiplier *= 0.95; // Intensità leggermente ridotta (-5%)
+      warnings.push('Programma menopausa: focus resistenza e densità ossea');
+    }
+
 console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
     return {
       volumeMultiplier: Math.max(0.6, volumeMultiplier),
