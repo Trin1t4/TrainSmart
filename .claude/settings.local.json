@@ -18,7 +18,8 @@
       "Bash(pkill:*)",
       "Bash(test:*)",
       "Bash(npm install:*)",
-      "Bash(python generate_alter_table.py:*)"
+      "Bash(python generate_alter_table.py:*)",
+      "Bash(xargs -I {} sh -c 'wc -c \"\"\"\"{}\"\"\"\" 2>/dev/null')"
     ],
     "deny": [],
     "ask": []
