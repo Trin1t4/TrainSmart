@@ -472,7 +472,7 @@ function createExercise(
 
   // Calcola volume basato su baseline
   const baselineReps = baseline.reps;
-  const volumeCalc = calculateVolume(baselineReps, goal, level);
+  const volumeCalc = calculateVolume(baselineReps, goal, level, location);
 
   // Determina quale variante usare
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
@@ -561,7 +561,7 @@ function createHorizontalPullExercise(
   let exerciseName = selectedVariant.name;
 
   // Volume generico (non abbiamo baseline per questo pattern)
-  const volumeCalc = calculateVolume(12, goal, level); // Assume 12 reps come baseline
+  const volumeCalc = calculateVolume(12, goal, level, location); // Assume 12 reps come baseline
 
   // Conversione a macchine
   if (location === 'gym' && trainingType === 'machines') {

@@ -34,7 +34,8 @@ export interface VolumeResult {
 export function calculateVolume(
   baselineMaxReps: number,
   goal: string,
-  level: string
+  level: string,
+  location?: 'gym' | 'home'
 ): VolumeResult {
   // ✅ BEGINNER: Scheda di ADATTAMENTO ANATOMICO fissa
   // 3x10 @ 65% del massimale, rest 90s
@@ -67,11 +68,20 @@ export function calculateVolume(
   let intensity = '75%';
 
   if (goal === 'forza' || goal === 'strength') {
-    // CALISTHENICS STRENGTH: Volume alto per skill acquisition + forza
-    sets = level === 'advanced' ? 6 : 5; // Più sets per pratica
-    reps = Math.max(5, Math.min(workingReps, 8)); // 5-8 reps (sweet spot calisthenics)
-    rest = '2-3min'; // Recupero completo ma non eccessivo
-    intensity = '75%'; // Volume > Intensità nel bodyweight
+    // ✅ DISTINGUE TRA GYM E CALISTHENICS
+    if (location === 'gym') {
+      // 🏋️ GYM STRENGTH: Intensità alta, reps basse (Powerlifting style)
+      sets = level === 'advanced' ? 5 : 4; // 4-5 sets
+      reps = Math.max(3, Math.min(workingReps, 5)); // 3-5 reps (forza massimale)
+      rest = '3-5min'; // Recupero completo per sistema nervoso
+      intensity = '85-90%'; // Alta intensità per adattamenti neurali
+    } else {
+      // 🤸 CALISTHENICS STRENGTH: Volume alto per skill acquisition
+      sets = level === 'advanced' ? 6 : 5; // Più sets per pratica
+      reps = Math.max(5, Math.min(workingReps, 8)); // 5-8 reps (sweet spot calisthenics)
+      rest = '2-3min'; // Recupero completo ma non eccessivo
+      intensity = '75%'; // Volume > Intensità nel bodyweight
+    }
   } else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain') {
     // IPERTROFIA: Volume moderato-alto, TUT
     sets = level === 'advanced' ? 5 : 4;
@@ -143,7 +153,7 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
 
     // Calcola sets/reps basati su baseline E goal
     const baselineReps = baseline.reps;
-    const volumeCalc = calculateVolume(baselineReps, goal, level);
+    const volumeCalc = calculateVolume(baselineReps, goal, level, location);
 
     // Usa la STESSA variante dello screening (non più difficile!)
     let exerciseName = baseline.variantName;
