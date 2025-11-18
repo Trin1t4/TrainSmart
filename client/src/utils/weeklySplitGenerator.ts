@@ -84,12 +84,14 @@ export interface DayWorkout {
   dayName: string;
   focus: string;
   exercises: Exercise[];
+  estimatedDuration?: number; // Durata stimata in minuti
 }
 
 export interface WeeklySplit {
   splitName: string;
   description: string;
   days: DayWorkout[];
+  averageDuration?: number; // Durata media workout in minuti
 }
 
 interface SplitGeneratorOptions {
@@ -156,6 +158,95 @@ function getGoalDistributionNote(goals: string[]): string {
   const secondary = goalLabels[goals[1]] || goals[1];
   const tertiary = goalLabels[goals[2]] || goals[2];
   return `📊 Distribuzione: ${primary} (40%) + ${secondary} (30%) + ${tertiary} (30%)`;
+}
+
+/**
+ * WORKOUT DURATION ESTIMATOR
+ * Calcola durata stimata in minuti basandosi su esercizi/sets/rest
+ *
+ * Formula:
+ * Duration = Warm-up + Σ(Sets × TimePerSet + RestBetweenSets) + Cool-down
+ *
+ * Tempi medi:
+ * - Warm-up: 5 min
+ * - Time per set: 30-45s (basato su reps)
+ * - Rest: estratto dall'esercizio (30s, 60s, 90s, 2min, 3min)
+ * - Cool-down: 3 min
+ */
+export function estimateWorkoutDuration(exercises: Exercise[]): number {
+  const WARMUP_MINUTES = 5;
+  const COOLDOWN_MINUTES = 3;
+
+  let totalSeconds = 0;
+
+  for (const exercise of exercises) {
+    const sets = typeof exercise.sets === 'number' ? exercise.sets : 3;
+    const reps = typeof exercise.reps === 'number' ? exercise.reps : 10;
+
+    // Tempo per set basato su reps (più reps = più tempo)
+    // ~3-4 secondi per rep (incluso tempo sotto tensione)
+    const secondsPerSet = Math.max(20, Math.min(reps * 3.5, 60));
+
+    // Parse rest time string (es: "90s", "2-3min", "60-75s")
+    const restSeconds = parseRestTime(exercise.rest || '60s');
+
+    // Tempo totale esercizio = (sets × tempo_per_set) + (sets - 1) × rest
+    // Il rest è tra i set, quindi ne abbiamo sets-1
+    const exerciseTime = (sets * secondsPerSet) + ((sets - 1) * restSeconds);
+
+    // Aggiungi tempo transizione tra esercizi (~30s)
+    totalSeconds += exerciseTime + 30;
+  }
+
+  // Converti in minuti e aggiungi warm-up/cool-down
+  const workoutMinutes = Math.ceil(totalSeconds / 60);
+  const totalMinutes = WARMUP_MINUTES + workoutMinutes + COOLDOWN_MINUTES;
+
+  return totalMinutes;
+}
+
+/**
+ * Parse rest time string to seconds
+ * Handles formats: "30s", "90s", "2min", "2-3min", "60-75s"
+ */
+function parseRestTime(restString: string): number {
+  if (!restString) return 60;
+
+  // Check for minute format first
+  if (restString.includes('min')) {
+    // Extract first number (e.g., "2-3min" → 2, "3min" → 3)
+    const match = restString.match(/(\d+)/);
+    if (match) {
+      return parseInt(match[1]) * 60;
+    }
+    return 120; // Default 2 minutes
+  }
+
+  // Seconds format (e.g., "90s", "60-75s")
+  const match = restString.match(/(\d+)/);
+  if (match) {
+    return parseInt(match[1]);
+  }
+
+  return 60; // Default 60 seconds
+}
+
+/**
+ * Formatta durata in stringa leggibile
+ */
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (mins === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h ${mins}min`;
 }
 
 /**
@@ -816,6 +907,20 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   if (distributionNote) {
     split.description = `${split.description}\n\n${distributionNote}`;
   }
+
+  // ✅ Calcola durata stimata per ogni giorno
+  split.days.forEach(day => {
+    const duration = estimateWorkoutDuration(day.exercises);
+    day.estimatedDuration = duration;
+    console.log(`⏱️ ${day.dayName}: ~${duration} min`);
+  });
+
+  // Calcola durata media
+  const avgDuration = Math.round(
+    split.days.reduce((sum, day) => sum + (day.estimatedDuration || 0), 0) / split.days.length
+  );
+  split.averageDuration = avgDuration;
+  console.log(`📊 Durata media workout: ~${avgDuration} min`);
 
   return split;
 }
