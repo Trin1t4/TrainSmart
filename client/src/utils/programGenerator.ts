@@ -93,10 +93,10 @@ export function calculateVolume(
         notes = 'Volume Day - Ipertrofia + work capacity';
       } else { // moderate
         sets = level === 'beginner' ? 3 : 4;
-        reps = Math.max(6, Math.min(workingReps, 10)); // 6-10 reps
+        reps = Math.max(5, Math.min(workingReps, 6)); // 5-6 reps (forza richiede basse reps!)
         rest = '2-3min';
         intensity = '75-80%';
-        notes = 'Moderate Day - Forza-ipertrofia';
+        notes = 'Moderate Day - Forza submassimale';
       }
     } else {
       // 🤸 CALISTHENICS STRENGTH
@@ -114,10 +114,10 @@ export function calculateVolume(
         notes = 'Volume Day - Work capacity';
       } else { // moderate
         sets = 5;
-        reps = Math.max(6, Math.min(workingReps, 10)); // 6-10 reps (non più 5-8!)
+        reps = Math.max(5, Math.min(workingReps, 6)); // 5-6 reps (forza!)
         rest = '90-120s';
         intensity = '70-75%';
-        notes = 'Moderate Day - Bilanciato';
+        notes = 'Moderate Day - Forza submassimale';
       }
     }
   }
@@ -135,7 +135,8 @@ export function calculateVolume(
       } else { // advanced
         sets = 5;
       }
-      reps = Math.max(6, Math.min(workingReps, 8)); // 6-8 reps
+      // 6 o 8 reps - mai 7 (numeri "puliti" per ipertrofia)
+      reps = workingReps <= 6 ? 6 : 8;
       rest = '90-120s';
       intensity = '80-85%';
       notes = 'Heavy Day - Tensione meccanica';

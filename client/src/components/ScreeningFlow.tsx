@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { CheckCircle, Circle, ArrowRight, Info } from 'lucide-react';
+import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info } from 'lucide-react';
 
 /**
  * Formula di Brzycki per calcolare 1RM da peso e reps
@@ -232,6 +232,30 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
 
   console.log('[SCREENING] Mode:', testType, '| Location:', userData?.trainingLocation, '| TrainingType:', userData?.trainingType);
 
+  // Funzione per tornare indietro
+  const handleBack = () => {
+    if (currentPattern > 0) {
+      const prevPattern = MOVEMENT_PATTERNS[currentPattern - 1];
+      const prevResult = results[prevPattern.id];
+
+      setCurrentPattern(currentPattern - 1);
+
+      // Ripristina i valori del pattern precedente
+      if (prevResult) {
+        if (isGymMode) {
+          setWeight(prevResult.weight10RM?.toString() || '');
+        } else {
+          setSelectedVariant(prevResult.variantId || '');
+          setReps(prevResult.reps?.toString() || '');
+        }
+      } else {
+        setSelectedVariant('');
+        setReps('');
+        setWeight('');
+      }
+    }
+  };
+
   const handleNext = () => {
     // Validation diversa per GYM vs CALISTHENICS
     if (isGymMode) {
@@ -360,6 +384,13 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
     let level = 'beginner';
     if (finalScore >= 75) level = 'advanced';
     else if (finalScore >= 55) level = 'intermediate';
+
+    // ✅ OVERRIDE: Chi usa macchine è sempre BEGINNER
+    // Logica: le macchine sono per principianti o chi preferisce sicurezza
+    if (isMachinesMode) {
+      level = 'beginner';
+      console.log('[SCREENING] ⚠️ Machines mode detected → forcing BEGINNER level');
+    }
 
     // 6. Salva dati completi con BASELINE per ogni pattern
     const screeningData = {
@@ -588,14 +619,28 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
               </>
             )}
 
-            <button
-              onClick={handleNext}
-              disabled={isGymMode ? !weight : (!selectedVariant || !reps)}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
-            >
-              {currentPattern < MOVEMENT_PATTERNS.length - 1 ? 'Prossimo Pattern' : 'Completa Assessment'}
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex gap-3">
+              {/* Bottone Indietro */}
+              {currentPattern > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Indietro
+                </button>
+              )}
+
+              {/* Bottone Avanti */}
+              <button
+                onClick={handleNext}
+                disabled={isGymMode ? !weight : (!selectedVariant || !reps)}
+                className={`${currentPattern > 0 ? 'flex-1' : 'w-full'} bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2`}
+              >
+                {currentPattern < MOVEMENT_PATTERNS.length - 1 ? 'Prossimo Pattern' : 'Completa Assessment'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>

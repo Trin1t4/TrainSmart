@@ -125,6 +125,7 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
     lower_push: 'bg-green-600',
     lower_pull: 'bg-yellow-600',
     horizontal_push: 'bg-blue-600',
+    horizontal_pull: 'bg-cyan-600', // Row pattern
     vertical_push: 'bg-purple-600',
     vertical_pull: 'bg-pink-600',
     core: 'bg-orange-600',
@@ -177,13 +178,19 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
         )}
       </div>
 
-      {/* Baseline indicator */}
-      {exercise.baseline && (
-        <div className="text-xs text-green-400 flex items-center gap-1">
-          <Activity className="w-3 h-3" />
-          <span>Baseline: {exercise.baseline.maxReps}r</span>
-        </div>
-      )}
+      {/* Baseline indicator - larghezza fissa per allineamento */}
+      <div className="min-w-[120px] text-right">
+        {exercise.baseline ? (
+          <div className="text-xs text-green-400 flex items-center justify-end gap-1">
+            <Activity className="w-3 h-3" />
+            <span>Baseline: {exercise.baseline.maxReps}r</span>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500 italic">
+            No baseline
+          </div>
+        )}
+      </div>
 
       {/* Replaced indicator */}
       {exercise.wasReplaced && (

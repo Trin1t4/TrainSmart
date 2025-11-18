@@ -612,7 +612,7 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 0)),
     createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 0)),
     createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 0)),
-    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0)),
+    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0), baselines.vertical_pull),
     createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 0)),
     createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 5, 0)),
     createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 6, 0))
@@ -624,7 +624,7 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 1)), // Variante
     createExercise('lower_pull', baselines.lower_pull, 1, options, getIntensityForPattern('lower_pull', 1, 1)), // Variante
     createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1)), // Variante
-    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1)), // Variante
+    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1), baselines.vertical_pull), // Variante
     createExercise('vertical_push', baselines.vertical_push, 1, options, getIntensityForPattern('vertical_push', 4, 1)), // Variante
     createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1)), // Variante
     createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1))
@@ -636,7 +636,7 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 2)), // Back to baseline
     createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 2)),
     createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2)), // Altra variante
-    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2)), // Altra variante
+    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2), baselines.vertical_pull), // Altra variante
     createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 2)),
     createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2)), // Altra variante
     createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2))
@@ -811,7 +811,7 @@ function generate6DayPPL(options: SplitGeneratorOptions): WeeklySplit {
   // ✅ PULL A: VOLUME DAY - Include Horizontal Pull (Row)
   days[1].exercises = [
     createExercise('vertical_pull', baselines.vertical_pull, 0, options, 'volume'),
-    createHorizontalPullExercise(0, options, 'volume'), // Row pattern
+    createHorizontalPullExercise(0, options, 'volume', baselines.vertical_pull), // Row pattern
     createAccessoryExercise('biceps', 0, options, 'volume'),
     createExercise('core', baselines.core, 1, options, 'volume')
   ];
@@ -833,7 +833,7 @@ function generate6DayPPL(options: SplitGeneratorOptions): WeeklySplit {
 
   // ✅ PULL B: MODERATE DAY (varianti)
   days[4].exercises = [
-    createHorizontalPullExercise(1, options, 'moderate'), // Row variante
+    createHorizontalPullExercise(1, options, 'moderate', baselines.vertical_pull), // Row variante
     createExercise('vertical_pull', baselines.vertical_pull, 1, options, 'moderate'),
     createAccessoryExercise('biceps', 1, options, 'moderate')
   ];
@@ -989,12 +989,13 @@ function createExercise(
 
 /**
  * Crea esercizio Horizontal Pull (Row) - non testato nello screening
- * Usato per split PPL
+ * Usa il baseline del vertical_pull come riferimento (muscoli simili)
  */
 function createHorizontalPullExercise(
   variantIndex: number,
   options: SplitGeneratorOptions,
-  dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
+  dayType: 'heavy' | 'volume' | 'moderate' = 'moderate',
+  verticalPullBaseline?: any
 ): Exercise {
   const { level, goal, location, trainingType } = options;
 
@@ -1006,22 +1007,46 @@ function createHorizontalPullExercise(
   const selectedVariant = variants[variantIndex % variants.length];
   let exerciseName = selectedVariant.name;
 
-  // ✅ Volume generico con DUP (non abbiamo baseline per questo pattern)
-  const volumeCalc = calculateVolume(12, goal, level, location, dayType); // Assume 12 reps come baseline
+  // ✅ Usa baseline del vertical_pull se disponibile, altrimenti assume 12 reps
+  const baselineReps = verticalPullBaseline?.reps || 12;
+  const volumeCalc = calculateVolume(baselineReps, goal, level, location, dayType);
 
   // Conversione a macchine
   if (location === 'gym' && trainingType === 'machines') {
     exerciseName = convertToMachineVariant(exerciseName);
   }
 
+  // ✅ CALCOLO CARICO AUTOMATICO (se abbiamo baseline dal vertical_pull)
+  let suggestedWeight = '';
+  let weightNote = '';
+  if (verticalPullBaseline?.weight10RM && verticalPullBaseline.weight10RM > 0 && location === 'gym') {
+    const targetRIR = getTargetRIR(dayType, goal, level);
+    const targetReps = typeof volumeCalc.reps === 'number' ? volumeCalc.reps : 8;
+    const weight = calculateWeightFromRIR(verticalPullBaseline.weight10RM, targetReps, targetRIR);
+    suggestedWeight = formatWeight(weight);
+    weightNote = `RIR ${targetRIR}`;
+
+    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (${targetReps} reps @ RIR ${targetRIR}) [${level}] - stimato da vertical pull`);
+  }
+
   return {
-    pattern: 'vertical_pull', // Usiamo vertical_pull come pattern parent
+    pattern: 'horizontal_pull' as any, // Pattern corretto per Row
     name: exerciseName,
     sets: volumeCalc.sets,
     reps: volumeCalc.reps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
-    notes: 'Row pattern - complementare al vertical pull'
+    weight: suggestedWeight || undefined,
+    baseline: verticalPullBaseline ? {
+      variantId: 'estimated_from_vertical_pull',
+      difficulty: verticalPullBaseline.difficulty || 5,
+      maxReps: baselineReps
+    } : undefined,
+    notes: [
+      'Row pattern - complementare al vertical pull',
+      suggestedWeight ? `💪 Carico: ${suggestedWeight} (${weightNote}) - stimato` : '',
+      verticalPullBaseline ? `Baseline: ${baselineReps} reps (stimato da lat pulldown)` : ''
+    ].filter(Boolean).join(' | ')
   };
 }
 

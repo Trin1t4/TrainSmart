@@ -31,54 +31,60 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else if (data?.session) {
-      // Smart routing: controlla PRIMA Supabase, poi localStorage
+      // Smart routing: controlla Supabase con Auth UUID
       try {
-        // Usa localStorage userId (custom ID, non Supabase Auth UUID)
-        const storedUserId = localStorage.getItem('userId');
-        console.log('[LOGIN] 🔍 Checking for programs, userId:', storedUserId);
+        const authUserId = data.session.user.id;
+        console.log('[LOGIN] 🔍 Checking user data, authUserId:', authUserId);
 
-        if (storedUserId) {
-          // Check se ha programma attivo su Supabase
-          const { data: programs, error: programError } = await supabase
-            .from('training_programs')
-            .select('id')
-            .eq('user_id', storedUserId)
-            .eq('is_active', true)
-            .limit(1);
+        // 1. Check se ha programma attivo su Supabase
+        const { data: programs, error: programError } = await supabase
+          .from('training_programs')
+          .select('id')
+          .eq('user_id', authUserId)
+          .eq('is_active', true)
+          .limit(1);
 
-          console.log('[LOGIN] 📊 Supabase response:', { programs, error: programError });
+        console.log('[LOGIN] 📊 Programs:', { programs, error: programError });
 
-          if (!programError && programs && programs.length > 0) {
-            // Ha programma su Supabase → Dashboard
-            console.log('[LOGIN] ✅ User has active program, going to dashboard');
-            window.location.href = "/dashboard";
-            return;
-          }
+        if (!programError && programs && programs.length > 0) {
+          console.log('[LOGIN] ✅ Has active program → dashboard');
+          window.location.href = "/dashboard";
+          return;
         }
 
-        // Se non ha programma su Supabase, controlla localStorage
-        const hasOnboarding = localStorage.getItem('onboarding_data');
-        const hasScreening = localStorage.getItem('screening_data');
+        // 2. Check se ha completato onboarding su Supabase
+        const { data: profile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed, onboarding_data')
+          .eq('user_id', authUserId)
+          .maybeSingle(); // ← usa maybeSingle invece di single per evitare errori se non esiste
 
-        if (!hasOnboarding) {
-          // Primo login: inizia da onboarding
-          window.location.href = "/onboarding";
-        } else if (!hasScreening) {
-          // Ha fatto onboarding ma non screening
-          window.location.href = "/screening";
-        } else {
-          // Ha localStorage ma non programma Supabase → screening per generare programma
-          window.location.href = "/screening";
+        console.log('[LOGIN] 📋 Profile:', { profile, error: profileError });
+
+        if (!profileError && profile?.onboarding_completed) {
+          // Ha completato onboarding ma non ha programma → dashboard (genererà programma)
+          console.log('[LOGIN] ℹ️ Has onboarding, no program → dashboard');
+          window.location.href = "/dashboard";
+          return;
         }
-      } catch (err) {
-        console.error('[LOGIN] Error checking programs:', err);
-        // Fallback: controlla localStorage
+
+        // 3. Fallback: controlla localStorage
         const hasOnboarding = localStorage.getItem('onboarding_data');
+        console.log('[LOGIN] 📂 localStorage onboarding:', !!hasOnboarding);
+
         if (hasOnboarding) {
+          // Ha dati locali → dashboard
+          console.log('[LOGIN] ℹ️ Has localStorage data → dashboard');
           window.location.href = "/dashboard";
         } else {
+          // Nuovo utente → onboarding
+          console.log('[LOGIN] 🆕 New user → onboarding');
           window.location.href = "/onboarding";
         }
+      } catch (err) {
+        console.error('[LOGIN] Error:', err);
+        // Fallback sicuro: vai a dashboard che gestirà il caso
+        window.location.href = "/dashboard";
       }
     } else {
       // fallback: redirect
