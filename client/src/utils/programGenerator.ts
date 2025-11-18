@@ -71,22 +71,29 @@ export function calculateVolume(
   // ========================================
   if (goal === 'forza' || goal === 'strength') {
     if (location === 'gym') {
-      // 🏋️ GYM STRENGTH
+      // 🏋️ GYM STRENGTH - Volume basato su livello
+      // Beginner: 3 sets (9 sets/week), Intermediate: 4 (12/week), Advanced: 5 (15/week)
       if (dayType === 'heavy') {
-        sets = level === 'advanced' ? 5 : 4;
+        if (level === 'beginner') {
+          sets = 3;
+        } else if (level === 'intermediate') {
+          sets = 4;
+        } else { // advanced
+          sets = 5;
+        }
         reps = Math.max(3, Math.min(workingReps, 5)); // 3-5 reps
         rest = '3-5min';
         intensity = '85-90%';
         notes = 'Heavy Day - Forza massimale';
       } else if (dayType === 'volume') {
-        sets = 4;
+        sets = level === 'beginner' ? 3 : 4;
         reps = Math.max(10, Math.min(workingReps, 15)); // 10-15 reps (VERO VOLUME!)
         rest = '90-120s';
         intensity = '65-70%';
         notes = 'Volume Day - Ipertrofia + work capacity';
       } else { // moderate
-        sets = 4;
-        reps = Math.max(6, Math.min(workingReps, 10)); // 6-10 reps (non più 5-8!)
+        sets = level === 'beginner' ? 3 : 4;
+        reps = Math.max(6, Math.min(workingReps, 10)); // 6-10 reps
         rest = '2-3min';
         intensity = '75-80%';
         notes = 'Moderate Day - Forza-ipertrofia';
@@ -118,20 +125,40 @@ export function calculateVolume(
   // 🏋️ HYPERTROPHY (ipertrofia/massa)
   // ========================================
   else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain' || goal === 'ipertrofia') {
+    // 💪 HYPERTROPHY - Volume alto, basato su livello
+    // Beginner: 3-4 sets (10-15 sets/week), Intermediate: 4-5 (15-22/week), Advanced: 5-6 (20-28/week)
     if (dayType === 'heavy') {
-      sets = level === 'advanced' ? 5 : 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 5;
+      }
       reps = Math.max(6, Math.min(workingReps, 8)); // 6-8 reps
       rest = '90-120s';
       intensity = '80-85%';
       notes = 'Heavy Day - Tensione meccanica';
     } else if (dayType === 'volume') {
-      sets = 5;
+      if (level === 'beginner') {
+        sets = 4;
+      } else if (level === 'intermediate') {
+        sets = 5;
+      } else { // advanced
+        sets = 6;
+      }
       reps = Math.max(10, Math.min(workingReps, 15)); // 10-15 reps
       rest = '60-75s';
       intensity = '65-70%';
       notes = 'Volume Day - Stress metabolico';
     } else { // moderate
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 5;
+      }
       reps = Math.max(8, Math.min(workingReps, 12)); // 8-12 reps
       rest = '75-90s';
       intensity = '70-80%';
@@ -142,20 +169,40 @@ export function calculateVolume(
   // 🔥 FAT LOSS (tonificazione/dimagrimento)
   // ========================================
   else if (goal === 'fat_loss' || goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'definizione') {
+    // 🔥 FAT LOSS - Volume moderato-alto con rest brevi per consumo calorico
+    // Beginner: 3 sets, Intermediate: 4, Advanced: 4-5
     if (dayType === 'heavy') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(8, Math.min(workingReps, 10)); // 8-10 reps
       rest = '75-90s';
       intensity = '75-80%';
       notes = 'Heavy Day - Preservazione massa';
     } else if (dayType === 'volume') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 4;
+      } else if (level === 'intermediate') {
+        sets = 5;
+      } else { // advanced
+        sets = 5;
+      }
       reps = Math.max(12, Math.min(workingReps, 15)); // 12-15 reps
       rest = '45-60s';
       intensity = '60-70%';
       notes = 'Volume Day - Consumo calorico';
     } else { // moderate
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(10, Math.min(workingReps, 12)); // 10-12 reps
       rest = '60-75s';
       intensity = '70-75%';
@@ -166,20 +213,40 @@ export function calculateVolume(
   // 🏃 ENDURANCE (resistenza)
   // ========================================
   else if (goal === 'endurance' || goal === 'resistenza') {
+    // 🏃 ENDURANCE - Volume moderato con reps alte e rest brevi
+    // Beginner: 3 sets, Intermediate: 4, Advanced: 4-5
     if (dayType === 'heavy') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(12, Math.min(workingReps, 15)); // 12-15 reps
       rest = '60s';
       intensity = '65-70%';
       notes = 'Heavy Day - Forza resistente';
     } else if (dayType === 'volume') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 5;
+      }
       reps = Math.max(15, Math.min(workingReps, 20)); // 15-20 reps
       rest = '30-45s';
       intensity = '55-65%';
       notes = 'Volume Day - Capacità aerobica';
     } else { // moderate
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(12, Math.min(workingReps, 18)); // 12-18 reps
       rest = '45-60s';
       intensity = '60-70%';
@@ -190,20 +257,40 @@ export function calculateVolume(
   // 🧘 GENERAL FITNESS (benessere)
   // ========================================
   else if (goal === 'general_fitness' || goal === 'benessere') {
+    // 🧘 GENERAL FITNESS - Volume moderato bilanciato
+    // Beginner: 3 sets, Intermediate: 4, Advanced: 4
     if (dayType === 'heavy') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(6, Math.min(workingReps, 10)); // 6-10 reps
       rest = '90s';
       intensity = '75-80%';
       notes = 'Heavy Day - Forza generale';
     } else if (dayType === 'volume') {
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(10, Math.min(workingReps, 15)); // 10-15 reps
       rest = '60-75s';
       intensity = '65-75%';
       notes = 'Volume Day - Fitness generale';
     } else { // moderate
-      sets = 4;
+      if (level === 'beginner') {
+        sets = 3;
+      } else if (level === 'intermediate') {
+        sets = 4;
+      } else { // advanced
+        sets = 4;
+      }
       reps = Math.max(8, Math.min(workingReps, 12)); // 8-12 reps
       rest = '75-90s';
       intensity = '70-78%';

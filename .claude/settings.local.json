@@ -15,7 +15,10 @@
       "Bash(xargs sed -i \"s|from ''''../lib/supabase''''|from ''''../lib/supabaseClient''''|g\")",
       "Bash(from '../lib/supabase')",
       "Bash(from '../lib/supabaseClient')",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(test:*)",
+      "Bash(npm install:*)",
+      "Bash(python generate_alter_table.py:*)"
     ],
     "deny": [],
     "ask": []

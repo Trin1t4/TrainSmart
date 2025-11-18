@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from 'sonner';
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -12,10 +13,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from './pages/Workout';
 import WorkoutSession from './pages/WorkoutSession';
 import RecoveryScreening from './components/RecoveryScreening';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" richColors />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -37,7 +40,10 @@ function App() {
         {/* WORKOUT */}
         <Route path="/workout" element={<Workout />} />
         <Route path="/workout-session" element={<WorkoutSession />} />
-        
+
+        {/* ADMIN DASHBOARD */}
+        <Route path="/admin" element={<AdminDashboard />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

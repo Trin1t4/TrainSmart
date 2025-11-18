@@ -22,14 +22,12 @@ import {
 
 /**
  * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
- * LOGICA: Mix intelligente + rotazione DUP
+ * LOGICA: Mix intelligente + rotazione DUP per Full Body 7 esercizi
  *
- * Esempio 3x/week:
- * - Giorno 1: Squat HEAVY, Bench HEAVY, Pulldown MODERATE, Core VOLUME
- * - Giorno 2: Deadlift HEAVY, Military HEAVY, Bench MODERATE, Core VOLUME
- * - Giorno 3: Squat HEAVY, Pulldown HEAVY, Bench MODERATE, Core VOLUME
+ * FULL BODY 3x - 7 esercizi/giorno:
+ * 1. Squat, 2. Deadlift, 3. Bench, 4. Row, 5. Military, 6. Pulldown, 7. Core
  *
- * Ogni pattern viene colpito a intensità diverse nei 3 giorni
+ * Rotazione intensità per evitare CNS burnout e ottimizzare recupero
  */
 function getIntensityForPattern(
   patternId: string,
@@ -41,37 +39,40 @@ function getIntensityForPattern(
     return 'volume';
   }
 
-  // 🔄 ROTAZIONE DUP PER COMPOUND MOVEMENTS
-  // Ogni giorno ruota quali patterns sono HEAVY vs MODERATE
+  // 🔄 ROTAZIONE DUP PER COMPOUND MOVEMENTS (Full Body 7 pattern)
+  // Ogni giorno 2 esercizi HEAVY, 4 MODERATE, 1 VOLUME (core)
 
-  // GIORNO 1 (index 0): Lower Push + Horizontal Push = HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DAY 1 (Monday): Lower Push (Squat) + Horizontal Push (Bench) HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 0) {
     if (patternId === 'lower_push' || patternId === 'horizontal_push') {
-      return 'heavy';
+      return 'heavy'; // Squat HEAVY, Bench HEAVY
     }
-    if (patternId === 'vertical_pull' || patternId === 'vertical_push') {
-      return 'moderate';
-    }
+    // Tutti gli altri: MODERATE (Deadlift, Row, Military, Pulldown)
+    return 'moderate';
   }
 
-  // GIORNO 2 (index 1): Lower Pull + Vertical Push = HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DAY 2 (Wednesday): Lower Pull (Deadlift) + Horizontal Pull (Row) + Vertical Push (Military) HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 1) {
-    if (patternId === 'lower_pull' || patternId === 'vertical_push') {
-      return 'heavy';
+    if (patternId === 'lower_pull' || patternId === 'horizontal_pull' || patternId === 'vertical_push') {
+      return 'heavy'; // Deadlift HEAVY, Row HEAVY, Military HEAVY
     }
-    if (patternId === 'horizontal_push' || patternId === 'vertical_pull') {
-      return 'moderate';
-    }
+    // Tutti gli altri: MODERATE (Squat, Bench, Pulldown)
+    return 'moderate';
   }
 
-  // GIORNO 3 (index 2): Lower Push + Vertical Pull = HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DAY 3 (Friday): Lower Push (Squat) + Vertical Pull (Pulldown) HEAVY
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 2) {
     if (patternId === 'lower_push' || patternId === 'vertical_pull') {
-      return 'heavy';
+      return 'heavy'; // Squat HEAVY, Pulldown HEAVY
     }
-    if (patternId === 'horizontal_push' || patternId === 'vertical_push') {
-      return 'moderate';
-    }
+    // Tutti gli altri: MODERATE (Deadlift, Bench, Row, Military)
+    return 'moderate';
   }
 
   // Default: moderate
@@ -256,28 +257,40 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     }
   ];
 
-  // ✅ DAY A: Squat HEAVY + Bench HEAVY + Pulldown MODERATE + Core VOLUME
+  // ✅ DAY A: FULL BODY (tutti i 7 pattern)
+  // Squat HEAVY, Deadlift MOD, Bench HEAVY, Row MOD, Military MOD, Pulldown MOD, Core VOL
   days[0].exercises = [
     createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 0)),
-    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 1, 0)),
-    createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 2, 0)),
-    createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 3, 0))
+    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 0)),
+    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 0)),
+    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0)),
+    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 0)),
+    createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 5, 0)),
+    createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 6, 0))
   ];
 
-  // ✅ DAY B: Deadlift HEAVY + Military HEAVY + Bench MODERATE + Core VOLUME
+  // ✅ DAY B: FULL BODY (tutti i 7 pattern, rotazione intensità)
+  // Squat MOD, Deadlift HEAVY, Bench MOD, Row HEAVY, Military HEAVY, Pulldown MOD, Core VOL
   days[1].exercises = [
-    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 0, 1)),
-    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 1, 1)),
-    createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1)), // Variante diversa
-    createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 3, 1))
+    createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 1)), // Variante
+    createExercise('lower_pull', baselines.lower_pull, 1, options, getIntensityForPattern('lower_pull', 1, 1)), // Variante
+    createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1)), // Variante
+    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1)), // Variante
+    createExercise('vertical_push', baselines.vertical_push, 1, options, getIntensityForPattern('vertical_push', 4, 1)), // Variante
+    createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1)), // Variante
+    createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1))
   ];
 
-  // ✅ DAY C: Squat HEAVY + Pulldown HEAVY + Bench MODERATE + Core VOLUME
+  // ✅ DAY C: FULL BODY (tutti i 7 pattern, altra rotazione)
+  // Squat HEAVY, Deadlift MOD, Bench MOD, Row MOD, Military MOD, Pulldown HEAVY, Core VOL
   days[2].exercises = [
-    createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 2)), // Variante diversa
-    createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 1, 2)), // Variante diversa
-    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 2)),
-    createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 3, 2))
+    createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 2)), // Back to baseline
+    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 2)),
+    createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2)), // Altra variante
+    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2)), // Altra variante
+    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 2)),
+    createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2)), // Altra variante
+    createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2))
   ];
 
   // Aggiungi correttivi a tutti i giorni se necessario

@@ -7,6 +7,7 @@ import { validateAndNormalizePainAreas } from '../utils/validators';
 import { generateProgram, generateProgramWithSplit } from '../utils/programGenerator';
 import { motion } from 'framer-motion';
 import WeeklySplitView from './WeeklySplitView';
+import WorkoutLogger from './WorkoutLogger';
 import {
   createProgram,
   getActiveProgram,
@@ -27,6 +28,8 @@ export default function Dashboard() {
   const [showProgramHistory, setShowProgramHistory] = useState(false);
   const [programHistory, setProgramHistory] = useState<TrainingProgram[]>([]);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'offline' | 'syncing'>('synced');
+  const [showWorkoutLogger, setShowWorkoutLogger] = useState(false);
+  const [currentWorkoutDay, setCurrentWorkoutDay] = useState<any>(null);
   const [dataStatus, setDataStatus] = useState({
     onboarding: null as any,
     quiz: null as any,
@@ -1048,6 +1051,24 @@ export default function Dashboard() {
                   </motion.button>
 
                   <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      // Get first day of weekly split or use full program
+                      const firstDay = program.weekly_split?.days?.[0] || {
+                        name: 'Day 1',
+                        exercises: program.exercises || []
+                      };
+                      setCurrentWorkoutDay(firstDay);
+                      setShowWorkoutLogger(true);
+                    }}
+                    className="flex-1 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300"
+                  >
+                    📝
+                    Registra Workout
+                  </motion.button>
+
+                  <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
@@ -1297,6 +1318,29 @@ export default function Dashboard() {
             )}
           </motion.div>
         </motion.div>
+      )}
+
+      {/* Workout Logger Modal */}
+      {showWorkoutLogger && currentWorkoutDay && program && (
+        <WorkoutLogger
+          open={showWorkoutLogger}
+          onClose={() => {
+            setShowWorkoutLogger(false);
+            setCurrentWorkoutDay(null);
+          }}
+          userId={dataStatus.screening?.userId || ''}
+          programId={program.id || ''}
+          dayName={currentWorkoutDay.name || 'Day 1'}
+          splitType={program.split || 'Full Body'}
+          exercises={currentWorkoutDay.exercises || []}
+          onWorkoutLogged={async () => {
+            console.log('✅ Workout logged, refreshing program...');
+            // Refresh program from Supabase (may have been auto-adjusted)
+            await loadProgramFromSupabase();
+            setShowWorkoutLogger(false);
+            setCurrentWorkoutDay(null);
+          }}
+        />
       )}
     </div>
   );
