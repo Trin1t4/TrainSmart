@@ -307,28 +307,60 @@ export function calculateWeightFromRIR(
 }
 
 /**
- * Determina RIR target basato su goal e dayType
+ * Determina RIR target basato su level, goal e dayType
  *
- * Heavy day: RIR 1-2 (quasi al massimo)
- * Moderate day: RIR 2-3 (buffer moderato)
- * Volume day: RIR 3-4 (più buffer per volume)
+ * BEGINNER: RIR 3 fisso (sicurezza, tecnica)
+ *   - Eccezione: forza/prestazioni → RIR 2
+ *
+ * INTERMEDIATE/ADVANCED: Varia per dayType
+ *   - Heavy: RIR 1-2
+ *   - Moderate: RIR 2-3
+ *   - Volume: RIR 3-4
+ *
+ * Il sistema calibra nel tempo basandosi sui feedback RPE
  */
 export function getTargetRIR(
   dayType: 'heavy' | 'volume' | 'moderate',
-  goal: string
+  goal: string,
+  level: string = 'intermediate'
 ): number {
-  // RIR più bassi per forza (più vicino al cedimento)
-  const isStrengthFocus = goal === 'forza' || goal === 'strength';
+  // Goal che richiedono intensità più alta
+  const isHighIntensityGoal =
+    goal === 'forza' ||
+    goal === 'strength' ||
+    goal === 'prestazioni_sportive' ||
+    goal === 'sport_performance';
 
+  // ========================================
+  // BEGINNER: RIR conservativo per sicurezza
+  // ========================================
+  if (level === 'beginner') {
+    // Forza/prestazioni: RIR 2 (un po' più vicino al cedimento)
+    if (isHighIntensityGoal) {
+      return 2;
+    }
+    // Tutti gli altri: RIR 3 (più buffer per sicurezza e tecnica)
+    return 3;
+  }
+
+  // ========================================
+  // INTERMEDIATE/ADVANCED: Sistema DUP completo
+  // ========================================
   switch (dayType) {
     case 'heavy':
-      return isStrengthFocus ? 1 : 2;
+      // Heavy day: vicino al cedimento
+      return isHighIntensityGoal ? 1 : 2;
+
     case 'moderate':
-      return isStrengthFocus ? 2 : 3;
+      // Moderate day: buffer moderato
+      return isHighIntensityGoal ? 2 : 3;
+
     case 'volume':
-      return isStrengthFocus ? 3 : 4;
+      // Volume day: più buffer per sostenere il volume
+      return isHighIntensityGoal ? 3 : 4;
+
     default:
-      return 2;
+      return level === 'advanced' ? 2 : 3;
   }
 }
 
@@ -915,8 +947,8 @@ function createExercise(
   let suggestedWeight = '';
   let weightNote = '';
   if (baseline.weight10RM && baseline.weight10RM > 0 && location === 'gym') {
-    // Usa metodo RIR-based (più preciso)
-    const targetRIR = getTargetRIR(dayType, goal);
+    // Usa metodo RIR-based (più preciso) con level
+    const targetRIR = getTargetRIR(dayType, goal, level);
     const targetReps = typeof finalReps === 'number' ? finalReps : 8;
     const effectiveReps = targetReps + targetRIR;
 
@@ -927,7 +959,7 @@ function createExercise(
     // Calcola anche 1RM per riferimento
     const estimated1RM = calculate1RMFromNRM(baseline.weight10RM, 10);
 
-    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (${targetReps} reps @ RIR ${targetRIR} = ${effectiveReps}RM)`);
+    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (${targetReps} reps @ RIR ${targetRIR} = ${effectiveReps}RM) [${level}]`);
     console.log(`   → 10RM: ${baseline.weight10RM}kg → 1RM stimato: ${Math.round(estimated1RM)}kg`);
   }
 
