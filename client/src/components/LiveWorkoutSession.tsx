@@ -973,16 +973,16 @@ export default function LiveWorkoutSession({
             {/* Body Map - Pain Area Selection */}
             <div className="grid grid-cols-2 gap-2 mb-4">
               {[
-                { key: 'shoulder', label: 'Spalla', emoji: '💪', color: 'red' },
-                { key: 'elbow', label: 'Gomito', emoji: '🦾', color: 'orange' },
-                { key: 'wrist', label: 'Polso', emoji: '✋', color: 'yellow' },
-                { key: 'upper_back', label: 'Dorso', emoji: '🔵', color: 'blue' },
-                { key: 'lower_back', label: 'Schiena Bassa', emoji: '🔴', color: 'red' },
-                { key: 'knee', label: 'Ginocchio', emoji: '🦵', color: 'orange' },
-                { key: 'hip', label: 'Anca', emoji: '🫁', color: 'yellow' },
-                { key: 'ankle', label: 'Caviglia', emoji: '🦶', color: 'amber' },
-                { key: 'neck', label: 'Collo', emoji: '🧠', color: 'purple' }
-              ].map(({ key, label, emoji, color }) => {
+                { key: 'shoulder', label: 'Spalla', color: 'red' },
+                { key: 'elbow', label: 'Gomito', color: 'orange' },
+                { key: 'wrist', label: 'Polso', color: 'yellow' },
+                { key: 'upper_back', label: 'Dorso', color: 'blue' },
+                { key: 'lower_back', label: 'Schiena Bassa', color: 'red' },
+                { key: 'knee', label: 'Ginocchio', color: 'orange' },
+                { key: 'hip', label: 'Anca', color: 'yellow' },
+                { key: 'ankle', label: 'Caviglia', color: 'amber' },
+                { key: 'neck', label: 'Collo', color: 'purple' }
+              ].map(({ key, label, color }) => {
                 const isPainful = painAreas.find(p => p.area === key);
                 const intensity = isPainful?.intensity || 5;
 
@@ -1001,9 +1001,8 @@ export default function LiveWorkoutSession({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{emoji}</span>
                         <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold">{label}</div>
+                          <div className="text-sm font-semibold">{label}</div>
                           {isPainful && (
                             <div className="text-xs opacity-70">
                               Intensità: {intensity}/10
@@ -1057,7 +1056,7 @@ export default function LiveWorkoutSession({
 
           {/* MENSTRUAL CYCLE TRACKING (for female athletes) */}
           <div className="mb-6">
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-between items-center mb-2">
               <label className="text-slate-300 text-sm font-semibold">🩸 Traccia Ciclo Mestruale</label>
               {menstrualPhase !== 'none' && (
                 <span className="text-xs text-pink-400 font-bold">
@@ -1065,6 +1064,9 @@ export default function LiveWorkoutSession({
                 </span>
               )}
             </div>
+            <p className="text-xs text-slate-500 mb-3">
+              I numeri indicano i giorni del ciclo (es: 6-13 = giorni dal 6° al 13° del tuo ciclo mestruale)
+            </p>
 
             {/* Cycle Phase Selection */}
             <div className="grid grid-cols-2 gap-2">
@@ -1355,7 +1357,10 @@ export default function LiveWorkoutSession({
             <p className="text-blue-300 font-bold text-lg mb-2">⏱️ Rest Timer</p>
             <p className="text-5xl font-bold text-blue-400">{restTimeRemaining}s</p>
             <button
-              onClick={() => setRestTimerActive(false)}
+              onClick={() => {
+                setRestTimerActive(false);
+                setRestTimeRemaining(0);
+              }}
               className="mt-3 text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               Skip Rest →
