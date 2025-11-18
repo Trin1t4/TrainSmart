@@ -17,6 +17,7 @@ export interface PatternBaseline {
   variantName: string;
   difficulty: number; // 1-10
   reps: number; // max reps achieved
+  weight10RM?: number; // kg usati nel test 10RM (solo per esercizi con pesi)
 }
 
 export interface PatternBaselines {

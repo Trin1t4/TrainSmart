@@ -250,6 +250,102 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
+ * LOAD CALCULATOR - Calcolo carico automatico
+ * Basato su test 10RM dello screening + intensità target
+ *
+ * Formula 1RM (Brzycki): 1RM = weight × (36 / (37 - reps))
+ * Simplified: 1RM ≈ weight_10RM × 1.33
+ *
+ * @param baseline10RM - Peso usato nel test 10RM (kg)
+ * @param targetIntensity - Intensità target (es: "75%", "85%")
+ * @returns Peso suggerito in kg
+ */
+export function calculateSuggestedWeight(
+  baseline10RM: number,
+  targetIntensity: string
+): number {
+  if (!baseline10RM || baseline10RM <= 0) return 0;
+
+  // Stima 1RM dal test 10RM
+  // 10RM ≈ 75% del 1RM → 1RM ≈ 10RM / 0.75 = 10RM × 1.33
+  const estimated1RM = baseline10RM * 1.33;
+
+  // Parse intensità (es: "75%", "85-90%", "65-70%")
+  const intensityMatch = targetIntensity.match(/(\d+)/);
+  const intensityPercent = intensityMatch ? parseInt(intensityMatch[1]) : 70;
+
+  // Calcola peso target
+  const suggestedWeight = Math.round((estimated1RM * intensityPercent / 100) * 2) / 2; // Arrotonda a 0.5kg
+
+  return suggestedWeight;
+}
+
+/**
+ * Formatta peso suggerito in stringa
+ */
+export function formatWeight(weight: number): string {
+  if (weight <= 0) return 'Corpo libero';
+  if (weight % 1 === 0) return `${weight}kg`;
+  return `${weight.toFixed(1)}kg`;
+}
+
+/**
+ * PROGRESSION RATE - Moltiplicatore progressione per multi-goal
+ *
+ * Schede pure (1 goal): 100% progression rate
+ * Schede miste (2 goals): 70% progression rate
+ * Schede miste (3 goals): 50% progression rate
+ *
+ * Questo perché:
+ * - Volume distribuito su più adattamenti
+ * - Recupero più complesso
+ * - Risultati più lenti per singolo goal
+ */
+export function getProgressionMultiplier(goalsCount: number): number {
+  if (goalsCount <= 1) return 1.0;     // 100% - progressione normale
+  if (goalsCount === 2) return 0.7;    // 70% - progressione ridotta
+  return 0.5;                          // 50% - progressione molto ridotta
+}
+
+/**
+ * Calcola incremento carico suggerito per prossima sessione
+ *
+ * Standard increments:
+ * - Upper body: 1-2.5kg
+ * - Lower body: 2.5-5kg
+ *
+ * Modificato per multi-goal
+ */
+export function calculateWeightIncrement(
+  currentWeight: number,
+  exercisePattern: string,
+  goalsCount: number,
+  rpe: number // 1-10 dall'ultima sessione
+): number {
+  // Incrementi base
+  const isLowerBody = exercisePattern.includes('lower');
+  const baseIncrement = isLowerBody ? 2.5 : 1.25;
+
+  // Applica moltiplicatore multi-goal
+  const progressionMultiplier = getProgressionMultiplier(goalsCount);
+
+  // Modifica basata su RPE
+  let rpeModifier = 1.0;
+  if (rpe <= 6) {
+    rpeModifier = 1.5; // RPE basso → incremento maggiore
+  } else if (rpe >= 9) {
+    rpeModifier = 0; // RPE troppo alto → nessun incremento
+  } else if (rpe >= 8) {
+    rpeModifier = 0.5; // RPE alto → incremento ridotto
+  }
+
+  const finalIncrement = baseIncrement * progressionMultiplier * rpeModifier;
+
+  // Arrotonda a 0.5kg
+  return Math.round(finalIncrement * 2) / 2;
+}
+
+/**
  * MUSCULAR FOCUS SYSTEM
  * Mappa focus muscolari → pattern di esercizi da enfatizzare
  */
@@ -739,6 +835,15 @@ function createExercise(
     }
   }
 
+  // ✅ CALCOLO CARICO AUTOMATICO
+  // Se abbiamo il peso 10RM dallo screening, calcoliamo il peso suggerito
+  let suggestedWeight = '';
+  if (baseline.weight10RM && baseline.weight10RM > 0 && location === 'gym') {
+    const weight = calculateSuggestedWeight(baseline.weight10RM, volumeCalc.intensity);
+    suggestedWeight = formatWeight(weight);
+    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (da 10RM ${baseline.weight10RM}kg @ ${volumeCalc.intensity})`);
+  }
+
   return {
     pattern: patternId as any,
     name: exerciseName,
@@ -746,6 +851,7 @@ function createExercise(
     reps: finalReps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
+    weight: suggestedWeight || undefined, // ✅ Peso calcolato dal sistema
     baseline: {
       variantId: baseline.variantId,
       difficulty: baseline.difficulty,
@@ -755,6 +861,7 @@ function createExercise(
     notes: [
       volumeCalc.notes,
       `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
+      suggestedWeight ? `💪 Carico: ${suggestedWeight}` : '',
       painNotes,
       machineNotes
     ].filter(Boolean).join(' | ')
