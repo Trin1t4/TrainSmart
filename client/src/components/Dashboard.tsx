@@ -8,6 +8,7 @@ import { generateProgram, generateProgramWithSplit } from '../utils/programGener
 import { motion } from 'framer-motion';
 import WeeklySplitView from './WeeklySplitView';
 import WorkoutLogger from './WorkoutLogger';
+import LiveWorkoutSession from './LiveWorkoutSession';
 import {
   createProgram,
   getActiveProgram,
@@ -30,6 +31,7 @@ export default function Dashboard() {
   const [syncStatus, setSyncStatus] = useState<'synced' | 'offline' | 'syncing'>('synced');
   const [showWorkoutLogger, setShowWorkoutLogger] = useState(false);
   const [currentWorkoutDay, setCurrentWorkoutDay] = useState<any>(null);
+  const [showLiveWorkout, setShowLiveWorkout] = useState(false);
   const [showLocationSwitch, setShowLocationSwitch] = useState(false);
   const [switchingLocation, setSwitchingLocation] = useState(false);
   const [switchStep, setSwitchStep] = useState<'choose' | 'equipment'>('choose');
@@ -1226,11 +1228,18 @@ export default function Dashboard() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/workout')}
+                    onClick={() => {
+                      // Get first day or full program exercises
+                      const firstDay = program.weekly_split?.days?.[0];
+                      if (firstDay) {
+                        setCurrentWorkoutDay(firstDay);
+                      }
+                      setShowLiveWorkout(true);
+                    }}
                     className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300"
                   >
                     <Activity className="w-5 h-5" />
-                    Inizia Allenamento
+                    Inizia Allenamento LIVE
                   </motion.button>
 
                   <motion.button
@@ -1680,7 +1689,28 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* Workout Logger Modal */}
+      {/* Live Workout Session Modal */}
+      {showLiveWorkout && currentWorkoutDay && program && (
+        <LiveWorkoutSession
+          open={showLiveWorkout}
+          onClose={() => {
+            setShowLiveWorkout(false);
+            setCurrentWorkoutDay(null);
+          }}
+          userId={dataStatus.screening?.userId || program.user_id || ''}
+          programId={program.id || ''}
+          dayName={currentWorkoutDay.name || 'Day 1'}
+          exercises={currentWorkoutDay.exercises || []}
+          onWorkoutComplete={async () => {
+            console.log('✅ Workout completato, refreshing program...');
+            await loadProgramFromSupabase();
+            setShowLiveWorkout(false);
+            setCurrentWorkoutDay(null);
+          }}
+        />
+      )}
+
+      {/* Workout Logger Modal (post-workout logging) */}
       {showWorkoutLogger && currentWorkoutDay && program && (
         <WorkoutLogger
           open={showWorkoutLogger}
