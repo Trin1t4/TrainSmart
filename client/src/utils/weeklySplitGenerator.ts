@@ -250,15 +250,91 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
- * LOAD CALCULATOR - Calcolo carico automatico
- * Basato su test 10RM dello screening + intensità target
+ * BRZYCKI FORMULAS
+ * Conversioni tra 1RM e nRM
  *
- * Formula 1RM (Brzycki): 1RM = weight × (36 / (37 - reps))
- * Simplified: 1RM ≈ weight_10RM × 1.33
+ * 1RM = weight × (36 / (37 - reps))
+ * nRM = 1RM × ((37 - n) / 36)
+ */
+
+/**
+ * Calcola 1RM da un test nRM usando Brzycki
+ */
+export function calculate1RMFromNRM(weight: number, reps: number): number {
+  if (reps >= 37) return weight; // Limite formula
+  return weight * (36 / (37 - reps));
+}
+
+/**
+ * Calcola nRM da 1RM usando Brzycki
+ */
+export function calculateNRMFrom1RM(oneRM: number, targetReps: number): number {
+  if (targetReps >= 37) return oneRM * 0.5; // Fallback
+  return oneRM * ((37 - targetReps) / 36);
+}
+
+/**
+ * METODO RIR-BASED - Calcolo carico più preciso
+ *
+ * Logica:
+ * - Target reps = 5, RIR = 2
+ * - Reps effettive = 5 + 2 = 7
+ * - Usa peso 7RM per fare 5 reps
  *
  * @param baseline10RM - Peso usato nel test 10RM (kg)
- * @param targetIntensity - Intensità target (es: "75%", "85%")
+ * @param targetReps - Reps target dell'esercizio
+ * @param targetRIR - Reps In Reserve target
  * @returns Peso suggerito in kg
+ */
+export function calculateWeightFromRIR(
+  baseline10RM: number,
+  targetReps: number,
+  targetRIR: number
+): number {
+  if (!baseline10RM || baseline10RM <= 0) return 0;
+
+  // 1. Calcola 1RM dal test 10RM
+  const estimated1RM = calculate1RMFromNRM(baseline10RM, 10);
+
+  // 2. Calcola reps effettive (target + RIR)
+  const effectiveReps = targetReps + targetRIR;
+
+  // 3. Calcola nRM per le reps effettive
+  const suggestedWeight = calculateNRMFrom1RM(estimated1RM, effectiveReps);
+
+  // Arrotonda a 0.5kg
+  return Math.round(suggestedWeight * 2) / 2;
+}
+
+/**
+ * Determina RIR target basato su goal e dayType
+ *
+ * Heavy day: RIR 1-2 (quasi al massimo)
+ * Moderate day: RIR 2-3 (buffer moderato)
+ * Volume day: RIR 3-4 (più buffer per volume)
+ */
+export function getTargetRIR(
+  dayType: 'heavy' | 'volume' | 'moderate',
+  goal: string
+): number {
+  // RIR più bassi per forza (più vicino al cedimento)
+  const isStrengthFocus = goal === 'forza' || goal === 'strength';
+
+  switch (dayType) {
+    case 'heavy':
+      return isStrengthFocus ? 1 : 2;
+    case 'moderate':
+      return isStrengthFocus ? 2 : 3;
+    case 'volume':
+      return isStrengthFocus ? 3 : 4;
+    default:
+      return 2;
+  }
+}
+
+/**
+ * LOAD CALCULATOR - Calcolo carico automatico (LEGACY - usa RIR-based)
+ * Mantenuto per backward compatibility
  */
 export function calculateSuggestedWeight(
   baseline10RM: number,
@@ -266,16 +342,15 @@ export function calculateSuggestedWeight(
 ): number {
   if (!baseline10RM || baseline10RM <= 0) return 0;
 
-  // Stima 1RM dal test 10RM
-  // 10RM ≈ 75% del 1RM → 1RM ≈ 10RM / 0.75 = 10RM × 1.33
-  const estimated1RM = baseline10RM * 1.33;
+  // Stima 1RM dal test 10RM usando Brzycki
+  const estimated1RM = calculate1RMFromNRM(baseline10RM, 10);
 
   // Parse intensità (es: "75%", "85-90%", "65-70%")
   const intensityMatch = targetIntensity.match(/(\d+)/);
   const intensityPercent = intensityMatch ? parseInt(intensityMatch[1]) : 70;
 
   // Calcola peso target
-  const suggestedWeight = Math.round((estimated1RM * intensityPercent / 100) * 2) / 2; // Arrotonda a 0.5kg
+  const suggestedWeight = Math.round((estimated1RM * intensityPercent / 100) * 2) / 2;
 
   return suggestedWeight;
 }
@@ -835,13 +910,25 @@ function createExercise(
     }
   }
 
-  // ✅ CALCOLO CARICO AUTOMATICO
+  // ✅ CALCOLO CARICO AUTOMATICO (RIR-based)
   // Se abbiamo il peso 10RM dallo screening, calcoliamo il peso suggerito
   let suggestedWeight = '';
+  let weightNote = '';
   if (baseline.weight10RM && baseline.weight10RM > 0 && location === 'gym') {
-    const weight = calculateSuggestedWeight(baseline.weight10RM, volumeCalc.intensity);
+    // Usa metodo RIR-based (più preciso)
+    const targetRIR = getTargetRIR(dayType, goal);
+    const targetReps = typeof finalReps === 'number' ? finalReps : 8;
+    const effectiveReps = targetReps + targetRIR;
+
+    const weight = calculateWeightFromRIR(baseline.weight10RM, targetReps, targetRIR);
     suggestedWeight = formatWeight(weight);
-    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (da 10RM ${baseline.weight10RM}kg @ ${volumeCalc.intensity})`);
+    weightNote = `RIR ${targetRIR}`;
+
+    // Calcola anche 1RM per riferimento
+    const estimated1RM = calculate1RMFromNRM(baseline.weight10RM, 10);
+
+    console.log(`⚖️ ${exerciseName}: ${suggestedWeight} (${targetReps} reps @ RIR ${targetRIR} = ${effectiveReps}RM)`);
+    console.log(`   → 10RM: ${baseline.weight10RM}kg → 1RM stimato: ${Math.round(estimated1RM)}kg`);
   }
 
   return {
@@ -861,7 +948,7 @@ function createExercise(
     notes: [
       volumeCalc.notes,
       `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
-      suggestedWeight ? `💪 Carico: ${suggestedWeight}` : '',
+      suggestedWeight ? `💪 Carico: ${suggestedWeight} (${weightNote})` : '',
       painNotes,
       machineNotes
     ].filter(Boolean).join(' | ')
