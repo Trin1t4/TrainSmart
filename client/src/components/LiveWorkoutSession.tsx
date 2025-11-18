@@ -74,6 +74,19 @@ export default function LiveWorkoutSession({
     bench: false
   });
 
+  // Pain screening state
+  const [painAreas, setPainAreas] = useState<Array<{
+    area: string;
+    intensity: number;
+  }>>([]);
+  const [showPainScreen, setShowPainScreen] = useState(false);
+  const [selectedPainArea, setSelectedPainArea] = useState<string | null>(null);
+
+  // Menstrual cycle tracking state (for female athletes)
+  const [menstrualPhase, setMenstrualPhase] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstrual' | 'none'>('none');
+  const [cycleDayNumber, setCycleDayNumber] = useState<number>(14);
+  const [showCycleTracker, setShowCycleTracker] = useState(false);
+
   // Workout state
   const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -188,12 +201,429 @@ export default function LiveWorkoutSession({
     }
   };
 
+  // Handle pain area selection
+  const handlePainAreaToggle = (area: string) => {
+    const existingPain = painAreas.find(p => p.area === area);
+
+    if (existingPain) {
+      // Remove pain area
+      setPainAreas(prev => prev.filter(p => p.area !== area));
+      setSelectedPainArea(null);
+    } else {
+      // Add pain area with default intensity 5
+      setPainAreas(prev => [...prev, { area, intensity: 5 }]);
+      setSelectedPainArea(area);
+    }
+  };
+
+  const handlePainIntensityChange = (area: string, intensity: number) => {
+    setPainAreas(prev => prev.map(p =>
+      p.area === area ? { ...p, intensity } : p
+    ));
+  };
+
+  // BIOMECHANICAL INTELLIGENCE: Analyze which joints/muscles are involved in each exercise
+  const getExerciseBiomechanics = (exercise: Exercise): {
+    primaryJoints: string[];
+    secondaryJoints: string[];
+    loadLevel: 'high' | 'medium' | 'low';
+    kinecticChain: string[];
+  } => {
+    // Multi-joint analysis for intelligent pain adaptation
+    const exerciseName = exercise.name.toLowerCase();
+    const pattern = exercise.pattern;
+
+    // Default biomechanics
+    let primaryJoints: string[] = [];
+    let secondaryJoints: string[] = [];
+    let loadLevel: 'high' | 'medium' | 'low' = 'medium';
+    let kinecticChain: string[] = [];
+
+    // Pattern-based biomechanical analysis
+    if (pattern === 'vertical_push') {
+      primaryJoints = ['shoulder'];
+      secondaryJoints = ['elbow', 'upper_back'];
+      kinecticChain = ['shoulder', 'upper_back', 'core'];
+      loadLevel = exerciseName.includes('bilanciere') || exerciseName.includes('handstand') ? 'high' : 'medium';
+    } else if (pattern === 'horizontal_push') {
+      primaryJoints = ['shoulder', 'elbow'];
+      secondaryJoints = ['wrist', 'upper_back'];
+      kinecticChain = ['shoulder', 'upper_back', 'core'];
+      loadLevel = exerciseName.includes('panca') || exerciseName.includes('bilanciere') ? 'high' : 'medium';
+    } else if (pattern === 'vertical_pull') {
+      primaryJoints = ['shoulder', 'upper_back'];
+      secondaryJoints = ['elbow', 'neck'];
+      kinecticChain = ['shoulder', 'upper_back', 'core', 'elbow'];
+      loadLevel = exerciseName.includes('trazioni') || exerciseName.includes('pull-up') ? 'high' : 'medium';
+    } else if (pattern === 'horizontal_pull') {
+      primaryJoints = ['upper_back', 'shoulder'];
+      secondaryJoints = ['elbow', 'lower_back'];
+      kinecticChain = ['upper_back', 'shoulder', 'core', 'lower_back'];
+      loadLevel = exerciseName.includes('bilanciere') ? 'high' : 'medium';
+    } else if (pattern === 'lower_push') {
+      primaryJoints = ['knee', 'hip'];
+      secondaryJoints = ['ankle', 'lower_back'];
+      kinecticChain = ['ankle', 'knee', 'hip', 'core', 'lower_back'];
+      loadLevel = exerciseName.includes('bilanciere') || exerciseName.includes('squat') ? 'high' : 'medium';
+    } else if (pattern === 'lower_pull') {
+      primaryJoints = ['hip', 'lower_back'];
+      secondaryJoints = ['knee', 'upper_back'];
+      kinecticChain = ['ankle', 'knee', 'hip', 'lower_back', 'core'];
+      loadLevel = exerciseName.includes('stacchi') || exerciseName.includes('deadlift') ? 'high' : 'medium';
+    }
+
+    return { primaryJoints, secondaryJoints, loadLevel, kinecticChain };
+  };
+
+  // Suggest corrective exercises based on pain area
+  const getCorrectiveExercises = (area: string): string[] => {
+    const correctiveMap: Record<string, string[]> = {
+      shoulder: ['Face Pulls 2x15', 'Band Pull-Aparts 2x20', 'Wall Slides 2x10', 'Scapular Push-ups 2x12'],
+      upper_back: ['Cat-Cow 2x10', 'Thoracic Rotations 2x8/side', 'Foam Roll T-Spine 3min'],
+      lower_back: ['Dead Bugs 2x10/side', 'Bird Dogs 2x10/side', 'Cat-Cow 2x10', 'McGill Big 3'],
+      hip: ['Hip 90/90 Stretch 2x30s/side', 'Clamshells 2x15', 'Hip Bridges 2x15'],
+      knee: ['Terminal Knee Extensions 2x15', 'Wall Sits 2x30s', 'VMO Activation Drills'],
+      ankle: ['Ankle Circles 2x10/direction', 'Calf Raises 2x15', 'Ankle Dorsiflexion Stretch 2x30s'],
+      elbow: ['Wrist Curls 2x15', 'Forearm Stretches 2x30s', 'Elbow Circles 2x10'],
+      wrist: ['Wrist Circles 2x10', 'Prayer Stretches 2x30s', 'Fist Pumps 2x20'],
+      neck: ['Neck Retractions 2x10', 'Chin Tucks 2x10', 'Gentle Neck Rotations 2x5/side']
+    };
+    return correctiveMap[area] || [];
+  };
+
+  // Adapt exercises based on pain areas WITH BIOMECHANICAL INTELLIGENCE
+  const adaptExercisesForPain = (exercisesToAdapt: Exercise[]): Exercise[] => {
+    if (painAreas.length === 0) return exercisesToAdapt;
+
+    console.log('🩹 Adapting exercises with biomechanical intelligence:', painAreas);
+
+    // First pass: Add corrective exercises at the beginning
+    const correctiveExercises: Exercise[] = [];
+    painAreas.forEach(({ area, intensity }) => {
+      if (intensity >= 4) {
+        const correctives = getCorrectiveExercises(area);
+        if (correctives.length > 0) {
+          correctiveExercises.push({
+            name: `🩹 Corrective: ${area.toUpperCase()}`,
+            pattern: 'core',
+            sets: 2,
+            reps: correctives.join(' • '),
+            rest: '30s',
+            intensity: 'Light',
+            notes: `⚡ Esegui PRIMA del workout: ${correctives.slice(0, 2).join(' + ')}`
+          });
+        }
+      }
+    });
+
+    // Second pass: Adapt main exercises based on biomechanics
+    const adaptedMainExercises = exercisesToAdapt.map(ex => {
+      let adapted = { ...ex };
+      let adaptationNotes: string[] = [];
+
+      // Get biomechanical analysis for this exercise
+      const biomech = getExerciseBiomechanics(ex);
+
+      painAreas.forEach(({ area, intensity }) => {
+        // Check if pain area affects this exercise
+        const isPrimaryJoint = biomech.primaryJoints.includes(area);
+        const isSecondaryJoint = biomech.secondaryJoints.includes(area);
+        const isInKineticChain = biomech.kinecticChain.includes(area);
+
+        if (!isPrimaryJoint && !isSecondaryJoint && !isInKineticChain) {
+          return; // This exercise doesn't involve painful area
+        }
+
+        // INTELLIGENT ADAPTATION BASED ON:
+        // 1. Pain intensity
+        // 2. Joint involvement (primary vs secondary)
+        // 3. Exercise load level
+        // 4. Kinetic chain implications
+
+        const shouldSubstitute = (isPrimaryJoint && intensity >= 7) || (biomech.loadLevel === 'high' && intensity >= 6);
+        const shouldReduceVolume = (isPrimaryJoint && intensity >= 4) || (isSecondaryJoint && intensity >= 6);
+        const shouldAddWarning = isInKineticChain && intensity >= 3;
+
+        // HIGH INTENSITY PAIN (7-10): Sostituisci esercizio
+        // MEDIUM PAIN (4-6): Riduci volume/intensità
+        // LOW PAIN (1-3): Aggiungi warm-up note
+
+        switch (area) {
+          case 'shoulder':
+            if (['vertical_push', 'horizontal_push', 'vertical_pull'].includes(ex.pattern)) {
+              if (intensity >= 7) {
+                // Sostituisci con esercizio più sicuro
+                const safeAlternatives: Record<string, string> = {
+                  'Military Press': 'Lateral Raises (leggero)',
+                  'Shoulder Press Manubri': 'Front Raises',
+                  'Panca Piana': 'Push-up su Ginocchia (ROM ridotto)',
+                  'Trazioni': 'Lat Machine (ROM ridotto)',
+                  'Pike Push-up': 'Shoulder Mobility Work'
+                };
+                if (safeAlternatives[ex.name]) {
+                  adapted.name = safeAlternatives[ex.name];
+                  adaptationNotes.push(`⚠️ DOLORE SPALLA: Esercizio sostituito`);
+                }
+              } else if (intensity >= 4) {
+                adapted.sets = Math.max(1, ex.sets - 1);
+                adapted.intensity = 'RPE 5-6 (ridotto)';
+                adaptationNotes.push(`🩹 Dolore spalla: -1 set, intensità ridotta`);
+              } else {
+                adaptationNotes.push(`⚡ Dolore spalla lieve: Warm-up scapolare 5min`);
+              }
+            }
+            break;
+
+          case 'elbow':
+            if (['horizontal_push', 'vertical_pull', 'horizontal_pull'].includes(ex.pattern)) {
+              if (intensity >= 7) {
+                adapted.reps = typeof ex.reps === 'number' ? Math.floor(ex.reps * 0.7) : ex.reps;
+                adapted.intensity = 'RPE 4-5 (molto ridotto)';
+                adaptationNotes.push(`⚠️ DOLORE GOMITO: Volume ridotto 30%`);
+              } else if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore gomito: ROM ridotto, no lockout`);
+              }
+            }
+            break;
+
+          case 'wrist':
+            if (ex.pattern === 'horizontal_push') {
+              if (intensity >= 7) {
+                if (ex.name.includes('Push-up')) {
+                  adapted.name = 'Push-up su Pugni Chiusi';
+                  adaptationNotes.push(`⚠️ DOLORE POLSO: Push-up su pugni`);
+                }
+              } else if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore polso: Usa wrist wraps o pugni chiusi`);
+              }
+            }
+            break;
+
+          case 'lower_back':
+            if (['lower_pull', 'lower_push'].includes(ex.pattern)) {
+              if (intensity >= 7) {
+                const safeAlternatives: Record<string, string> = {
+                  'Squat (Bilanciere)': 'Goblet Squat (leggero)',
+                  'Stacchi Rumeni': 'Glute Bridge',
+                  'Good Morning': 'Bird Dog (isometrico)'
+                };
+                if (safeAlternatives[ex.name]) {
+                  adapted.name = safeAlternatives[ex.name];
+                  adaptationNotes.push(`⚠️ DOLORE SCHIENA: Esercizio sostituito`);
+                }
+              } else if (intensity >= 4) {
+                adapted.sets = Math.max(2, ex.sets - 1);
+                adaptationNotes.push(`🩹 Dolore schiena: ROM ridotto, no flexion completa`);
+              } else {
+                adaptationNotes.push(`⚡ Dolore schiena lieve: Warm-up core 5min`);
+              }
+            }
+            break;
+
+          case 'knee':
+            if (ex.pattern === 'lower_push') {
+              if (intensity >= 7) {
+                const safeAlternatives: Record<string, string> = {
+                  'Squat (Bilanciere)': 'Wall Sit (isometrico)',
+                  'Bulgarian Split Squat': 'Step-up (basso)',
+                  'Leg Press': 'Leg Extension (leggero)'
+                };
+                if (safeAlternatives[ex.name]) {
+                  adapted.name = safeAlternatives[ex.name];
+                  adaptationNotes.push(`⚠️ DOLORE GINOCCHIO: Esercizio sostituito`);
+                }
+              } else if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore ginocchio: Profondità ridotta (1/2 squat)`);
+              }
+            }
+            break;
+
+          case 'hip':
+            if (ex.pattern === 'lower_push') {
+              if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore anca: ROM ridotto, stance più stretta`);
+              }
+            }
+            break;
+
+          case 'upper_back':
+            if (['horizontal_pull', 'vertical_pull'].includes(ex.pattern)) {
+              if (intensity >= 7) {
+                adapted.sets = Math.max(1, ex.sets - 1);
+                adapted.intensity = 'RPE 5-6 (ridotto)';
+                adaptationNotes.push(`⚠️ DOLORE DORSO: Volume ridotto, evita sovraccarico`);
+              } else if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore dorso: ROM controllato, no overstretch`);
+              } else {
+                adaptationNotes.push(`⚡ Dolore dorso lieve: Warm-up scapole + thoracic mobility`);
+              }
+            }
+            break;
+
+          case 'ankle':
+            if (ex.pattern === 'lower_push') {
+              if (intensity >= 7) {
+                const safeAlternatives: Record<string, string> = {
+                  'Squat (Bilanciere)': 'Leg Press (piedi alti)',
+                  'Bulgarian Split Squat': 'Leg Extension',
+                  'Air Squat + Jump': 'Seated Leg Press',
+                  'Pistol Squat Assistito': 'Single Leg Press'
+                };
+                if (safeAlternatives[ex.name]) {
+                  adapted.name = safeAlternatives[ex.name];
+                  adaptationNotes.push(`⚠️ DOLORE CAVIGLIA: Esercizio sostituito (no ankle mobility)`);
+                }
+              } else if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore caviglia: ROM ridotto, stance più ampia, talloni rialzati`);
+              } else {
+                adaptationNotes.push(`⚡ Dolore caviglia lieve: Warm-up ankle mobility 5min`);
+              }
+            }
+            break;
+
+          case 'neck':
+            if (ex.pattern === 'vertical_pull') {
+              if (intensity >= 4) {
+                adaptationNotes.push(`🩹 Dolore collo: Testa neutra, no protrazione`);
+              }
+            }
+            break;
+        }
+      });
+
+      if (adaptationNotes.length > 0) {
+        adapted.notes = adaptationNotes.join(' | ') + (ex.notes ? ` | ${ex.notes}` : '');
+      }
+
+      return adapted;
+    });
+
+    // Return corrective exercises + adapted main exercises
+    return [...correctiveExercises, ...adaptedMainExercises];
+  };
+
+  // Adapt exercises based on menstrual cycle phase
+  const adaptExercisesForCycle = (exercisesToAdapt: Exercise[]): Exercise[] => {
+    if (menstrualPhase === 'none') return exercisesToAdapt;
+
+    console.log('🩸 Adapting exercises for menstrual cycle:', menstrualPhase, `Day ${cycleDayNumber}`);
+
+    let volumeMultiplier = 1.0;
+    let intensityAdjustment = '';
+    let cycleNotes: string[] = [];
+
+    switch (menstrualPhase) {
+      case 'follicular': // Days 6-13: High energy, best performance
+        volumeMultiplier = 1.0;
+        intensityAdjustment = 'RPE 7-9 (normal/alto)';
+        cycleNotes.push('💪 Fase Follicolare: Energia alta, ottimale per progressione');
+        break;
+
+      case 'ovulation': // Days 14-16: Peak energy, max strength
+        volumeMultiplier = 1.1; // Slightly increase volume
+        intensityAdjustment = 'RPE 8-9 (push it!)';
+        cycleNotes.push('🔥 Ovulazione: Picco energia, max performance');
+        break;
+
+      case 'luteal': // Days 17-28: Energy drops, more fatigue
+        volumeMultiplier = 0.85; // Reduce volume 15%
+        intensityAdjustment = 'RPE 6-7 (moderato)';
+        cycleNotes.push('⚠️ Fase Luteale: Energia ridotta, focus su tecnica');
+        break;
+
+      case 'menstrual': // Days 1-5: Bleeding, cramps, low energy
+        volumeMultiplier = 0.70; // Reduce volume 30%
+        intensityAdjustment = 'RPE 4-6 (leggero)';
+        cycleNotes.push('🩸 Mestruale: Riduci intensità, ascolta il corpo');
+        break;
+    }
+
+    return exercisesToAdapt.map(ex => {
+      const adapted = { ...ex };
+
+      // Adjust volume based on cycle phase
+      if (menstrualPhase === 'ovulation') {
+        // Slightly increase sets during ovulation (peak performance)
+        adapted.sets = Math.min(ex.sets + 1, ex.sets + 1);
+      } else if (menstrualPhase === 'luteal') {
+        // Reduce sets during luteal phase
+        adapted.sets = Math.max(Math.floor(ex.sets * volumeMultiplier), 2);
+        adapted.rest = increaseRest(ex.rest); // More rest
+      } else if (menstrualPhase === 'menstrual') {
+        // Significantly reduce sets during menstruation
+        adapted.sets = Math.max(Math.floor(ex.sets * volumeMultiplier), 1);
+        adapted.rest = increaseRest(ex.rest);
+
+        // Avoid intense core work if cramping
+        if (ex.pattern === 'core' && cycleDayNumber <= 3) {
+          adapted.intensity = 'RPE 3-4 (molto leggero)';
+          adapted.notes = '🩸 Crampi? Sostituisci con stretching dolce | ' + (ex.notes || '');
+        }
+      }
+
+      // Update intensity recommendation
+      if (intensityAdjustment && menstrualPhase !== 'follicular') {
+        adapted.intensity = intensityAdjustment;
+      }
+
+      // Add cycle-specific notes
+      if (cycleNotes.length > 0 && !adapted.notes?.includes(cycleNotes[0])) {
+        adapted.notes = cycleNotes[0] + (adapted.notes ? ` | ${adapted.notes}` : '');
+      }
+
+      return adapted;
+    });
+  };
+
+  // Helper: Increase rest time
+  const increaseRest = (currentRest: string): string => {
+    const seconds = parseInt(currentRest.replace(/\D/g, ''));
+    return `${seconds + 30}s`;
+  };
+
   // Start workout after pre-check
   const handleStartWorkout = () => {
+    let adaptedExercises = exercises;
+
+    // STEP 1: Adapt for pain if needed
+    if (painAreas.length > 0) {
+      adaptedExercises = adaptExercisesForPain(adaptedExercises);
+
+      toast.success('🩹 Esercizi adattati per dolore', {
+        description: `${painAreas.length} zona/e con adattamenti`
+      });
+    }
+
+    // STEP 2: Adapt for menstrual cycle if tracked
+    if (menstrualPhase !== 'none') {
+      adaptedExercises = adaptExercisesForCycle(adaptedExercises);
+
+      const cycleMessages = {
+        follicular: '💪 Fase Follicolare: Energia ottimale',
+        ovulation: '🔥 Ovulazione: Picco performance',
+        luteal: '⚠️ Fase Luteale: Ridotta intensità 15%',
+        menstrual: '🩸 Mestruale: Ridotto volume 30%'
+      };
+
+      toast.info(cycleMessages[menstrualPhase], {
+        description: `Giorno ${cycleDayNumber} del ciclo`
+      });
+    }
+
+    setExercises(adaptedExercises);
     setShowPreWorkout(false);
     setWorkoutStartTime(new Date());
+
+    const painSummary = painAreas.length > 0
+      ? ` • Pain: ${painAreas.map(p => p.area).join(', ')}`
+      : '';
+
+    const cycleSummary = menstrualPhase !== 'none'
+      ? ` • Cycle: ${menstrualPhase} (day ${cycleDayNumber})`
+      : '';
+
     toast.success('💪 Workout iniziato!', {
-      description: `Mood: ${mood} • Sleep: ${sleepQuality}/10${locationSwitched ? ' • Casa' : ''}`
+      description: `Mood: ${mood} • Sleep: ${sleepQuality}/10${locationSwitched ? ' • Casa' : ''}${painSummary}${cycleSummary}`
     });
   };
 
@@ -275,12 +705,6 @@ export default function LiveWorkoutSession({
         message: '✅ RPE ottimale! Continua così.',
       });
     }
-  };
-
-  // Helper: Increase rest time
-  const increaseRest = (currentRest: string): string => {
-    const seconds = parseInt(currentRest.replace(/\D/g, ''));
-    return `${seconds + 30}s`;
   };
 
   // Helper: Decrease rest time
@@ -410,15 +834,25 @@ export default function LiveWorkoutSession({
         };
       });
 
+      // Build workout notes with pain tracking
+      const painNote = painAreas.length > 0
+        ? `Pain areas: ${painAreas.map(p => `${p.area}(${p.intensity}/10)`).join(', ')}`
+        : '';
+
+      const workoutNotes = [
+        'Live workout with real-time RPE feedback',
+        painNote
+      ].filter(Boolean).join(' | ');
+
       await autoRegulationService.logWorkout(userId, programId, {
         day_name: dayName,
         split_type: currentExercise?.pattern || 'Full Body',
         session_duration_minutes: duration,
         session_rpe: avgRPE,
         exercises: exerciseLogs,
-        mood: 'normal',
-        sleep_quality: 7,
-        notes: 'Live workout with real-time RPE feedback'
+        mood: mood as any,
+        sleep_quality: sleepQuality,
+        notes: workoutNotes
       });
 
       if (onWorkoutComplete) {
@@ -523,6 +957,218 @@ export default function LiveWorkoutSession({
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* PAIN SCREENING */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-slate-300 text-sm font-semibold">🩹 Hai dolori oggi?</label>
+              {painAreas.length > 0 && (
+                <span className="text-xs text-red-400 font-bold">
+                  {painAreas.length} zona/e
+                </span>
+              )}
+            </div>
+
+            {/* Body Map - Pain Area Selection */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {[
+                { key: 'shoulder', label: 'Spalla', emoji: '💪', color: 'red' },
+                { key: 'elbow', label: 'Gomito', emoji: '🦾', color: 'orange' },
+                { key: 'wrist', label: 'Polso', emoji: '✋', color: 'yellow' },
+                { key: 'upper_back', label: 'Dorso', emoji: '🔵', color: 'blue' },
+                { key: 'lower_back', label: 'Schiena Bassa', emoji: '🔴', color: 'red' },
+                { key: 'knee', label: 'Ginocchio', emoji: '🦵', color: 'orange' },
+                { key: 'hip', label: 'Anca', emoji: '🫁', color: 'yellow' },
+                { key: 'ankle', label: 'Caviglia', emoji: '🦶', color: 'amber' },
+                { key: 'neck', label: 'Collo', emoji: '🧠', color: 'purple' }
+              ].map(({ key, label, emoji, color }) => {
+                const isPainful = painAreas.find(p => p.area === key);
+                const intensity = isPainful?.intensity || 5;
+
+                return (
+                  <div key={key}>
+                    <button
+                      onClick={() => handlePainAreaToggle(key)}
+                      className={`w-full p-3 rounded-lg border-2 transition-all duration-200 ${
+                        isPainful
+                          ? intensity >= 7
+                            ? 'bg-red-500/20 border-red-500 text-red-300'
+                            : intensity >= 4
+                            ? 'bg-orange-500/20 border-orange-500 text-orange-300'
+                            : 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
+                          : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{emoji}</span>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold">{label}</div>
+                          {isPainful && (
+                            <div className="text-xs opacity-70">
+                              Intensità: {intensity}/10
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Pain Intensity Slider (shown when area selected) */}
+                    {isPainful && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-2 px-2"
+                      >
+                        <input
+                          type="range"
+                          min="1"
+                          max="10"
+                          value={intensity}
+                          onChange={(e) => handlePainIntensityChange(key, parseInt(e.target.value))}
+                          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500"
+                        />
+                        <div className="flex justify-between text-xs text-slate-500 mt-1">
+                          <span>Lieve</span>
+                          <span>Severo</span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pain Info Box */}
+            {painAreas.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <p className="text-red-300 text-xs font-semibold mb-1">
+                  ⚠️ Esercizi adattati automaticamente
+                </p>
+                <p className="text-slate-400 text-xs">
+                  {painAreas.filter(p => p.intensity >= 7).length > 0 && '• Dolore alto (7-10): Esercizi sostituiti'}
+                  {painAreas.filter(p => p.intensity >= 4 && p.intensity < 7).length > 0 && ' • Dolore medio (4-6): Volume ridotto'}
+                  {painAreas.filter(p => p.intensity < 4).length > 0 && ' • Dolore lieve (1-3): Warm-up extra'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* MENSTRUAL CYCLE TRACKING (for female athletes) */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-slate-300 text-sm font-semibold">🩸 Traccia Ciclo Mestruale</label>
+              {menstrualPhase !== 'none' && (
+                <span className="text-xs text-pink-400 font-bold">
+                  Giorno {cycleDayNumber}
+                </span>
+              )}
+            </div>
+
+            {/* Cycle Phase Selection */}
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { key: 'none', label: 'Non Tracciare', emoji: '⚪', color: 'gray', days: '' },
+                { key: 'follicular', label: 'Follicolare', emoji: '💪', color: 'green', days: '(6-13)' },
+                { key: 'ovulation', label: 'Ovulazione', emoji: '🔥', color: 'orange', days: '(14-16)' },
+                { key: 'luteal', label: 'Luteale', emoji: '⚠️', color: 'yellow', days: '(17-28)' },
+                { key: 'menstrual', label: 'Mestruale', emoji: '🩸', color: 'red', days: '(1-5)' }
+              ].map(({ key, label, emoji, color, days }) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setMenstrualPhase(key as any);
+                    if (key === 'follicular') setCycleDayNumber(10);
+                    else if (key === 'ovulation') setCycleDayNumber(14);
+                    else if (key === 'luteal') setCycleDayNumber(21);
+                    else if (key === 'menstrual') setCycleDayNumber(3);
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                    menstrualPhase === key
+                      ? color === 'green'
+                        ? 'bg-green-500/20 border-green-500 text-green-300'
+                        : color === 'orange'
+                        ? 'bg-orange-500/20 border-orange-500 text-orange-300'
+                        : color === 'yellow'
+                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
+                        : color === 'red'
+                        ? 'bg-red-500/20 border-red-500 text-red-300'
+                        : 'bg-slate-700 border-slate-600 text-slate-400'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{emoji}</span>
+                    <div className="flex-1 text-left">
+                      <div className="text-xs font-semibold">{label}</div>
+                      {days && <div className="text-xs opacity-60">{days}</div>}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Cycle Day Number Slider (shown when phase selected) */}
+            {menstrualPhase !== 'none' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3"
+              >
+                <div className="flex justify-between text-xs text-slate-400 mb-2">
+                  <span>Giorno del ciclo</span>
+                  <span className="text-white font-bold">{cycleDayNumber}/28</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="28"
+                  value={cycleDayNumber}
+                  onChange={(e) => {
+                    const day = parseInt(e.target.value);
+                    setCycleDayNumber(day);
+                    // Auto-detect phase based on day
+                    if (day >= 1 && day <= 5) setMenstrualPhase('menstrual');
+                    else if (day >= 6 && day <= 13) setMenstrualPhase('follicular');
+                    else if (day >= 14 && day <= 16) setMenstrualPhase('ovulation');
+                    else setMenstrualPhase('luteal');
+                  }}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                />
+              </motion.div>
+            )}
+
+            {/* Cycle Info Box */}
+            {menstrualPhase !== 'none' && (
+              <div className={`mt-3 rounded-lg p-3 border ${
+                menstrualPhase === 'follicular'
+                  ? 'bg-green-500/10 border-green-500/30'
+                  : menstrualPhase === 'ovulation'
+                  ? 'bg-orange-500/10 border-orange-500/30'
+                  : menstrualPhase === 'luteal'
+                  ? 'bg-yellow-500/10 border-yellow-500/30'
+                  : 'bg-red-500/10 border-red-500/30'
+              }`}>
+                <p className={`text-xs font-semibold mb-1 ${
+                  menstrualPhase === 'follicular' ? 'text-green-300' :
+                  menstrualPhase === 'ovulation' ? 'text-orange-300' :
+                  menstrualPhase === 'luteal' ? 'text-yellow-300' :
+                  'text-red-300'
+                }`}>
+                  {menstrualPhase === 'follicular' && '💪 Energia alta - Ottimale per progressione'}
+                  {menstrualPhase === 'ovulation' && '🔥 Picco performance - Push it!'}
+                  {menstrualPhase === 'luteal' && '⚠️ Energia ridotta - Intensità -15%'}
+                  {menstrualPhase === 'menstrual' && '🩸 Crampi/Fatica - Volume -30%'}
+                </p>
+                <p className="text-slate-400 text-xs">
+                  {menstrualPhase === 'follicular' && 'Allenamenti intensi, volume alto, focus forza'}
+                  {menstrualPhase === 'ovulation' && 'Max volume/intensità, sfrutta il picco ormonale'}
+                  {menstrualPhase === 'luteal' && 'Ridurre intensità, più recupero, focus tecnica'}
+                  {menstrualPhase === 'menstrual' && 'Evitare core intenso, stretching/mobilità OK'}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Location Switch Button (VIOLA) */}
