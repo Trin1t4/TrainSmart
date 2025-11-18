@@ -508,34 +508,10 @@ export default function Dashboard() {
 
       const userLevel = screening.level;
 
-      // ✅ GOAL MAPPING COMPLETO - Mappa tutti i goal UI → Database
-      const goalMap: Record<string, string> = {
-        // Strength & Muscle
-        'forza': 'strength',
-        'massa': 'muscle_gain',
-        'massa muscolare': 'muscle_gain',
-        'ipertrofia': 'muscle_gain', // ✅ FIX: Era mancante!
-        'tonificazione': 'fat_loss', // Toning = definizione
-
-        // Fat Loss
-        'definizione': 'fat_loss',
-        'dimagrimento': 'fat_loss',
-
-        // Endurance & Fitness
-        'resistenza': 'endurance',
-        'benessere': 'general_fitness',
-
-        // Sport & Recovery
-        'prestazioni_sportive': 'sport_performance',
-        'motor_recovery': 'motor_recovery',
-
-        // Special Cases
-        'gravidanza': 'pregnancy',
-        'disabilita': 'disability'
-      };
-
-      const originalGoal = onboarding?.goal || 'muscle_gain';
-      const mappedGoal = goalMap[originalGoal.toLowerCase()] || originalGoal;
+      // ✅ GOAL: Keep original Italian values for Supabase
+      // Database constraint expects Italian values
+      const originalGoal = onboarding?.goal || 'ipertrofia';
+      const mappedGoal = originalGoal; // No mapping - use Italian directly
 
       console.group('🎯 PROGRAM GENERATION');
       console.log('Level from Screening:', userLevel);
@@ -744,24 +720,10 @@ export default function Dashboard() {
       };
 
       const userLevel = screening.level;
-      const goalMap: Record<string, string> = {
-        'forza': 'strength',
-        'massa': 'muscle_gain',
-        'massa muscolare': 'muscle_gain',
-        'ipertrofia': 'muscle_gain',
-        'tonificazione': 'fat_loss',
-        'definizione': 'fat_loss',
-        'dimagrimento': 'fat_loss',
-        'resistenza': 'endurance',
-        'benessere': 'general_fitness',
-        'prestazioni_sportive': 'sport_performance',
-        'motor_recovery': 'motor_recovery',
-        'gravidanza': 'pregnancy',
-        'disabilita': 'disability'
-      };
 
-      const originalGoal = onboarding?.goal || 'muscle_gain';
-      const mappedGoal = goalMap[originalGoal.toLowerCase()] || originalGoal;
+      // ✅ GOAL: Keep original Italian values for Supabase
+      const originalGoal = onboarding?.goal || 'ipertrofia';
+      const mappedGoal = originalGoal; // No mapping - use Italian directly
 
       console.log('🎯 Generating program with:', { level: userLevel, goal: mappedGoal, location: newLocation });
 
