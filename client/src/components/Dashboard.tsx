@@ -30,6 +30,19 @@ export default function Dashboard() {
   const [syncStatus, setSyncStatus] = useState<'synced' | 'offline' | 'syncing'>('synced');
   const [showWorkoutLogger, setShowWorkoutLogger] = useState(false);
   const [currentWorkoutDay, setCurrentWorkoutDay] = useState<any>(null);
+  const [showLocationSwitch, setShowLocationSwitch] = useState(false);
+  const [switchingLocation, setSwitchingLocation] = useState(false);
+  const [switchStep, setSwitchStep] = useState<'choose' | 'equipment'>('choose');
+  const [selectedLocation, setSelectedLocation] = useState<'gym' | 'home' | null>(null);
+  const [homeEquipment, setHomeEquipment] = useState({
+    dumbbell: false,
+    barbell: false,
+    pullUpBar: false,
+    rings: false,
+    bands: false,
+    kettlebell: false,
+    bench: false
+  });
   const [dataStatus, setDataStatus] = useState({
     onboarding: null as any,
     quiz: null as any,
@@ -648,6 +661,176 @@ export default function Dashboard() {
     };
   }
 
+  // ✅ Handle location choice (step 1)
+  function handleLocationChoice(location: 'gym' | 'home') {
+    setSelectedLocation(location);
+
+    if (location === 'home') {
+      // Go to equipment selection step
+      setSwitchStep('equipment');
+      // Pre-fill with current equipment if available
+      if (dataStatus.onboarding?.equipment) {
+        setHomeEquipment(dataStatus.onboarding.equipment);
+      }
+    } else {
+      // Gym has everything, proceed directly
+      handleLocationSwitch(location, {});
+    }
+  }
+
+  // ✅ Location Switch Function
+  async function handleLocationSwitch(newLocation: 'gym' | 'home', equipment: any) {
+    try {
+      setSwitchingLocation(true);
+      setSyncStatus('syncing');
+
+      console.group('🏋️ LOCATION SWITCH');
+      console.log('Current location:', dataStatus.onboarding?.trainingLocation);
+      console.log('New location:', newLocation);
+      console.log('Equipment:', equipment);
+
+      // 1. Determine training type based on location and equipment
+      let trainingType = 'bodyweight';
+      if (newLocation === 'gym') {
+        trainingType = 'equipment'; // Gym has everything
+      } else if (newLocation === 'home') {
+        // Home: check equipment
+        if (equipment.barbell || equipment.dumbbell) {
+          trainingType = 'equipment';
+        } else if (equipment.pullUpBar || equipment.rings) {
+          trainingType = 'bodyweight'; // Calisthenics with equipment
+        } else {
+          trainingType = 'bodyweight'; // Pure bodyweight
+        }
+      }
+
+      // 2. Update onboarding data with new location and equipment
+      const updatedOnboarding = {
+        ...dataStatus.onboarding,
+        trainingLocation: newLocation,
+        trainingType: trainingType,
+        equipment: newLocation === 'gym'
+          ? {
+              barbell: true,
+              dumbbell: true,
+              machines: true,
+              pullUpBar: true,
+              bench: true,
+              cables: true
+            }
+          : equipment
+      };
+
+      localStorage.setItem('onboarding_data', JSON.stringify(updatedOnboarding));
+      setDataStatus(prev => ({ ...prev, onboarding: updatedOnboarding }));
+
+      console.log('✅ Updated onboarding data:', updatedOnboarding);
+
+      // 2. Update screening timestamp to trigger regeneration
+      const updatedScreening = {
+        ...dataStatus.screening,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('screening_data', JSON.stringify(updatedScreening));
+      setDataStatus(prev => ({ ...prev, screening: updatedScreening }));
+
+      // 3. Regenerate program with new location
+      const { onboarding, quiz, screening } = {
+        onboarding: updatedOnboarding,
+        quiz: dataStatus.quiz,
+        screening: updatedScreening
+      };
+
+      const userLevel = screening.level;
+      const goalMap: Record<string, string> = {
+        'forza': 'strength',
+        'massa': 'muscle_gain',
+        'massa muscolare': 'muscle_gain',
+        'ipertrofia': 'muscle_gain',
+        'tonificazione': 'fat_loss',
+        'definizione': 'fat_loss',
+        'dimagrimento': 'fat_loss',
+        'resistenza': 'endurance',
+        'benessere': 'general_fitness',
+        'prestazioni_sportive': 'sport_performance',
+        'motor_recovery': 'motor_recovery',
+        'gravidanza': 'pregnancy',
+        'disabilita': 'disability'
+      };
+
+      const originalGoal = onboarding?.goal || 'muscle_gain';
+      const mappedGoal = goalMap[originalGoal.toLowerCase()] || originalGoal;
+
+      console.log('🎯 Generating program with:', { level: userLevel, goal: mappedGoal, location: newLocation });
+
+      const generatedProgram = generateLocalProgram(userLevel, mappedGoal, onboarding);
+
+      // 4. Save to Supabase
+      const saveResult = await createProgram({
+        name: generatedProgram.name,
+        description: `Programma ${userLevel} per ${mappedGoal} - ${newLocation === 'gym' ? 'Palestra' : 'Casa'}`,
+        level: userLevel as 'beginner' | 'intermediate' | 'advanced',
+        goal: mappedGoal,
+        location: newLocation,
+        training_type: updatedOnboarding.trainingType || 'bodyweight',
+        frequency: generatedProgram.frequency || 3,
+        split: generatedProgram.split,
+        days_per_week: generatedProgram.frequency || 3,
+        weekly_split: generatedProgram.weeklySplit || { days: [] },
+        exercises: generatedProgram.exercises || [],
+        total_weeks: generatedProgram.totalWeeks || 8,
+        start_date: new Date().toISOString(),
+        is_active: true,
+        status: 'active',
+        pain_areas: onboarding?.painAreas || [],
+        pattern_baselines: screening?.patternBaselines || {},
+        available_equipment: onboarding?.equipment || {},
+        metadata: {
+          screeningScores: {
+            final: screening.finalScore,
+            quiz: quiz?.score,
+            practical: screening.practicalScore,
+            physical: screening.physicalScore
+          },
+          locationSwitched: true,
+          previousLocation: dataStatus.onboarding?.trainingLocation
+        }
+      });
+
+      if (saveResult.success) {
+        console.log('✅ New program saved:', saveResult.data?.id);
+        setProgram(saveResult.data);
+        setHasProgram(true);
+        setSyncStatus(saveResult.fromCache ? 'offline' : 'synced');
+
+        localStorage.removeItem('currentProgram');
+        await loadProgramHistory();
+
+        const locationLabel = newLocation === 'gym' ? 'PALESTRA' : 'CASA';
+        alert(`✅ Location cambiata!\n\nNuovo programma per ${locationLabel} generato con successo!`);
+        setShowLocationSwitch(false);
+        console.groupEnd();
+      } else {
+        console.warn('⚠️ Failed to save:', saveResult.error);
+        localStorage.setItem('currentProgram', JSON.stringify(generatedProgram));
+        setProgram(generatedProgram);
+        setHasProgram(true);
+        setSyncStatus('offline');
+        alert(`⚠️ Programma generato (salvato localmente)\n\n${saveResult.error || 'Errore sincronizzazione cloud'}`);
+        setShowLocationSwitch(false);
+        console.groupEnd();
+      }
+
+    } catch (error) {
+      console.error('❌ Error switching location:', error);
+      setSyncStatus('offline');
+      alert('Errore durante il cambio di location');
+      console.groupEnd();
+    } finally {
+      setSwitchingLocation(false);
+    }
+  }
+
   // ✅ Logout function
   const handleLogout = async () => {
     try {
@@ -1072,6 +1255,20 @@ export default function Dashboard() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
+                      setSwitchStep('choose');
+                      setSelectedLocation(null);
+                      setShowLocationSwitch(true);
+                    }}
+                    className="px-6 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl border border-purple-500/50 transition-all duration-300 flex items-center gap-2"
+                  >
+                    🏋️
+                    Cambia Location
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
                       if (confirm('Vuoi rigenerare il programma?')) {
                         localStorage.removeItem('currentProgram');
                         setHasProgram(false);
@@ -1315,6 +1512,169 @@ export default function Dashboard() {
                 <History className="w-16 h-16 mx-auto mb-4 opacity-30" />
                 <p>Nessun programma salvato</p>
               </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Location Switch Modal */}
+      {showLocationSwitch && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => {
+            setShowLocationSwitch(false);
+            setSwitchStep('choose');
+            setSelectedLocation(null);
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-6 max-w-2xl w-full border border-slate-700/50 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {switchStep === 'choose' ? (
+              // STEP 1: Choose Location
+              <>
+                <h2 className="text-3xl font-display font-bold mb-6 text-white flex items-center gap-3">
+                  🏋️ Cambia Location di Allenamento
+                </h2>
+
+                <p className="text-slate-300 mb-6">
+                  Dove ti allenerai? Il programma verrà rigenerato con esercizi adatti alla nuova location.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {/* GYM */}
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleLocationChoice('gym')}
+                    disabled={switchingLocation}
+                    className="bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white p-8 rounded-xl flex flex-col items-center gap-4 shadow-lg shadow-emerald-500/20 transition-all duration-300 disabled:opacity-50"
+                  >
+                    <span className="text-6xl">🏋️</span>
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold mb-2">Palestra</h3>
+                      <p className="text-sm text-emerald-200">Accesso completo a bilancieri, manubri, macchine</p>
+                    </div>
+                  </motion.button>
+
+                  {/* HOME */}
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleLocationChoice('home')}
+                    disabled={switchingLocation}
+                    className="bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-8 rounded-xl flex flex-col items-center gap-4 shadow-lg shadow-blue-500/20 transition-all duration-300 disabled:opacity-50"
+                  >
+                    <span className="text-6xl">🏠</span>
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold mb-2">Casa</h3>
+                      <p className="text-sm text-blue-200">Programma personalizzato per la tua attrezzatura</p>
+                    </div>
+                  </motion.button>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowLocationSwitch(false)}
+                  className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl border border-slate-600/50 transition-all duration-300"
+                >
+                  Annulla
+                </motion.button>
+              </>
+            ) : (
+              // STEP 2: Equipment Selection (only for home)
+              <>
+                <h2 className="text-3xl font-display font-bold mb-4 text-white flex items-center gap-3">
+                  🏠 Attrezzatura Disponibile a Casa
+                </h2>
+
+                <p className="text-slate-300 mb-6">
+                  Seleziona l'attrezzatura che hai disponibile. Il programma sarà ottimizzato di conseguenza.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {/* Equipment checkboxes */}
+                  {[
+                    { key: 'dumbbell', label: 'Manubri', icon: '🏋️' },
+                    { key: 'barbell', label: 'Bilanciere', icon: '⚡' },
+                    { key: 'pullUpBar', label: 'Sbarra Trazioni', icon: '🔥' },
+                    { key: 'rings', label: 'Anelli', icon: '⭕' },
+                    { key: 'bands', label: 'Elastici', icon: '🎗️' },
+                    { key: 'kettlebell', label: 'Kettlebell', icon: '🎯' },
+                    { key: 'bench', label: 'Panca', icon: '🪑' }
+                  ].map(({ key, label, icon }) => (
+                    <motion.label
+                      key={key}
+                      whileHover={{ scale: 1.02 }}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        homeEquipment[key as keyof typeof homeEquipment]
+                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                          : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-slate-500'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={homeEquipment[key as keyof typeof homeEquipment]}
+                        onChange={(e) => setHomeEquipment(prev => ({
+                          ...prev,
+                          [key]: e.target.checked
+                        }))}
+                        className="w-5 h-5 rounded accent-emerald-500"
+                      />
+                      <span className="text-2xl">{icon}</span>
+                      <span className="font-semibold">{label}</span>
+                    </motion.label>
+                  ))}
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
+                  <p className="text-sm text-blue-300">
+                    💡 <strong>Nessuna attrezzatura?</strong> Nessun problema! Genereremo un programma calisthenics a corpo libero ottimizzato per te.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSwitchStep('choose')}
+                    disabled={switchingLocation}
+                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl border border-slate-600/50 transition-all duration-300 disabled:opacity-50"
+                  >
+                    ← Indietro
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleLocationSwitch('home', homeEquipment)}
+                    disabled={switchingLocation}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 disabled:opacity-50"
+                  >
+                    {switchingLocation ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          ⚡
+                        </motion.div>
+                        Generazione...
+                      </span>
+                    ) : (
+                      'Genera Programma Casa'
+                    )}
+                  </motion.button>
+                </div>
+              </>
             )}
           </motion.div>
         </motion.div>
