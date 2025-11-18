@@ -31,15 +31,19 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else if (data?.session) {
-      // Check se l'utente ha completato l'onboarding
+      // Smart routing: controlla cosa ha già completato l'utente
       const hasOnboarding = localStorage.getItem('onboarding_data');
+      const hasScreening = localStorage.getItem('screening_data');
 
-      if (hasOnboarding) {
-        // Utente esistente con onboarding completato
-        window.location.href = "/dashboard";
-      } else {
-        // Primo login, porta all'onboarding
+      if (!hasOnboarding) {
+        // Primo login: inizia da onboarding
         window.location.href = "/onboarding";
+      } else if (!hasScreening) {
+        // Ha fatto onboarding ma non screening
+        window.location.href = "/screening";
+      } else {
+        // Ha completato tutto: vai alla dashboard
+        window.location.href = "/dashboard";
       }
     } else {
       // fallback: redirect
