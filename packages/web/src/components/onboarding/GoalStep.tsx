@@ -1,51 +1,54 @@
 import { useState } from 'react';
 import { OnboardingData } from '../../types/onboarding.types';
+import { useTranslation } from '../../lib/i18n';
 
 interface GoalStepProps {
   data: Partial<OnboardingData>;
   onNext: (data: Partial<OnboardingData>) => void;
 }
 
-const GOAL_OPTIONS = [
-  { value: 'forza', label: '💪 Forza', desc: 'Aumentare forza massimale' },
-  { value: 'ipertrofia', label: '🏋️ Ipertrofia', desc: 'Crescita muscolare' },
-  { value: 'tonificazione', label: '✨ Tonificazione', desc: 'Definizione muscolare' },
-  { value: 'dimagrimento', label: '🔥 Dimagrimento', desc: 'Perdita peso/grasso' },
-  { value: 'prestazioni_sportive', label: '⚽ Prestazioni Sportive', desc: 'Migliorare in uno sport' },
-  { value: 'benessere', label: '🧘 Benessere', desc: 'Salute generale' },
-  { value: 'resistenza', label: '🏃 Resistenza', desc: 'Capacità aerobica' },
-  { value: 'motor_recovery', label: '🔄 Recupero Motorio', desc: 'Post-riabilitazione', disclaimer: true }, // ✅ NUOVO
-  { value: 'gravidanza', label: '🤰 Gravidanza', desc: 'Pre/post parto' },
-  { value: 'disabilita', label: '♿ Disabilità', desc: 'Adattamenti specifici' }
+const getGoalOptions = (t: (key: string) => string) => [
+  { value: 'forza', label: t('onboarding.goal.strength'), desc: t('onboarding.goal.strengthDesc') },
+  { value: 'ipertrofia', label: t('onboarding.goal.hypertrophy'), desc: t('onboarding.goal.hypertrophyDesc') },
+  { value: 'tonificazione', label: t('onboarding.goal.toning'), desc: t('onboarding.goal.toningDesc') },
+  { value: 'dimagrimento', label: t('onboarding.goal.weightLoss'), desc: t('onboarding.goal.weightLossDesc') },
+  { value: 'prestazioni_sportive', label: t('onboarding.goal.sports'), desc: t('onboarding.goal.sportsDesc') },
+  { value: 'benessere', label: t('onboarding.goal.wellness'), desc: t('onboarding.goal.wellnessDesc') },
+  { value: 'resistenza', label: t('onboarding.goal.endurance'), desc: t('onboarding.goal.enduranceDesc') },
+  { value: 'motor_recovery', label: t('onboarding.goal.motorRecovery'), desc: t('onboarding.goal.motorRecoveryDesc'), disclaimer: 'recovery' },
+  { value: 'pre_partum', label: t('onboarding.goal.prePartum'), desc: t('onboarding.goal.prePartumDesc'), disclaimer: 'pregnancy' },
+  { value: 'post_partum', label: t('onboarding.goal.postPartum'), desc: t('onboarding.goal.postPartumDesc'), disclaimer: 'pregnancy' },
+  { value: 'disabilita', label: t('onboarding.goal.disability'), desc: t('onboarding.goal.disabilityDesc'), disclaimer: 'disability' }
 ];
 
-const SPORTS_OPTIONS = [
-  { value: 'calcio', label: '⚽ Calcio', roles: ['Portiere', 'Difensore', 'Centrocampista', 'Attaccante'] },
-  { value: 'basket', label: '🏀 Basket', roles: ['Playmaker', 'Guardia', 'Ala', 'Centro'] },
-  { value: 'pallavolo', label: '🏐 Pallavolo', roles: ['Alzatore', 'Opposto', 'Centrale', 'Libero', 'Schiacciatore'] },
-  { value: 'rugby', label: '🏉 Rugby', roles: ['Trequarti', 'Mediano', 'Pilone', 'Tallonatore', 'Seconda Linea'] },
-  { value: 'tennis', label: '🎾 Tennis', roles: ['Singolo', 'Doppio'] },
-  { value: 'corsa', label: '🏃 Corsa', roles: ['Velocità (100-400m)', 'Mezzofondo (800-3000m)', 'Fondo (5km+)'] },
-  { value: 'nuoto', label: '🏊 Nuoto', roles: ['Stile Libero', 'Rana', 'Dorso', 'Farfalla', 'Misti'] },
-  { value: 'ciclismo', label: '🚴 Ciclismo', roles: ['Strada', 'MTB', 'Pista'] },
-  { value: 'crossfit', label: '💪 CrossFit', roles: [] },
-  { value: 'powerlifting', label: '🏋️ Powerlifting', roles: [] },
-  { value: 'altro', label: '🎯 Altro', roles: [] }
+const getSportsOptions = (t: (key: string) => string) => [
+  { value: 'calcio', label: t('sports.soccer'), roles: [t('sports.roles.goalkeeper'), t('sports.roles.defender'), t('sports.roles.midfielder'), t('sports.roles.striker')] },
+  { value: 'basket', label: t('sports.basketball'), roles: [t('sports.roles.pointGuard'), t('sports.roles.guard'), t('sports.roles.forward'), t('sports.roles.center')] },
+  { value: 'pallavolo', label: t('sports.volleyball'), roles: [t('sports.roles.setter'), t('sports.roles.opposite'), t('sports.roles.middle'), t('sports.roles.libero'), t('sports.roles.hitter')] },
+  { value: 'rugby', label: t('sports.rugby'), roles: [t('sports.roles.back'), t('sports.roles.scrumHalf'), t('sports.roles.prop'), t('sports.roles.hooker'), t('sports.roles.lock')] },
+  { value: 'tennis', label: t('sports.tennis'), roles: [t('sports.roles.singles'), t('sports.roles.doubles')] },
+  { value: 'corsa', label: t('sports.running'), roles: [t('sports.roles.sprint'), t('sports.roles.middle'), t('sports.roles.long')] },
+  { value: 'nuoto', label: t('sports.swimming'), roles: [t('sports.roles.freestyle'), t('sports.roles.breaststroke'), t('sports.roles.backstroke'), t('sports.roles.butterfly'), t('sports.roles.medley')] },
+  { value: 'ciclismo', label: t('sports.cycling'), roles: [t('sports.roles.road'), t('sports.roles.mtb'), t('sports.roles.track')] },
+  { value: 'crossfit', label: t('sports.crossfit'), roles: [] },
+  { value: 'powerlifting', label: t('sports.powerlifting'), roles: [] },
+  { value: 'altro', label: t('sports.other'), roles: [] }
 ];
 
-const MUSCULAR_FOCUS_OPTIONS = [
-  { value: '', label: 'Nessun Focus', desc: 'Sviluppo completo' },
-  { value: 'glutei', label: 'Glutei', desc: 'Volume aumentato' },
-  { value: 'addome', label: 'Addome', desc: 'Volume aumentato' },
-  { value: 'petto', label: 'Petto', desc: 'Volume aumentato' },
-  { value: 'dorso', label: 'Dorso', desc: 'Volume aumentato' },
-  { value: 'spalle', label: 'Spalle', desc: 'Volume aumentato' },
-  { value: 'gambe', label: 'Gambe', desc: 'Volume aumentato' },
-  { value: 'braccia', label: 'Braccia', desc: 'Volume aumentato' },
-  { value: 'polpacci', label: 'Polpacci', desc: 'Volume aumentato' }
+const getMuscularFocusOptions = (t: (key: string) => string) => [
+  { value: '', label: t('onboarding.goal.noFocus'), desc: t('onboarding.goal.noFocusDesc') },
+  { value: 'glutei', label: t('muscles.glutes'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'addome', label: t('muscles.abs'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'petto', label: t('muscles.chest'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'dorso', label: t('muscles.back'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'spalle', label: t('muscles.shoulders'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'gambe', label: t('muscles.legs'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'braccia', label: t('muscles.arms'), desc: t('onboarding.goal.increasedVolume') },
+  { value: 'polpacci', label: t('muscles.calves'), desc: t('onboarding.goal.increasedVolume') }
 ];
 
 export default function GoalStep({ data, onNext }: GoalStepProps) {
+  const { t } = useTranslation();
   // Multi-goal support: array di goals (max 3)
   const [goals, setGoals] = useState<string[]>(
     data.goals || (data.goal ? [data.goal] : [])
@@ -53,6 +56,10 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
   const [sport, setSport] = useState(data.sport || '');
   const [sportRole, setSportRole] = useState(data.sportRole || '');
   const [muscularFocus, setMuscularFocus] = useState(data.muscularFocus || '');
+
+  const GOAL_OPTIONS = getGoalOptions(t);
+  const SPORTS_OPTIONS = getSportsOptions(t);
+  const MUSCULAR_FOCUS_OPTIONS = getMuscularFocusOptions(t);
 
   const selectedSport = SPORTS_OPTIONS.find(s => s.value === sport);
   const sportRoles = selectedSport?.roles || [];
@@ -96,14 +103,18 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
   // Controlla se ha selezionato goal che richiedono UI aggiuntive
   const showSportSelection = goals.includes('prestazioni_sportive');
   const showMuscularFocus = goals.includes('ipertrofia') || goals.includes('tonificazione');
+
+  // Disclaimer per goal speciali
   const showMotorRecoveryDisclaimer = goals.includes('motor_recovery');
+  const showPregnancyDisclaimer = goals.includes('pre_partum') || goals.includes('post_partum');
+  const showDisabilityDisclaimer = goals.includes('disabilita');
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">🎯 Obiettivi</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('onboarding.goal.title')}</h2>
         <p className="text-slate-400">
-          Seleziona fino a <strong className="text-emerald-400">3 obiettivi</strong> per un programma personalizzato
+          {t('onboarding.goal.subtitle')}
         </p>
         {goals.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
@@ -151,33 +162,75 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
         })}
       </div>
 
-      {/* ✅ DISCLAIMER RECUPERO MOTORIO */}
+      {/* DISCLAIMER RECUPERO MOTORIO */}
       {showMotorRecoveryDisclaimer && (
         <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-5 animate-in fade-in duration-300">
           <div className="flex items-start gap-3">
             <div className="text-2xl">⚕️</div>
             <div>
-              <p className="text-sm font-semibold text-blue-300 mb-2">Importante da sapere</p>
+              <p className="text-sm font-semibold text-blue-300 mb-2">{t('onboarding.goal.importantNote')}</p>
               <ul className="text-xs text-blue-200 space-y-1.5">
-                <li>✓ Questo programma è per il <strong>post-riabilitazione</strong></li>
-                <li>✓ Ideale dopo aver completato la fisioterapia</li>
-                <li>✓ <strong>Non sostituisce</strong> il trattamento medico o fisioterapico</li>
-                <li>⚠️ Se hai dolore acuto o non hai fatto riabilitazione, consulta prima un professionista</li>
+                <li>{t('onboarding.goal.recoveryNote1')}</li>
+                <li>{t('onboarding.goal.recoveryNote2')}</li>
+                <li>{t('onboarding.goal.recoveryNote3')}</li>
+                <li>{t('onboarding.goal.recoveryNote4')}</li>
               </ul>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ MUSCULAR FOCUS - Condizionale per ipertrofia/tonificazione */}
+      {/* DISCLAIMER GRAVIDANZA */}
+      {showPregnancyDisclaimer && (
+        <div className="bg-pink-500/10 border border-pink-500/50 rounded-lg p-5 animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">🤰</div>
+            <div>
+              <p className="text-sm font-semibold text-pink-300 mb-2">{t('onboarding.goal.pregnancyImportant')}</p>
+              <ul className="text-xs text-pink-200 space-y-1.5">
+                <li>{t('onboarding.goal.pregnancyNote1')}</li>
+                <li>{t('onboarding.goal.pregnancyNote2')}</li>
+                <li>{t('onboarding.goal.pregnancyNote3')}</li>
+                <li>{t('onboarding.goal.pregnancyNote4')}</li>
+              </ul>
+              {goals.includes('post_partum') && (
+                <div className="mt-3 pt-3 border-t border-pink-500/30">
+                  <p className="text-xs text-pink-300 font-medium mb-1">{t('onboarding.goal.postPartumIncludes')}</p>
+                  <p className="text-xs text-pink-200">{t('onboarding.goal.postPartumFeatures')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DISCLAIMER DISABILITÀ */}
+      {showDisabilityDisclaimer && (
+        <div className="bg-purple-500/10 border border-purple-500/50 rounded-lg p-5 animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">♿</div>
+            <div>
+              <p className="text-sm font-semibold text-purple-300 mb-2">{t('onboarding.goal.disabilityImportant')}</p>
+              <ul className="text-xs text-purple-200 space-y-1.5">
+                <li>{t('onboarding.goal.disabilityNote1')}</li>
+                <li>{t('onboarding.goal.disabilityNote2')}</li>
+                <li>{t('onboarding.goal.disabilityNote3')}</li>
+                <li>{t('onboarding.goal.disabilityNote4')}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MUSCULAR FOCUS - Condizionale per ipertrofia/tonificazione */}
       {showMuscularFocus && (
         <div className="space-y-4 bg-slate-700/30 rounded-lg p-5 border border-slate-600 animate-in fade-in duration-300">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-3">
-              💪 Focus Muscolare (opzionale)
+              {t('onboarding.goal.muscularFocus')}
             </label>
             <p className="text-xs text-slate-400 mb-4">
-              Vuoi dare priorità a un distretto muscolare specifico? Il programma aumenterà il volume di lavoro per quella zona.
+              {t('onboarding.goal.muscularFocusDesc')}
             </p>
           </div>
 
@@ -204,7 +257,7 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
       {showSportSelection && (
         <div className="space-y-4 bg-slate-700/30 rounded-lg p-5 border border-slate-600 animate-in fade-in duration-300">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Quale sport pratichi?</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.goal.whichSport')}</label>
             <select
               value={sport}
               onChange={(e) => {
@@ -213,7 +266,7 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
               }}
               className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
             >
-              <option value="">Seleziona sport...</option>
+              <option value="">{t('onboarding.goal.selectSport')}</option>
               {SPORTS_OPTIONS.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
@@ -224,13 +277,13 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
 
           {sport && sportRoles.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Ruolo/Posizione (opzionale)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.goal.rolePosition')}</label>
               <select
                 value={sportRole}
                 onChange={(e) => setSportRole(e.target.value)}
                 className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
               >
-                <option value="">Seleziona ruolo...</option>
+                <option value="">{t('onboarding.goal.selectRole')}</option>
                 {sportRoles.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -243,7 +296,7 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
           {sport && (
             <div className="bg-blue-500/10 border border-blue-500 rounded-lg p-3">
               <p className="text-sm text-blue-200">
-                ℹ️ Il programma sarà ottimizzato per le esigenze specifiche del tuo sport
+                {t('onboarding.goal.sportOptimized')}
               </p>
             </div>
           )}
@@ -255,7 +308,7 @@ export default function GoalStep({ data, onNext }: GoalStepProps) {
         disabled={!isValid}
         className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Continua →
+        {t('common.continue')}
       </button>
     </div>
   );
