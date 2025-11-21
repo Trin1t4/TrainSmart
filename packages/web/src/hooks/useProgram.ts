@@ -119,3 +119,32 @@ export function useUpdateProgram() {
     },
   });
 }
+
+/**
+ * Prefetch current program (for route transitions)
+ * Use this to preload program data before navigation
+ */
+export function usePrefetchCurrentProgram() {
+  const queryClient = useQueryClient();
+  const userId = useAppStore((state) => state.userId);
+
+  return () => {
+    if (!userId) return;
+
+    queryClient.prefetchQuery({
+      queryKey: programKeys.current(userId),
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('programs')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .single();
+
+        if (error) throw error;
+        return data;
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+}

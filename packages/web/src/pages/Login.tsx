@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom"; // ✅ Aggiunto Link
 import supabase from "../lib/supabaseClient";
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react"; // ✅ Icone
 import { useTranslation } from '../lib/i18n';
+import { usePrefetchCurrentProgram } from '../hooks/useProgram'; // ✅ Prefetch hook
 
 export default function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const prefetchProgram = usePrefetchCurrentProgram(); // ✅ Prefetch hook
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,6 +52,8 @@ export default function Login() {
 
         if (!programError && programs && programs.length > 0) {
           console.log('[LOGIN] ✅ Has active program → dashboard');
+          // ✅ Prefetch program data before navigation for instant load
+          prefetchProgram();
           window.location.href = "/dashboard";
           return;
         }
