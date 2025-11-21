@@ -550,6 +550,12 @@ export default function Dashboard() {
         // ✅ React Query: Invalidate to refetch fresh data
         await queryClient.invalidateQueries({ queryKey: programKeys.all });
 
+        // ✅ Scroll to top to show the new program
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Wait a bit for the query to refetch
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         alert(`✅ Programma ${userLevel.toUpperCase()} per ${mappedGoal.toUpperCase()} generato e salvato su cloud!`);
       } else {
         console.warn('⚠️ Failed to save to Supabase, using localStorage:', saveResult.error);
