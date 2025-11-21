@@ -24,7 +24,12 @@ export function useCurrentProgram() {
   return useQuery({
     queryKey: programKeys.current(userId || ''),
     queryFn: async () => {
-      if (!userId) throw new Error('No user ID');
+      if (!userId) {
+        console.log('[useCurrentProgram] No userId, skipping fetch');
+        throw new Error('No user ID');
+      }
+
+      console.log('[useCurrentProgram] Fetching active program for user:', userId);
 
       const { data, error } = await supabase
         .from('programs')
@@ -33,7 +38,18 @@ export function useCurrentProgram() {
         .eq('is_active', true)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useCurrentProgram] Error fetching program:', error);
+        throw error;
+      }
+
+      console.log('[useCurrentProgram] Program fetched:', {
+        id: data?.id,
+        name: data?.name,
+        hasWeeklySplit: !!data?.weekly_split,
+        exercisesCount: data?.exercises?.length || 0
+      });
+
       return data;
     },
     enabled: !!userId, // Solo se c'è userId

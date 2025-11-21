@@ -189,6 +189,19 @@ export async function createProgram(
       updated_at: new Date().toISOString()
     };
 
+    console.log('[ProgramService] Inserting program data:', {
+      name: programData.name,
+      level: programData.level,
+      goal: programData.goal,
+      split: programData.split,
+      hasWeeklySplit: !!programData.weekly_split,
+      weeklySplitDays: programData.weekly_split?.days?.length || 0,
+      hasExercises: !!programData.exercises,
+      exercisesCount: programData.exercises?.length || 0,
+      is_active: programData.is_active,
+      status: programData.status
+    });
+
     // Insert to Supabase
     const { data, error } = await supabase
       .from('training_programs')
@@ -203,7 +216,14 @@ export async function createProgram(
       return { success: false, error: error.message, data: programData, fromCache: true };
     }
 
-    console.log('[ProgramService] Program created successfully:', data.id);
+    console.log('[ProgramService] Program created successfully:', {
+      id: data.id,
+      name: data.name,
+      hasWeeklySplit: !!data.weekly_split,
+      weeklySplitDays: data.weekly_split?.days?.length || 0,
+      exercisesCount: data.exercises?.length || 0,
+      is_active: data.is_active
+    });
 
     // Cache locally for fast access
     cacheToLocalStorage(CACHE_KEY_ACTIVE, data);

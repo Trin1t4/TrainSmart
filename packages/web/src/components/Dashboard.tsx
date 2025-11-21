@@ -507,6 +507,18 @@ export default function Dashboard() {
       // Genera localmente
       const generatedProgram = generateLocalProgram(userLevel, mappedGoal, onboarding);
 
+      console.log('📦 Generated program structure:', {
+        name: generatedProgram.name,
+        split: generatedProgram.split,
+        hasWeeklySplit: !!generatedProgram.weeklySplit,
+        weeklySplitType: typeof generatedProgram.weeklySplit,
+        weeklySplitDays: generatedProgram.weeklySplit?.days?.length || 0,
+        hasExercises: !!generatedProgram.exercises,
+        exercisesCount: generatedProgram.exercises?.length || 0,
+        location: generatedProgram.location,
+        frequency: generatedProgram.frequency
+      });
+
       // NEW: Salva su Supabase (con fallback localStorage)
       console.log('💾 Saving program to Supabase...');
       const saveResult = await createProgram({
@@ -547,16 +559,30 @@ export default function Dashboard() {
           localStorage.removeItem('currentProgram');
         }
 
-        // ✅ React Query: Invalidate to refetch fresh data
+        // ✅ React Query: Invalidate and WAIT for refetch to complete
+        console.log('🔄 Invalidating cache and waiting for refetch...');
         await queryClient.invalidateQueries({ queryKey: programKeys.all });
 
-        // ✅ Scroll to top to show the new program
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // ✅ CRITICAL FIX: Wait for React Query to complete the refetch
+        // This ensures `program` data is available before proceeding
+        const refetchResult = await refetchProgram();
 
-        // Wait a bit for the query to refetch
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log('✅ Refetch complete, program data:', {
+          hasData: !!refetchResult.data,
+          programId: refetchResult.data?.id,
+          programName: refetchResult.data?.name
+        });
 
-        alert(`✅ Programma ${userLevel.toUpperCase()} per ${mappedGoal.toUpperCase()} generato e salvato su cloud!`);
+        // ✅ VERIFICATION: Check if program is now available
+        if (refetchResult.data) {
+          alert(`✅ Programma ${userLevel.toUpperCase()} per ${mappedGoal.toUpperCase()} generato e salvato su cloud!`);
+
+          // ✅ Scroll to top to show the new program (now guaranteed to be rendered)
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          console.error('❌ CRITICAL: Refetch succeeded but no program data returned');
+          alert('⚠️ Errore: Programma salvato ma non recuperato. Ricarica la pagina.');
+        }
       } else {
         console.warn('⚠️ Failed to save to Supabase, using localStorage:', saveResult.error);
         // Fallback to localStorage
@@ -647,7 +673,6 @@ export default function Dashboard() {
   async function handleLocationSwitch(newLocation: 'gym' | 'home', equipment: any) {
     try {
       setSwitchingLocation(true);
-      setSyncStatus('syncing');
 
       console.group('🏋️ LOCATION SWITCH');
       console.log('Current location:', dataStatus.onboarding?.trainingLocation);
@@ -753,11 +778,21 @@ export default function Dashboard() {
 
         localStorage.removeItem('currentProgram');
 
-        // ✅ React Query: Invalidate to refetch fresh data
+        // ✅ React Query: Invalidate and WAIT for refetch to complete
+        console.log('🔄 Invalidating cache and waiting for refetch...');
         await queryClient.invalidateQueries({ queryKey: programKeys.all });
+
+        // ✅ Wait for React Query to complete the refetch
+        await refetchProgram();
+
+        console.log('✅ Refetch complete, program data is now available');
 
         const locationLabel = newLocation === 'gym' ? 'PALESTRA' : 'CASA';
         alert(`✅ Location cambiata!\n\nNuovo programma per ${locationLabel} generato con successo!`);
+
+        // ✅ Scroll to top to show the new program
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         setShowLocationSwitch(false);
         console.groupEnd();
       } else {
