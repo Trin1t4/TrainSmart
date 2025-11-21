@@ -15,7 +15,8 @@ interface WeeklySplitViewProps {
   showDetails?: boolean;
 }
 
-export default function WeeklySplitView({ weeklySplit, showDetails = true }: WeeklySplitViewProps) {
+// ✅ React.memo: Prevents re-render when props haven't changed
+const WeeklySplitView = React.memo(function WeeklySplitView({ weeklySplit, showDetails = true }: WeeklySplitViewProps) {
   return (
     <div className="space-y-6">
       {/* Header Split */}
@@ -36,7 +37,9 @@ export default function WeeklySplitView({ weeklySplit, showDetails = true }: Wee
       </div>
     </div>
   );
-}
+});
+
+export default WeeklySplitView;
 
 interface DayCardProps {
   day: DayWorkout;
@@ -44,7 +47,8 @@ interface DayCardProps {
   showDetails: boolean;
 }
 
-function DayCard({ day, index, showDetails }: DayCardProps) {
+// ✅ React.memo: Prevent re-render of individual day cards
+const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCardProps) {
   const [isExpanded, setIsExpanded] = React.useState(showDetails);
 
   // Filtra esercizi validi e separa principali da correttivi
@@ -113,7 +117,7 @@ function DayCard({ day, index, showDetails }: DayCardProps) {
       </Card>
     </motion.div>
   );
-}
+});
 
 interface ExerciseRowProps {
   exercise: Exercise;
