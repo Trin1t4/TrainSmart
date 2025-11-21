@@ -19,7 +19,16 @@
       "Bash(test:*)",
       "Bash(npm install:*)",
       "Bash(python generate_alter_table.py:*)",
-      "Bash(xargs -I {} sh -c 'wc -c \"\"\"\"{}\"\"\"\" 2>/dev/null')"
+      "Bash(xargs -I {} sh -c 'wc -c \"\"\"\"{}\"\"\"\" 2>/dev/null')",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build:*)",
+      "Bash(echo:*)",
+      "Bash(npx create-expo-app@latest:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx typescript:*)",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

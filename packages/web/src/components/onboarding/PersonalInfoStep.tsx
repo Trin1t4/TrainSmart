@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { OnboardingData } from '../../types/onboarding.types';
+import { useTranslation } from '../../lib/i18n';
+import { calculateBodyComposition, validateMeasurements } from '@fitnessflow/shared';
 
 interface PersonalInfoStepProps {
   data: Partial<OnboardingData>;
@@ -7,10 +9,16 @@ interface PersonalInfoStepProps {
 }
 
 export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps) {
+  const { t } = useTranslation();
   const [gender, setGender] = useState(data.personalInfo?.gender || 'M');
   const [age, setAge] = useState(data.personalInfo?.age || '');
   const [height, setHeight] = useState(data.personalInfo?.height || '');
   const [weight, setWeight] = useState(data.personalInfo?.weight || '');
+
+  // Navy Method - Circumferences
+  const [neck, setNeck] = useState(data.personalInfo?.neck?.toString() || '');
+  const [waist, setWaist] = useState(data.personalInfo?.waist?.toString() || '');
+  const [hips, setHips] = useState(data.personalInfo?.hips?.toString() || '');
 
   // BMI calcolato dinamicamente
   const bmi = useMemo(() => {
@@ -25,15 +33,41 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
   const handleSubmit = () => {
     if (!age || !height || !weight) return;
 
-    onNext({
-      personalInfo: {
-        gender,
-        age: Number(age),
-        height: Number(height),
-        weight: Number(weight),
-        bmi: bmi ? Number(bmi) : 0
+    const personalInfo: any = {
+      gender,
+      age: Number(age),
+      height: Number(height),
+      weight: Number(weight),
+      bmi: bmi ? Number(bmi) : 0,
+      neck: neck ? Number(neck) : undefined,
+      waist: waist ? Number(waist) : undefined,
+      hips: hips ? Number(hips) : undefined
+    };
+
+    // Calcola body composition con Navy Method (se circonferenze fornite)
+    if (personalInfo.neck && personalInfo.waist) {
+      try {
+        const bodyComp = calculateBodyComposition({
+          gender: gender as 'M' | 'F',
+          age: Number(age),
+          height: Number(height),
+          weight: Number(weight),
+          neck: Number(neck),
+          waist: Number(waist),
+          hips: hips ? Number(hips) : undefined
+        });
+
+        personalInfo.bodyFat = bodyComp.bodyFatPercentage;
+        personalInfo.fatMass = bodyComp.fatMass;
+        personalInfo.leanMass = bodyComp.leanMass;
+
+        console.log('✅ Body composition calculated (Navy Method):', bodyComp);
+      } catch (error) {
+        console.warn('⚠️ Navy Method failed, skipping body composition:', error);
       }
-    });
+    }
+
+    onNext({ personalInfo });
   };
 
   const isValid = age && height && weight && Number(age) > 0 && Number(height) > 0 && Number(weight) > 0;
@@ -41,14 +75,14 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">👤 Dati Biometrici</h2>
-        <p className="text-slate-400">Inserisci i tuoi dati personali per personalizzare il programma</p>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('onboarding.personal.title')}</h2>
+        <p className="text-slate-400">{t('onboarding.personal.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Genere */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Genere</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.personal.gender')}</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -60,7 +94,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
               }`}
             >
               <div className="text-3xl mb-1">👨</div>
-              <div className="font-semibold">Uomo</div>
+              <div className="font-semibold">{t('onboarding.personal.male')}</div>
             </button>
             <button
               type="button"
@@ -72,14 +106,14 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
               }`}
             >
               <div className="text-3xl mb-1">👩</div>
-              <div className="font-semibold">Donna</div>
+              <div className="font-semibold">{t('onboarding.personal.female')}</div>
             </button>
           </div>
         </div>
 
         {/* Età */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Età (anni)</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.personal.age')}</label>
           <input
             type="number"
             min="10"
@@ -93,7 +127,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
 
         {/* Altezza */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Altezza (cm)</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.personal.height')}</label>
           <input
             type="number"
             min="100"
@@ -107,7 +141,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
 
         {/* Peso */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Peso (kg)</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">{t('onboarding.personal.weight')}</label>
           <input
             type="number"
             min="30"
@@ -121,11 +155,75 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
         </div>
       </div>
 
+      {/* Circonferenze per Navy Method */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">📏</span>
+          <div>
+            <h3 className="text-white font-bold">Circonferenze (Opzionale)</h3>
+            <p className="text-slate-400 text-xs">Per stima body fat accurata (Navy Method, ±3.5%)</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Collo */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Circonferenza Collo (cm)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={neck}
+              onChange={(e) => setNeck(e.target.value)}
+              placeholder="es: 38"
+              className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Vita */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Circonferenza Vita (cm) {gender === 'M' ? '(ombelico)' : '(punto più stretto)'}
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={waist}
+              onChange={(e) => setWaist(e.target.value)}
+              placeholder="es: 85"
+              className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Fianchi (solo donne) */}
+          {gender === 'F' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">
+                Circonferenza Fianchi (cm) (punto più largo)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={hips}
+                onChange={(e) => setHips(e.target.value)}
+                placeholder="es: 95"
+                className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
+          <p className="text-xs text-slate-500">
+            💡 Se fornite, calcoleremo body fat % con formula Navy Method (validata scientificamente, accuracy ±3.5% vs DEXA)
+          </p>
+        </div>
+      </div>
+
       {/* BMI Display - SOLO NUMERO */}
       {bmi && (
         <div className="bg-emerald-500/10 border border-emerald-500 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-slate-300 font-medium">BMI (Indice di Massa Corporea)</span>
+            <span className="text-slate-300 font-medium">{t('onboarding.personal.bmi')}</span>
             <span className="text-3xl font-bold text-emerald-400">{bmi}</span>
           </div>
         </div>
@@ -136,7 +234,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
         disabled={!isValid}
         className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Continua →
+        {t('common.continue')}
       </button>
     </div>
   );

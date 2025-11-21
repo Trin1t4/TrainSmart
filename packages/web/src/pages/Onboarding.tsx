@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { OnboardingData } from '../types/onboarding.types';
 import PersonalInfoStep from '../components/onboarding/PersonalInfoStep';
-import PhotoAnalysisStep from '../components/onboarding/PhotoAnalysisStep';
 import LocationStep from '../components/onboarding/LocationStep';
 import ActivityStep from '../components/onboarding/ActivityStep';
 import GoalStep from '../components/onboarding/GoalStep';
@@ -15,7 +14,7 @@ export default function Onboarding() {
   const [data, setData] = useState<Partial<OnboardingData>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const totalSteps = 6;
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   const updateData = (stepData: Partial<OnboardingData>) => {
@@ -120,7 +119,7 @@ export default function Onboarding() {
           console.error('[ONBOARDING] ❌ LOCATION IS MISSING! LocationStep.tsx has a bug!');
           alert('⚠️ Errore: location non salvata. Riprova il step location.');
           setIsSaving(false);
-          setCurrentStep(3); // Torna al step della location
+          setCurrentStep(2); // Torna al step della location (ora è step 2)
           return;
         }
 
@@ -167,14 +166,12 @@ export default function Onboarding() {
       case 1:
         return <PersonalInfoStep data={data} onNext={handleStepComplete} />;
       case 2:
-        return <PhotoAnalysisStep data={data} onNext={handleStepComplete} />;
-      case 3:
         return <LocationStep data={data} onNext={handleStepComplete} />;
-      case 4:
+      case 3:
         return <ActivityStep data={data} onNext={handleStepComplete} />;
-      case 5:
+      case 4:
         return <GoalStep data={data} onNext={handleStepComplete} />;
-      case 6:
+      case 5:
         return <PainStep data={data} onNext={handleStepComplete} />;
       default:
         return null;

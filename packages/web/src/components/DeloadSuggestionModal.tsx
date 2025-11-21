@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, TrendingDown, TrendingUp, Check, X, Clock, Settings } from 'lucide-react';
 import { ProgramAdjustment, ExerciseAdjustment } from '../lib/autoRegulationService';
+import { useTranslation } from '../lib/i18n';
 
 interface DeloadSuggestionModalProps {
   open: boolean;
@@ -33,6 +34,7 @@ export default function DeloadSuggestionModal({
   onReject,
   onPostpone
 }: DeloadSuggestionModalProps) {
+  const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
   const [customReduction, setCustomReduction] = useState(Math.abs(adjustment.volume_change_percent));
 
@@ -88,9 +90,9 @@ export default function DeloadSuggestionModal({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">
-                  {isDeload && 'Deload Consigliato'}
-                  {isDecrease && 'Riduzione Volume'}
-                  {isIncrease && 'Aumento Volume'}
+                  {isDeload && t('deload.suggested')}
+                  {isDecrease && t('deload.reduce_volume')}
+                  {isIncrease && t('deload.increase_volume')}
                 </h2>
                 <p className="text-slate-400 text-sm">
                   Basato su {adjustment.sessions_analyzed} sessioni analizzate
@@ -253,9 +255,9 @@ export default function DeloadSuggestionModal({
               }`}
             >
               <Check className="w-5 h-5" />
-              {isDeload && 'Applica Deload'}
-              {isDecrease && 'Riduci Volume'}
-              {isIncrease && 'Aumenta Volume'}
+              {isDeload && t('deload.apply')}
+              {isDecrease && t('deload.reduce_volume')}
+              {isIncrease && t('deload.increase_volume')}
             </button>
 
             {/* Secondary Actions */}
@@ -265,14 +267,14 @@ export default function DeloadSuggestionModal({
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Clock className="w-4 h-4" />
-                Rimanda
+                {t('deload.postpone')}
               </button>
               <button
                 onClick={onReject}
                 className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <X className="w-4 h-4" />
-                Ignora
+                {t('deload.ignore')}
               </button>
             </div>
           </div>

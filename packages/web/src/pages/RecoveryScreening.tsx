@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useTranslation } from '../lib/i18n';
 
 interface RecoveryScreeningProps {
   onComplete: (data: RecoveryData) => void;
@@ -20,6 +21,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   onComplete,
   onSkip,
 }) => {
+  const { t } = useTranslation();
   const [sleepHours, setSleepHours] = useState<number>(7);
   const [stressLevel, setStressLevel] = useState<number>(5);
   const [hasInjury, setHasInjury] = useState<boolean>(false);
@@ -148,15 +150,15 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 my-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Check Pre-Allenamento</h2>
-          <p className="text-gray-600">Aiutaci a personalizzare l'allenamento di oggi</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('screening.title')}</h2>
+          <p className="text-gray-600">{t('screening.subtitle')}</p>
         </div>
 
         <div className="space-y-8">
           {/* Sonno */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">💤 Ore di sonno stanotte</span>
+              <span className="text-lg font-semibold text-gray-900">💤 {t('screening.sleep')}</span>
               <div className="mt-3 flex items-center gap-4">
                 <input
                   type="range"
@@ -170,9 +172,9 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 <span className="text-3xl font-bold text-emerald-600 w-16 text-center">{sleepHours}h</span>
               </div>
               <div className="mt-2 text-sm">
-                {sleepHours < 6 && <span className="text-red-600 font-medium">⚠️ Sonno insufficiente</span>}
-                {sleepHours >= 6 && sleepHours <= 9 && <span className="text-emerald-600 font-medium">✅ Sonno ottimale</span>}
-                {sleepHours > 9 && <span className="text-amber-600 font-medium">⚠️ Sonno eccessivo</span>}
+                {sleepHours < 6 && <span className="text-red-600 font-medium">⚠️ {t('screening.sleep_insufficient')}</span>}
+                {sleepHours >= 6 && sleepHours <= 9 && <span className="text-emerald-600 font-medium">✅ {t('screening.sleep_optimal')}</span>}
+                {sleepHours > 9 && <span className="text-amber-600 font-medium">⚠️ {t('screening.sleep_excessive')}</span>}
               </div>
             </label>
           </div>
@@ -180,7 +182,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Stress */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">😰 Livello di stress</span>
+              <span className="text-lg font-semibold text-gray-900">😰 {t('screening.stress')}</span>
               <div className="mt-3 flex items-center gap-4">
                 <input
                   type="range"
@@ -201,7 +203,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Dolori */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">🩹 Dolori o fastidi?</span>
+              <span className="text-lg font-semibold text-gray-900">🩹 {t('screening.pain_question')}</span>
             </label>
             <div className="flex gap-3">
               <button
@@ -215,7 +217,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                     : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                ✅ Nessun dolore
+                ✅ {t('screening.no_pain')}
               </button>
               <button
                 onClick={() => setHasInjury(true)}
@@ -225,7 +227,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                     : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                🩹 Ho dolori
+                🩹 {t('screening.have_pain')}
               </button>
             </div>
 
@@ -364,7 +366,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
               onClick={handleComplete}
               className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all"
             >
-              🚀 Inizia Allenamento
+              🚀 {t('screening.start_workout')}
             </button>
           </div>
         </div>

@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom"; // ✅ Aggiunto Link
 import supabase from "../lib/supabaseClient";
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react"; // ✅ Icone
+import { useTranslation } from '../lib/i18n';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -126,7 +128,7 @@ export default function Login() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Email
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -145,7 +147,7 @@ export default function Login() {
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -164,7 +166,7 @@ export default function Login() {
             {/* Forgot Password Link */}
             <div className="text-right">
               <a href="#" className="text-sm text-emerald-400 hover:text-emerald-300 transition">
-                Password dimenticata?
+                {t('auth.forgot_password')}
               </a>
             </div>
 
@@ -177,12 +179,12 @@ export default function Login() {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Accesso in corso...
+                  {t('common.loading')}
                 </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  Accedi
+                  {t('auth.login')}
                 </>
               )}
             </button>
@@ -194,7 +196,7 @@ export default function Login() {
               <div className="w-full border-t border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-800/50 text-slate-400">Non hai un account?</span>
+              <span className="px-4 bg-slate-800/50 text-slate-400">{t('auth.no_account')}</span>
             </div>
           </div>
 
@@ -203,7 +205,7 @@ export default function Login() {
             to="/register"
             className="block w-full text-center bg-slate-700/50 hover:bg-slate-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 border border-slate-600"
           >
-            Registrati
+            {t('auth.register')}
           </Link>
         </div>
 

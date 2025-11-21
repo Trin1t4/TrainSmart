@@ -3,6 +3,8 @@
  * File separato per facile editing delle descrizioni
  */
 
+import { CORRECTIVE_EXERCISE_DESCRIPTIONS } from './correctiveExerciseDescriptions';
+
 export interface ExerciseDescription {
   description: string;
   technique: string[];
@@ -490,20 +492,121 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Resisti alla rotazione',
       'Core sempre contratto'
     ]
+  },
+
+  // === TRICIPITI ===
+  'Tricep Dips': {
+    description: 'Dip alle parallele per tricipiti e petto. Esercizio compound a corpo libero molto efficace per la massa delle braccia.',
+    technique: [
+      'Presa salda sulle parallele',
+      'Scendi fino a 90° di flessione gomito',
+      'Gomiti vicini al corpo per tricipiti',
+      'Spingi verticalmente senza oscillare',
+      'Non bloccare completamente i gomiti in alto'
+    ]
+  },
+
+  'Tricep Pushdown': {
+    description: 'Pushdown ai cavi per isolamento tricipiti. Permette di mantenere tensione costante durante tutto il movimento.',
+    technique: [
+      'Gomiti fermi ai fianchi',
+      'Spingi la barra/corda verso il basso',
+      'Estendi completamente i gomiti',
+      'Contrai il tricipite in basso',
+      'Risali controllato senza alzare i gomiti'
+    ]
+  },
+
+  'Skull Crushers': {
+    description: 'French press con bilanciere per tricipiti. Ottimo per il capo lungo del tricipite, richiede controllo.',
+    technique: [
+      'Sdraiato su panca, bilanciere sopra la fronte',
+      'Gomiti fissi, fletti solo gli avambracci',
+      'Scendi controllato verso la fronte',
+      'Estendi completamente in alto',
+      'Non allargare i gomiti'
+    ]
+  },
+
+  // === BICIPITI ===
+  'Barbell Curl': {
+    description: 'Curl con bilanciere per bicipiti. Esercizio fondamentale per la massa dei bicipiti con carico elevato.',
+    technique: [
+      'Presa supina larghezza spalle',
+      'Gomiti fermi ai fianchi',
+      'Curla il peso contraendo i bicipiti',
+      'Non oscillare con il busto',
+      'Scendi controllato senza estendere completamente'
+    ]
+  },
+
+  'Hammer Curl': {
+    description: 'Curl a martello per bicipiti e brachiale. Ottimo per lo sviluppo del brachioradiale e la larghezza del braccio.',
+    technique: [
+      'Manubri con presa neutra (pollici in alto)',
+      'Gomiti fermi ai fianchi',
+      'Curla alternato o simultaneo',
+      'Contrai in alto per 1 secondo',
+      'Scendi controllato'
+    ]
+  },
+
+  'Chin-up': {
+    description: 'Trazioni presa supina per dorsali e bicipiti. Variante che enfatizza maggiormente i bicipiti rispetto alle trazioni prone.',
+    technique: [
+      'Presa supina larghezza spalle',
+      'Parti da braccia distese',
+      'Tira portando il mento sopra la sbarra',
+      'Scapole addotte durante la trazione',
+      'Scendi controllato senza oscillare'
+    ]
+  },
+
+  // === POLPACCI ===
+  'Standing Calf Raise': {
+    description: 'Calf raise in piedi per gastrocnemio. Lavora principalmente il polpaccio nella sua porzione superiore.',
+    technique: [
+      'Avampiedi sulla pedana, talloni liberi',
+      'Gambe quasi completamente estese',
+      'Sali sulle punte il più possibile',
+      'Contrai in alto per 2 secondi',
+      'Scendi lentamente sotto il parallelo'
+    ]
+  },
+
+  'Seated Calf Raise': {
+    description: 'Calf raise da seduto per soleo. Lavora il muscolo profondo del polpaccio con ginocchia flesse.',
+    technique: [
+      'Seduto con ginocchia a 90°',
+      'Avampiedi sulla pedana',
+      'Spingi sulle punte sollevando il peso',
+      'Contrai in alto per 2 secondi',
+      'Scendi lentamente per stretch completo'
+    ]
   }
 };
 
 /**
  * Trova descrizione e technique per un esercizio dato il nome
+ * Cerca prima negli esercizi normali, poi negli esercizi correttivi
  */
 export function getExerciseDescription(exerciseName: string): ExerciseDescription | null {
-  // Cerca match esatto (case-insensitive)
+  // Cerca match esatto negli esercizi normali (case-insensitive)
   const key = Object.keys(EXERCISE_DESCRIPTIONS).find(
     k => k.toLowerCase() === exerciseName.toLowerCase()
   );
 
   if (key) {
     return EXERCISE_DESCRIPTIONS[key];
+  }
+
+  // Se non trovato, cerca negli esercizi correttivi
+  const correctiveKey = Object.keys(CORRECTIVE_EXERCISE_DESCRIPTIONS).find(
+    k => k.toLowerCase() === exerciseName.toLowerCase()
+  );
+
+  if (correctiveKey) {
+    return CORRECTIVE_EXERCISE_DESCRIPTIONS[correctiveKey];
   }
 
   return null;

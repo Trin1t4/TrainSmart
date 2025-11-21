@@ -181,6 +181,12 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
             <p className="text-gray-400 text-xs">Reps</p>
             <p className="text-white font-bold">{exercise.reps}</p>
           </div>
+          {exercise.weight && (
+            <div className="text-center">
+              <p className="text-gray-400 text-xs">Peso</p>
+              <p className="text-amber-400 font-bold">{exercise.weight}</p>
+            </div>
+          )}
           <div className="text-center">
             <p className="text-gray-400 text-xs">Rest</p>
             <p className="text-white font-bold">{exercise.rest}</p>

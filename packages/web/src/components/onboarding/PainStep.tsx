@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { OnboardingData, PainArea, PainSeverity, PainEntry } from '../../types/onboarding.types';
+import { useTranslation } from '../../lib/i18n';
 
 interface PainStepProps {
   data: Partial<OnboardingData>;
@@ -10,15 +11,15 @@ interface PainStepProps {
  * Mapping zone dolore italiano → PainArea types
  * Alcune zone sono mappate come best-match (es. cervicale/dorsale → shoulder)
  */
-const PAIN_AREAS: Array<{ value: PainArea; label: string; icon: string }> = [
-  { value: 'shoulder', label: 'Cervicale/Collo', icon: '🦴' },
-  { value: 'shoulder', label: 'Spalle', icon: '💪' },
-  { value: 'lower_back', label: 'Zona Lombare', icon: '⬇️' },
-  { value: 'hip', label: 'Anche/Bacino', icon: '🦴' },
-  { value: 'knee', label: 'Ginocchia', icon: '🦵' },
-  { value: 'ankle', label: 'Caviglie/Piedi', icon: '👣' },
-  { value: 'wrist', label: 'Polsi/Mani', icon: '🤚' },
-  { value: 'elbow', label: 'Gomiti', icon: '💪' }
+const getPainAreas = (t: (key: string) => string): Array<{ value: PainArea; label: string; icon: string }> => [
+  { value: 'shoulder', label: t('body.neck'), icon: '🦴' },
+  { value: 'shoulder', label: t('body.shoulder'), icon: '💪' },
+  { value: 'lower_back', label: t('body.lowerBack'), icon: '⬇️' },
+  { value: 'hip', label: t('body.hip'), icon: '🦴' },
+  { value: 'knee', label: t('body.knee'), icon: '🦵' },
+  { value: 'ankle', label: t('body.ankle'), icon: '👣' },
+  { value: 'wrist', label: t('body.wrist'), icon: '🤚' },
+  { value: 'elbow', label: t('body.elbow'), icon: '💪' }
 ];
 
 /**
@@ -31,6 +32,9 @@ function intensityToSeverity(intensity: number): PainSeverity {
 }
 
 export default function PainStep({ data, onNext }: PainStepProps) {
+  const { t } = useTranslation();
+  const PAIN_AREAS = getPainAreas(t);
+
   const [hasPain, setHasPain] = useState<boolean | null>(
     data.painAreas ? data.painAreas.length > 0 : null
   );
@@ -78,8 +82,8 @@ export default function PainStep({ data, onNext }: PainStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-display font-bold text-white mb-2">🩺 Screening Dolori</h2>
-        <p className="text-slate-400 text-base">Hai dolori o fastidi attuali durante l'allenamento?</p>
+        <h2 className="text-3xl font-display font-bold text-white mb-2">{t('onboarding.pain.title')}</h2>
+        <p className="text-slate-400 text-base">{t('onboarding.pain.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -95,8 +99,8 @@ export default function PainStep({ data, onNext }: PainStepProps) {
           }`}
         >
           <div className="text-4xl mb-2">✅</div>
-          <div className="font-display font-bold text-lg">Nessun dolore</div>
-          <div className="text-sm text-slate-400 mt-1">Mi sento bene</div>
+          <div className="font-display font-bold text-lg">{t('onboarding.pain.none')}</div>
+          <div className="text-sm text-slate-400 mt-1">{t('onboarding.pain.feelGood')}</div>
         </button>
 
         <button
@@ -108,15 +112,15 @@ export default function PainStep({ data, onNext }: PainStepProps) {
           }`}
         >
           <div className="text-4xl mb-2">⚠️</div>
-          <div className="font-display font-bold text-lg">Ho dolori</div>
-          <div className="text-sm text-slate-400 mt-1">Specificare zone</div>
+          <div className="font-display font-bold text-lg">{t('onboarding.pain.hasPain')}</div>
+          <div className="text-sm text-slate-400 mt-1">{t('onboarding.pain.specifyAreas')}</div>
         </button>
       </div>
 
       {hasPain === true && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div>
-            <h3 className="font-display font-semibold text-lg text-white mb-3">Seleziona le zone con dolore/fastidio:</h3>
+            <h3 className="font-display font-semibold text-lg text-white mb-3">{t('onboarding.pain.selectAreas')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {PAIN_AREAS.map((area, index) => (
                 <button
@@ -139,7 +143,7 @@ export default function PainStep({ data, onNext }: PainStepProps) {
 
           {selectedAreas.length > 0 && (
             <div className="bg-slate-700/50 backdrop-blur-sm rounded-xl p-5 border border-slate-600/50">
-              <h3 className="font-display font-semibold text-lg text-white mb-4">Intensità del dolore (1-10):</h3>
+              <h3 className="font-display font-semibold text-lg text-white mb-4">{t('onboarding.pain.intensity')}</h3>
               <div className="space-y-3">
                 {selectedAreas.map((area) => {
                   const areaInfo = PAIN_AREAS.find((a) => a.value === area);
@@ -159,7 +163,7 @@ export default function PainStep({ data, onNext }: PainStepProps) {
                             severity === 'moderate' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
                             'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                           }`}>
-                            {severity === 'severe' ? 'Severo' : severity === 'moderate' ? 'Moderato' : 'Lieve'}
+                            {severity === 'severe' ? t('onboarding.pain.severe') : severity === 'moderate' ? t('onboarding.pain.moderate') : t('onboarding.pain.mild')}
                           </span>
                         </div>
                       </div>
@@ -176,9 +180,9 @@ export default function PainStep({ data, onNext }: PainStepProps) {
                         className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-amber-500"
                       />
                       <div className="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>1-3: Lieve</span>
-                        <span>4-7: Moderato</span>
-                        <span>8-10: Severo</span>
+                        <span>{t('onboarding.pain.mildRange')}</span>
+                        <span>{t('onboarding.pain.moderateRange')}</span>
+                        <span>{t('onboarding.pain.severeRange')}</span>
                       </div>
                     </div>
                   );
@@ -189,7 +193,7 @@ export default function PainStep({ data, onNext }: PainStepProps) {
 
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-sm text-amber-200 font-medium">
-              ⚠️ Se i dolori sono severi (8+) o persistenti, consulta un medico prima di iniziare
+              {t('onboarding.pain.warning')}
             </p>
           </div>
         </div>
@@ -200,7 +204,7 @@ export default function PainStep({ data, onNext }: PainStepProps) {
         disabled={!isValid}
         className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Continua →
+        {t('common.continue')}
       </button>
     </div>
   );

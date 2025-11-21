@@ -1,9 +1,9 @@
 /**
  * @fitnessflow/shared
  * Codice condiviso tra web e mobile
- *
- * Per ora vuoto - i file verranno migrati gradualmente da packages/web
  */
 
-// Export placeholder - da popolare quando si migrano i file
-export {};
+export * from './types';
+export * from './utils';
+export * from './i18n';
+export * from './lib';

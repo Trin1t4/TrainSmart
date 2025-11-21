@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useTranslation } from '../lib/i18n';
 
 interface PostSetScreeningProps {
   workoutId: string;
@@ -28,6 +29,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
   goalType,
   onComplete,
 }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<'initial' | 'rpe' | 'incomplete' | 'reason'>('initial');
   const [completed, setCompleted] = useState<boolean | null>(null);
   const [rpe, setRpe] = useState<number | null>(null);
@@ -136,16 +138,16 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
 
   const renderRPEScale = () => {
     const rpeDescriptions: { [key: number]: string } = {
-      1: 'Molto facile',
-      2: 'Facile',
-      3: 'Leggero',
-      4: 'Moderato',
-      5: 'Moderato+',
-      6: 'Impegnativo',
-      7: 'Difficile',
-      8: 'Molto difficile',
-      9: 'Quasi massimale',
-      10: 'Massimale',
+      1: t('rpe.1'),
+      2: t('rpe.2'),
+      3: t('rpe.3'),
+      4: t('rpe.4'),
+      5: t('rpe.5'),
+      6: t('rpe.6'),
+      7: t('rpe.7'),
+      8: t('rpe.8'),
+      9: t('rpe.9'),
+      10: t('rpe.10'),
     };
 
     const targetRPE = getTargetRPE();
@@ -153,8 +155,8 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
     return (
       <div className="rpe-scale space-y-4">
         <div className="text-center mb-6">
-          <h3 className="text-3xl font-bold text-gray-900 mb-2">Scala Borg RPE (1-10)</h3>
-          <p className="text-sm text-gray-600">Quanto era faticosa questa serie?</p>
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">{t('rpe.title')}</h3>
+          <p className="text-sm text-gray-600">{t('rpe.question')}</p>
           <p className="text-xs text-emerald-600 font-semibold mt-2">
             Target: {targetRPE.min}-{targetRPE.max}
           </p>
@@ -193,7 +195,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Hai completato la serie?</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t('feedback.completed_set')}</h2>
           <div className="flex gap-4">
             <button
               onClick={() => handleInitialResponse(true)}
@@ -227,7 +229,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quante ripetizioni hai fatto?</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t('feedback.how_many_reps')}</h3>
           <input
             type="number"
             min="0"
@@ -254,7 +256,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Perché non hai completato?</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t('feedback.why_not_complete')}</h3>
           <div className="flex flex-col gap-3 mb-6">
             <button
               onClick={() => setReason('pain')}
@@ -264,7 +266,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
                   : 'bg-red-50 text-red-900 border-red-300 hover:bg-red-100'
               }`}
             >
-              🩹 Dolore
+              {t('feedback.reason_pain')}
             </button>
             <button
               onClick={() => setReason('fatigue')}
@@ -274,7 +276,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
                   : 'bg-orange-50 text-orange-900 border-orange-300 hover:bg-orange-100'
               }`}
             >
-              💪 Fatica
+              {t('feedback.reason_fatigue')}
             </button>
             <button
               onClick={() => setReason('other')}
@@ -284,7 +286,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
                   : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
               }`}
             >
-              📝 Altro
+              {t('feedback.reason_other')}
             </button>
           </div>
 
@@ -301,7 +303,7 @@ export const PostSetScreening: React.FC<PostSetScreeningProps> = ({
                 onClick={handleReasonSubmit}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg font-bold text-lg transition-colors cursor-pointer"
               >
-                Invia
+                {t('feedback.submit')}
               </button>
             </>
           )}

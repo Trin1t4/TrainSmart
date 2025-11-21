@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { UserPlus, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from '../lib/i18n';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,10 +18,10 @@ export default function Register() {
 
   // Validazione password
   const validatePassword = (pass: string) => {
-    if (pass.length < 8) return 'La password deve essere di almeno 8 caratteri';
-    if (!/[A-Z]/.test(pass)) return 'Deve contenere almeno una lettera maiuscola';
+    if (pass.length < 8) return t('auth.password_requirements');
+    if (!/[A-Z]/.test(pass)) return t('auth.password_uppercase');
     if (!/[a-z]/.test(pass)) return 'Deve contenere almeno una lettera minuscola';
-    if (!/[0-9]/.test(pass)) return 'Deve contenere almeno un numero';
+    if (!/[0-9]/.test(pass)) return t('auth.password_number');
     return null;
   };
 
@@ -46,7 +48,7 @@ export default function Register() {
     }
 
     if (password !== confirmPassword) {
-      setError('Le password non coincidono');
+      setError(t('auth.passwords_not_match'));
       return;
     }
 
@@ -188,7 +190,7 @@ export default function Register() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Email
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -206,7 +208,7 @@ export default function Register() {
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -265,7 +267,7 @@ export default function Register() {
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Conferma Password
+                {t('auth.confirm_password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -288,7 +290,7 @@ export default function Register() {
               {confirmPassword && password !== confirmPassword && (
                 <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
-                  Le password non coincidono
+                  {t('auth.passwords_not_match')}
                 </p>
               )}
             </div>
@@ -302,12 +304,12 @@ export default function Register() {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Creazione account...
+                  {t('common.loading')}
                 </>
               ) : (
                 <>
                   <UserPlus className="w-5 h-5" />
-                  Crea Account
+                  {t('auth.register')}
                 </>
               )}
             </button>
@@ -319,7 +321,7 @@ export default function Register() {
               <div className="w-full border-t border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-800/50 text-slate-400">Hai già un account?</span>
+              <span className="px-4 bg-slate-800/50 text-slate-400">{t('auth.have_account')}</span>
             </div>
           </div>
 
@@ -328,7 +330,7 @@ export default function Register() {
             to="/login"
             className="block w-full text-center bg-slate-700/50 hover:bg-slate-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 border border-slate-600"
           >
-            Accedi
+            {t('auth.login')}
           </Link>
         </div>
 

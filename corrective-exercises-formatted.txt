@@ -1,0 +1,664 @@
+  // ============================================
+  // CORRECTIVE EXERCISES (Auto-generated)
+  // ============================================
+
+  'McKenzie Press-ups': {
+    description: 'Centralizza il dolore con estensione ripetuta (McKenzie Protocol)',
+    technique: [
+      'Prono, mani sotto le spalle',
+      'Estendi le braccia mantenendo bacino a terra',
+      'Rilassa i glutei, lascia la schiena iperestendere',
+      'Ripeti lentamente, il dolore dovrebbe centralizzarsi'
+    ]
+  },
+
+  'Prone Cobra': {
+    description: 'Rinforza estensori toracici e lombari',
+    technique: [
+      'Prono, fronte a terra',
+      'Solleva petto e braccia ruotando pollici verso l\',
+      ',
+          ',
+      ',
+          '
+    ]
+  },
+
+  'Bird Dog (Anti-flexion)': {
+    description: 'Stabilità anti-flessione in posizione neutra',
+    technique: [
+      'Mantieni spine neutrale, NO flessione lombare',
+      'Estendi braccio e gamba opposta senza ruotare bacino',
+      'Focus su controllo, non su ROM'
+    ]
+  },
+
+  'Cat-Cow (Flexion Emphasis)': {
+    description: 'Mobilità flessione + decompressione vertebrale',
+    technique: [
+      'Quadrupedia, colonna neutra',
+      'ESPIRAZIONE: arrotonda schiena (Cat)',
+      'INSPIRAZIONE: ritorna neutrale (NO estensione)',
+      'Enfatizza la flessione, limita l\'
+    ]
+  },
+
+  'Dead Bug': {
+    description: 'Stabilità anti-estensione',
+    technique: [
+      'Supino, lombare piatta a terra (NO arco!)',
+      'Abbassa braccio e gamba opposta mantenendo lombare schiacciata',
+      'Espirazione attiva durante il movimento'
+    ]
+  },
+
+  'Pallof Press (Anti-rotation)': {
+    description: 'Rinforza anti-rotazione, stabilizza colonna',
+    technique: [
+      'In piedi laterale a banda/cavo',
+      'Mani al petto, estendi braccia SENZA ruotare busto',
+      'Resisti alla rotazione, mantieni spalle quadrate',
+      'Controllo eccentrico al ritorno'
+    ]
+  },
+
+  'Side Plank': {
+    description: 'Stabilità laterale, previene rotazione eccessiva',
+    technique: [
+      'Gomito sotto spalla, corpo allineato',
+      'NO rotazione bacino',
+      'Attiva obliqui mantenendo allineamento'
+    ]
+  },
+
+  'Quadruped Thoracic Rotation': {
+    description: 'Mobilità toracica CONTROLLATA, deloading lombare',
+    technique: [
+      'Quadrupedia, una mano dietro la testa',
+      'Ruota SOLO torace, bacino resta fermo',
+      'Mobilità toracica, stabilità lombare'
+    ]
+  },
+
+  'Pallof Press (Anti-rotation)': {
+    description: 'Rinforza anti-rotazione, stabilizza colonna',
+    technique: [
+      'In piedi laterale a banda/cavo',
+      'Mani al petto, estendi braccia SENZA ruotare busto',
+      'Resisti alla rotazione, mantieni spalle quadrate'
+    ]
+  },
+
+  'Side Plank': {
+    description: 'Stabilità laterale, previene rotazione eccessiva',
+    technique: [
+      'Gomito sotto spalla, corpo allineato',
+      'NO rotazione bacino',
+      'Attiva obliqui mantenendo allineamento'
+    ]
+  },
+
+  'McGill Big 3 - Curl-Up': {
+    description: 'Stabilità anteriore, spine sparing',
+    technique: [
+      'Supino, una gamba piegata, una estesa',
+      'Mani sotto lombare per supporto',
+      'Solleva SOLO testa/spalle, lombare resta neutra',
+      'Hold 10s in cima'
+    ]
+  },
+
+  'McGill Big 3 - Side Plank': {
+    description: 'Stabilità laterale anti-buckling',
+    technique: [
+      'Gomito sotto spalla',
+      'Corpo rigido come tavola',
+      'NO cedimento bacino'
+    ]
+  },
+
+  'McGill Big 3 - Bird Dog': {
+    description: 'Stabilità dinamica multiplanare',
+    technique: [
+      'Quadrupedia neutra',
+      'Estendi lentamente (4 secondi)',
+      'Hold 10s, ritorna lentamente',
+      'Zero movimento lombare'
+    ]
+  },
+
+  '90/90 Hip Stretch': {
+    description: 'Migliora rotazione interna e riduce impingement anteriore',
+    technique: [
+      'Seduto, gambe a 90° davanti e dietro',
+      'Mantieni schiena dritta',
+      'Inclina busto in avanti mantenendo lordosi lombare',
+      'Sentire stretch gluteo profondo'
+    ]
+  },
+
+  'Hip Flexor Stretch (Modified)': {
+    description: 'Riduce tensione ileo-psoas che peggiora impingement',
+    technique: [
+      'Posizione affondo, ginocchio posteriore a terra',
+      'Bacino in retroversione (tuck)',
+      'Spingi anca avanti mantenendo tuck',
+      'NO estensione lombare'
+    ]
+  },
+
+  'Clamshells': {
+    description: 'Rinforza rotatori esterni anca',
+    technique: [
+      'Decubito laterale, ginocchia piegate',
+      'Apri ginocchio superiore come una conchiglia',
+      'NO rotazione bacino',
+      'Controllo lento'
+    ]
+  },
+
+  'Pigeon Stretch (Modified)': {
+    description: 'Migliora rotazione esterna anca',
+    technique: [
+      'Gamba davanti piegata, gamba dietro estesa',
+      'Mantieni bacino quadrato',
+      'Abbassa busto lentamente se possibile',
+      'Respira e rilassa glutei'
+    ]
+  },
+
+  'Banded Hip Distraction': {
+    description: 'Decompressione articolare + mobilità capsulare',
+    technique: [
+      'Banda intorno anca, ancorata posteriore',
+      'Quadrupedia, anca in trazione',
+      'Oscillazioni circolari lente',
+      'Sentire decompressione articolare'
+    ]
+  },
+
+  'Spanish Squat': {
+    description: 'Riduce compressione patello-femorale del 30-40%',
+    technique: [
+      'Banda dietro ginocchia, ancorata posteriore',
+      'Squat contro banda (banda tira tibia indietro)',
+      'Riduce shear stress su rotula',
+      'Hold isometrico in posizione confortevole'
+    ]
+  },
+
+  'Terminal Knee Extension': {
+    description: 'Isola VMO (vasto mediale obliquo), stabilizza rotula',
+    technique: [
+      'In piedi, banda dietro ginocchio',
+      'Estendi completamente ginocchio (ultimi 20°)',
+      'Squeeze quadricipite in cima',
+      'Controllo eccentrico'
+    ]
+  },
+
+  'Clamshells + Lateral Band Walks': {
+    description: 'Rinforza abduttori anca, previene valgus dinamico',
+    technique: [
+      'Clamshells per attivazione',
+      'Poi band walks laterali',
+      'Mantieni ginocchia allineate con punte piedi',
+      'NO collasso interno ginocchio'
+    ]
+  },
+
+  'Knee Flexion Mobilization': {
+    description: 'Migliora ROM flessione riducendo dolore',
+    technique: [
+      'Seduto, piede su superficie scorrevole',
+      'Tira ginocchio verso petto lentamente',
+      'Oscillazioni controllate',
+      'Non forzare oltre il dolore'
+    ]
+  },
+
+  'Wall Sit Isometric': {
+    description: 'Rinforza in range confortevole, nessun movimento',
+    technique: [
+      'Schiena al muro, ginocchia a 60-90° (range confortevole)',
+      'Hold isometrico',
+      'Distribuisci peso uniformemente'
+    ]
+  },
+
+  'Face Pulls': {
+    description: 'Rinforza rotatori esterni + retrazione scapolare',
+    technique: [
+      'Cavo/banda altezza viso',
+      'Tira verso viso aprendo gomiti',
+      'Rotazione esterna in cima',
+      'Squeeze scapole insieme'
+    ]
+  },
+
+  'Wall Slides': {
+    description: 'Mobilità overhead con controllo scapolare',
+    technique: [
+      'Schiena al muro, braccia a "W"',
+      'Scorri braccia verso alto mantenendo contatto muro',
+      'NO arco lombare',
+      'Sentire attivazione trapezio basso'
+    ]
+  },
+
+  'YTW Raises': {
+    description: 'Rinforza stabilizzatori scapola in pattern funzionali',
+    technique: [
+      'Prono o inclinato, braccia leggere/corpo libero',
+      'Y: braccia a 45° overhead',
+      'T: braccia a 90° laterali',
+      'W: gomiti piegati, retrazione scapolare'
+    ]
+  },
+
+  'External Rotation (Side-lying)': {
+    description: 'Isolamento rotatori esterni della cuffia',
+    technique: [
+      'Decubito laterale, gomito a 90° contro fianco',
+      'Ruota braccio verso alto',
+      'Peso leggero (2-5kg max)',
+      'Controllo lento'
+    ]
+  },
+
+  'Scapular Push-ups': {
+    description: 'Attiva e rinforza serratus anterior',
+    technique: [
+      'Push-up position o wall push-up',
+      'NO flessione gomiti',
+      'Protrarre scapole (push away dal suolo)',
+      'Ritrarre scapole (pinch together)'
+    ]
+  },
+
+  'Chin Tucks': {
+    description: 'Rinforza flessori cervicali profondi, migliora postura Forward Head',
+    technique: [
+      'Seduto o supino, sguardo dritto',
+      'Retrai mento come fare doppio mento (NO tilt)',
+      'Hold 5 secondi',
+      'Sentire allungamento base cranio'
+    ]
+  },
+
+  'Prone Neck Extension': {
+    description: 'Rinforza estensori cervicali',
+    technique: [
+      'Prono, fronte su bordo letto/tavolo',
+      'Solleva testa in estensione (sguardo avanti)',
+      'NO iperestensione, ROM controllato',
+      'Hold 3 secondi in cima'
+    ]
+  },
+
+  'Cervical Flexion Stretch': {
+    description: 'Stretch posteriore collo, riduce tensione estensori',
+    technique: [
+      'Seduto, porta mento verso petto',
+      'Mani dietro testa per gentle overpressure',
+      'Sentire stretch base collo/upper back'
+    ]
+  },
+
+  'Deep Neck Flexor Strengthening': {
+    description: 'Contrasta weak deep flexors che causano extension pain',
+    technique: [
+      'Supino, chin tuck',
+      'Solleva testa 2-3cm da superficie',
+      'Mantieni chin tucked',
+      'Hold 5-10 secondi'
+    ]
+  },
+
+  'Cervical Rotation Stretch': {
+    description: 'Migliora ROM rotazione',
+    technique: [
+      'Seduto, ruota testa verso lato non doloroso',
+      'Mano sulla testa per gentle overpressure',
+      'NO forzare dolore'
+    ]
+  },
+
+  'Isometric Rotation Holds': {
+    description: 'Rinforza rotatori in posizione neutra',
+    technique: [
+      'Mano contro tempia',
+      'Premi testa contro mano (NO movimento)',
+      'Hold 5 secondi',
+      'Entrambi i lati'
+    ]
+  },
+
+  'Cervical Rotation Stretch': {
+    description: 'Migliora ROM rotazione',
+    technique: [
+      'Seduto, ruota testa verso lato non doloroso',
+      'Gentle overpressure con mano'
+    ]
+  },
+
+  'Cervical Traction (Self)': {
+    description: 'Decomprime radici nervose',
+    technique: [
+      'Supino, asciugamano sotto base cranio',
+      'Tira asciugamano verso alto (traction)',
+      'Sentire decompressione collo'
+    ]
+  },
+
+  'Nerve Glide - Median': {
+    description: 'Mobilizza nervo mediano se sintomi braccio',
+    technique: [
+      'Braccio fuori lato, palmo up',
+      'Estendi polso, fletti collo lato opposto',
+      'Alterna wrist flex/extend con neck side bend'
+    ]
+  },
+
+  'Eccentric Wrist Extension': {
+    description: 'Gold standard per lateral epicondylitis (Tyler Twist)',
+    technique: [
+      'Peso leggero in mano (1-2kg)',
+      'Gomito esteso, wrist extension',
+      'LENTA eccentrica (3-5 sec) verso flexion',
+      'Solleva con altra mano, ripeti'
+    ]
+  },
+
+  'Forearm Extensor Stretch': {
+    description: 'Riduce tensione extensors',
+    technique: [
+      'Braccio esteso davanti, palmo down',
+      'Altra mano flette polso verso basso',
+      'Sentire stretch avambraccio esterno'
+    ]
+  },
+
+  'Wrist Radial Deviation with Theraband': {
+    description: 'Rinforza ECRL/ECRB (specifici per tennis elbow)',
+    technique: [
+      'Theraband sotto piede',
+      'Pollice verso alto, devia polso verso lato radiale',
+      'Focus su controllo'
+    ]
+  },
+
+  'Eccentric Wrist Flexion': {
+    description: 'Gold standard per medial epicondylitis',
+    technique: [
+      'Peso leggero, palmo up',
+      'Gomito esteso, wrist flexion',
+      'LENTA eccentrica verso extension',
+      'Usa altra mano per assist concentrico'
+    ]
+  },
+
+  'Forearm Flexor Stretch': {
+    description: 'Riduce tensione flexors',
+    technique: [
+      'Braccio esteso, palmo up',
+      'Altra mano estende polso indietro',
+      'Sentire stretch avambraccio interno'
+    ]
+  },
+
+  'Elbow Flexion Mobilization': {
+    description: 'Migliora ROM flessione',
+    technique: [
+      'Fletti gomito attivamente',
+      'Gentle overpressure con altra mano in cima',
+      'Hold 5 secondi',
+      'Non forzare oltre dolore'
+    ]
+  },
+
+  'Elbow Extension Stretch': {
+    description: 'Migliora ROM estensione',
+    technique: [
+      'Braccio esteso su tavolo',
+      'Peso leggero in mano per gravity assist',
+      'Lascia gomito estendere passivamente'
+    ]
+  },
+
+  'Median Nerve Glide': {
+    description: 'Rinforza flexors se weak',
+    technique: [
+      'Avambraccio su tavolo, palmo up',
+      'Peso leggero in mano',
+      'Flexion polso (palm curl)',
+      'Controllo eccentrico'
+    ]
+  },
+
+  'Wrist Extension Stretch': {
+    description: 'Stretch extensors',
+    technique: [
+      'Braccio esteso, palmo down',
+      'Altra mano flette polso',
+      'Sentire stretch top avambraccio'
+    ]
+  },
+
+  'Wrist Extension Strengthening': {
+    description: 'Rinforza extensors',
+    technique: [
+      'Avambraccio su tavolo, palmo down',
+      'Peso leggero',
+      'Extend polso contro gravità'
+    ]
+  },
+
+  'Radial/Ulnar Deviation Mobilization': {
+    description: 'Migliora ROM deviazione',
+    technique: [
+      'Avambraccio su tavolo, polso al bordo',
+      'Move hand side to side (radial/ulnar)',
+      'ROM completo senza dolore'
+    ]
+  },
+
+  'Scapular Push-ups': {
+    description: 'Rinforza serratus anterior (previene winging)',
+    technique: [
+      'Plank o push-up position',
+      'NO flessione gomiti',
+      'Protrarre scapole (push away)',
+      'Ritrarre (pinch together)',
+      'Focus su scapular movement'
+    ]
+  },
+
+  'Wall Slides with Protraction': {
+    description: 'Insegna scapular upward rotation corretta',
+    technique: [
+      'Schiena al muro, braccia a W',
+      'Slide up mantenendo scapole contro muro',
+      'Protrarre scapole in cima'
+    ]
+  },
+
+  'Prone Y Raises': {
+    description: 'Rinforza lower trap e romboidi',
+    technique: [
+      'Prono su bench inclinato o terra',
+      'Braccia a 45° (Y shape)',
+      'Solleva braccia retracting scapole',
+      'Hold 2 secondi in cima'
+    ]
+  },
+
+  'Band Pull-Aparts': {
+    description: 'Rinforza retractors',
+    technique: [
+      'Banda davanti a livello spalle',
+      'Tira banda aprendo braccia (retract scapole)',
+      'Squeeze scapole insieme'
+    ]
+  },
+
+  'Scapular CARs (Controlled Articular Rotations)': {
+    description: 'Migliora coordinazione scapulo-omerale',
+    technique: [
+      'In piedi, braccia rilassate',
+      'Muovi scapole in cerchi lenti',
+      'Up -> Out -> Down -> Together',
+      'Controllo massimo'
+    ]
+  },
+
+  'Quadruped Thoracic Rotation': {
+    description: 'Migliora rotazione toracica isolata',
+    technique: [
+      'Quadrupedia, mano dietro testa',
+      'Ruota thoracic spine (NO lumbar)',
+      'Gomito al cielo, poi a terra',
+      'Bacino resta fermo'
+    ]
+  },
+
+  'Open Book Stretch': {
+    description: 'Mobilità rotazione + apertura torace',
+    technique: [
+      'Decubito laterale, ginocchia piegate',
+      'Top arm ruota aprendo come libro',
+      'Segui mano con sguardo',
+      'Sentire stretch torace/thoracic'
+    ]
+  },
+
+  'Quadruped Thoracic Rotation': {
+    description: 'Migliora rotazione toracica',
+    technique: [
+      'Stesso esercizio lato opposto'
+    ]
+  },
+
+  'Foam Roll Thoracic Extension': {
+    description: 'Mobilità estensione toracica (kyphosis correction)',
+    technique: [
+      'Supino, foam roller sotto mid-back',
+      'Mani dietro testa, extend over roller',
+      'Focus su thoracic extension, NO lumbar',
+      'Breathe in extension'
+    ]
+  },
+
+  'Prone Cobra': {
+    description: 'Rinforza estensori toracici',
+    technique: [
+      'Prono, fronte a terra',
+      'Solleva petto, braccia a Y',
+      'Squeeze scapole',
+      'Hold 3 secondi'
+    ]
+  },
+
+  'Cat Stretch (Thoracic Focus)': {
+    description: 'Mobilità flessione toracica',
+    technique: [
+      'Quadrupedia',
+      'Round UPPER back (cat)',
+      'Exhale e fletti thoracic',
+      'Lumbar resta neutra'
+    ]
+  },
+
+  'Wall Ankle Mobilization': {
+    description: 'Gold standard per migliorare dorsiflexion ROM',
+    technique: [
+      'Lunge position di fronte a muro',
+      'Knee forward over toes verso muro',
+      'Heel MUST stay down',
+      'Hold stretch 2 secondi, ripeti'
+    ]
+  },
+
+  'Ankle Dorsiflexion with Band': {
+    description: 'Mobilizza joint capsule anteriore',
+    technique: [
+      'Banda intorno ankle, ancorata dietro',
+      'Lunge position, banda tira ankle indietro',
+      'Knee forward mantenendo heel down',
+      'Decompressione + mobilità'
+    ]
+  },
+
+  'Tibialis Anterior Strengthening': {
+    description: 'Rinforza dorsiflexors',
+    technique: [
+      'Seduto, banda intorno piede',
+      'Dorsiflex ankle contro resistenza',
+      'Pull toes toward shin'
+    ]
+  },
+
+  'Calf Stretch (Gastrocnemius)': {
+    description: 'Stretch calf se limited plantarflexion',
+    technique: [
+      'Lunge position, back leg straight',
+      'Heel down, lean forward',
+      'Sentire stretch calf superiore'
+    ]
+  },
+
+  'Calf Raises': {
+    description: 'Rinforza plantarflexors',
+    technique: [
+      'In piedi, solleva su punte',
+      'Full ROM alto e basso',
+      'Controllo eccentrico'
+    ]
+  },
+
+  'Single Leg Balance Progression': {
+    description: 'Migliora propriocezione e stability dopo sprain',
+    technique: [
+      'Stand on one leg',
+      'Progress: eyes closed, unstable surface, perturbations',
+      'Maintain ankle alignment'
+    ]
+  },
+
+  'Ankle Alphabets': {
+    description: 'Mobilità multi-planare + propriocezione',
+    technique: [
+      'Seduto, gamba sollevata',
+      'Disegna alfabeto con piede',
+      'Full ROM tutti i piani'
+    ]
+  },
+
+  'Lateral Band Walks': {
+    description: 'Rinforza evertors/invertors + hip abductors',
+    technique: [
+      'Banda intorno caviglie',
+      'Passi laterali mantenendo tensione',
+      'Controllo ankle position'
+    ]
+  },
+
+  'Controlled Inversion/Eversion': {
+    description: 'Rinforza stabilizzatori dopo sprain',
+    technique: [
+      'Seduto, piede su towel scorrevole',
+      'Inverti ankle (sole inward)',
+      'Everti ankle (sole outward)',
+      'Controllo massimo, NO compensazioni'
+    ]
+  },
+
+  'Bosu Ball Balance': {
+    description: 'Riabilita propriocezione post-sprain',
+    technique: [
+      'Stand su bosu (flat side down)',
+      'Maintain balance senza rolling',
+      'Progress to single leg'
+    ]
+  },
+

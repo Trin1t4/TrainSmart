@@ -4,9 +4,11 @@ import { supabase } from '../lib/supabaseClient';
 import { X, Info, AlertCircle } from 'lucide-react';
 import { RecoveryScreening } from '../pages/RecoveryScreening';
 import type { RecoveryData } from '../pages/RecoveryScreening';
+import { useTranslation } from '../lib/i18n';
 
 export default function Workout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState<any>(null);
   const [currentDay, setCurrentDay] = useState(0);
@@ -208,7 +210,7 @@ export default function Workout() {
       });
     } catch (error) {
       console.error('Error:', error);
-      alert('Errore nel caricamento della sessione. Riprova.');
+      alert(t('workout.error_loading'));
     }
   }
 
@@ -306,7 +308,7 @@ console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-20 w-20 border-4 border-gray-700 border-t-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-300 font-medium">Caricamento programma...</p>
+          <p className="text-gray-300 font-medium">{t('workout.loading')}</p>
         </div>
       </div>
     );
@@ -317,13 +319,13 @@ console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-900/20 border border-red-500/50 rounded-xl p-8 text-center">
-            <h2 className="text-2xl font-bold text-red-400 mb-4">Nessun Programma Trovato</h2>
-            <p className="text-gray-300 mb-6">Non hai ancora un programma attivo.</p>
+            <h2 className="text-2xl font-bold text-red-400 mb-4">{t('dashboard.no_program')}</h2>
+            <p className="text-gray-300 mb-6">{t('dashboard.no_program_desc')}</p>
             <button
               onClick={() => navigate('/dashboard')}
               className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold"
             >
-              Torna alla Dashboard
+              {t('dashboard.back_to_dashboard')}
             </button>
           </div>
         </div>
@@ -459,13 +461,13 @@ console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
             onClick={() => navigate('/dashboard')}
             className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-8 py-4 rounded-lg font-semibold text-lg"
           >
-            Torna alla Dashboard
+            {t('dashboard.back_to_dashboard')}
           </button>
           <button
             onClick={handleStartWorkout}
             className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/50"
           >
-            Inizia Allenamento
+            {t('dashboard.start_workout')}
           </button>
         </div>
       </div>

@@ -335,29 +335,75 @@ export function calculateVolume(
     intensity = '70-80%';
     notes = 'Allenamento sport-specifico';
   } else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
-    // RECUPERO MOTORIO: Basso carico, focus tecnica, mobilità e propriocezione
-    // Progressione molto graduale, enfasi su qualità del movimento
-    sets = 2;
-    reps = Math.max(8, Math.min(workingReps, 12));
-    rest = '120-180s';
-    intensity = '50-60%';
-    notes = 'Recupero Motorio - Movimento controllato, focus propriocezione';
+    // RECUPERO MOTORIO: Sistema PAIN-AWARE per algie croniche e post-fisioterapia
+    // Target: lombalgia, post-ACL, tendinopatie, tutte le algie
+    // Feedback dolore (0-10) regna sovrano e adatta automaticamente
+
+    // Parametri base conservativi (sistema li adatta in base a dolore)
+    sets = 2; // Partenza conservativa, sistema aumenta se dolore 0-3
+    reps = Math.max(8, Math.min(workingReps, 10)); // Range controllato
+    rest = '150-180s'; // Rest lunghi per recupero completo
+    intensity = '40-60%'; // Intensità bassa, focus qualità movimento
+
+    notes = `🩹 RECUPERO MOTORIO - Sistema PAIN-AWARE attivo:
+• Dolore 0-3 → Continua normale, progressione graduale
+• Dolore 4-6 → Riduzione carico/reps automatica
+• Dolore 7+ → Stop esercizio, contatta fisioterapista
+• Focus: tecnica perfetta, movimento controllato, propriocezione
+• ASCOLTA IL TUO CORPO - il dolore guida il programma`;
   } else if (goal === 'pre_partum' || goal === 'gravidanza') {
-    // PRE-PARTUM: Sicurezza, mobilità, preparazione al parto
-    // Evitare posizione supina dopo 1° trimestre, no Valsalva, intensità controllata
-    sets = 2;
-    reps = Math.max(10, Math.min(workingReps, 15));
-    rest = '90-120s';
-    intensity = '50-60%';
-    notes = 'Pre-Partum - Evita posizione supina, respira sempre';
+    // PRE-PARTUM: Sistema level-aware per donne allenate
+    // ⚠️ IMPORTANTE: Se beginner (mai fatto pesi) → NON iniziare in gravidanza
+
+    if (level === 'beginner') {
+      // BEGINNER: NON dovrebbe allenarsi con pesi in gravidanza
+      // Sistema fornisce programma molto blando solo se insiste
+      sets = 2;
+      reps = Math.max(12, Math.min(workingReps, 15));
+      rest = '120s';
+      intensity = '40-50%';
+      notes = '⚠️ PRE-PARTUM BEGINNER: Non iniziare allenamento con pesi in gravidanza senza esperienza pregressa. Consulta medico e personal trainer specializzato. Programma solo mobility/bodyweight leggero.';
+    } else if (level === 'intermediate') {
+      // INTERMEDIATE: Allenata, può continuare con adattamenti
+      sets = 3;
+      reps = Math.max(8, Math.min(workingReps, 12));
+      rest = '120-150s'; // Rest più lunghi
+      intensity = '55-65%';
+      notes = 'Pre-Partum INTERMEDIATE - MANTENIMENTO (no progressioni carico). Evita supino dopo 1° trimestre, respira sempre (no Valsalva). Stop se malessere.';
+    } else {
+      // ADVANCED: Esperta, può allenarsi con intensità più alta
+      sets = dayType === 'heavy' ? 4 : 3;
+      reps = Math.max(6, Math.min(workingReps, 10)); // Può fare anche forza
+      rest = '150-180s'; // Rest lunghi per recupero completo
+      intensity = '60-75%'; // Fino a 75% se sta bene
+      notes = 'Pre-Partum ADVANCED - MANTENIMENTO (no progressioni carico). Donna allenata può continuare con intensità controllata. Evita supino, respira sempre, stop se sintomi. Clearance medica necessaria.';
+    }
   } else if (goal === 'post_partum') {
-    // POST-PARTUM: Recupero pavimento pelvico, diastasi, core profondo
-    // Focus su transverso, pavimento pelvico, stabilità, respirazione
-    sets = 2;
-    reps = Math.max(8, Math.min(workingReps, 12));
-    rest = '90-120s';
-    intensity = '50-65%';
-    notes = 'Post-Partum - Focus pavimento pelvico e core profondo';
+    // POST-PARTUM: Sistema level-aware con focus su recupero
+    // Timing: beginner 6+ settimane, intermediate 8+, advanced 12+ con clearance
+
+    if (level === 'beginner') {
+      // BEGINNER: Focus su pavimento pelvico e core
+      sets = 2;
+      reps = Math.max(12, Math.min(workingReps, 15));
+      rest = '90-120s';
+      intensity = '40-50%';
+      notes = 'Post-Partum BEGINNER (6+ settimane) - Focus pavimento pelvico e core profondo. Respirazione diaframmatica. Progressione molto graduale. Clearance medica necessaria.';
+    } else if (level === 'intermediate') {
+      // INTERMEDIATE: Può aumentare intensità gradualmente
+      sets = 3;
+      reps = Math.max(10, Math.min(workingReps, 12));
+      rest = '120-150s';
+      intensity = '55-65%';
+      notes = 'Post-Partum INTERMEDIATE (8+ settimane) - MANTENIMENTO. Focus stabilità core e prevenzione diastasi. Check pavimento pelvico prima di aumentare carico.';
+    } else {
+      // ADVANCED: Può riprendere allenamento intenso con cautela
+      sets = 3;
+      reps = Math.max(6, Math.min(workingReps, 10));
+      rest = '150-180s';
+      intensity = '60-75%'; // Fino a 75% se recupero completo
+      notes = 'Post-Partum ADVANCED (12+ settimane) - MANTENIMENTO. Donna allenata può riprendere intensità. Verifica diastasi e pavimento pelvico OK prima di heavy lifting. Clearance medica necessaria.';
+    }
   } else if (goal === 'disability' || goal === 'disabilita') {
     // DISABILITÀ: Adattamenti individualizzati, focus su capacità residue
     // Tempi di recupero generosi, progressione molto graduale
@@ -392,6 +438,7 @@ export interface ProgramGeneratorOptions {
   painAreas: NormalizedPainArea[];
   equipment?: any;
   muscularFocus?: string; // glutei, addome, petto, dorso, spalle, gambe, braccia, polpacci
+  sessionDuration?: number; // Durata sessione disponibile in minuti (15, 20, 30, 45, 60, 90)
 }
 
 /**
@@ -580,7 +627,8 @@ export function generateProgramWithSplit(options: ProgramGeneratorOptions): any 
     frequency: options.frequency,
     baselines: options.baselines,
     painAreas: options.painAreas,
-    muscularFocus: options.muscularFocus // Pass muscular focus to generator
+    muscularFocus: options.muscularFocus, // Pass muscular focus to generator
+    sessionDuration: options.sessionDuration // Pass session duration for time adaptation
   });
 
   console.log(`Split generato: ${weeklySplit.splitName}`);

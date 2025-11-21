@@ -16,9 +16,14 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X } from 'lucide-react';
+import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import autoRegulationService from '../lib/autoRegulationService';
+import { supabase } from '../lib/supabaseClient';
+import { useTranslation } from '../lib/i18n';
+import { getExerciseDescription } from '../utils/exerciseDescriptions';
+import painManagementService from '../lib/painManagementService';
+import HybridRecoveryModal from './HybridRecoveryModal';
 
 interface Exercise {
   name: string;
@@ -69,6 +74,33 @@ const calculateContextAdjustment = (
   return adjustment;
 };
 
+// Helper function to parse rest time strings to seconds
+// Handles formats: "90s", "60-90s", "2-3min", "3-5min"
+const parseRestTimeToSeconds = (rest: string): number => {
+  // Remove whitespace and convert to lowercase
+  const cleaned = rest.trim().toLowerCase();
+
+  // Check if it's in minutes format
+  if (cleaned.includes('min')) {
+    // Extract first number (in case of range like "2-3min")
+    const match = cleaned.match(/(\d+)/);
+    if (match) {
+      const minutes = parseInt(match[1]);
+      return minutes * 60; // Convert to seconds
+    }
+  }
+
+  // Otherwise, it's in seconds format (e.g., "90s" or "60-90s")
+  // Extract first number (in case of range like "60-90s")
+  const match = cleaned.match(/(\d+)/);
+  if (match) {
+    return parseInt(match[1]);
+  }
+
+  // Fallback: 90 seconds
+  return 90;
+};
+
 interface LiveWorkoutSessionProps {
   open: boolean;
   onClose: () => void;
@@ -88,6 +120,8 @@ export default function LiveWorkoutSession({
   exercises: initialExercises,
   onWorkoutComplete
 }: LiveWorkoutSessionProps) {
+  const { t } = useTranslation();
+
   // Pre-workout state
   const [showPreWorkout, setShowPreWorkout] = useState(true);
   const [mood, setMood] = useState<'great' | 'good' | 'ok' | 'tired'>('good');
@@ -121,6 +155,7 @@ export default function LiveWorkoutSession({
   const [menstrualPhase, setMenstrualPhase] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstrual' | 'menopause' | 'none'>('none');
   const [cycleDayNumber, setCycleDayNumber] = useState<number>(14);
   const [showCycleTracker, setShowCycleTracker] = useState(false);
+  const [isFemale, setIsFemale] = useState(false);
 
   // Workout state
   const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
@@ -138,6 +173,20 @@ export default function LiveWorkoutSession({
   const [currentWeight, setCurrentWeight] = useState(0);
   const [restTimerActive, setRestTimerActive] = useState(false);
   const [restTimeRemaining, setRestTimeRemaining] = useState(0);
+  const [showExerciseDescription, setShowExerciseDescription] = useState(false);
+
+  // Pain tracking state
+  const [currentPainLevel, setCurrentPainLevel] = useState(0); // 0-10 scale
+  const [showPainAlert, setShowPainAlert] = useState(false);
+  const [painAdaptations, setPainAdaptations] = useState<any[]>([]);
+
+  // Hybrid Recovery Modal state
+  const [showHybridRecoveryModal, setShowHybridRecoveryModal] = useState(false);
+  const [hybridRecoveryData, setHybridRecoveryData] = useState<{
+    exerciseName: string;
+    painLevel: number;
+    sessions: number;
+  } | null>(null);
 
   // Adjustment state
   const [suggestion, setSuggestion] = useState<{
@@ -153,10 +202,72 @@ export default function LiveWorkoutSession({
   const targetReps = typeof currentExercise?.reps === 'number'
     ? currentExercise.reps
     : parseInt(currentExercise?.reps?.split('-')[0] || '10');
+  const exerciseInfo = currentExercise ? getExerciseDescription(currentExercise.name) : null;
 
   // Calculate adjusted sets (may be modified by auto-regulation)
   const [adjustedSets, setAdjustedSets] = useState<Record<string, number>>({});
   const currentTargetSets = adjustedSets[currentExercise?.name] || currentExercise?.sets || 3;
+
+  // Fetch user gender for menstrual cycle tracking
+  useEffect(() => {
+    const fetchUserGender = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const { data: profileData } = await supabase
+            .from('user_profiles')
+            .select('onboarding_data')
+            .eq('user_id', userData.user.id)
+            .single();
+
+          if (profileData?.onboarding_data?.personalInfo?.gender === 'F') {
+            setIsFemale(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user gender:', error);
+      }
+    };
+
+    fetchUserGender();
+  }, []);
+
+  // Fetch pain thresholds for exercises at workout start
+  useEffect(() => {
+    if (!userId || !open) return;
+
+    const fetchPainThresholds = async () => {
+      try {
+        // Check each exercise for existing pain thresholds
+        const thresholds = await Promise.all(
+          initialExercises.map(ex =>
+            painManagementService.getPainThreshold(userId, ex.name)
+          )
+        );
+
+        // Log thresholds for debugging
+        thresholds.forEach((threshold, i) => {
+          if (threshold && threshold.last_pain_level > 0) {
+            console.log(`🩹 Pain threshold found for ${initialExercises[i].name}:`, threshold);
+
+            if (threshold.last_safe_weight) {
+              console.log(`   Safe weight: ${threshold.last_safe_weight}kg`);
+            }
+            if (threshold.needs_physiotherapist_contact) {
+              toast.warning(
+                `⚠️ ${initialExercises[i].name}: contatta fisioterapista (dolore precedente ${threshold.last_pain_level}/10)`,
+                { duration: 8000 }
+              );
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching pain thresholds:', error);
+      }
+    };
+
+    fetchPainThresholds();
+  }, [userId, open, initialExercises]);
 
   // Handle location switch for THIS SESSION ONLY
   const handleSessionLocationSwitch = async () => {
@@ -333,20 +444,23 @@ export default function LiveWorkoutSession({
 
     console.log('🩹 Adapting exercises with biomechanical intelligence:', painAreas);
 
-    // First pass: Add corrective exercises at the beginning
+    // First pass: Add corrective exercises at the beginning (INDIVIDUAL exercises, not grouped)
     const correctiveExercises: Exercise[] = [];
     painAreas.forEach(({ area, intensity }) => {
       if (intensity >= 4) {
         const correctives = getCorrectiveExercises(area);
         if (correctives.length > 0) {
-          correctiveExercises.push({
-            name: `🩹 Corrective: ${area.toUpperCase()}`,
-            pattern: 'core',
-            sets: 2,
-            reps: correctives.join(' • '),
-            rest: '30s',
-            intensity: 'Light',
-            notes: `⚡ Esegui PRIMA del workout: ${correctives.slice(0, 2).join(' + ')}`
+          // Create INDIVIDUAL corrective exercises, not a single grouped one
+          correctives.forEach((corrective: string) => {
+            correctiveExercises.push({
+              name: corrective,  // ✅ Nome specifico dell'esercizio (es. "Dead Bugs 2x10/side")
+              pattern: 'corrective',  // ✅ Pattern corretto
+              sets: 2,
+              reps: '10-15',
+              rest: '30s',
+              intensity: 'Low',
+              notes: `🩹 Correttivo per ${area} - Esegui con focus sulla qualità`
+            });
           });
         }
       }
@@ -675,7 +789,7 @@ export default function LiveWorkoutSession({
 
   // Rest timer countdown
   useEffect(() => {
-    if (restTimerActive && restTimeRemaining > 0) {
+    if (restTimerActive) {
       const timer = setInterval(() => {
         setRestTimeRemaining(prev => {
           if (prev <= 1) {
@@ -688,7 +802,7 @@ export default function LiveWorkoutSession({
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [restTimerActive, restTimeRemaining]);
+  }, [restTimerActive]);
 
   // Handle set completion
   const handleSetComplete = () => {
@@ -705,6 +819,56 @@ export default function LiveWorkoutSession({
     }
 
     setShowRPEInput(true);
+  };
+
+  // ========================================================================
+  // HYBRID RECOVERY HANDLERS
+  // ========================================================================
+
+  /**
+   * Handler per attivazione Recovery Mode
+   */
+  const handleActivateRecovery = (bodyArea: string, affectedExercises: string[]) => {
+    console.log('🔄 Hybrid Recovery activated:', {
+      bodyArea,
+      affectedExercises,
+      currentExercise: currentExercise?.name
+    });
+
+    // TODO: Salvare su database exercise_recovery_status
+    // Per ora, solo console log per debugging
+    toast.success(
+      `✅ Recovery Mode attivato per ${bodyArea}. ${affectedExercises.length} esercizi coinvolti.`,
+      { duration: 6000 }
+    );
+
+    // Chiudi modal e salta esercizio corrente
+    setShowHybridRecoveryModal(false);
+    if (currentExerciseIndex < totalExercises - 1) {
+      setCurrentExerciseIndex(prev => prev + 1);
+      setCurrentSet(1);
+      setShowRPEInput(false);
+      setCurrentPainLevel(0);
+      setPainAdaptations([]);
+    }
+  };
+
+  /**
+   * Handler per skippare esercizio senza attivare Recovery
+   */
+  const handleSkipExercise = () => {
+    console.log('⏭️ Exercise skipped without recovery activation');
+
+    toast.info('Esercizio saltato. Passiamo al prossimo.', { duration: 3000 });
+
+    setShowHybridRecoveryModal(false);
+    if (currentExerciseIndex < totalExercises - 1) {
+      setCurrentExerciseIndex(prev => prev + 1);
+      setCurrentSet(1);
+      setShowRPEInput(false);
+      setCurrentPainLevel(0);
+      setPainAdaptations([]);
+    }
   };
 
   // Analyze RPE and provide suggestions
@@ -759,8 +923,8 @@ export default function LiveWorkoutSession({
     return `${Math.max(30, seconds - 15)}s`;
   };
 
-  // Handle RPE submission
-  const handleRPESubmit = () => {
+  // Handle RPE submission with pain tracking
+  const handleRPESubmit = async () => {
     if (!currentExercise) return;
 
     // Calculate adjusted RPE for context
@@ -783,6 +947,116 @@ export default function LiveWorkoutSession({
       [currentExercise.name]: [...(prev[currentExercise.name] || []), newSetLog]
     }));
 
+    // Pain tracking integration
+    if (currentPainLevel > 0) {
+      try {
+        await painManagementService.logPain({
+          user_id: userId,
+          program_id: programId,
+          exercise_name: currentExercise.name,
+          day_name: dayName,
+          set_number: currentSet,
+          weight_used: currentWeight || undefined,
+          reps_completed: currentReps,
+          rom_percentage: 100,
+          pain_level: currentPainLevel,
+          rpe: currentRPE,
+          adaptations: painAdaptations
+        });
+
+        console.log(`🩹 Pain logged: ${currentExercise.name} - Level ${currentPainLevel}/10`);
+      } catch (error) {
+        console.error('Error logging pain:', error);
+      }
+    }
+
+    // Check for pain-based adaptation
+    if (currentPainLevel >= 4) {
+      const suggestion = painManagementService.suggestAdaptation(
+        currentPainLevel,
+        currentWeight || 0,
+        currentReps,
+        100,
+        painAdaptations
+      );
+
+      console.log('🩹 Pain adaptation suggested:', suggestion);
+
+      // Show alert with suggestion
+      if (suggestion.action !== 'continue') {
+        setShowPainAlert(true);
+        toast.warning(suggestion.message, {
+          duration: 5000
+        });
+
+        // Apply adaptation automatically for next set
+        if (suggestion.new_weight !== undefined) {
+          console.log(`⚠️ Suggested weight reduction: ${currentWeight}kg → ${suggestion.new_weight}kg`);
+        }
+        if (suggestion.new_reps !== undefined) {
+          console.log(`⚠️ Suggested reps reduction: ${currentReps} → ${suggestion.new_reps}`);
+        }
+
+        // Track adaptation
+        setPainAdaptations([
+          ...painAdaptations,
+          {
+            type: suggestion.action === 'reduce_weight' ? 'weight_reduced' :
+                  suggestion.action === 'reduce_reps' ? 'reps_reduced' :
+                  suggestion.action === 'reduce_rom' ? 'rom_reduced' : 'exercise_stopped',
+            from: currentWeight,
+            to: suggestion.new_weight || currentWeight,
+            reason: `pain_${currentPainLevel}`,
+            timestamp: new Date().toISOString()
+          }
+        ]);
+
+        // If should stop exercise
+        if (suggestion.action === 'stop_exercise') {
+          toast.error('Esercizio sospeso per dolore persistente. Contatta fisioterapista.', {
+            duration: 8000
+          });
+          // Skip to next exercise
+          if (currentExerciseIndex < totalExercises - 1) {
+            setCurrentExerciseIndex(prev => prev + 1);
+            setCurrentSet(1);
+            setShowRPEInput(false);
+            setCurrentPainLevel(0);
+            setPainAdaptations([]);
+            return;
+          }
+        }
+      }
+    }
+
+    // Check for hybrid recovery activation (2+ sessions persistent pain)
+    if (currentPainLevel >= 4 && painAdaptations.length >= 3) {
+      try {
+        const shouldActivate = await painManagementService.shouldActivateHybridRecovery(
+          userId,
+          currentExercise.name
+        );
+
+        if (shouldActivate.shouldActivate) {
+          // Mostra modal invece di solo toast
+          setHybridRecoveryData({
+            exerciseName: currentExercise.name,
+            painLevel: currentPainLevel,
+            sessions: shouldActivate.sessions
+          });
+          setShowHybridRecoveryModal(true);
+
+          toast.warning(
+            `🔄 Dolore persistente rilevato per ${shouldActivate.sessions} sessioni.`,
+            { duration: 5000 }
+          );
+          console.log('🔄 Hybrid recovery modal triggered:', shouldActivate);
+        }
+      } catch (error) {
+        console.error('Error checking hybrid recovery:', error);
+      }
+    }
+
     // Analyze RPE and provide suggestions
     analyzeRPEAndSuggest(currentRPE);
 
@@ -792,6 +1066,7 @@ export default function LiveWorkoutSession({
     setCurrentWeight(0);
     setCurrentRPE(7);
     setCurrentRIR(2);
+    setCurrentPainLevel(0);
   };
 
   // Apply suggestion (adjust program)
@@ -840,7 +1115,7 @@ export default function LiveWorkoutSession({
       setCurrentSet(prev => prev + 1);
 
       // Start rest timer (aumentato +20% per menopausa)
-      let restSeconds = parseInt(currentExercise.rest.replace(/\D/g, ''));
+      let restSeconds = parseRestTimeToSeconds(currentExercise.rest);
       if (menstrualPhase === 'menopause') {
         restSeconds = Math.round(restSeconds * 1.2); // +20% rest per menopausa
         console.log('🧘‍♀️ Menopause: increased rest time by 20%');
@@ -979,13 +1254,13 @@ export default function LiveWorkoutSession({
 
           {/* Mood Selection */}
           <div className="mb-6">
-            <label className="block text-slate-300 text-sm mb-3">Come ti senti oggi?</label>
+            <label className="block text-slate-300 text-sm mb-3">{t('mood.question')}</label>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { value: 'great', emoji: '🔥', label: 'Ottimo' },
-                { value: 'good', emoji: '😊', label: 'Bene' },
-                { value: 'ok', emoji: '😐', label: 'OK' },
-                { value: 'tired', emoji: '😴', label: 'Stanco' }
+                { value: 'great', emoji: '🔥', label: t('mood.great') },
+                { value: 'good', emoji: '😊', label: t('mood.good') },
+                { value: 'ok', emoji: '😐', label: t('mood.ok') },
+                { value: 'tired', emoji: '😴', label: t('mood.tired') }
               ].map(({ value, emoji, label }) => (
                 <button
                   key={value}
@@ -1215,124 +1490,126 @@ export default function LiveWorkoutSession({
             )}
           </div>
 
-          {/* MENSTRUAL CYCLE TRACKING (for female athletes) */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-slate-300 text-sm font-semibold">🩸 Traccia Ciclo Mestruale</label>
+          {/* MENSTRUAL CYCLE TRACKING (for female athletes only) */}
+          {isFemale && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-slate-300 text-sm font-semibold">🩸 {t('menstrual.track')}</label>
+                {menstrualPhase !== 'none' && (
+                  <span className="text-xs text-pink-400 font-bold">
+                    Giorno {cycleDayNumber}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mb-3">
+                I numeri indicano i giorni del ciclo (es: 6-13 = giorni dal 6° al 13° del tuo ciclo mestruale)
+              </p>
+
+              {/* Cycle Phase Selection */}
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { key: 'none', label: t('menstrual.not_track'), emoji: '⚪', color: 'gray', days: '' },
+                  { key: 'follicular', label: t('menstrual.follicular'), emoji: '💪', color: 'green', days: '(6-13)' },
+                  { key: 'ovulation', label: t('menstrual.ovulation'), emoji: '🔥', color: 'orange', days: '(14-16)' },
+                  { key: 'luteal', label: t('menstrual.luteal'), emoji: '⚠️', color: 'yellow', days: '(17-28)' },
+                  { key: 'menstrual', label: t('menstrual.menstruation'), emoji: '🩸', color: 'red', days: '(1-5)' }
+                ].map(({ key, label, emoji, color, days }) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setMenstrualPhase(key as any);
+                      if (key === 'follicular') setCycleDayNumber(10);
+                      else if (key === 'ovulation') setCycleDayNumber(14);
+                      else if (key === 'luteal') setCycleDayNumber(21);
+                      else if (key === 'menstrual') setCycleDayNumber(3);
+                    }}
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                      menstrualPhase === key
+                        ? color === 'green'
+                          ? 'bg-green-500/20 border-green-500 text-green-300'
+                          : color === 'orange'
+                          ? 'bg-orange-500/20 border-orange-500 text-orange-300'
+                          : color === 'yellow'
+                          ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
+                          : color === 'red'
+                          ? 'bg-red-500/20 border-red-500 text-red-300'
+                          : 'bg-slate-700 border-slate-600 text-slate-400'
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{emoji}</span>
+                      <div className="flex-1 text-left">
+                        <div className="text-xs font-semibold">{label}</div>
+                        {days && <div className="text-xs opacity-60">{days}</div>}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Cycle Day Number Slider (shown when phase selected) */}
               {menstrualPhase !== 'none' && (
-                <span className="text-xs text-pink-400 font-bold">
-                  Giorno {cycleDayNumber}
-                </span>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-3"
+                >
+                  <div className="flex justify-between text-xs text-slate-400 mb-2">
+                    <span>{t('menstrual.day')}</span>
+                    <span className="text-white font-bold">{cycleDayNumber}/28</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="28"
+                    value={cycleDayNumber}
+                    onChange={(e) => {
+                      const day = parseInt(e.target.value);
+                      setCycleDayNumber(day);
+                      // Auto-detect phase based on day
+                      if (day >= 1 && day <= 5) setMenstrualPhase('menstrual');
+                      else if (day >= 6 && day <= 13) setMenstrualPhase('follicular');
+                      else if (day >= 14 && day <= 16) setMenstrualPhase('ovulation');
+                      else setMenstrualPhase('luteal');
+                    }}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                  />
+                </motion.div>
+              )}
+
+              {/* Cycle Info Box */}
+              {menstrualPhase !== 'none' && (
+                <div className={`mt-3 rounded-lg p-3 border ${
+                  menstrualPhase === 'follicular'
+                    ? 'bg-green-500/10 border-green-500/30'
+                    : menstrualPhase === 'ovulation'
+                    ? 'bg-orange-500/10 border-orange-500/30'
+                    : menstrualPhase === 'luteal'
+                    ? 'bg-yellow-500/10 border-yellow-500/30'
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}>
+                  <p className={`text-xs font-semibold mb-1 ${
+                    menstrualPhase === 'follicular' ? 'text-green-300' :
+                    menstrualPhase === 'ovulation' ? 'text-orange-300' :
+                    menstrualPhase === 'luteal' ? 'text-yellow-300' :
+                    'text-red-300'
+                  }`}>
+                    {menstrualPhase === 'follicular' && '💪 Energia alta - Ottimale per progressione'}
+                    {menstrualPhase === 'ovulation' && '🔥 Picco performance - Push it!'}
+                    {menstrualPhase === 'luteal' && '⚠️ Energia ridotta - Intensità -15%'}
+                    {menstrualPhase === 'menstrual' && '🩸 Crampi/Fatica - Volume -30%'}
+                  </p>
+                  <p className="text-slate-400 text-xs">
+                    {menstrualPhase === 'follicular' && 'Allenamenti intensi, volume alto, focus forza'}
+                    {menstrualPhase === 'ovulation' && 'Max volume/intensità, sfrutta il picco ormonale'}
+                    {menstrualPhase === 'luteal' && 'Ridurre intensità, più recupero, focus tecnica'}
+                    {menstrualPhase === 'menstrual' && 'Evitare core intenso, stretching/mobilità OK'}
+                  </p>
+                </div>
               )}
             </div>
-            <p className="text-xs text-slate-500 mb-3">
-              I numeri indicano i giorni del ciclo (es: 6-13 = giorni dal 6° al 13° del tuo ciclo mestruale)
-            </p>
-
-            {/* Cycle Phase Selection */}
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { key: 'none', label: 'Non Tracciare', emoji: '⚪', color: 'gray', days: '' },
-                { key: 'follicular', label: 'Follicolare', emoji: '💪', color: 'green', days: '(6-13)' },
-                { key: 'ovulation', label: 'Ovulazione', emoji: '🔥', color: 'orange', days: '(14-16)' },
-                { key: 'luteal', label: 'Luteale', emoji: '⚠️', color: 'yellow', days: '(17-28)' },
-                { key: 'menstrual', label: 'Mestruale', emoji: '🩸', color: 'red', days: '(1-5)' }
-              ].map(({ key, label, emoji, color, days }) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setMenstrualPhase(key as any);
-                    if (key === 'follicular') setCycleDayNumber(10);
-                    else if (key === 'ovulation') setCycleDayNumber(14);
-                    else if (key === 'luteal') setCycleDayNumber(21);
-                    else if (key === 'menstrual') setCycleDayNumber(3);
-                  }}
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                    menstrualPhase === key
-                      ? color === 'green'
-                        ? 'bg-green-500/20 border-green-500 text-green-300'
-                        : color === 'orange'
-                        ? 'bg-orange-500/20 border-orange-500 text-orange-300'
-                        : color === 'yellow'
-                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
-                        : color === 'red'
-                        ? 'bg-red-500/20 border-red-500 text-red-300'
-                        : 'bg-slate-700 border-slate-600 text-slate-400'
-                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{emoji}</span>
-                    <div className="flex-1 text-left">
-                      <div className="text-xs font-semibold">{label}</div>
-                      {days && <div className="text-xs opacity-60">{days}</div>}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Cycle Day Number Slider (shown when phase selected) */}
-            {menstrualPhase !== 'none' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-3"
-              >
-                <div className="flex justify-between text-xs text-slate-400 mb-2">
-                  <span>Giorno del ciclo</span>
-                  <span className="text-white font-bold">{cycleDayNumber}/28</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="28"
-                  value={cycleDayNumber}
-                  onChange={(e) => {
-                    const day = parseInt(e.target.value);
-                    setCycleDayNumber(day);
-                    // Auto-detect phase based on day
-                    if (day >= 1 && day <= 5) setMenstrualPhase('menstrual');
-                    else if (day >= 6 && day <= 13) setMenstrualPhase('follicular');
-                    else if (day >= 14 && day <= 16) setMenstrualPhase('ovulation');
-                    else setMenstrualPhase('luteal');
-                  }}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
-                />
-              </motion.div>
-            )}
-
-            {/* Cycle Info Box */}
-            {menstrualPhase !== 'none' && (
-              <div className={`mt-3 rounded-lg p-3 border ${
-                menstrualPhase === 'follicular'
-                  ? 'bg-green-500/10 border-green-500/30'
-                  : menstrualPhase === 'ovulation'
-                  ? 'bg-orange-500/10 border-orange-500/30'
-                  : menstrualPhase === 'luteal'
-                  ? 'bg-yellow-500/10 border-yellow-500/30'
-                  : 'bg-red-500/10 border-red-500/30'
-              }`}>
-                <p className={`text-xs font-semibold mb-1 ${
-                  menstrualPhase === 'follicular' ? 'text-green-300' :
-                  menstrualPhase === 'ovulation' ? 'text-orange-300' :
-                  menstrualPhase === 'luteal' ? 'text-yellow-300' :
-                  'text-red-300'
-                }`}>
-                  {menstrualPhase === 'follicular' && '💪 Energia alta - Ottimale per progressione'}
-                  {menstrualPhase === 'ovulation' && '🔥 Picco performance - Push it!'}
-                  {menstrualPhase === 'luteal' && '⚠️ Energia ridotta - Intensità -15%'}
-                  {menstrualPhase === 'menstrual' && '🩸 Crampi/Fatica - Volume -30%'}
-                </p>
-                <p className="text-slate-400 text-xs">
-                  {menstrualPhase === 'follicular' && 'Allenamenti intensi, volume alto, focus forza'}
-                  {menstrualPhase === 'ovulation' && 'Max volume/intensità, sfrutta il picco ormonale'}
-                  {menstrualPhase === 'luteal' && 'Ridurre intensità, più recupero, focus tecnica'}
-                  {menstrualPhase === 'menstrual' && 'Evitare core intenso, stretching/mobilità OK'}
-                </p>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Location Switch Button (VIOLA) */}
           <motion.button
@@ -1341,13 +1618,13 @@ export default function LiveWorkoutSession({
             onClick={() => setShowLocationSwitch(true)}
             className="w-full mb-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300"
           >
-            🏠 Cambia Location per Oggi
+            🏠 {t('location.change_today')}
           </motion.button>
 
           {locationSwitched && (
             <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-center">
               <p className="text-purple-300 text-sm font-semibold">
-                ✅ Sessione adattata per casa!
+                ✅ {t('location.session_adapted')}
               </p>
             </div>
           )}
@@ -1360,7 +1637,7 @@ export default function LiveWorkoutSession({
             className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-300"
           >
             <Play className="w-5 h-5" />
-            Inizia Allenamento
+            {t('dashboard.start_workout')}
           </motion.button>
 
           {/* Location Switch Modal */}
@@ -1377,16 +1654,16 @@ export default function LiveWorkoutSession({
                 className="bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-700"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="text-xl font-bold text-white mb-4">🏠 Attrezzatura Casa Disponibile</h3>
+                <h3 className="text-xl font-bold text-white mb-4">🏠 {t('location.available_equipment')}</h3>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
-                    { key: 'dumbbell', label: 'Manubri', icon: '🏋️' },
-                    { key: 'barbell', label: 'Bilanciere', icon: '⚡' },
-                    { key: 'pullUpBar', label: 'Sbarra', icon: '🔥' },
-                    { key: 'rings', label: 'Anelli', icon: '⭕' },
-                    { key: 'bands', label: 'Elastici', icon: '🎗️' },
-                    { key: 'kettlebell', label: 'Kettlebell', icon: '🎯' }
+                    { key: 'dumbbell', label: t('equipment.dumbbells'), icon: '🏋️' },
+                    { key: 'barbell', label: t('equipment.barbell'), icon: '⚡' },
+                    { key: 'pullUpBar', label: t('equipment.pullup_bar'), icon: '🔥' },
+                    { key: 'rings', label: t('equipment.rings'), icon: '⭕' },
+                    { key: 'bands', label: t('equipment.bands'), icon: '🎗️' },
+                    { key: 'kettlebell', label: t('equipment.kettlebell'), icon: '🎯' }
                   ].map(({ key, label, icon }) => (
                     <label
                       key={key}
@@ -1491,7 +1768,26 @@ export default function LiveWorkoutSession({
           animate={{ opacity: 1, x: 0 }}
           className="bg-slate-800/50 rounded-xl p-6 mb-6 border border-slate-700"
         >
-          <h3 className="text-2xl font-bold text-white mb-2">{currentExercise.name}</h3>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-white">{currentExercise.name}</h3>
+              {/* Recovery badge if in recovery mode */}
+              {(currentExercise as any).is_recovery && (
+                <span className="px-2 py-1 bg-orange-500/20 border border-orange-500/50 rounded text-orange-300 text-xs font-bold">
+                  🔄 RECOVERY
+                </span>
+              )}
+            </div>
+            {exerciseInfo && (
+              <button
+                onClick={() => setShowExerciseDescription(!showExerciseDescription)}
+                className="text-slate-400 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-slate-700/50"
+                title="Mostra spiegazione esercizio"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-slate-400 text-sm">Target</p>
@@ -1506,6 +1802,41 @@ export default function LiveWorkoutSession({
               <p className="text-purple-400 font-bold text-xl">{currentExercise.rest}</p>
             </div>
           </div>
+
+          {/* Exercise Description Panel */}
+          <AnimatePresence>
+            {showExerciseDescription && exerciseInfo && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-4 bg-slate-900/80 rounded-lg p-4 border border-slate-700/50 overflow-hidden"
+              >
+                {/* Description */}
+                <p className="text-sm text-slate-300 mb-3 leading-relaxed">
+                  {exerciseInfo.description}
+                </p>
+
+                {/* Technique */}
+                {exerciseInfo.technique && exerciseInfo.technique.length > 0 && (
+                  <div>
+                    <p className="text-xs text-blue-400 font-medium mb-2 uppercase tracking-wide">
+                      Tecnica Corretta
+                    </p>
+                    <ul className="space-y-1.5">
+                      {exerciseInfo.technique.map((cue, i) => (
+                        <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5">•</span>
+                          <span>{cue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Rest Timer */}
@@ -1546,14 +1877,16 @@ export default function LiveWorkoutSession({
 
             {currentExercise.pattern !== 'core' && (
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Peso (kg) - Opzionale</label>
+                <label className="block text-slate-300 text-sm mb-2">
+                  Peso (kg){currentExercise.weight && <span className="text-amber-400 font-bold"> - Suggerito: {currentExercise.weight}</span>}
+                </label>
                 <input
                   type="number"
                   step="0.5"
                   value={currentWeight || ''}
                   onChange={(e) => setCurrentWeight(parseFloat(e.target.value) || 0)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
-                  placeholder="0"
+                  placeholder={currentExercise.weight || "0"}
                 />
               </div>
             )}
@@ -1665,6 +1998,81 @@ export default function LiveWorkoutSession({
                 return null;
               })()}
             </div>
+
+            {/* Pain Level Tracking */}
+            {(userId && programId && dayName) && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <p className="text-red-300 font-bold">🩹 Livello Dolore</p>
+                    <p className="text-slate-400 text-xs">0 = nessuno, 10 = insopportabile</p>
+                  </div>
+                  <span className="text-3xl font-bold text-red-400">{currentPainLevel}</span>
+                </div>
+
+                {/* Pain Scale 0-10 */}
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    value={currentPainLevel}
+                    onChange={(e) => setCurrentPainLevel(parseInt(e.target.value))}
+                    className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500"
+                  />
+
+                  <div className="grid grid-cols-11 gap-1">
+                    {[0,1,2,3,4,5,6,7,8,9,10].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setCurrentPainLevel(val)}
+                        className={`p-2 rounded text-xs font-bold transition-all ${
+                          currentPainLevel === val
+                            ? val === 0 ? 'bg-green-500/30 text-green-300' :
+                              val <= 3 ? 'bg-yellow-500/30 text-yellow-300' :
+                              val <= 6 ? 'bg-orange-500/30 text-orange-300' :
+                              'bg-red-500/30 text-red-300'
+                            : 'bg-slate-800 text-slate-600'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Pain level indicators */}
+                  <div className="grid grid-cols-3 gap-2 text-xs mt-2">
+                    <div className="text-center">
+                      <span className="text-green-400">0-3</span>
+                      <p className="text-slate-500">Lieve/OK</p>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-orange-400">4-6</span>
+                      <p className="text-slate-500">Moderato</p>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-red-400">7-10</span>
+                      <p className="text-slate-500">Severo</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pain Warning */}
+                {currentPainLevel >= 4 && (
+                  <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                    <p className="text-amber-300 text-xs font-semibold">
+                      ⚠️ Dolore moderato/alto rilevato
+                    </p>
+                    <p className="text-slate-400 text-xs mt-1">
+                      {currentPainLevel >= 7
+                        ? 'Sistema ridurrà ROM o sospenderà esercizio'
+                        : 'Sistema adatterà automaticamente carico/reps'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               onClick={handleRPESubmit}
@@ -1865,6 +2273,20 @@ export default function LiveWorkoutSession({
           </button>
         </div>
       </motion.div>
+
+      {/* Hybrid Recovery Modal */}
+      {hybridRecoveryData && (
+        <HybridRecoveryModal
+          open={showHybridRecoveryModal}
+          onClose={() => setShowHybridRecoveryModal(false)}
+          exerciseName={hybridRecoveryData.exerciseName}
+          painLevel={hybridRecoveryData.painLevel}
+          sessions={hybridRecoveryData.sessions}
+          allExercises={exercises.map(ex => ex.name)}
+          onActivate={handleActivateRecovery}
+          onSkip={handleSkipExercise}
+        />
+      )}
     </motion.div>
   );
 }

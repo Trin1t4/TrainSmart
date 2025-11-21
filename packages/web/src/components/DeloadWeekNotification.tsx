@@ -27,6 +27,7 @@ import {
   RetestConfig,
   generateDeloadInstructions
 } from '../utils/retestProgression';
+import { useTranslation } from '../lib/i18n';
 
 interface DeloadWeekNotificationProps {
   daysUntilRetest: number;
@@ -43,6 +44,7 @@ export default function DeloadWeekNotification({
   currentCycle,
   onDismiss
 }: DeloadWeekNotificationProps) {
+  const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
 
@@ -62,7 +64,7 @@ export default function DeloadWeekNotification({
           </div>
           <div>
             <h3 className="text-xl font-bold text-emerald-300">
-              Settimana di Deload
+              {t('deload.title')}
             </h3>
             <p className="text-sm text-slate-400">
               Recupero attivo prima del test
@@ -79,7 +81,7 @@ export default function DeloadWeekNotification({
       <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
           <Info className="w-4 h-4 text-emerald-400" />
-          <span className="font-semibold text-white text-sm">Perché il deload?</span>
+          <span className="font-semibold text-white text-sm">{t('deload.why')}</span>
         </div>
         <p className="text-sm text-slate-300">
           Dopo 4 settimane di carico progressivo, il tuo corpo ha accumulato fatica.
@@ -115,7 +117,7 @@ export default function DeloadWeekNotification({
       <div className="mb-4">
         <h4 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
           <Moon className="w-4 h-4" />
-          Linee guida rapide
+          {t('deload.guidelines')}
         </h4>
         <ul className="space-y-1">
           {deloadConfig.guidelines.slice(0, 4).map((guideline, index) => (

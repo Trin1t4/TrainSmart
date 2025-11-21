@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Dumbbell, CheckCircle, Circle } from 'lucide-react';
+import { useTranslation } from '../../lib/i18n';
 
 interface OnboardingData {
   trainingLocation?: 'gym' | 'home';
@@ -24,6 +25,7 @@ interface LocationStepProps {
 }
 
 export default function LocationStep({ data, onNext }: LocationStepProps) {
+  const { t } = useTranslation();
   const [selectedLocation, setSelectedLocation] = useState<'gym' | 'home'>(
     data.trainingLocation || 'home'
   );
@@ -72,8 +74,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Dove ti alleni?</h2>
-        <p className="text-slate-400">Scegli il tuo ambiente di allenamento principale</p>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('onboarding.location.title')}</h2>
+        <p className="text-slate-400">{t('onboarding.location.subtitle')}</p>
       </div>
 
       {/* Selezione Location */}
@@ -89,8 +91,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
         >
           <Home className={`w-12 h-12 ${selectedLocation === 'home' ? 'text-emerald-400' : 'text-slate-400'}`} />
           <div className="text-center">
-            <p className="font-bold text-lg text-white">Casa</p>
-            <p className="text-xs text-slate-400 mt-1">Corpo libero o piccoli attrezzi</p>
+            <p className="font-bold text-lg text-white">{t('onboarding.location.home')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.homeDesc')}</p>
           </div>
         </button>
 
@@ -105,8 +107,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
         >
           <Dumbbell className={`w-12 h-12 ${selectedLocation === 'gym' ? 'text-emerald-400' : 'text-slate-400'}`} />
           <div className="text-center">
-            <p className="font-bold text-lg text-white">Palestra</p>
-            <p className="text-xs text-slate-400 mt-1">Completa o calisthenics</p>
+            <p className="font-bold text-lg text-white">{t('onboarding.location.gym')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.gymDesc')}</p>
           </div>
         </button>
       </div>
@@ -115,7 +117,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
       {selectedLocation === 'home' && (
         <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
           <div>
-            <h3 className="font-semibold text-white mb-3">Che tipo di allenamento fai a casa?</h3>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.homeTrainingType')}</h3>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -127,8 +129,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">A Corpo Libero</p>
-              <p className="text-xs text-slate-400 mt-1">Solo bodyweight, no attrezzi</p>
+              <p className="font-semibold text-white text-sm">{t('onboarding.location.bodyweight')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.bodyweightDesc')}</p>
             </button>
 
             <button
@@ -139,8 +141,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">Piccoli Attrezzi</p>
-              <p className="text-xs text-slate-400 mt-1">Manubri, elastici, ecc.</p>
+              <p className="font-semibold text-white text-sm">{t('onboarding.location.smallEquipment')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.smallEquipmentDesc')}</p>
             </button>
           </div>
         </div>
@@ -149,11 +151,11 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
       {selectedLocation === 'gym' && (
         <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
           <div>
-            <h3 className="font-semibold text-white mb-3">Che area della palestra usi principalmente?</h3>
-            <p className="text-xs text-slate-400 mb-3">Scegli in base al tuo livello e preferenze</p>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.gymArea')}</h3>
+            <p className="text-xs text-slate-400 mb-3">{t('onboarding.location.gymAreaDesc')}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Area Calisthenics */}
             <button
               onClick={() => {
@@ -172,15 +174,15 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   parallelBars: true
                 });
               }}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
                 trainingType === 'bodyweight'
                   ? 'border-emerald-500 bg-emerald-500/10'
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">Calisthenics</p>
-              <p className="text-xs text-slate-400 mt-1">Barra, anelli, parallele</p>
-              <p className="text-xs text-emerald-400 mt-1">Intermedio/Avanzato</p>
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.calisthenics')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.calisthenicsDesc')}</p>
+              <p className="text-xs text-emerald-400 font-medium">{t('onboarding.location.intermediateAdvanced')}</p>
             </button>
 
             {/* Sala Pesi - Pesi Liberi */}
@@ -201,15 +203,15 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   parallelBars: false
                 });
               }}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
                 trainingType === 'equipment'
                   ? 'border-emerald-500 bg-emerald-500/10'
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">Pesi Liberi</p>
-              <p className="text-xs text-slate-400 mt-1">Bilanciere, manubri, squat rack</p>
-              <p className="text-xs text-emerald-400 mt-1">Tutti i livelli</p>
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.freeWeights')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.freeWeightsDesc')}</p>
+              <p className="text-xs text-emerald-400 font-medium">{t('onboarding.location.allLevels')}</p>
             </button>
 
             {/* Sala Pesi - Macchine (per principianti) */}
@@ -230,15 +232,15 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   parallelBars: false
                 });
               }}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
                 trainingType === 'machines'
                   ? 'border-emerald-500 bg-emerald-500/10'
                   : 'border-slate-600 hover:border-slate-500'
               }`}
             >
-              <p className="font-semibold text-white text-sm">Macchine</p>
-              <p className="text-xs text-slate-400 mt-1">Leg press, chest press, lat machine</p>
-              <p className="text-xs text-yellow-400 mt-1">Consigliato principianti</p>
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.machines')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.machinesDesc')}</p>
+              <p className="text-xs text-yellow-400 font-medium">{t('onboarding.location.recommendedBeginners')}</p>
             </button>
           </div>
 
@@ -246,14 +248,14 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
           {trainingType && (
             <div className="bg-emerald-900/20 border border-emerald-500/50 rounded-lg p-4 mt-4">
               <p className="text-sm text-emerald-300 font-medium mb-2">
-                ✅ Equipaggiamento configurato:
+                {t('onboarding.location.equipmentConfigured')}
               </p>
               <p className="text-xs text-emerald-200">
                 {trainingType === 'bodyweight'
-                  ? 'Barra trazioni, Anelli, Parallele, Elastici - Focus: skill calisthenics avanzate'
+                  ? t('onboarding.location.calisthenicsEquipment')
                   : trainingType === 'equipment'
-                  ? 'Bilanciere, Manubri (50kg), Panca, Kettlebell (32kg), Barra - Focus: forza e massa con pesi liberi'
-                  : 'Macchine guidate, Manubri leggeri (30kg), Panca, Barra assistita - Focus: sicurezza e tecnica per principianti'}
+                  ? t('onboarding.location.freeWeightsEquipment')
+                  : t('onboarding.location.machinesEquipment')}
               </p>
             </div>
           )}
@@ -264,8 +266,8 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
       {selectedLocation === 'home' && trainingType === 'equipment' && (
         <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
           <div>
-            <h3 className="font-semibold text-white mb-3">Quali attrezzi hai a disposizione a casa?</h3>
-            <p className="text-xs text-slate-400 mb-4">Seleziona tutto ciò che hai disponibile</p>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.homeEquipment')}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t('onboarding.location.selectAvailable')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -284,7 +286,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Barra per Trazioni</span>
+                <span className="text-white font-medium">{t('equipment.pullupBar')}</span>
               </div>
             </button>
 
@@ -303,7 +305,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Loop Bands (elastici)</span>
+                <span className="text-white font-medium">{t('equipment.loopBands')}</span>
               </div>
             </button>
 
@@ -323,12 +325,12 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   ) : (
                     <Circle className="w-5 h-5 text-slate-500" />
                   )}
-                  <span className="text-white font-medium">Manubri</span>
+                  <span className="text-white font-medium">{t('equipment.dumbbells')}</span>
                 </div>
               </button>
               {equipment.dumbbells && (
                 <div className="mt-2 ml-8">
-                  <label className="text-xs text-slate-400 block mb-1">Peso massimo (kg)</label>
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.maxWeight')}</label>
                   <input
                     type="number"
                     min="0"
@@ -356,7 +358,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Bilanciere</span>
+                <span className="text-white font-medium">{t('equipment.barbell')}</span>
               </div>
             </button>
 
@@ -376,12 +378,12 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                   ) : (
                     <Circle className="w-5 h-5 text-slate-500" />
                   )}
-                  <span className="text-white font-medium">Kettlebell</span>
+                  <span className="text-white font-medium">{t('equipment.kettlebell')}</span>
                 </div>
               </button>
               {equipment.kettlebell && (
                 <div className="mt-2 ml-8">
-                  <label className="text-xs text-slate-400 block mb-1">Peso (kg)</label>
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.weight')}</label>
                   <input
                     type="number"
                     min="0"
@@ -409,7 +411,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Panca</span>
+                <span className="text-white font-medium">{t('equipment.bench')}</span>
               </div>
             </button>
 
@@ -428,7 +430,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Anelli</span>
+                <span className="text-white font-medium">{t('equipment.rings')}</span>
               </div>
             </button>
 
@@ -447,7 +449,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                 ) : (
                   <Circle className="w-5 h-5 text-slate-500" />
                 )}
-                <span className="text-white font-medium">Parallele</span>
+                <span className="text-white font-medium">{t('equipment.parallelBars')}</span>
               </div>
             </button>
           </div>
@@ -459,7 +461,7 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
           onClick={handleNext}
           className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-8 py-3 rounded-lg font-bold text-white hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20"
         >
-          Continua →
+          {t('common.continue')}
         </button>
       </div>
     </div>

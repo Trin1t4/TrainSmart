@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Activity, CheckCircle, AlertCircle, Zap, Target, RotateCcw, Trash2, History, Cloud, CloudOff, LogOut, Shield } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from '../lib/i18n';
 import { validateAndNormalizePainAreas } from '../utils/validators';
 import { generateProgram, generateProgramWithSplit } from '../utils/programGenerator';
 import { motion } from 'framer-motion';
@@ -34,6 +35,7 @@ import { toast } from 'sonner';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [hasProgram, setHasProgram] = useState(false);
   const [program, setProgram] = useState<any>(null);
@@ -655,6 +657,7 @@ export default function Dashboard() {
   function generateLocalProgram(level: string, goal: string, onboarding: any) {
     const location = onboarding?.trainingLocation || 'gym'; // ✅ FIX: Default gym invece di home
     const frequency = onboarding?.activityLevel?.weeklyFrequency || 3;
+    const sessionDuration = onboarding?.activityLevel?.sessionDuration; // ✅ Get session duration
     const trainingType = onboarding?.trainingType || 'bodyweight';
     const equipment = onboarding?.equipment || {};
     const baselines = dataStatus.screening?.patternBaselines || {};
@@ -670,6 +673,11 @@ export default function Dashboard() {
     const rawPainAreas = onboarding?.painAreas || [];
     const painAreas = validateAndNormalizePainAreas(rawPainAreas);
 
+    // Log session duration for debugging
+    if (sessionDuration) {
+      console.log(`⏱️ Session duration: ${sessionDuration} minutes`);
+    }
+
     // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal
     const program = generateProgramWithSplit({
       level: level as any,
@@ -681,7 +689,8 @@ export default function Dashboard() {
       baselines,
       painAreas,
       equipment,
-      muscularFocus // ✅ Pass muscular focus to generator
+      muscularFocus, // ✅ Pass muscular focus to generator
+      sessionDuration // ✅ Pass session duration for time adaptation
     });
 
     // Aggiungi campi richiesti dal formato esistente
@@ -1011,7 +1020,7 @@ export default function Dashboard() {
               className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-slate-500/20 transition-all duration-300"
             >
               <LogOut className="w-4 h-4" />
-              Esci
+              {t('nav.logout')}
             </motion.button>
 
             {/* Reset Button */}
@@ -1346,6 +1355,7 @@ export default function Dashboard() {
                                   {ex.sets && ex.reps && (
                                     <p className="text-sm text-slate-400 mt-2 font-medium">
                                       <span className="font-mono text-emerald-400">{ex.sets} sets</span> × <span className="font-mono text-emerald-400">{ex.reps} reps</span>
+                                      {ex.weight && <span className="text-amber-400 font-mono font-bold"> • {ex.weight}</span>}
                                       {ex.intensity && <span className="text-blue-400 font-mono"> @ {ex.intensity}</span>}
                                       {' • '}Rest: <span className="font-mono">{ex.rest}</span>
                                     </p>
@@ -1384,7 +1394,7 @@ export default function Dashboard() {
                     className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300"
                   >
                     <Activity className="w-5 h-5" />
-                    Inizia Allenamento LIVE
+                    {t('dashboard.start_workout')} LIVE
                   </motion.button>
 
                   <motion.button
@@ -1501,7 +1511,7 @@ export default function Dashboard() {
                 onClick={() => setShowResetModal(false)}
                 className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl border border-slate-600/50 transition-all duration-300"
               >
-                Annulla
+                {t('common.cancel')}
               </motion.button>
             </div>
           </motion.div>
@@ -1722,7 +1732,7 @@ export default function Dashboard() {
                   onClick={() => setShowLocationSwitch(false)}
                   className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl border border-slate-600/50 transition-all duration-300"
                 >
-                  Annulla
+                  {t('common.cancel')}
                 </motion.button>
               </>
             ) : (

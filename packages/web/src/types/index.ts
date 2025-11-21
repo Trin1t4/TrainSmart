@@ -10,7 +10,6 @@ export type {
   Goal,
   Level,
   PersonalInfo,
-  BodyPhotos,
   Equipment,
   ActivityLevel,
   PainArea,

@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import autoRegulationService, { ExerciseLog } from '../lib/autoRegulationService';
 import { toast } from 'sonner';
+import { useTranslation } from '../lib/i18n';
 
 interface Exercise {
   name: string;
@@ -52,6 +53,8 @@ export default function WorkoutLogger({
   exercises,
   onWorkoutLogged
 }: WorkoutLoggerProps) {
+  const { t } = useTranslation();
+
   // State per ogni esercizio
   const [exerciseLogs, setExerciseLogs] = useState<Record<string, {
     sets_completed: number;
@@ -233,10 +236,10 @@ export default function WorkoutLogger({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">
-            Registra Workout - {dayName}
+            {t('workoutLogger.title')} - {dayName}
           </DialogTitle>
           <DialogDescription>
-            Compila i dati del tuo allenamento. L'RPE (Rate of Perceived Exertion) è la fatica percepita da 1 a 10.
+            {t('workoutLogger.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -245,11 +248,11 @@ export default function WorkoutLogger({
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Split</p>
+                <p className="text-sm text-muted-foreground">{t('workoutLogger.split')}</p>
                 <p className="font-medium">{splitType}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">RPE Medio Sessione</p>
+                <p className="text-sm text-muted-foreground">{t('workoutLogger.sessionRPE')}</p>
                 <p className={`text-2xl font-bold ${getRPEColor(calculateSessionRPE())}`}>
                   {calculateSessionRPE()}/10
                 </p>
@@ -259,7 +262,7 @@ export default function WorkoutLogger({
 
           {/* Exercises */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Esercizi</h3>
+            <h3 className="font-semibold text-lg">{t('workoutLogger.exercises')}</h3>
 
             {exercises.map((exercise, idx) => {
               const log = exerciseLogs[exercise.name] || {
@@ -281,7 +284,7 @@ export default function WorkoutLogger({
                   {/* Sets & Reps */}
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <Label htmlFor={`sets-${idx}`} className="text-xs">Sets completati</Label>
+                      <Label htmlFor={`sets-${idx}`} className="text-xs">{t('workout.sets')} {t('workout.completed').toLowerCase()}</Label>
                       <Input
                         id={`sets-${idx}`}
                         type="number"
@@ -292,7 +295,7 @@ export default function WorkoutLogger({
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`reps-${idx}`} className="text-xs">Reps (media)</Label>
+                      <Label htmlFor={`reps-${idx}`} className="text-xs">{t('workout.reps')}</Label>
                       <Input
                         id={`reps-${idx}`}
                         type="number"
@@ -303,7 +306,7 @@ export default function WorkoutLogger({
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`weight-${idx}`} className="text-xs">Peso (kg)</Label>
+                      <Label htmlFor={`weight-${idx}`} className="text-xs">{t('workout.weight')} (kg)</Label>
                       <Input
                         id={`weight-${idx}`}
                         type="number"
@@ -311,7 +314,7 @@ export default function WorkoutLogger({
                         step={0.5}
                         value={log.weight_used || ''}
                         onChange={(e) => updateExerciseLog(exercise.name, 'weight_used', parseFloat(e.target.value) || undefined)}
-                        placeholder="Opzionale"
+                        placeholder={exercise.weight || t('workoutLogger.optional')}
                         className="h-9"
                       />
                     </div>
@@ -334,15 +337,15 @@ export default function WorkoutLogger({
                       className="w-full"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>Facile</span>
-                      <span>Medio</span>
-                      <span>Massimale</span>
+                      <span>{t('rpe.2')}</span>
+                      <span>{t('rpe.4')}</span>
+                      <span>{t('rpe.10')}</span>
                     </div>
                   </div>
 
                   {/* Difficulty vs Baseline */}
                   <div>
-                    <Label className="text-xs mb-2 block">Rispetto al tuo baseline</Label>
+                    <Label className="text-xs mb-2 block">{t('workoutLogger.vsBaseline')}</Label>
                     <div className="flex gap-2">
                       {(['easier', 'as_expected', 'harder'] as const).map(diff => (
                         <Button
@@ -356,7 +359,7 @@ export default function WorkoutLogger({
                           {diff === 'easier' && <TrendingDown className="w-3 h-3 mr-1" />}
                           {diff === 'as_expected' && <CheckCircle2 className="w-3 h-3 mr-1" />}
                           {diff === 'harder' && <TrendingUp className="w-3 h-3 mr-1" />}
-                          {diff === 'easier' ? 'Più facile' : diff === 'as_expected' ? 'Come previsto' : 'Più duro'}
+                          {diff === 'easier' ? t('workoutLogger.easier') : diff === 'as_expected' ? t('workoutLogger.asExpected') : t('workoutLogger.harder')}
                         </Button>
                       ))}
                     </div>
@@ -364,12 +367,12 @@ export default function WorkoutLogger({
 
                   {/* Notes */}
                   <div>
-                    <Label htmlFor={`notes-${idx}`} className="text-xs">Note (opzionale)</Label>
+                    <Label htmlFor={`notes-${idx}`} className="text-xs">{t('workoutLogger.notesOptional')}</Label>
                     <Input
                       id={`notes-${idx}`}
                       value={log.notes}
                       onChange={(e) => updateExerciseLog(exercise.name, 'notes', e.target.value)}
-                      placeholder="es. Sentito dolore al gomito sinistro"
+                      placeholder={t('workoutLogger.notesPlaceholder')}
                       className="h-9 text-sm"
                     />
                   </div>
@@ -380,11 +383,11 @@ export default function WorkoutLogger({
 
           {/* Session Details */}
           <div className="space-y-4 border-t pt-4">
-            <h3 className="font-semibold text-lg">Dettagli Sessione</h3>
+            <h3 className="font-semibold text-lg">{t('workoutLogger.sessionDetails')}</h3>
 
             {/* Mood */}
             <div>
-              <Label className="text-xs mb-2 block">Come ti sei sentito?</Label>
+              <Label className="text-xs mb-2 block">{t('mood.question')}</Label>
               <div className="flex gap-2 flex-wrap">
                 {['energized', 'normal', 'tired', 'stressed'].map(m => (
                   <Button
@@ -394,7 +397,7 @@ export default function WorkoutLogger({
                     size="sm"
                     onClick={() => setMood(m)}
                   >
-                    {m === 'energized' ? '⚡ Carico' : m === 'normal' ? '😊 Normale' : m === 'tired' ? '😴 Stanco' : '😰 Stressato'}
+                    {m === 'energized' ? `⚡ ${t('mood.energized')}` : m === 'normal' ? `😊 ${t('mood.normal')}` : m === 'tired' ? `😴 ${t('mood.tired')}` : `😰 ${t('mood.stressed')}`}
                   </Button>
                 ))}
               </div>
@@ -403,7 +406,7 @@ export default function WorkoutLogger({
             {/* Sleep Quality */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-xs">Qualità del sonno ultima notte</Label>
+                <Label className="text-xs">{t('workoutLogger.sleepQuality')}</Label>
                 <span className="font-semibold">{sleepQuality}/10</span>
               </div>
               <Slider
@@ -418,12 +421,12 @@ export default function WorkoutLogger({
 
             {/* Workout Notes */}
             <div>
-              <Label htmlFor="workout-notes" className="text-xs">Note generali sessione</Label>
+              <Label htmlFor="workout-notes" className="text-xs">{t('workout.notes')}</Label>
               <Textarea
                 id="workout-notes"
                 value={workoutNotes}
                 onChange={(e) => setWorkoutNotes(e.target.value)}
-                placeholder="Come è andata la sessione nel complesso?"
+                placeholder={t('workout.notes_placeholder')}
                 rows={3}
                 className="text-sm"
               />
@@ -435,10 +438,9 @@ export default function WorkoutLogger({
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
               <div className="text-sm">
-                <p className="font-semibold text-orange-900">RPE Alto</p>
+                <p className="font-semibold text-orange-900">{t('workoutLogger.rpeHigh')}</p>
                 <p className="text-orange-700">
-                  Il tuo RPE medio è {calculateSessionRPE()}/10. Se questo trend continua per 2+ sessioni,
-                  il sistema ridurrà automaticamente il volume per prevenire sovrallenamento.
+                  {t('workoutLogger.rpeWarning').replace('{rpe}', calculateSessionRPE().toString())}
                 </p>
               </div>
             </div>
@@ -452,14 +454,14 @@ export default function WorkoutLogger({
               disabled={loading}
               className="flex-1"
             >
-              Annulla
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSaveWorkout}
               disabled={loading}
               className="flex-1"
             >
-              {loading ? 'Salvataggio...' : 'Salva Workout'}
+              {loading ? t('common.saving') : t('common.save')}
             </Button>
           </div>
         </div>

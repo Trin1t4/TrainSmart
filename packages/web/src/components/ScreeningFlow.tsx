@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info } from 'lucide-react';
+import { useTranslation } from '../lib/i18n';
 
 /**
  * Formula di Brzycki per calcolare 1RM da peso e reps
@@ -195,6 +196,8 @@ const GYM_PATTERNS_MACHINES = [
 ];
 
 export default function ScreeningFlow({ onComplete, userData, userId }) {
+  const { t } = useTranslation();
+
   // Determina modalità test in base a location e trainingType
   const isGymMode = userData?.trainingLocation === 'gym' &&
                     (userData?.trainingType === 'equipment' || userData?.trainingType === 'machines');
@@ -424,7 +427,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
     const screeningData = JSON.parse(localStorage.getItem('screening_data'));
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
+      <div className="min-h-screen overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
@@ -503,7 +506,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
                 onClick={() => onComplete(screeningData)}
                 className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-bold text-lg hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
               >
-                Continua alla Dashboard
+                {t('common.continue')}
                 <ArrowRight className="w-5 h-5" />
               </button>
             </CardContent>
@@ -514,7 +517,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
+    <div className="min-h-screen overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -627,7 +630,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Indietro
+                  {t('common.back')}
                 </button>
               )}
 
