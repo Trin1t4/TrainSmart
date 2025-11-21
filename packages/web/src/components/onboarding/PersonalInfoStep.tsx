@@ -184,7 +184,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           {/* Vita */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              {t('onboarding.personal.waist')} {gender === 'M' ? '(ombelico)' : '(punto più stretto)'}
+              {t('onboarding.personal.waist')} {gender === 'M' ? t('onboarding.personal.waistNavel') : t('onboarding.personal.waistNarrowest')}
             </label>
             <input
               type="number"
@@ -200,7 +200,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           {gender === 'F' && (
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                {t('onboarding.personal.hips')} (punto più largo)
+                {t('onboarding.personal.hips')} {t('onboarding.personal.hipsWidest')}
               </label>
               <input
                 type="number"
@@ -214,7 +214,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           )}
 
           <p className="text-xs text-slate-500">
-            💡 Se fornite, calcoleremo body fat % con formula Navy Method (validata scientificamente, accuracy ±3.5% vs DEXA)
+            {t('onboarding.personal.navyMethodNote')}
           </p>
         </div>
       </div>

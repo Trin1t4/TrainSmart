@@ -85,6 +85,10 @@ const translations: Translations = {
   "onboarding.personal.waistPlaceholder": { it: "es: 85", en: "e.g.: 85", fr: "ex: 85", es: "ej: 85" },
   "onboarding.personal.hips": { it: "Fianchi (cm)", en: "Hips (cm)", fr: "Hanches (cm)", es: "Caderas (cm)" },
   "onboarding.personal.hipsPlaceholder": { it: "es: 95", en: "e.g.: 95", fr: "ex: 95", es: "ej: 95" },
+  "onboarding.personal.waistNavel": { it: "(ombelico)", en: "(navel)", fr: "(nombril)", es: "(ombligo)" },
+  "onboarding.personal.waistNarrowest": { it: "(punto più stretto)", en: "(narrowest point)", fr: "(point le plus étroit)", es: "(punto más estrecho)" },
+  "onboarding.personal.hipsWidest": { it: "(punto più largo)", en: "(widest point)", fr: "(point le plus large)", es: "(punto más ancho)" },
+  "onboarding.personal.navyMethodNote": { it: "💡 Se fornite, calcoleremo body fat % con formula Navy Method (validata scientificamente, accuracy ±3.5% vs DEXA)", en: "💡 If provided, we'll calculate body fat % with Navy Method formula (scientifically validated, ±3.5% accuracy vs DEXA)", fr: "💡 Si fourni, nous calculerons le % de graisse corporelle avec la formule Navy Method (validée scientifiquement, précision ±3.5% vs DEXA)", es: "💡 Si se proporciona, calcularemos el % de grasa corporal con la fórmula Navy Method (validada científicamente, precisión ±3.5% vs DEXA)" },
 
   // Onboarding - Location & Equipment
   "onboarding.location.title": { it: "Dove ti alleni?", en: "Where do you train?", fr: "Où vous entraînez-vous?", es: "¿Dónde entrenas?" },
