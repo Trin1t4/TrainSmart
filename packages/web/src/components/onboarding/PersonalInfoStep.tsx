@@ -120,7 +120,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
             max="100"
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            placeholder="Es: 25"
+            placeholder={t('onboarding.personal.agePlaceholder')}
             className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
           />
         </div>
@@ -134,7 +134,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
             max="250"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
-            placeholder="Es: 175"
+            placeholder={t('onboarding.personal.heightPlaceholder')}
             className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
           />
         </div>
@@ -149,7 +149,7 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
             step="0.1"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            placeholder="Es: 70"
+            placeholder={t('onboarding.personal.weightPlaceholder')}
             className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
           />
         </div>
@@ -160,8 +160,8 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">📏</span>
           <div>
-            <h3 className="text-white font-bold">Circonferenze (Opzionale)</h3>
-            <p className="text-slate-400 text-xs">Per stima body fat accurata (Navy Method, ±3.5%)</p>
+            <h3 className="text-white font-bold">{t('onboarding.personal.circumferences')}</h3>
+            <p className="text-slate-400 text-xs">{t('onboarding.personal.circumferencesDesc')}</p>
           </div>
         </div>
 
@@ -169,14 +169,14 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           {/* Collo */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Circonferenza Collo (cm)
+              {t('onboarding.personal.neck')}
             </label>
             <input
               type="number"
               step="0.1"
               value={neck}
               onChange={(e) => setNeck(e.target.value)}
-              placeholder="es: 38"
+              placeholder={t('onboarding.personal.neckPlaceholder')}
               className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -184,14 +184,14 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           {/* Vita */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Circonferenza Vita (cm) {gender === 'M' ? '(ombelico)' : '(punto più stretto)'}
+              {t('onboarding.personal.waist')} {gender === 'M' ? '(ombelico)' : '(punto più stretto)'}
             </label>
             <input
               type="number"
               step="0.1"
               value={waist}
               onChange={(e) => setWaist(e.target.value)}
-              placeholder="es: 85"
+              placeholder={t('onboarding.personal.waistPlaceholder')}
               className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -200,14 +200,14 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
           {gender === 'F' && (
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Circonferenza Fianchi (cm) (punto più largo)
+                {t('onboarding.personal.hips')} (punto più largo)
               </label>
               <input
                 type="number"
                 step="0.1"
                 value={hips}
                 onChange={(e) => setHips(e.target.value)}
-                placeholder="es: 95"
+                placeholder={t('onboarding.personal.hipsPlaceholder')}
                 className="w-full bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

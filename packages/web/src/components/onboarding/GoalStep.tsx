@@ -22,17 +22,17 @@ const getGoalOptions = (t: (key: string) => string) => [
 ];
 
 const getSportsOptions = (t: (key: string) => string) => [
-  { value: 'calcio', label: t('sports.soccer'), roles: [t('sports.roles.goalkeeper'), t('sports.roles.defender'), t('sports.roles.midfielder'), t('sports.roles.striker')] },
-  { value: 'basket', label: t('sports.basketball'), roles: [t('sports.roles.pointGuard'), t('sports.roles.guard'), t('sports.roles.forward'), t('sports.roles.center')] },
-  { value: 'pallavolo', label: t('sports.volleyball'), roles: [t('sports.roles.setter'), t('sports.roles.opposite'), t('sports.roles.middle'), t('sports.roles.libero'), t('sports.roles.hitter')] },
-  { value: 'rugby', label: t('sports.rugby'), roles: [t('sports.roles.back'), t('sports.roles.scrumHalf'), t('sports.roles.prop'), t('sports.roles.hooker'), t('sports.roles.lock')] },
-  { value: 'tennis', label: t('sports.tennis'), roles: [t('sports.roles.singles'), t('sports.roles.doubles')] },
-  { value: 'corsa', label: t('sports.running'), roles: [t('sports.roles.sprint'), t('sports.roles.middle'), t('sports.roles.long')] },
-  { value: 'nuoto', label: t('sports.swimming'), roles: [t('sports.roles.freestyle'), t('sports.roles.breaststroke'), t('sports.roles.backstroke'), t('sports.roles.butterfly'), t('sports.roles.medley')] },
-  { value: 'ciclismo', label: t('sports.cycling'), roles: [t('sports.roles.road'), t('sports.roles.mtb'), t('sports.roles.track')] },
-  { value: 'crossfit', label: t('sports.crossfit'), roles: [] },
-  { value: 'powerlifting', label: t('sports.powerlifting'), roles: [] },
-  { value: 'altro', label: t('sports.other'), roles: [] }
+  { value: 'calcio', label: t('sport.soccer'), roles: [t('role.goalkeeper'), t('role.defender'), t('role.midfielder'), t('role.striker')] },
+  { value: 'basket', label: t('sport.basketball'), roles: [t('role.pointGuard'), t('role.guard'), t('role.forward'), t('role.center')] },
+  { value: 'pallavolo', label: t('sport.volleyball'), roles: [t('role.setter'), t('role.opposite'), t('role.middle'), t('role.libero'), t('role.hitter')] },
+  { value: 'rugby', label: t('sport.rugby'), roles: [t('role.back'), t('role.scrumHalf'), t('role.prop'), t('role.hooker'), t('role.lock')] },
+  { value: 'tennis', label: t('sport.tennis'), roles: [t('role.singles'), t('role.doubles')] },
+  { value: 'corsa', label: t('sport.running'), roles: [t('role.sprint'), t('role.long')] },
+  { value: 'nuoto', label: t('sport.swimming'), roles: [t('role.freestyle'), t('role.breaststroke'), t('role.backstroke'), t('role.butterfly'), t('role.medley')] },
+  { value: 'ciclismo', label: t('sport.cycling'), roles: [t('role.road'), t('role.mtb'), t('role.track')] },
+  { value: 'crossfit', label: t('sport.crossfit'), roles: [] },
+  { value: 'powerlifting', label: t('sport.powerlifting'), roles: [] },
+  { value: 'altro', label: t('sport.other'), roles: [] }
 ];
 
 const getMuscularFocusOptions = (t: (key: string) => string) => [
