@@ -32,7 +32,7 @@ export default function ActivityStep({ data, onNext }: Props) {
           </label>
           <div className="bg-emerald-500/10 border border-emerald-500/50 rounded-lg px-4 py-2">
             <span className="text-3xl text-emerald-400 font-bold">{frequency}</span>
-            <span className="text-sm text-emerald-300 ml-1">giorni</span>
+            <span className="text-sm text-emerald-300 ml-1">{t('onboarding.activity.days')}</span>
           </div>
         </div>
 

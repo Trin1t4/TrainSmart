@@ -133,6 +133,7 @@ const translations: Translations = {
   "onboarding.activity.duration": { it: "Durata sessione", en: "Session duration", fr: "Durée de la séance", es: "Duración de la sesión" },
   "onboarding.activity.sessionDuration": { it: "Durata di ogni sessione", en: "Duration of each session", fr: "Durée de chaque séance", es: "Duración de cada sesión" },
   "onboarding.activity.minutes": { it: "min", en: "min", fr: "min", es: "min" },
+  "onboarding.activity.days": { it: "giorni", en: "days", fr: "jours", es: "días" },
   "onboarding.activity.oneDay": { it: "1 giorno", en: "1 day", fr: "1 jour", es: "1 día" },
   "onboarding.activity.sevenDays": { it: "7 giorni", en: "7 days", fr: "7 jours", es: "7 días" },
 
