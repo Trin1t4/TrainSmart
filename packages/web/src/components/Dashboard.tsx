@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabaseClient';
@@ -77,14 +77,6 @@ export default function Dashboard() {
     screening: null as any
   });
 
-  const [analytics, setAnalytics] = useState({
-    daysActive: 0,
-    totalVolume: 0,
-    weeklyVolume: 0,
-    progression: 0,
-    lastWorkout: null as string | null
-  });
-
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Deload suggestion state
@@ -92,7 +84,6 @@ export default function Dashboard() {
   const [pendingAdjustment, setPendingAdjustment] = useState<ProgramAdjustment | null>(null);
 
   // Retest state
-  const [retestSchedule, setRetestSchedule] = useState<ReturnType<typeof getRetestSchedule> | null>(null);
   const [showRetestDismissed, setShowRetestDismissed] = useState(false);
 
   useEffect(() => {
@@ -101,16 +92,9 @@ export default function Dashboard() {
     checkAdminStatus();
   }, []);
 
-  useEffect(() => {
-    if (program) {
-      calculateAnalytics();
-      calculateRetestSchedule();
-    }
-  }, [program]);
-
-  // Calculate retest schedule when program is loaded
-  function calculateRetestSchedule() {
-    if (!program?.start_date || !program?.goal || !program?.level) return;
+  // ✅ MEMOIZED: Retest schedule calculation (auto-recomputes when program changes)
+  const retestSchedule = useMemo(() => {
+    if (!program?.start_date || !program?.goal || !program?.level) return null;
 
     const schedule = getRetestSchedule(
       program.start_date,
@@ -118,9 +102,9 @@ export default function Dashboard() {
       program.level as 'beginner' | 'intermediate' | 'advanced'
     );
 
-    setRetestSchedule(schedule);
     console.log('[Dashboard] Retest schedule calculated:', schedule);
-  }
+    return schedule;
+  }, [program?.start_date, program?.goal, program?.level]);
 
   // ✅ SIMPLIFIED: Only handle localStorage migration (React Query handles fetching)
   async function initializePrograms() {
@@ -133,9 +117,17 @@ export default function Dashboard() {
     }
   }
 
-  // ✅ CALCOLA ANALYTICS REALI DAL PROGRAMMA
-  function calculateAnalytics() {
-    if (!program) return;
+  // ✅ MEMOIZED: Calculate analytics (auto-recomputes when program or screening changes)
+  const analytics = useMemo(() => {
+    if (!program) {
+      return {
+        daysActive: 0,
+        totalVolume: 0,
+        weeklyVolume: 0,
+        progression: 0,
+        lastWorkout: null as string | null
+      };
+    }
 
     console.log('📊 Calculating real analytics from program...');
 
@@ -220,7 +212,7 @@ export default function Dashboard() {
     }
 
     // 5. LAST WORKOUT (usa updated_at o last_accessed_at)
-    let lastWorkout = null;
+    let lastWorkout: string | null = null;
     if (program.last_accessed_at || program.updated_at) {
       const lastDate = new Date(program.last_accessed_at || program.updated_at);
       const today = new Date();
@@ -231,22 +223,17 @@ export default function Dashboard() {
       else lastWorkout = `${diffDays} giorni fa`;
     }
 
-    setAnalytics({
+    const result = {
       daysActive,
       totalVolume,
       weeklyVolume,
       progression: Math.max(0, progression), // Non negativo
       lastWorkout
-    });
+    };
 
-    console.log('✅ Analytics calculated:', {
-      daysActive,
-      totalVolume,
-      weeklyVolume,
-      progression,
-      lastWorkout
-    });
-  }
+    console.log('✅ Analytics calculated:', result);
+    return result;
+  }, [program, dataStatus.screening?.patternBaselines]);
 
   function loadData() {
     // Carica TUTTI i dati salvati
@@ -486,7 +473,7 @@ export default function Dashboard() {
     setShowResetModal(false);
   }
 
-  async function handleGenerateProgram() {
+  const handleGenerateProgram = useCallback(async () => {
     try {
       setGeneratingProgram(true);
 
@@ -577,7 +564,7 @@ export default function Dashboard() {
     } finally {
       setGeneratingProgram(false);
     }
-  }
+  }, [dataStatus, navigate, queryClient]);
 
   // ===== PROGRAM GENERATION (uses extracted utils) =====
 
@@ -785,7 +772,7 @@ export default function Dashboard() {
   }
 
   // ✅ Logout function
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       console.log('🚪 Logging out...');
       await supabase.auth.signOut();
@@ -794,10 +781,10 @@ export default function Dashboard() {
     } catch (error) {
       console.error('❌ Error logging out:', error);
     }
-  };
+  }, [navigate]);
 
   // ✅ Check for pending deload adjustments
-  async function checkPendingAdjustments() {
+  const checkPendingAdjustments = useCallback(async () => {
     if (!program?.id) return;
 
     try {
@@ -816,10 +803,10 @@ export default function Dashboard() {
     } catch (error) {
       console.error('[Dashboard] Error checking pending adjustments:', error);
     }
-  }
+  }, [program?.id]);
 
   // ✅ Handle deload acceptance
-  async function handleDeloadAccept(modifiedAdjustment: ProgramAdjustment) {
+  const handleDeloadAccept = useCallback(async (modifiedAdjustment: ProgramAdjustment) => {
     try {
       const result = await acceptAndApplyAdjustment(modifiedAdjustment);
 
@@ -846,7 +833,7 @@ export default function Dashboard() {
       console.error('[Dashboard] Error applying deload:', error);
       alert('Errore nell\'applicare l\'adjustment. Riprova.');
     }
-  }
+  }, [queryClient]);
 
   // ✅ Handle deload rejection
   async function handleDeloadReject() {
