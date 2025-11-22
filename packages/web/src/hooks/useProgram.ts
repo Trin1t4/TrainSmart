@@ -44,7 +44,7 @@ export function useCurrentProgram() {
       console.log('[useCurrentProgram] Fetching active program for user:', currentUserId);
 
       const { data, error } = await supabase
-        .from('programs')
+        .from('training_programs')
         .select('*')
         .eq('user_id', currentUserId)
         .eq('is_active', true)
@@ -82,7 +82,7 @@ export function useUserPrograms() {
       if (!userId) throw new Error('No user ID');
 
       const { data, error } = await supabase
-        .from('programs')
+        .from('training_programs')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -106,7 +106,7 @@ export function useCreateProgram() {
   return useMutation({
     mutationFn: async (programData: any) => {
       const { data, error } = await supabase
-        .from('programs')
+        .from('training_programs')
         .insert({
           ...programData,
           user_id: userId,
@@ -133,7 +133,7 @@ export function useUpdateProgram() {
   return useMutation({
     mutationFn: async ({ programId, updates }: { programId: string; updates: any }) => {
       const { data, error } = await supabase
-        .from('programs')
+        .from('training_programs')
         .update(updates)
         .eq('id', programId)
         .select()
@@ -163,7 +163,7 @@ export function usePrefetchCurrentProgram() {
       queryKey: programKeys.current(userId),
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('programs')
+          .from('training_programs')
           .select('*')
           .eq('user_id', userId)
           .eq('is_active', true)

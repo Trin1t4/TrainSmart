@@ -167,7 +167,7 @@ export async function createProgram(
     // ✅ FIX: Deactivate all existing programs BEFORE creating new one
     console.log('[ProgramService] Deactivating existing programs...');
     const { error: deactivateError } = await supabase
-      .from('programs')
+      .from('training_programs')
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('user_id', userId)
       .eq('is_active', true);
@@ -204,7 +204,7 @@ export async function createProgram(
 
     // Insert to Supabase
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .insert(programData)
       .select()
       .single();
@@ -264,7 +264,7 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
 
     // Fetch from Supabase
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true)
@@ -286,7 +286,7 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
 
     // Update last_accessed_at
     await supabase
-      .from('programs')
+      .from('training_programs')
       .update({ last_accessed_at: new Date().toISOString() })
       .eq('id', data.id);
 
@@ -327,7 +327,7 @@ export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingP
 
     // Fetch from Supabase
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -363,7 +363,7 @@ export async function getProgramById(programId: string): Promise<ProgramServiceR
     }
 
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .select('*')
       .eq('id', programId)
       .eq('user_id', userId)
@@ -398,7 +398,7 @@ export async function updateProgram(
     }
 
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .update({
         ...updates,
         updated_at: new Date().toISOString()
@@ -440,7 +440,7 @@ export async function deleteProgram(programId: string): Promise<ProgramServiceRe
     }
 
     const { error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .delete()
       .eq('id', programId)
       .eq('user_id', userId);
@@ -478,7 +478,7 @@ export async function setActiveProgram(programId: string): Promise<ProgramServic
 
     // The trigger in Supabase will automatically deactivate other programs
     const { data, error } = await supabase
-      .from('programs')
+      .from('training_programs')
       .update({
         is_active: true,
         updated_at: new Date().toISOString()
@@ -547,7 +547,7 @@ export async function migrateLocalStorageToSupabase(): Promise<ProgramServiceRes
 
     // Check if user already has programs in Supabase
     const { data: existingPrograms, error: checkError } = await supabase
-      .from('programs')
+      .from('training_programs')
       .select('id')
       .eq('user_id', userId)
       .limit(1);
