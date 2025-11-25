@@ -34,6 +34,7 @@ const WorkoutSession = lazy(() => import('./pages/WorkoutSession'));
 const RecoveryScreening = lazy(() => import('./components/RecoveryScreening'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const VideoFeedback = lazy(() => import('./pages/VideoFeedback'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -79,6 +80,9 @@ function App() {
 
               {/* VIDEO FEEDBACK */}
               <Route path="/video-feedback/:correctionId" element={<VideoFeedback />} />
+
+              {/* PAYMENT */}
+              <Route path="/payment-success" element={<PaymentSuccess />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

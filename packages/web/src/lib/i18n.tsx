@@ -683,6 +683,27 @@ const translations: Translations = {
   "paywall.guarantee": { it: "🔒 Garanzia 14 giorni soddisfatto o rimborsato", en: "🔒 14-day satisfaction guarantee or money back", fr: "🔒 Garantie satisfait ou remboursé de 14 jours", es: "🔒 Garantía de 14 días satisfecho o reembolso" },
   "paywall.no_auto_renewal": { it: "Nessun rinnovo automatico • Cancellazione in qualsiasi momento • Dati sicuri", en: "No automatic renewal • Cancel anytime • Secure data", fr: "Pas de renouvellement automatique • Annulation à tout moment • Données sécurisées", es: "Sin renovación automática • Cancelación en cualquier momento • Datos seguros" },
 
+  // Paywall - Payment
+  "paywall.pay_now": { it: "Paga Ora", en: "Pay Now", fr: "Payer Maintenant", es: "Pagar Ahora" },
+  "paywall.processing": { it: "Elaborazione...", en: "Processing...", fr: "Traitement...", es: "Procesando..." },
+  "paywall.accepts_cards": { it: "Carte di credito/debito", en: "Credit/debit cards", fr: "Cartes de crédit/débit", es: "Tarjetas de crédito/débito" },
+  "paywall.secure_payment": { it: "Pagamento sicuro con Stripe", en: "Secure payment with Stripe", fr: "Paiement sécurisé avec Stripe", es: "Pago seguro con Stripe" },
+  "paywall.error.not_logged_in": { it: "Devi essere loggato per acquistare", en: "You must be logged in to purchase", fr: "Vous devez être connecté pour acheter", es: "Debes iniciar sesión para comprar" },
+  "paywall.error.generic": { it: "Errore durante il pagamento. Riprova.", en: "Error during payment. Please try again.", fr: "Erreur lors du paiement. Veuillez réessayer.", es: "Error durante el pago. Por favor, inténtalo de nuevo." },
+
+  // Payment Success Page
+  "payment_success.verifying": { it: "Verificando il pagamento...", en: "Verifying payment...", fr: "Vérification du paiement...", es: "Verificando el pago..." },
+  "payment_success.please_wait": { it: "Attendi mentre confermiamo il tuo acquisto", en: "Please wait while we confirm your purchase", fr: "Veuillez patienter pendant que nous confirmons votre achat", es: "Espera mientras confirmamos tu compra" },
+  "payment_success.title": { it: "Pagamento Completato!", en: "Payment Complete!", fr: "Paiement Terminé!", es: "¡Pago Completado!" },
+  "payment_success.plan_activated": { it: "Piano {{plan}} Attivato", en: "{{plan}} Plan Activated", fr: "Plan {{plan}} Activé", es: "Plan {{plan}} Activado" },
+  "payment_success.subscription_active": { it: "Abbonamento Attivo", en: "Subscription Active", fr: "Abonnement Actif", es: "Suscripción Activa" },
+  "payment_success.ready_message": { it: "Sei pronto per iniziare le prossime 5 settimane di allenamento!", en: "You're ready to start the next 5 weeks of training!", fr: "Vous êtes prêt à commencer les 5 prochaines semaines d'entraînement!", es: "¡Estás listo para comenzar las próximas 5 semanas de entrenamiento!" },
+  "payment_success.whats_next": { it: "Cosa succede ora?", en: "What's next?", fr: "Et maintenant?", es: "¿Qué sigue?" },
+  "payment_success.next_1": { it: "Le settimane 2-6 sono ora sbloccate", en: "Weeks 2-6 are now unlocked", fr: "Les semaines 2 à 6 sont maintenant débloquées", es: "Las semanas 2-6 están ahora desbloqueadas" },
+  "payment_success.next_2": { it: "I tuoi progressi sono salvati nel cloud", en: "Your progress is saved in the cloud", fr: "Votre progression est sauvegardée dans le cloud", es: "Tu progreso está guardado en la nube" },
+  "payment_success.next_3": { it: "Riceverai una email di conferma", en: "You'll receive a confirmation email", fr: "Vous recevrez un email de confirmation", es: "Recibirás un email de confirmación" },
+  "payment_success.go_to_dashboard": { it: "Vai alla Dashboard", en: "Go to Dashboard", fr: "Aller au Tableau de Bord", es: "Ir al Panel" },
+
   // Exercise Dislike Modal
   "exercise_dislike.title": { it: "Problema con l'esercizio?", en: "Problem with the exercise?", fr: "Problème avec l'exercice?", es: "¿Problema con el ejercicio?" },
   "exercise_dislike.current_weight": { it: "Peso attuale", en: "Current weight", fr: "Poids actuel", es: "Peso actual" },

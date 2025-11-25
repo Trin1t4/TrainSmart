@@ -1,12 +1,16 @@
 /**
  * Paywall Modal - Upgrade to BASE/PRO/PREMIUM plans
  * Shown after week 1 of free trial
+ *
+ * Integrates with Stripe Checkout for secure payments
  */
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Zap, Crown, Star, TrendingUp, Shield, Video } from 'lucide-react';
+import { X, Check, Zap, Crown, Star, TrendingUp, Shield, Video, Loader2, CreditCard } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
+import { redirectToCheckout, PlanTier } from '../lib/stripeClient';
+import { supabase } from '../lib/supabaseClient';
 
 interface PaywallModalProps {
   open: boolean;
@@ -22,6 +26,8 @@ interface PaywallModalProps {
 export default function PaywallModal({ open, onClose, onSelectPlan, userProgress }: PaywallModalProps) {
   const { t } = useTranslation();
   const [selectedTier, setSelectedTier] = useState<'base' | 'pro' | 'premium'>('pro');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -81,10 +87,33 @@ export default function PaywallModal({ open, onClose, onSelectPlan, userProgress
     }
   ];
 
-  const handleSelectPlan = (tier: 'base' | 'pro' | 'premium') => {
-    onSelectPlan?.(tier);
-    // TODO: Integrate Stripe payment
-    alert(t('paywall.plan_selected_alert').replace('{{plan}}', tier.toUpperCase()));
+  const handleSelectPlan = async (tier: 'base' | 'pro' | 'premium') => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        setError(t('paywall.error.not_logged_in'));
+        setIsLoading(false);
+        return;
+      }
+
+      // Callback to parent component
+      onSelectPlan?.(tier);
+
+      // Redirect to Stripe Checkout
+      await redirectToCheckout(tier, user.id, user.email || '');
+
+      // Note: redirectToCheckout will navigate away from the page
+      // so we don't need to handle success here
+    } catch (err) {
+      console.error('[PAYWALL] Payment error:', err);
+      setError(err instanceof Error ? err.message : t('paywall.error.generic'));
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -211,19 +240,48 @@ export default function PaywallModal({ open, onClose, onSelectPlan, userProgress
                       e.stopPropagation();
                       handleSelectPlan(plan.tier);
                     }}
+                    disabled={isLoading}
                     className={`
-                      w-full py-3 rounded-lg font-bold transition-all
+                      w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2
                       ${isSelected
                         ? `bg-gradient-to-r ${plan.color} text-white`
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }
+                      ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}
                     `}
                   >
-                    {isSelected ? t('paywall.selected') : t('paywall.select')}
+                    {isLoading && isSelected ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {t('paywall.processing')}
+                      </>
+                    ) : (
+                      <>
+                        {isSelected && <CreditCard className="w-5 h-5" />}
+                        {isSelected ? t('paywall.pay_now') : t('paywall.select')}
+                      </>
+                    )}
                   </button>
                 </motion.div>
               );
             })}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
+              <p className="text-red-300 text-sm text-center">{error}</p>
+            </div>
+          )}
+
+          {/* Payment Methods Info */}
+          <div className="flex items-center justify-center gap-4 mb-6 text-gray-400 text-sm">
+            <span className="flex items-center gap-1">
+              <CreditCard className="w-4 h-4" />
+              {t('paywall.accepts_cards')}
+            </span>
+            <span>•</span>
+            <span>{t('paywall.secure_payment')}</span>
           </div>
 
           {/* Benefits Summary */}
