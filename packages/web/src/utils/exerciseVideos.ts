@@ -37,6 +37,14 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Pull-up': 'standard-pull-up.mp4',
   'Nordic Curl': 'nordic-hamstring-curl.mp4',
   'Romanian Deadlift (RDL)': 'romanian-deadlift.mp4',
+  // Deadlift variations
+  'Deadlift': 'conventional-deadlift.mp4',
+  'Stacco': 'conventional-deadlift.mp4',
+  'Stacco da Terra': 'conventional-deadlift.mp4',
+  'Trap Bar Deadlift': 'conventional-deadlift.mp4', // fallback se non c'è video specifico
+  // Altri comuni
+  'RDL': 'romanian-deadlift.mp4',
+  'Stacco Rumeno': 'romanian-deadlift.mp4',
 };
 
 /**
