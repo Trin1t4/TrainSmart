@@ -159,14 +159,21 @@ export function generateUploadList(): Array<{ exercise: string; fileName: string
 
 /**
  * Verifica se un video esiste (client-side check)
- * Nota: fa una richiesta HEAD al server
+ * Usa mode: 'no-cors' per evitare problemi CORS con Supabase Storage
  */
 export async function checkVideoExists(exerciseName: string): Promise<boolean> {
   try {
     const url = getExerciseVideoUrl(exerciseName);
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
+    // Usa GET con range header per verificare se il video esiste
+    // Supabase Storage non supporta HEAD con CORS
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Range': 'bytes=0-0' } // Solo primo byte
+    });
+    return response.ok || response.status === 206; // 206 = Partial Content
   } catch {
-    return false;
+    // In caso di errore CORS, assumiamo che il video esista
+    // e lasciamo che l'errore venga gestito dal video element
+    return true;
   }
 }

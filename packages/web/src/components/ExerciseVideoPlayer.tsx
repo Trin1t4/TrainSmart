@@ -29,9 +29,14 @@ export default function ExerciseVideoPlayer({
 
   const videoUrl = getExerciseVideoUrl(exerciseName);
 
+  // Debug log
+  console.log('[VIDEO] Exercise:', exerciseName, '-> URL:', videoUrl);
+
   // Check if video exists before rendering
   useEffect(() => {
+    console.log('[VIDEO] Checking if video exists for:', exerciseName);
     checkVideoExists(exerciseName).then(exists => {
+      console.log('[VIDEO] Video exists:', exists, 'for', exerciseName);
       setHasVideo(exists);
       if (!exists) {
         setIsLoading(false);
