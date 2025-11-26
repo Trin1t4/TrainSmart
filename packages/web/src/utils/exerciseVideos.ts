@@ -24,10 +24,19 @@ function exerciseNameToFileName(name: string): string {
 
 /**
  * Mapping manuale per esercizi con nomi particolari
- * Aggiungi qui override se il nome automatico non funziona
+ * Override quando il nome nel sistema non matcha il nome del file video
  */
 const VIDEO_OVERRIDES: Record<string, string> = {
-  // Esempio: 'Romanian Deadlift (RDL)': 'romanian-deadlift.mp4'
+  // Nomi sistema -> nomi file video
+  'Push-up': 'standard-push-up.mp4',
+  'Bench Press': 'flat-barbell-bench-press.mp4',
+  'Dips': 'chest-dips.mp4',
+  'Handstand Push-up': 'wall-handstand-push-up.mp4',
+  'Overhead Press': 'military-press.mp4',
+  'Cable Row': 'seated-cable-row.mp4',
+  'Pull-up': 'standard-pull-up.mp4',
+  'Nordic Curl': 'nordic-hamstring-curl.mp4',
+  'Romanian Deadlift (RDL)': 'romanian-deadlift.mp4',
 };
 
 /**

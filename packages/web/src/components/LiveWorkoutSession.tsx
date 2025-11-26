@@ -26,6 +26,7 @@ import painManagementService from '../lib/painManagementService';
 import HybridRecoveryModal from './HybridRecoveryModal';
 import VideoUploadModal from './VideoUploadModal';
 import ExerciseDislikeModal from './ExerciseDislikeModal';
+import ExerciseVideoPlayer from './ExerciseVideoPlayer';
 import { getVariantsForExercise } from '../utils/exerciseVariants';
 
 interface Exercise {
@@ -1873,6 +1874,19 @@ export default function LiveWorkoutSession({
               <ThumbsDown className="w-5 h-5 text-slate-400 group-hover:text-red-400 transition-colors" />
             </button>
           </div>
+
+          {/* Exercise Video - Autoplay in loop */}
+          <div className="mb-4">
+            <ExerciseVideoPlayer
+              exerciseName={currentExercise.name}
+              autoPlay={true}
+              loop={true}
+              muted={true}
+              className="w-full aspect-video rounded-lg"
+              showFormCues={true}
+            />
+          </div>
+
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-slate-400 text-sm">Target</p>
