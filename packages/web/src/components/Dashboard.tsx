@@ -645,6 +645,8 @@ export default function Dashboard() {
     const baselines = dataStatus.screening?.patternBaselines || {};
     const muscularFocus = onboarding?.muscularFocus || ''; // ✅ Get muscular focus from onboarding
     const goals = onboarding?.goals || [goal]; // ✅ Multi-goal support (fallback to single goal)
+    const sport = onboarding?.sport || ''; // ✅ Sport-specific (Rubini)
+    const sportRole = onboarding?.sportRole || ''; // ✅ Sport role (attaccante, portiere, etc.)
 
     // ⚠️ VALIDAZIONE: Avvisa se location mancante
     if (!onboarding?.trainingLocation) {
@@ -660,7 +662,7 @@ export default function Dashboard() {
       console.log(`⏱️ Session duration: ${sessionDuration} minutes`);
     }
 
-    // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal
+    // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal + sport
     const program = generateProgramWithSplit({
       level: level as any,
       goal: goal as any,
@@ -672,7 +674,9 @@ export default function Dashboard() {
       painAreas,
       equipment,
       muscularFocus, // ✅ Pass muscular focus to generator
-      sessionDuration // ✅ Pass session duration for time adaptation
+      sessionDuration, // ✅ Pass session duration for time adaptation
+      sport, // ✅ Sport-specific (Rubini philosophy)
+      sportRole // ✅ Sport role for position-specific training
     });
 
     // Aggiungi campi richiesti dal formato esistente

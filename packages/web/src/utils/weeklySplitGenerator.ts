@@ -19,6 +19,16 @@ import {
   HORIZONTAL_PULL_VARIANTS,
   ACCESSORY_VARIANTS
 } from './exerciseVariants';
+import {
+  SportType,
+  SeasonPhase,
+  getSportProfile,
+  getAdjustedProfile,
+  getPhaseConfig,
+  detectSeasonPhase,
+  mapToDbExercise,
+  generateSportRecommendations
+} from './sportSpecificTraining';
 
 /**
  * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
@@ -98,12 +108,16 @@ interface SplitGeneratorOptions {
   level: Level;
   goal: Goal;
   goals?: string[]; // Multi-goal support (max 3)
-  location: 'gym' | 'home';
+  location: 'gym' | 'home' | 'home_gym';
   trainingType: 'bodyweight' | 'equipment' | 'machines';
   frequency: number;
   baselines: PatternBaselines;
   painAreas: NormalizedPainArea[];
   muscularFocus?: string | string[]; // Multi-select: glutei, addome, petto, dorso, spalle, gambe, braccia, polpacci
+  // Sport-specific (Rubini philosophy)
+  sport?: string;      // Sport selezionato (calcio, basket, etc.)
+  sportRole?: string;  // Ruolo specifico (attaccante, portiere, etc.)
+  seasonPhase?: 'off_season' | 'pre_season' | 'in_season'; // Fase della stagione
 }
 
 /**
@@ -609,6 +623,338 @@ function applyMuscularFocus(
  * - Varianti diverse per stimoli diversi
  * - Volume distribuito intelligentemente
  */
+
+// ============================================
+// 🏆 SPORT-SPECIFIC SPLIT - Filosofia Nicholas Rubini
+// ============================================
+
+/**
+ * SPORT-SPECIFIC SPLIT GENERATOR
+ *
+ * Filosofia Rubini:
+ * 1. Forza è la madre di tutte le qualità atletiche
+ * 2. Fondamentali sempre (Squat, Panca, Stacco) come base
+ * 3. Accessori per prevenzione infortuni sport-specifici
+ * 4. Periodizzazione: Off-season → Pre-season → In-season
+ *
+ * Struttura:
+ * - 2-3x Fondamentali pesanti
+ * - 1-2x Prevenzione infortuni (sport-specific)
+ * - Core sempre
+ */
+function generateSportSpecificSplit(options: SplitGeneratorOptions): WeeklySplit {
+  const {
+    baselines,
+    level,
+    goal,
+    location,
+    trainingType,
+    painAreas,
+    frequency,
+    sport,
+    sportRole,
+    seasonPhase
+  } = options;
+
+  // Determina sport type e fase
+  const sportType = (sport || 'altro') as SportType;
+  const phase = seasonPhase || detectSeasonPhase();
+  const phaseConfig = getPhaseConfig(phase);
+  const sportProfile = getAdjustedProfile(sportType, sportRole);
+
+  // Determina se usa bilanciere o calisthenics
+  const hasBarbell = location === 'gym' || location === 'home_gym' ||
+    (trainingType === 'equipment' && baselines.lower_pull?.variantName?.includes('Deadlift'));
+
+  console.log('🏆 ═══════════════════════════════════════════════════════');
+  console.log(`🏆 SPORT-SPECIFIC PROGRAM: ${sportType.toUpperCase()}`);
+  console.log(`🏆 Ruolo: ${sportRole || 'Generico'}`);
+  console.log(`🏆 Fase: ${phase.replace('_', '-').toUpperCase()}`);
+  console.log(`🏆 Focus: ${phaseConfig.focus}`);
+  console.log(`🏆 Parametri: ${phaseConfig.setsRange[0]}-${phaseConfig.setsRange[1]} × ${phaseConfig.repsRange[0]}-${phaseConfig.repsRange[1]} reps`);
+  console.log(`🏆 Intensità: ${phaseConfig.intensityRange[0]}-${phaseConfig.intensityRange[1]}%`);
+  console.log(`🏆 Mode: ${hasBarbell ? 'BARBELL' : 'CALISTHENICS'}`);
+  console.log('🏆 ═══════════════════════════════════════════════════════');
+
+  // Seleziona esercizi appropriati
+  const keyLifts = hasBarbell ? sportProfile.keyLifts.barbell : sportProfile.keyLifts.calisthenics;
+  const preventionExercises = sportProfile.preventionExercises;
+
+  // Genera i giorni in base alla frequenza e fase
+  const days: DayWorkout[] = [];
+
+  // In-season: max 2 allenamenti/settimana (mantenimento)
+  // Pre/Off-season: 3-4 allenamenti/settimana
+  const effectiveFrequency = phase === 'in_season'
+    ? Math.min(frequency, 2)
+    : Math.min(frequency, 4);
+
+  // Mapping pattern → baseline
+  const patternToBaseline: Record<string, any> = {
+    lower_push: baselines.lower_push,
+    lower_pull: baselines.lower_pull,
+    horizontal_push: baselines.horizontal_push,
+    horizontal_pull: baselines.vertical_pull, // fallback
+    vertical_push: baselines.vertical_push,
+    vertical_pull: baselines.vertical_pull,
+    core: baselines.core
+  };
+
+  // Helper per creare esercizio sport-specific CON GESTIONE DOLORI
+  const createSportExercise = (
+    exerciseName: string,
+    patternId: string,
+    dayType: 'heavy' | 'volume' | 'moderate',
+    isPrevention: boolean = false
+  ): Exercise => {
+    const baseline = patternToBaseline[patternId];
+    const baselineReps = baseline?.reps || 10;
+
+    // Calcola volume basato su fase
+    let sets: number, reps: number, rest: string, intensity: string;
+
+    if (isPrevention) {
+      // Prevenzione: volume moderato, focus tecnica
+      sets = 3;
+      reps = 12;
+      rest = '60s';
+      intensity = '60-70%';
+    } else if (dayType === 'heavy') {
+      // Heavy: forza massimale
+      sets = phaseConfig.setsRange[1];
+      reps = phaseConfig.repsRange[0];
+      rest = `${Math.floor(phaseConfig.restSeconds[1] / 60)}min`;
+      intensity = `${phaseConfig.intensityRange[1]}%`;
+    } else if (dayType === 'volume') {
+      // Volume: accumulo
+      sets = phaseConfig.setsRange[0] + 1;
+      reps = phaseConfig.repsRange[1];
+      rest = '90s';
+      intensity = `${phaseConfig.intensityRange[0]}%`;
+    } else {
+      // Moderate: bilanciato
+      sets = phaseConfig.setsRange[0];
+      reps = Math.round((phaseConfig.repsRange[0] + phaseConfig.repsRange[1]) / 2);
+      rest = '2min';
+      intensity = `${Math.round((phaseConfig.intensityRange[0] + phaseConfig.intensityRange[1]) / 2)}%`;
+    }
+
+    // Mappa al nome nel database
+    let dbExerciseName = mapToDbExercise(exerciseName);
+    let painNotes = '';
+
+    // ✅ GESTIONE DOLORI: Controlla conflitti con zone doloranti
+    if (painAreas && painAreas.length > 0) {
+      for (const painEntry of painAreas) {
+        const painArea = painEntry.area;
+        const severity = painEntry.severity;
+
+        if (isExerciseConflicting(dbExerciseName, painArea)) {
+          console.log(`⚠️ [SPORT] Conflitto dolore: ${dbExerciseName} → ${painArea} (${severity})`);
+
+          // Applica deload basato su severità
+          const deload = applyPainDeload(severity, sets, reps, location as 'gym' | 'home');
+
+          sets = deload.sets;
+          reps = deload.reps;
+          painNotes = deload.note;
+
+          // Se serve sostituzione, cerca alternativa
+          if (deload.needsReplacement || severity === 'severe') {
+            const alternative = findSafeAlternative(dbExerciseName, painArea, severity);
+            console.log(`   → Sostituito con: ${alternative}`);
+            painNotes = `${painNotes} | Sostituito da ${dbExerciseName}`;
+            dbExerciseName = alternative;
+          }
+
+          break; // Un solo dolore per volta
+        }
+      }
+    }
+
+    return {
+      pattern: patternId as any,
+      name: dbExerciseName,
+      sets,
+      reps,
+      rest,
+      notes: painNotes
+        ? `${painNotes}`
+        : isPrevention
+        ? `⚠️ Prevenzione ${sportProfile.injuryRiskAreas[0]}`
+        : `${phase.replace('_', '-')} - ${dayType.toUpperCase()}`
+    };
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // GENERAZIONE GIORNI SPORT-SPECIFIC
+  // ═══════════════════════════════════════════════════════
+
+  if (effectiveFrequency === 2) {
+    // IN-SEASON: 2x settimana - Mantenimento
+    // Day A: Fondamentali Lower + Core
+    // Day B: Fondamentali Upper + Prevenzione
+
+    days.push({
+      dayNumber: 1,
+      dayName: 'Strength A - Lower Focus',
+      focus: `${phaseConfig.focus} - Lower Body`,
+      exercises: [
+        createSportExercise(keyLifts[0] || 'Back Squat', 'lower_push', 'heavy'),
+        createSportExercise(keyLifts[1] || 'Romanian Deadlift', 'lower_pull', 'moderate'),
+        createSportExercise(preventionExercises[0] || 'Nordic Curl', 'lower_pull', 'moderate', true),
+        createSportExercise('Plank', 'core', 'volume')
+      ]
+    });
+
+    days.push({
+      dayNumber: 2,
+      dayName: 'Strength B - Upper Focus',
+      focus: `${phaseConfig.focus} - Upper Body`,
+      exercises: [
+        createSportExercise(keyLifts[2] || 'Bench Press', 'horizontal_push', 'heavy'),
+        createSportExercise(keyLifts[3] || 'Barbell Row', 'horizontal_pull', 'moderate'),
+        createSportExercise(preventionExercises[1] || 'Face Pull', 'horizontal_pull', 'moderate', true),
+        createSportExercise('Dead Bug', 'core', 'volume')
+      ]
+    });
+
+  } else if (effectiveFrequency === 3) {
+    // OFF/PRE-SEASON 3x: Full Body con rotazione
+
+    // Day A: Lower Heavy + Upper Volume
+    days.push({
+      dayNumber: 1,
+      dayName: 'Strength A - Squat Focus',
+      focus: `${phaseConfig.focus} - Squat Day`,
+      exercises: [
+        createSportExercise(keyLifts[0] || 'Back Squat', 'lower_push', 'heavy'),
+        createSportExercise(keyLifts[2] || 'Bench Press', 'horizontal_push', 'moderate'),
+        createSportExercise(keyLifts[4] || 'Barbell Row', 'horizontal_pull', 'volume'),
+        createSportExercise(preventionExercises[0] || 'Nordic Curl', 'lower_pull', 'moderate', true),
+        createSportExercise('Plank', 'core', 'volume')
+      ]
+    });
+
+    // Day B: Upper Heavy + Lower Accessory
+    days.push({
+      dayNumber: 2,
+      dayName: 'Strength B - Press Focus',
+      focus: `${phaseConfig.focus} - Pressing Day`,
+      exercises: [
+        createSportExercise(keyLifts[2] || 'Bench Press', 'horizontal_push', 'heavy'),
+        createSportExercise('Overhead Press', 'vertical_push', 'moderate'),
+        createSportExercise(keyLifts[1] || 'Romanian Deadlift', 'lower_pull', 'volume'),
+        createSportExercise(preventionExercises[1] || 'Face Pull', 'horizontal_pull', 'moderate', true),
+        createSportExercise('Dead Bug', 'core', 'volume')
+      ]
+    });
+
+    // Day C: Hinge Heavy + Full Body
+    days.push({
+      dayNumber: 3,
+      dayName: 'Strength C - Hinge Focus',
+      focus: `${phaseConfig.focus} - Hinge Day`,
+      exercises: [
+        createSportExercise(keyLifts[1] || 'Romanian Deadlift', 'lower_pull', 'heavy'),
+        createSportExercise(keyLifts[3] || 'Hip Thrust', 'lower_push', 'moderate'),
+        createSportExercise('Pull-up', 'vertical_pull', 'volume'),
+        createSportExercise(preventionExercises[2] || 'Single Leg RDL', 'lower_pull', 'moderate', true),
+        createSportExercise('Pallof Press', 'core', 'volume')
+      ]
+    });
+
+  } else {
+    // OFF-SEASON 4x: Upper/Lower Split per massimo sviluppo forza
+
+    // Day 1: Lower A - Squat Focus
+    days.push({
+      dayNumber: 1,
+      dayName: 'Lower A - Squat Focus',
+      focus: `${phaseConfig.focus} - Squat Dominant`,
+      exercises: [
+        createSportExercise(keyLifts[0] || 'Back Squat', 'lower_push', 'heavy'),
+        createSportExercise(keyLifts[1] || 'Romanian Deadlift', 'lower_pull', 'moderate'),
+        createSportExercise(keyLifts[3] || 'Hip Thrust', 'lower_push', 'volume'),
+        createSportExercise(preventionExercises[0] || 'Nordic Curl', 'lower_pull', 'moderate', true),
+        createSportExercise('Calf Raise', 'lower_push', 'volume')
+      ]
+    });
+
+    // Day 2: Upper A - Push Focus
+    days.push({
+      dayNumber: 2,
+      dayName: 'Upper A - Push Focus',
+      focus: `${phaseConfig.focus} - Horizontal Push`,
+      exercises: [
+        createSportExercise(keyLifts[2] || 'Bench Press', 'horizontal_push', 'heavy'),
+        createSportExercise('Overhead Press', 'vertical_push', 'moderate'),
+        createSportExercise(keyLifts[4] || 'Barbell Row', 'horizontal_pull', 'volume'),
+        createSportExercise(preventionExercises[1] || 'Face Pull', 'horizontal_pull', 'moderate', true),
+        createSportExercise('Dead Bug', 'core', 'volume')
+      ]
+    });
+
+    // Day 3: Lower B - Hinge Focus
+    days.push({
+      dayNumber: 3,
+      dayName: 'Lower B - Hinge Focus',
+      focus: `${phaseConfig.focus} - Hip Hinge Dominant`,
+      exercises: [
+        createSportExercise('Conventional Deadlift', 'lower_pull', 'heavy'),
+        createSportExercise('Front Squat', 'lower_push', 'moderate'),
+        createSportExercise('Bulgarian Split Squat', 'lower_push', 'volume'),
+        createSportExercise(preventionExercises[2] || 'Single Leg RDL', 'lower_pull', 'moderate', true),
+        createSportExercise('Plank', 'core', 'volume')
+      ]
+    });
+
+    // Day 4: Upper B - Pull Focus
+    days.push({
+      dayNumber: 4,
+      dayName: 'Upper B - Pull Focus',
+      focus: `${phaseConfig.focus} - Vertical Pull`,
+      exercises: [
+        createSportExercise('Pull-up', 'vertical_pull', 'heavy'),
+        createSportExercise(keyLifts[2] || 'Bench Press', 'horizontal_push', 'moderate'),
+        createSportExercise('Dumbbell Row', 'horizontal_pull', 'volume'),
+        createSportExercise(preventionExercises[1] || 'Face Pull', 'horizontal_pull', 'moderate', true),
+        createSportExercise('Pallof Press', 'core', 'volume')
+      ]
+    });
+  }
+
+  // Genera descrizione dettagliata
+  const sportRecommendations = generateSportRecommendations(
+    sportType,
+    sportRole,
+    hasBarbell,
+    phase
+  );
+
+  const description = [
+    `Programma sport-specifico per ${sportType.toUpperCase()}${sportRole ? ` - ${sportRole}` : ''}`,
+    '',
+    `📅 Fase: ${phase.replace('_', '-').toUpperCase()}`,
+    `🎯 Focus: ${phaseConfig.focus}`,
+    '',
+    `⚠️ Aree a rischio: ${sportProfile.injuryRiskAreas.slice(0, 3).join(', ')}`,
+    `✅ Prevenzione: ${preventionExercises.slice(0, 2).join(', ')}`,
+    '',
+    `📊 Parametri fase:`,
+    `   Serie: ${phaseConfig.setsRange[0]}-${phaseConfig.setsRange[1]}`,
+    `   Reps: ${phaseConfig.repsRange[0]}-${phaseConfig.repsRange[1]}`,
+    `   Intensità: ${phaseConfig.intensityRange[0]}-${phaseConfig.intensityRange[1]}%`,
+    '',
+    `💡 ${sportProfile.notes}`
+  ].join('\n');
+
+  return {
+    splitName: `Sport Performance - ${sportType.charAt(0).toUpperCase() + sportType.slice(1)} (${phase.replace('_', '-')})`,
+    description,
+    days
+  };
+}
 
 /**
  * 3x SETTIMANA - FULL BODY A/B/C
@@ -1167,7 +1513,7 @@ function generateCorrectiveExercises(painAreas: NormalizedPainArea[]): Exercise[
  * FUNZIONE PRINCIPALE - Genera split settimanale basato su frequenza
  */
 export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit {
-  const { frequency, goals } = options;
+  const { frequency, goals, goal, sport, sportRole, seasonPhase } = options;
 
   console.log(`🗓️ Generazione split settimanale per ${frequency}x/settimana`);
 
@@ -1175,6 +1521,17 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   if (goals && goals.length > 1) {
     console.log(`🎯 Multi-goal detected: ${goals.join(', ')}`);
     console.log(`📊 Volume distribution: ${goals.length === 2 ? '70-30' : '40-30-30'}`);
+  }
+
+  // ✅ SPORT-SPECIFIC PATH (Rubini Philosophy)
+  const isSportGoal =
+    goal === 'prestazioni_sportive' ||
+    goal === 'sport_performance' ||
+    (goals && goals.includes('prestazioni_sportive'));
+
+  if (isSportGoal && sport) {
+    console.log(`🏆 Sport-Specific Mode: ${sport}${sportRole ? ` (${sportRole})` : ''}`);
+    return generateSportSpecificSplit(options);
   }
 
   let split: WeeklySplit;

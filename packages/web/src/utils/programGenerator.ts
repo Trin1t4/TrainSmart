@@ -348,13 +348,17 @@ export interface ProgramGeneratorOptions {
   level: Level;
   goal: Goal;
   goals?: string[]; // Multi-goal support (max 3)
-  location: 'gym' | 'home';
+  location: 'gym' | 'home' | 'home_gym';
   trainingType: 'bodyweight' | 'equipment' | 'machines';
   frequency: number;
   baselines: PatternBaselines;
   painAreas: NormalizedPainArea[];
   equipment?: any;
   muscularFocus?: string | string[]; // Multi-select muscular focus (max 3 muscle groups)
+  // Sport-specific (Rubini philosophy)
+  sport?: string;      // Sport selezionato (calcio, basket, etc.)
+  sportRole?: string;  // Ruolo specifico (attaccante, portiere, etc.)
+  sessionDuration?: number; // Durata sessione in minuti
 }
 
 /**
@@ -538,17 +542,30 @@ export function generateProgramWithSplit(options: ProgramGeneratorOptions): any 
     console.log('   → Focus esercizi posizionati all\'inizio (quando fresco)');
   }
 
-  // Genera split settimanale con muscular focus e multi-goal
+  // 🏆 Sport-Specific logging (Rubini philosophy)
+  if (options.sport) {
+    console.log(`🏆 Sport-Specific: ${options.sport.toUpperCase()}`);
+    if (options.sportRole) {
+      console.log(`   → Ruolo: ${options.sportRole}`);
+    }
+    console.log('   → Fondamentali pesanti come base');
+    console.log('   → Prevenzione infortuni sport-specifica');
+    console.log('   → Periodizzazione automatica');
+  }
+
+  // Genera split settimanale con muscular focus, multi-goal e sport
   const weeklySplit = generateWeeklySplit({
     level: options.level,
     goal: options.goal,
     goals: options.goals, // ✅ Multi-goal support
-    location: options.location,
+    location: options.location as 'gym' | 'home' | 'home_gym',
     trainingType: options.trainingType,
     frequency: options.frequency,
     baselines: options.baselines,
     painAreas: options.painAreas,
-    muscularFocus: options.muscularFocus // ✅ Pass muscular focus to generator
+    muscularFocus: options.muscularFocus, // ✅ Pass muscular focus to generator
+    sport: options.sport, // ✅ Sport-specific (Rubini philosophy)
+    sportRole: options.sportRole // ✅ Sport role for position-specific training
   });
 
   console.log(`✅ Split generato: ${weeklySplit.splitName}`);
