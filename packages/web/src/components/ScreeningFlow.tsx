@@ -25,8 +25,8 @@ const CALISTHENICS_PATTERNS = [
       { id: 'jump_squat', name: 'Jump Squat', difficulty: 4 },
       { id: 'bulgarian_split', name: 'Bulgarian Split Squat', difficulty: 5 },
       { id: 'pistol_assisted', name: 'Pistol Squat Assistito', difficulty: 7 },
-      { id: 'pistol', name: 'Pistol Squat', difficulty: 9 },
-      { id: 'shrimp_squat', name: 'Shrimp Squat', difficulty: 10 }
+      { id: 'shrimp_squat', name: 'Shrimp Squat', difficulty: 8 },
+      { id: 'pistol', name: 'Pistol Squat', difficulty: 10 }
     ]
   },
   {
