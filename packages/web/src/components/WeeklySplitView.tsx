@@ -7,8 +7,9 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeeklySplit, DayWorkout, Exercise } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Target, Zap, Activity, Info, ChevronDown } from 'lucide-react';
+import { Target, Zap, Activity, Info, ChevronDown, ImageIcon } from 'lucide-react';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
+import { getExerciseImageWithFallback, isStaticExercise } from '@fitnessflow/shared';
 
 interface WeeklySplitViewProps {
   weeklySplit: WeeklySplit;
@@ -128,7 +129,13 @@ interface ExerciseRowProps {
 
 function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps) {
   const [showDescription, setShowDescription] = React.useState(true); // ✅ Always show description by default
+  const [imageError, setImageError] = React.useState(false);
   const exerciseInfo = getExerciseDescription(exercise.name);
+
+  // Get exercise image if it's a static exercise
+  const exerciseImage = isStaticExercise(exercise.name)
+    ? getExerciseImageWithFallback(exercise.name)
+    : null;
 
   const patternColors: Record<string, string> = {
     lower_push: 'bg-green-600',
@@ -152,6 +159,23 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
     >
       {/* Main Row */}
       <div className="flex items-center gap-3 p-3">
+        {/* Exercise Image (for static exercises) */}
+        {exerciseImage && !imageError ? (
+          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-600">
+            <img
+              src={exerciseImage}
+              alt={exercise.name}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
+          </div>
+        ) : exerciseImage && imageError ? (
+          <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-600 flex items-center justify-center">
+            <ImageIcon className="w-6 h-6 text-gray-400" />
+          </div>
+        ) : null}
+
         {/* Pattern Badge */}
         <div className={`${patternColor} rounded px-2 py-1 text-xs font-medium text-white uppercase tracking-wider min-w-[100px] text-center`}>
           {exercise.pattern.replace('_', ' ')}

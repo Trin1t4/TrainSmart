@@ -162,3 +162,15 @@ export {
   getCuesByCategory,
   getCriticalCues
 } from './exerciseFormCues';
+
+// Exercise Images (Static)
+export {
+  EXERCISE_IMAGES,
+  EXERCISE_IMAGE_FALLBACKS,
+  STATIC_EXERCISES,
+  isStaticExercise,
+  getExerciseImageUrl,
+  getExerciseImageFallback,
+  getExerciseImageWithFallback,
+  generateImageUploadList
+} from './exerciseImages';
