@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check } from 'lucide-react';
+import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check, Timer, RotateCw, X, ZoomIn } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { getExerciseImageWithFallback } from '@fitnessflow/shared';
 
@@ -91,12 +91,12 @@ const CALISTHENICS_PATTERNS = [
     name: 'Core Stability',
     description: 'Progressioni core e stabilità',
     progressions: [
-      { id: 'plank', name: 'Plank', difficulty: 2 },
-      { id: 'side_plank', name: 'Side Plank', difficulty: 3 },
-      { id: 'hollow_body', name: 'Hollow Body Hold', difficulty: 5 },
-      { id: 'lsit_tuck', name: 'Tuck L-sit', difficulty: 6 },
-      { id: 'lsit_one_leg', name: 'One Leg L-sit', difficulty: 7 },
-      { id: 'lsit_full', name: 'Full L-sit', difficulty: 9 },
+      { id: 'plank', name: 'Plank', difficulty: 2, isometric: true },
+      { id: 'side_plank', name: 'Side Plank', difficulty: 3, isometric: true },
+      { id: 'hollow_body', name: 'Hollow Body Hold', difficulty: 5, isometric: true },
+      { id: 'lsit_tuck', name: 'Tuck L-sit', difficulty: 6, isometric: true },
+      { id: 'lsit_one_leg', name: 'One Leg L-sit', difficulty: 7, isometric: true },
+      { id: 'lsit_full', name: 'Full L-sit', difficulty: 9, isometric: true },
       { id: 'dragon_flag', name: 'Dragon Flag', difficulty: 10 }
     ]
   }
@@ -230,6 +230,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
   const [reps, setReps] = useState('');
   const [weight, setWeight] = useState(''); // Per GYM mode (kg)
   const [showSummary, setShowSummary] = useState(false);
+  const [imagePreview, setImagePreview] = useState<{ url: string; name: string } | null>(null);
 
   const pattern = MOVEMENT_PATTERNS[currentPattern];
   const progress = ((currentPattern + 1) / MOVEMENT_PATTERNS.length) * 100;
@@ -260,6 +261,28 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
     }
   };
 
+  // Funzione per aprire preview immagine
+  const openImagePreview = (imageUrl: string, exerciseName: string) => {
+    setImagePreview({ url: imageUrl, name: exerciseName });
+  };
+
+  // Funzione per chiudere preview immagine
+  const closeImagePreview = () => {
+    setImagePreview(null);
+  };
+
+  // Gestione tasto ESC per chiudere modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && imagePreview) {
+        closeImagePreview();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [imagePreview]);
+
   const handleNext = () => {
     // Validation diversa per GYM vs CALISTHENICS
     if (isGymMode) {
@@ -269,9 +292,11 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
         return;
       }
     } else {
-      // CALISTHENICS: serve variante + reps
+      // CALISTHENICS: serve variante + reps/secondi
       if (!selectedVariant || !reps || parseInt(reps) === 0) {
-        alert('Seleziona una variante e inserisci il numero di ripetizioni');
+        const selectedProgression = pattern.progressions?.find(p => p.id === selectedVariant);
+        const unit = selectedProgression?.isometric ? 'secondi' : 'ripetizioni';
+        alert(`Seleziona una variante e inserisci il numero di ${unit}`);
         return;
       }
     }
@@ -320,6 +345,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
           variantName: selectedProgression.name,
           difficulty: selectedProgression.difficulty,
           reps: parseInt(reps),
+          isometric: selectedProgression.isometric || false,
           score: selectedProgression.difficulty * parseInt(reps), // Fixed: removed × 10 multiplier
           mode: 'CALISTHENICS'
         }
@@ -486,8 +512,18 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
                           </>
                         ) : (
                           <>
-                            <p className="text-emerald-400 text-sm mt-1">
-                              {pattern.variantName} × {pattern.reps} reps
+                            <p className="text-emerald-400 text-sm mt-1 flex items-center gap-2">
+                              {pattern.isometric ? (
+                                <>
+                                  <Timer className="w-4 h-4" />
+                                  {pattern.variantName} × {pattern.reps} secondi
+                                </>
+                              ) : (
+                                <>
+                                  <RotateCw className="w-4 h-4" />
+                                  {pattern.variantName} × {pattern.reps} reps
+                                </>
+                              )}
                             </p>
                             <p className="text-xs text-slate-500 mt-1">
                               Difficoltà: {pattern.difficulty}/10
@@ -600,88 +636,133 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
                       const isSelected = selectedVariant === prog.id;
 
                       return (
-                        <button
-                          key={prog.id}
-                          onClick={() => setSelectedVariant(prog.id)}
-                          className={`w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all ${
-                            isSelected
-                              ? 'border-emerald-500 bg-emerald-500/20 shadow-lg shadow-emerald-500/10'
-                              : 'border-slate-600 bg-slate-700/50 hover:border-slate-500 hover:bg-slate-700'
-                          }`}
-                        >
-                          {/* Immagine esercizio */}
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                            {imageUrl ? (
-                              <img
-                                src={imageUrl}
-                                alt={prog.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect fill="%23374151" width="64" height="64"/><text x="32" y="36" text-anchor="middle" fill="%239ca3af" font-size="24">🏋️</text></svg>';
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-2xl">
-                                🏋️
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info esercizio */}
-                          <div className="flex-1 text-left">
-                            <p className={`font-semibold ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
-                              {prog.name}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex gap-0.5">
-                                {[...Array(10)].map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className={`w-2 h-2 rounded-full ${
-                                      i < prog.difficulty
-                                        ? 'bg-emerald-500'
-                                        : 'bg-slate-600'
-                                    }`}
+                        <div key={prog.id} className="relative">
+                          <button
+                            onClick={() => setSelectedVariant(prog.id)}
+                            className={`w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all ${
+                              isSelected
+                                ? 'border-emerald-500 bg-emerald-500/20 shadow-lg shadow-emerald-500/10'
+                                : 'border-slate-600 bg-slate-700/50 hover:border-slate-500 hover:bg-slate-700'
+                            }`}
+                          >
+                            {/* Immagine esercizio con pulsante zoom */}
+                            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 group">
+                              {imageUrl ? (
+                                <>
+                                  <img
+                                    src={imageUrl}
+                                    alt={prog.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect fill="%23374151" width="64" height="64"/><text x="32" y="36" text-anchor="middle" fill="%239ca3af" font-size="24">🏋️</text></svg>';
+                                    }}
                                   />
-                                ))}
-                              </div>
-                              <span className="text-xs text-slate-400">
-                                {prog.difficulty}/10
-                              </span>
+                                  {/* Bottone zoom overlay */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openImagePreview(imageUrl, prog.name);
+                                    }}
+                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                  >
+                                    <ZoomIn className="w-6 h-6 text-white" />
+                                  </button>
+                                </>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-2xl">
+                                  🏋️
+                                </div>
+                              )}
                             </div>
-                          </div>
 
-                          {/* Checkmark */}
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isSelected
-                              ? 'bg-emerald-500 text-white'
-                              : 'border-2 border-slate-500'
-                          }`}>
-                            {isSelected && <Check className="w-4 h-4" />}
-                          </div>
-                        </button>
+                            {/* Info esercizio */}
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center gap-2">
+                                <p className={`font-semibold ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
+                                  {prog.name}
+                                </p>
+                                {prog.isometric && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 border border-blue-500/30 rounded-full text-xs text-blue-300">
+                                    <Timer className="w-3 h-3" />
+                                    Isometrico
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="flex gap-0.5">
+                                  {[...Array(10)].map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className={`w-2 h-2 rounded-full ${
+                                        i < prog.difficulty
+                                          ? 'bg-emerald-500'
+                                          : 'bg-slate-600'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-xs text-slate-400">
+                                  {prog.difficulty}/10
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Checkmark */}
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              isSelected
+                                ? 'bg-emerald-500 text-white'
+                                : 'border-2 border-slate-500'
+                            }`}>
+                              {isSelected && <Check className="w-4 h-4" />}
+                            </div>
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Input ripetizioni - appare solo dopo selezione */}
-                {selectedVariant && (
-                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-                    <label className="text-white font-medium">
-                      Quante ripetizioni pulite riesci a fare di "{pattern.progressions.find(p => p.id === selectedVariant)?.name}"?
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={reps}
-                      onChange={(e) => setReps(e.target.value)}
-                      placeholder="es. 10"
-                      className="w-full p-4 rounded-xl bg-slate-700 border-2 border-slate-600 text-white text-lg focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                )}
+                {/* Input ripetizioni/secondi - appare solo dopo selezione */}
+                {selectedVariant && (() => {
+                  const selectedProgression = pattern.progressions.find(p => p.id === selectedVariant);
+                  const isIsometric = selectedProgression?.isometric || false;
+                  const unit = isIsometric ? 'secondi' : 'ripetizioni';
+                  const icon = isIsometric ? Timer : RotateCw;
+                  const IconComponent = icon;
+
+                  return (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                      <label className="text-white font-medium flex items-center gap-2">
+                        <IconComponent className="w-5 h-5 text-emerald-400" />
+                        {isIsometric
+                          ? `Per quanti secondi riesci a tenere "${selectedProgression?.name}"?`
+                          : `Quante ripetizioni pulite riesci a fare di "${selectedProgression?.name}"?`
+                        }
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="1"
+                          max={isIsometric ? "300" : "100"}
+                          value={reps}
+                          onChange={(e) => setReps(e.target.value)}
+                          placeholder={isIsometric ? "es. 60" : "es. 10"}
+                          className="w-full p-4 pr-24 rounded-xl bg-slate-700 border-2 border-slate-600 text-white text-lg focus:border-emerald-500 focus:outline-none"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium flex items-center gap-1">
+                          <IconComponent className="w-4 h-4" />
+                          {unit}
+                        </span>
+                      </div>
+                      {isIsometric && reps && parseInt(reps) > 0 && (
+                        <p className="text-xs text-blue-300 flex items-center gap-1">
+                          <Info className="w-3 h-3" />
+                          Mantieni la posizione corretta per {reps} {unit}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
               </>
             )}
 
@@ -709,6 +790,54 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Modal Preview Immagine */}
+        {imagePreview && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={closeImagePreview}
+          >
+            <div
+              className="relative max-w-4xl w-full bg-slate-800 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <ZoomIn className="w-5 h-5 text-emerald-400" />
+                  {imagePreview.name}
+                </h3>
+                <button
+                  onClick={closeImagePreview}
+                  className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Immagine grande */}
+              <div className="p-6">
+                <div className="relative rounded-xl overflow-hidden bg-slate-900">
+                  <img
+                    src={imagePreview.url}
+                    alt={imagePreview.name}
+                    className="w-full h-auto max-h-[70vh] object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect fill="%23374151" width="400" height="400"/><text x="200" y="220" text-anchor="middle" fill="%239ca3af" font-size="48">🏋️</text></svg>';
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Footer con hint */}
+              <div className="px-6 pb-4">
+                <p className="text-sm text-slate-400 text-center">
+                  Clicca fuori dall'immagine o premi ESC per chiudere
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
