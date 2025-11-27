@@ -127,6 +127,173 @@ export const EXERCISE_IMAGES: Record<string, {
     source: 'Pexels',
     type: 'photo'
   },
+
+  // =====================================================
+  // TEST SCREENING INIZIALE
+  // =====================================================
+
+  // === LOWER BODY PUSH (SQUAT) ===
+  'Air Squat': {
+    url: `${SUPABASE_STORAGE_URL}/air-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Squat': {
+    url: `${SUPABASE_STORAGE_URL}/air-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Bodyweight Squat': {
+    url: `${SUPABASE_STORAGE_URL}/air-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Squat Assistito': {
+    url: `${SUPABASE_STORAGE_URL}/air-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Jump Squat': {
+    url: `${SUPABASE_STORAGE_URL}/jump-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Bulgarian Split Squat': {
+    url: `${SUPABASE_STORAGE_URL}/bulgarian-split-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Pistol Squat': {
+    url: `${SUPABASE_STORAGE_URL}/pistol-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Pistol Squat Assistito': {
+    url: `${SUPABASE_STORAGE_URL}/pistol-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Shrimp Squat': {
+    url: `${SUPABASE_STORAGE_URL}/shrimp-squat.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+
+  // === HORIZONTAL PUSH (PUSH-UP) ===
+  'Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Push-up Standard': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Standard Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Wall Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Incline Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Push-up su Ginocchia': {
+    url: `${SUPABASE_STORAGE_URL}/knee-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Knee Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/knee-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Diamond Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Archer Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Pseudo Planche Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'One Arm Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Decline Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/decline-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+
+  // === VERTICAL PUSH (PIKE → HSPU) ===
+  'Pike Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/pike-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Elevated Pike Push-up': {
+    url: `${SUPABASE_STORAGE_URL}/decline-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+
+  // === VERTICAL PULL (PULL-UP) ===
+  'Pull-up': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Pull-up Standard': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Negative Pull-up': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Band-Assisted Pull-up': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Archer Pull-up': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'One Arm Pull-up Progression': {
+    url: `${SUPABASE_STORAGE_URL}/pull-up.svg`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Chin-up': {
+    url: `${SUPABASE_STORAGE_URL}/chin-up.png`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
+  'Chin-up Standard': {
+    url: `${SUPABASE_STORAGE_URL}/chin-up.png`,
+    source: 'WorkoutLabs',
+    type: 'illustration'
+  },
 };
 
 /**
@@ -170,6 +337,7 @@ export const EXERCISE_IMAGE_FALLBACKS: Record<string, string> = {
 
 /**
  * Lista esercizi che hanno immagini statiche (non video)
+ * Include sia esercizi isometrici che test screening
  */
 export const STATIC_EXERCISES = [
   // Core isometrico
@@ -197,6 +365,41 @@ export const STATIC_EXERCISES = [
   'Seated Forward Fold',
   'Baddha Konasana',
   'Butterfly Stretch',
+  // Test Screening - Lower Body Push
+  'Air Squat',
+  'Squat',
+  'Bodyweight Squat',
+  'Squat Assistito',
+  'Jump Squat',
+  'Bulgarian Split Squat',
+  'Pistol Squat',
+  'Pistol Squat Assistito',
+  'Shrimp Squat',
+  // Test Screening - Horizontal Push
+  'Push-up',
+  'Push-up Standard',
+  'Standard Push-up',
+  'Wall Push-up',
+  'Incline Push-up',
+  'Push-up su Ginocchia',
+  'Knee Push-up',
+  'Diamond Push-up',
+  'Archer Push-up',
+  'Pseudo Planche Push-up',
+  'One Arm Push-up',
+  'Decline Push-up',
+  // Test Screening - Vertical Push
+  'Pike Push-up',
+  'Elevated Pike Push-up',
+  // Test Screening - Vertical Pull
+  'Pull-up',
+  'Pull-up Standard',
+  'Negative Pull-up',
+  'Band-Assisted Pull-up',
+  'Archer Pull-up',
+  'One Arm Pull-up Progression',
+  'Chin-up',
+  'Chin-up Standard',
 ];
 
 /**
