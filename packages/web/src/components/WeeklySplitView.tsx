@@ -80,9 +80,10 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
                 </CardDescription>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-3 text-gray-400">
               <span className="text-sm">{mainExercises.length} esercizi</span>
               <Zap className="w-5 h-5" />
+              <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
             </div>
           </div>
         </CardHeader>

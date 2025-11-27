@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import WeeklySplitView from './WeeklySplitView';
 import WorkoutLogger from './WorkoutLogger';
 import LiveWorkoutSession from './LiveWorkoutSession';
+import PainProgressChart from './PainProgressChart';
 import DeloadSuggestionModal from './DeloadSuggestionModal';
 import RetestNotification from './RetestNotification';
 import DeloadWeekNotification from './DeloadWeekNotification';
@@ -1125,6 +1126,13 @@ export default function Dashboard() {
           />
         )}
 
+        {/* Pain Progress Chart */}
+        {hasProgram && (program?.user_id || dataStatus.screening?.userId) && (
+          <div className="mb-8">
+            <PainProgressChart userId={program?.user_id || dataStatus.screening?.userId || ''} />
+          </div>
+        )}
+
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Workouts Completed */}
@@ -1310,7 +1318,7 @@ export default function Dashboard() {
                   {program.weekly_split?.days?.length > 0 ? (
                     <div>
                       <h4 className="font-display font-semibold text-lg mb-4">Programma Settimanale:</h4>
-                      <WeeklySplitView weeklySplit={program.weekly_split} showDetails={true} />
+                      <WeeklySplitView weeklySplit={program.weekly_split} showDetails={false} />
                     </div>
                   ) : (
                     <div>
