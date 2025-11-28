@@ -1,0 +1,187 @@
+/**
+ * Exercise Video Mapping
+ * Mappa ogni esercizio al suo video su Supabase Storage
+ */
+
+// URL base di Supabase Storage
+const SUPABASE_STORAGE_URL = 'https://mhcdxqhhlrujbjxtgnmz.supabase.co/storage/v1/object/public/exercise-videos';
+
+/**
+ * Converte nome esercizio in nome file video
+ * "Push-up" -> "push-up.mp4"
+ * "Barbell Squat" -> "barbell-squat.mp4"
+ */
+function exerciseNameToFileName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[()]/g, '')           // Rimuovi parentesi
+    .replace(/\s+/g, '-')           // Spazi -> trattini
+    .replace(/[^a-z0-9-]/g, '')     // Solo alfanumerici e trattini
+    .replace(/-+/g, '-')            // Trattini multipli -> singolo
+    .replace(/^-|-$/g, '')          // Rimuovi trattini iniziali/finali
+    + '.mp4';
+}
+
+/**
+ * Mapping manuale per esercizi con nomi particolari
+ * Override quando il nome nel sistema non matcha il nome del file video
+ */
+const VIDEO_OVERRIDES: Record<string, string> = {
+  // Nomi sistema -> nomi file video
+  'Push-up': 'standard-push-up.mp4',
+  'Bench Press': 'flat-barbell-bench-press.mp4',
+  'Dips': 'chest-dips.mp4',
+  'Handstand Push-up': 'wall-handstand-push-up.mp4',
+  'Overhead Press': 'military-press.mp4',
+  'Cable Row': 'seated-cable-row.mp4',
+  'Pull-up': 'standard-pull-up.mp4',
+  'Nordic Curl': 'nordic-hamstring-curl.mp4',
+  'Romanian Deadlift (RDL)': 'romanian-deadlift.mp4',
+  // Deadlift variations
+  'Deadlift': 'conventional-deadlift.mp4',
+  'Stacco': 'conventional-deadlift.mp4',
+  'Stacco da Terra': 'conventional-deadlift.mp4',
+  'Trap Bar Deadlift': 'conventional-deadlift.mp4', // fallback se non c'è video specifico
+  // Altri comuni
+  'RDL': 'romanian-deadlift.mp4',
+  'Stacco Rumeno': 'romanian-deadlift.mp4',
+};
+
+/**
+ * Ottieni URL del video per un esercizio
+ */
+export function getExerciseVideoUrl(exerciseName: string): string {
+  // Check override manuale
+  if (VIDEO_OVERRIDES[exerciseName]) {
+    return `${SUPABASE_STORAGE_URL}/${VIDEO_OVERRIDES[exerciseName]}`;
+  }
+
+  // Genera URL automatico
+  const fileName = exerciseNameToFileName(exerciseName);
+  return `${SUPABASE_STORAGE_URL}/${fileName}`;
+}
+
+/**
+ * Ottieni nome file per un esercizio (per upload)
+ */
+export function getExerciseVideoFileName(exerciseName: string): string {
+  if (VIDEO_OVERRIDES[exerciseName]) {
+    return VIDEO_OVERRIDES[exerciseName];
+  }
+  return exerciseNameToFileName(exerciseName);
+}
+
+/**
+ * Lista completa di tutti gli esercizi con i rispettivi nomi file
+ * Utile per verificare cosa caricare
+ */
+export const EXERCISE_VIDEO_LIST = [
+  // === LOWER PUSH ===
+  'Bodyweight Squat',
+  'Goblet Squat',
+  'Front Squat',
+  'Back Squat',
+  'Leg Press',
+  'Bulgarian Split Squat',
+  'Pistol Squat',
+  'Lunges',
+  'Step-up',
+  'Leg Extension',
+
+  // === LOWER PULL ===
+  'Bodyweight Hip Hinge',
+  'Conventional Deadlift',
+  'Romanian Deadlift (RDL)',
+  'Sumo Deadlift',
+  'Good Morning',
+  'Hip Thrust',
+  'Glute Bridge',
+  'Nordic Curl',
+  'Leg Curl',
+
+  // === UPPER PUSH HORIZONTAL ===
+  'Push-up',
+  'Bench Press',
+  'Dumbbell Bench Press',
+  'Incline Push-up',
+  'Decline Push-up',
+  'Diamond Push-up',
+  'Dips',
+
+  // === UPPER PUSH VERTICAL ===
+  'Pike Push-up',
+  'Handstand Push-up',
+  'Overhead Press',
+  'Dumbbell Shoulder Press',
+  'Arnold Press',
+  'Lateral Raise',
+  'Front Raise',
+
+  // === UPPER PULL HORIZONTAL ===
+  'Inverted Row',
+  'Barbell Row',
+  'Dumbbell Row',
+  'Cable Row',
+  'T-Bar Row',
+  'Face Pull',
+
+  // === UPPER PULL VERTICAL ===
+  'Pull-up',
+  'Chin-up',
+  'Lat Pulldown',
+  'Assisted Pull-up',
+
+  // === CORE ===
+  'Plank',
+  'Dead Bug',
+  'Bird Dog',
+  'Hanging Leg Raise',
+  'Ab Wheel Rollout',
+  'Cable Crunch',
+  'Pallof Press',
+
+  // === TRICIPITI ===
+  'Tricep Dips',
+  'Tricep Pushdown',
+  'Skull Crushers',
+
+  // === BICIPITI ===
+  'Barbell Curl',
+  'Hammer Curl',
+
+  // === POLPACCI ===
+  'Standing Calf Raise',
+  'Seated Calf Raise',
+];
+
+/**
+ * Genera lista per upload con nomi file
+ */
+export function generateUploadList(): Array<{ exercise: string; fileName: string; url: string }> {
+  return EXERCISE_VIDEO_LIST.map(exercise => ({
+    exercise,
+    fileName: getExerciseVideoFileName(exercise),
+    url: getExerciseVideoUrl(exercise)
+  }));
+}
+
+/**
+ * Verifica se un video esiste (client-side check)
+ * Usa mode: 'no-cors' per evitare problemi CORS con Supabase Storage
+ */
+export async function checkVideoExists(exerciseName: string): Promise<boolean> {
+  try {
+    const url = getExerciseVideoUrl(exerciseName);
+    // Usa GET con range header per verificare se il video esiste
+    // Supabase Storage non supporta HEAD con CORS
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Range': 'bytes=0-0' } // Solo primo byte
+    });
+    return response.ok || response.status === 206; // 206 = Partial Content
+  } catch {
+    // In caso di errore CORS, assumiamo che il video esista
+    // e lasciamo che l'errore venga gestito dal video element
+    return true;
+  }
+}

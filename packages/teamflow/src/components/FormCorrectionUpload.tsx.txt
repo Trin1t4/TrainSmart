@@ -1,0 +1,490 @@
+import { useState, useRef, useEffect } from "react";
+import { Video, Upload, Check, X, Loader2, AlertCircle, Zap } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+interface FormCorrectionProps {
+  workoutId?: number;
+  exerciseName: string;
+  onComplete?: () => void;
+}
+
+export default function FormCorrectionUpload({
+  workoutId,
+  exerciseName,
+  onComplete,
+}: FormCorrectionProps) {
+  const [video, setVideo] = useState<File | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Fetch usage stats
+  const { data: usageStats } = useQuery({
+    queryKey: ["ai-usage-stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/ai/usage-stats", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+  });
+
+  // Fetch exercise tips
+  const { data: tips } = useQuery({
+    queryKey: ["exercise-tips", exerciseName],
+    queryFn: async () => {
+      const res = await fetch(`/api/ai/form-correction/tips/${encodeURIComponent(exerciseName)}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch tips");
+      return res.json();
+    },
+  });
+
+  const analyzeMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const res = await fetch("/api/ai/form-correction/analyze", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Analysis failed");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      onComplete?.();
+    },
+  });
+
+  useEffect(() => {
+    // Countdown logic
+    if (countdown !== null && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      startRecording();
+      setCountdown(null);
+    }
+  }, [countdown]);
+
+  useEffect(() => {
+    // Duration counter
+    if (recording) {
+      const interval = setInterval(() => {
+        setDuration((prev) => {
+          if (prev >= 10) {
+            stopRecording();
+            return 10;
+          }
+          return prev + 0.1;
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [recording]);
+
+  const startCountdown = () => {
+    setCountdown(3); // 3 second countdown
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm;codecs=vp8",
+      });
+
+      const chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const file = new File([blob], `form-check-${Date.now()}.webm`, {
+          type: "video/webm",
+        });
+        setVideo(file);
+        
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setRecording(true);
+      setDuration(0);
+
+      // Auto-stop after 10 seconds
+      setTimeout(() => {
+        if (mediaRecorder.state === "recording") {
+          stopRecording();
+        }
+      }, 10000);
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+
+    // Clean up stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!video) return;
+
+    const formData = new FormData();
+    formData.append("video", video);
+    formData.append("exerciseName", exerciseName);
+    if (workoutId) {
+      formData.append("workoutId", workoutId.toString());
+    }
+
+    analyzeMutation.mutate(formData);
+  };
+
+  const resetVideo = () => {
+    setVideo(null);
+    setDuration(0);
+    analyzeMutation.reset();
+  };
+
+  const canRecord = usageStats?.thisMonth.formCorrection.remaining > 0;
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
+          <Video className="h-8 w-8" />
+          Correzione Tecnica AI
+        </h2>
+        <p className="text-lg text-muted-foreground">
+          {exerciseName}
+        </p>
+      </div>
+
+      {/* Usage Stats */}
+      {usageStats && (
+        <Card className={!canRecord ? "border-amber-500" : "border-primary/20"}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Analisi video questo mese
+                </p>
+                <p className="text-2xl font-bold">
+                  {usageStats.thisMonth.formCorrection.used} /{" "}
+                  {usageStats.thisMonth.formCorrection.limit}
+                </p>
+              </div>
+              <Badge variant="outline" className="text-lg px-4 py-2">
+                {usageStats.tier.toUpperCase()}
+              </Badge>
+            </div>
+            {canRecord ? (
+              <Progress
+                value={
+                  (usageStats.thisMonth.formCorrection.used /
+                    usageStats.thisMonth.formCorrection.limit) *
+                  100
+                }
+                className="mt-3"
+              />
+            ) : (
+              <Alert variant="destructive" className="mt-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Limite mensile raggiunto. Upgrade per più analisi!
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tips */}
+      {tips && tips.tips && (
+        <Card className="bg-gradient-to-r from-blue-500/10 to-blue-500/5">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Punti Chiave per {exerciseName}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {tips.tips.map((tip: string, i: number) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Video Recording/Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🎥 Registra la tua esecuzione (max 10 secondi)</CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Posizionati in modo che si veda tutto il movimento. L'AI analizzerà la
+            tecnica e ti darà feedback specifici.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Video Player/Recorder */}
+          <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+            {countdown !== null ? (
+              // Countdown overlay
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                <div className="text-center">
+                  <p className="text-white text-6xl font-bold animate-pulse">
+                    {countdown}
+                  </p>
+                  <p className="text-white mt-4">Preparati...</p>
+                </div>
+              </div>
+            ) : recording ? (
+              // Recording view
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2 animate-pulse">
+                  <div className="w-3 h-3 bg-white rounded-full" />
+                  REC {duration.toFixed(1)}s / 10s
+                </div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Progress value={(duration / 10) * 100} className="h-2" />
+                </div>
+              </>
+            ) : video ? (
+              // Preview recorded video
+              <video
+                src={URL.createObjectURL(video)}
+                controls
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              // Initial state
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-white">
+                  <Video className="mx-auto h-20 w-20 mb-4 opacity-50" />
+                  <p className="text-lg">Pronto per registrare</p>
+                  <p className="text-sm opacity-70 mt-2">
+                    Il video partirà dopo un conto alla rovescia di 3 secondi
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Controls */}
+          <div className="flex gap-2">
+            {!video && !recording && countdown === null && (
+              <Button
+                onClick={startCountdown}
+                disabled={!canRecord}
+                className="flex-1"
+                size="lg"
+              >
+                <Video className="mr-2 h-5 w-5" />
+                Inizia Registrazione
+              </Button>
+            )}
+
+            {recording && (
+              <Button
+                onClick={stopRecording}
+                variant="destructive"
+                className="flex-1"
+                size="lg"
+              >
+                <X className="mr-2 h-5 w-5" />
+                Stop Registrazione
+              </Button>
+            )}
+
+            {video && !recording && (
+              <>
+                <Button onClick={resetVideo} variant="outline" className="flex-1">
+                  Rifai Video
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={analyzeMutation.isPending}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {analyzeMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Analisi in corso...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-5 w-5" />
+                      Analizza Tecnica
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results */}
+      {analyzeMutation.isSuccess && analyzeMutation.data && (
+        <Card className="bg-gradient-to-br from-green-500/5 via-green-500/10 to-green-500/5 border-green-500">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl">🤖 Analisi Completata</CardTitle>
+              <Badge variant="outline" className="text-xl px-4 py-2">
+                Score: {analyzeMutation.data.overallScore}/10
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Score Bar */}
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Valutazione Complessiva
+                </p>
+                <Progress
+                  value={(analyzeMutation.data.overallScore / 10) * 100}
+                  className="h-3"
+                />
+              </div>
+
+              {/* Strengths */}
+              {analyzeMutation.data.strengths?.length > 0 && (
+                <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <h4 className="font-semibold text-green-700 mb-3 flex items-center gap-2">
+                    ✅ Punti di Forza
+                  </h4>
+                  <ul className="space-y-2">
+                    {analyzeMutation.data.strengths.map((strength: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>{strength}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Improvements */}
+              {analyzeMutation.data.improvements?.length > 0 && (
+                <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  <h4 className="font-semibold text-amber-700 mb-3 flex items-center gap-2">
+                    💡 Aree di Miglioramento
+                  </h4>
+                  <div className="space-y-4">
+                    {analyzeMutation.data.improvements.map((imp: any, i: number) => (
+                      <div
+                        key={i}
+                        className="border-l-4 border-amber-500 pl-4 py-2 bg-background/50 rounded-r"
+                      >
+                        <div className="flex items-start gap-2 mb-2">
+                          <Badge
+                            variant={
+                              imp.severity === "high"
+                                ? "destructive"
+                                : imp.severity === "medium"
+                                ? "default"
+                                : "outline"
+                            }
+                          >
+                            {imp.severity === "high" && "Alta priorità"}
+                            {imp.severity === "medium" && "Media priorità"}
+                            {imp.severity === "low" && "Ottimizzazione"}
+                          </Badge>
+                          {imp.timestamp && (
+                            <Badge variant="outline" className="text-xs">
+                              ⏱️ {imp.timestamp}s
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="font-medium mb-1">{imp.issue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          💡 <strong>Come correggerlo:</strong> {imp.suggestion}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Model Info */}
+              <div className="text-center pt-4 border-t text-xs text-muted-foreground">
+                Analisi generata da {analyzeMutation.data.modelUsed || "AI"}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error */}
+      {analyzeMutation.isError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Errore nell'analisi</AlertTitle>
+          <AlertDescription>
+            {analyzeMutation.error instanceof Error
+              ? analyzeMutation.error.message
+              : "Analisi fallita. Riprova."}
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}

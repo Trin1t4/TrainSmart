@@ -1,0 +1,416 @@
+import { useState } from "react";
+import { Camera, Upload, Loader2, TrendingUp, Activity } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+interface PhotoState {
+  front?: File;
+  back?: File;
+  side?: File;
+}
+
+export default function BodyCompositionUpload() {
+  const [photos, setPhotos] = useState<PhotoState>({});
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [bmi, setBmi] = useState<number | null>(null);
+  const [showResults, setShowResults] = useState(false);
+
+  // Fetch usage stats
+  const { data: usageStats } = useQuery({
+    queryKey: ["ai-usage-stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/ai/usage-stats", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch usage stats");
+      return res.json();
+    },
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const res = await fetch("/api/ai/body-composition/analyze", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Analysis failed");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      setShowResults(true);
+    },
+  });
+
+  const handlePhotoCapture = (position: keyof PhotoState, file: File) => {
+    setPhotos({ ...photos, [position]: file });
+  };
+
+  const calculateBMI = () => {
+    const w = parseFloat(weight);
+    const h = parseFloat(height) / 100; // cm → m
+    if (w && h && w > 0 && h > 0) {
+      const bmiValue = w / (h * h);
+      setBmi(parseFloat(bmiValue.toFixed(1)));
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!weight || !height) {
+      alert("Peso e altezza sono obbligatori");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("weight", weight);
+    formData.append("height", height);
+
+    if (photos.front) formData.append("photoFront", photos.front);
+    if (photos.back) formData.append("photoBack", photos.back);
+    if (photos.side) formData.append("photoSide", photos.side);
+
+    uploadMutation.mutate(formData);
+  };
+
+  const getBMIColor = (bmi: number) => {
+    if (bmi < 18.5) return "text-amber-600";
+    if (bmi < 25) return "text-green-600";
+    if (bmi < 30) return "text-orange-600";
+    return "text-red-600";
+  };
+
+  const getBMILabel = (bmi: number) => {
+    if (bmi < 18.5) return "Sottopeso";
+    if (bmi < 25) return "Normopeso";
+    if (bmi < 30) return "Sovrappeso";
+    return "Obesità";
+  };
+
+  const photoCount = Object.values(photos).filter(Boolean).length;
+  const hasAllPhotos = photoCount === 3;
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-3xl font-bold mb-2">📸 Analisi Composizione Corporea</h2>
+        <p className="text-muted-foreground">
+          Calcola il tuo BMI e ottieni un'analisi AI precisa della tua composizione con 3 foto
+        </p>
+      </div>
+
+      {/* Usage Stats */}
+      {usageStats && (
+        <Card className="border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Analisi questo mese</p>
+                <p className="text-2xl font-bold">
+                  {usageStats.thisMonth.bodyComposition.used} /{" "}
+                  {usageStats.thisMonth.bodyComposition.limit}
+                </p>
+              </div>
+              <Badge variant="outline" className="text-lg px-4 py-2">
+                Piano: {usageStats.tier.toUpperCase()}
+              </Badge>
+            </div>
+            {usageStats.thisMonth.bodyComposition.remaining > 0 && (
+              <Progress
+                value={
+                  (usageStats.thisMonth.bodyComposition.used /
+                    usageStats.thisMonth.bodyComposition.limit) *
+                  100
+                }
+                className="mt-3"
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* BMI Calculator */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Calcolo BMI
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="weight">Peso (kg) *</Label>
+              <Input
+                id="weight"
+                type="number"
+                value={weight}
+                onChange={(e) => {
+                  setWeight(e.target.value);
+                  calculateBMI();
+                }}
+                onBlur={calculateBMI}
+                placeholder="70"
+                min="30"
+                max="300"
+              />
+            </div>
+            <div>
+              <Label htmlFor="height">Altezza (cm) *</Label>
+              <Input
+                id="height"
+                type="number"
+                value={height}
+                onChange={(e) => {
+                  setHeight(e.target.value);
+                  calculateBMI();
+                }}
+                onBlur={calculateBMI}
+                placeholder="175"
+                min="100"
+                max="250"
+              />
+            </div>
+          </div>
+
+          {bmi && (
+            <Alert className="bg-gradient-to-r from-primary/5 to-primary/10">
+              <TrendingUp className="h-4 w-4" />
+              <AlertTitle className="text-lg">
+                Il tuo BMI:{" "}
+                <span className={`font-bold ${getBMIColor(bmi)}`}>{bmi}</span>
+              </AlertTitle>
+              <AlertDescription>
+                <Badge variant="outline" className="mt-2">
+                  {getBMILabel(bmi)}
+                </Badge>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Photo Upload */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            Foto per Analisi AI (Opzionali)
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            📷 Carica 3 foto in abbigliamento aderente per un'analisi più precisa della
+            composizione corporea e postura
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-4">
+            {(["front", "back", "side"] as const).map((position) => (
+              <div key={position} className="text-center">
+                <Label className="text-base font-semibold capitalize mb-2 block">
+                  {position === "front" && "🔹 Fronte"}
+                  {position === "back" && "🔸 Retro"}
+                  {position === "side" && "🔹 Fianco"}
+                </Label>
+                <div className="relative mt-2 border-2 border-dashed rounded-lg p-4 hover:border-primary transition-colors cursor-pointer aspect-[3/4] flex items-center justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        handlePhotoCapture(position, e.target.files[0]);
+                      }
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    id={`photo-${position}`}
+                  />
+                  {photos[position] ? (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={URL.createObjectURL(photos[position]!)}
+                        alt={position}
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <Badge className="absolute top-2 right-2 bg-green-500">
+                        ✓ Caricata
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">Tocca per scattare</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {photoCount > 0 && (
+            <Alert className="mt-4">
+              <AlertDescription>
+                {hasAllPhotos ? (
+                  <span className="text-green-600 font-semibold">
+                    ✓ Tutte le foto caricate! Analisi completa disponibile
+                  </span>
+                ) : (
+                  <span>
+                    {photoCount}/3 foto caricate. Carica tutte e 3 per l'analisi più
+                    accurata
+                  </span>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            onClick={handleSubmit}
+            disabled={!weight || !height || uploadMutation.isPending}
+            className="w-full mt-6"
+            size="lg"
+          >
+            {uploadMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Analisi in corso...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-5 w-5" />
+                {photoCount > 0
+                  ? "Analizza con AI"
+                  : "Calcola BMI (senza analisi foto)"}
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Results */}
+      {uploadMutation.isSuccess && uploadMutation.data && (
+        <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary">
+          <CardHeader>
+            <CardTitle className="text-2xl">🤖 Analisi Completata</CardTitle>
+            <p className="text-muted-foreground">
+              Basata su {photoCount} foto + dati antropometrici
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Main Metrics */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-sm text-muted-foreground mb-1">BMI</p>
+                  <p className="text-3xl font-bold">{uploadMutation.data.bmi}</p>
+                  <Badge variant="outline" className="mt-2">
+                    {uploadMutation.data.bmiCategory?.category}
+                  </Badge>
+                </CardContent>
+              </Card>
+
+              {uploadMutation.data.bodyFatPercentage && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Massa Grassa Stimata
+                    </p>
+                    <p className="text-3xl font-bold">
+                      {uploadMutation.data.bodyFatPercentage}%
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {uploadMutation.data.muscleMass && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Massa Muscolare
+                    </p>
+                    <p className="text-3xl font-bold capitalize">
+                      {uploadMutation.data.muscleMass === "low" && "Bassa"}
+                      {uploadMutation.data.muscleMass === "medium" && "Media"}
+                      {uploadMutation.data.muscleMass === "high" && "Alta"}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Posture Analysis */}
+            {uploadMutation.data.posture && (
+              <Alert>
+                <AlertTitle className="text-lg">📐 Valutazione Posturale</AlertTitle>
+                <AlertDescription className="mt-2 space-y-2">
+                  <p>
+                    <strong>Spalle:</strong> {uploadMutation.data.posture.shoulderAlignment}
+                  </p>
+                  <p>
+                    <strong>Colonna:</strong> {uploadMutation.data.posture.spineAlignment}
+                  </p>
+                  {uploadMutation.data.posture.notes && (
+                    <p className="text-sm">{uploadMutation.data.posture.notes}</p>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Recommendations */}
+            {uploadMutation.data.recommendations &&
+              uploadMutation.data.recommendations.length > 0 && (
+                <div className="p-4 bg-background rounded-lg border">
+                  <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                    💡 Raccomandazioni Personalizzate
+                  </h4>
+                  <ul className="space-y-2">
+                    {uploadMutation.data.recommendations.map(
+                      (rec: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-primary font-bold">•</span>
+                          <span>{rec}</span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              )}
+
+            {/* Confidence */}
+            {uploadMutation.data.confidence && (
+              <div className="text-center pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Confidence dell'analisi:{" "}
+                  <span className="font-bold">
+                    {Math.round(uploadMutation.data.confidence * 100)}%
+                  </span>
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error */}
+      {uploadMutation.isError && (
+        <Alert variant="destructive">
+          <AlertTitle>Errore</AlertTitle>
+          <AlertDescription>
+            {uploadMutation.error instanceof Error
+              ? uploadMutation.error.message
+              : "Analisi fallita"}
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}

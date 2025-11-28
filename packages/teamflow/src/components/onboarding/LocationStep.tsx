@@ -1,0 +1,698 @@
+import React, { useState } from 'react';
+import { Home, Dumbbell, Warehouse, CheckCircle, Circle } from 'lucide-react';
+import { useTranslation } from '../../lib/i18n';
+
+interface OnboardingData {
+  trainingLocation?: 'gym' | 'home' | 'home_gym';
+  trainingType?: 'bodyweight' | 'equipment' | 'machines';
+  equipment?: {
+    pullupBar?: boolean;
+    loopBands?: boolean;
+    dumbbells?: boolean;
+    dumbbellMaxKg?: number;
+    barbell?: boolean;
+    kettlebell?: boolean;
+    kettlebellKg?: number;
+    bench?: boolean;
+    rings?: boolean;
+    parallelBars?: boolean;
+  };
+}
+
+interface LocationStepProps {
+  data: Partial<OnboardingData>;
+  onNext: (stepData: Partial<OnboardingData>) => void;
+}
+
+export default function LocationStep({ data, onNext }: LocationStepProps) {
+  const { t } = useTranslation();
+  const [selectedLocation, setSelectedLocation] = useState<'gym' | 'home' | 'home_gym'>(
+    data.trainingLocation || 'home'
+  );
+  const [trainingType, setTrainingType] = useState<'bodyweight' | 'equipment' | 'machines'>(
+    data.trainingType || 'bodyweight'
+  );
+  const [equipment, setEquipment] = useState({
+    pullupBar: data.equipment?.pullupBar || false,
+    loopBands: data.equipment?.loopBands || false,
+    dumbbells: data.equipment?.dumbbells || false,
+    dumbbellMaxKg: data.equipment?.dumbbellMaxKg || 0,
+    barbell: data.equipment?.barbell || false,
+    kettlebell: data.equipment?.kettlebell || false,
+    kettlebellKg: data.equipment?.kettlebellKg || 0,
+    bench: data.equipment?.bench || false,
+    rings: data.equipment?.rings || false,
+    parallelBars: data.equipment?.parallelBars || false,
+    rack: (data.equipment as any)?.rack || false,
+    cables: (data.equipment as any)?.cables || false
+  });
+
+  const toggleEquipment = (key: string) => {
+    setEquipment(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const updateEquipmentWeight = (key: string, value: number) => {
+    setEquipment(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleNext = () => {
+    console.log('[LOCATION_STEP] 🏠 Saving location:', selectedLocation);
+    console.log('[LOCATION_STEP] 🎯 Training type:', trainingType);
+    console.log('[LOCATION_STEP] 🔧 Equipment:', equipment);
+
+    onNext({
+      trainingLocation: selectedLocation,
+      trainingType,
+      equipment
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('onboarding.location.title')}</h2>
+        <p className="text-slate-400">{t('onboarding.location.subtitle')}</p>
+      </div>
+
+      {/* Selezione Location */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <button
+          onClick={() => setSelectedLocation('home')}
+          className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
+            selectedLocation === 'home'
+              ? 'border-emerald-500 bg-emerald-500/10'
+              : 'border-slate-600 hover:border-slate-500 bg-slate-800/50'
+          }`}
+          data-testid="button-location-home"
+        >
+          <Home className={`w-12 h-12 ${selectedLocation === 'home' ? 'text-emerald-400' : 'text-slate-400'}`} />
+          <div className="text-center">
+            <p className="font-bold text-lg text-white">{t('onboarding.location.home')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.homeDesc')}</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => {
+            setSelectedLocation('home_gym');
+            setTrainingType('equipment');
+          }}
+          className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
+            selectedLocation === 'home_gym'
+              ? 'border-amber-500 bg-amber-500/10'
+              : 'border-slate-600 hover:border-slate-500 bg-slate-800/50'
+          }`}
+          data-testid="button-location-home-gym"
+        >
+          <Warehouse className={`w-12 h-12 ${selectedLocation === 'home_gym' ? 'text-amber-400' : 'text-slate-400'}`} />
+          <div className="text-center">
+            <p className="font-bold text-lg text-white">{t('onboarding.location.homeGym') || 'Home Gym'}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.homeGymDesc') || 'Garage o cantina attrezzata'}</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setSelectedLocation('gym')}
+          className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
+            selectedLocation === 'gym'
+              ? 'border-emerald-500 bg-emerald-500/10'
+              : 'border-slate-600 hover:border-slate-500 bg-slate-800/50'
+          }`}
+          data-testid="button-location-gym"
+        >
+          <Dumbbell className={`w-12 h-12 ${selectedLocation === 'gym' ? 'text-emerald-400' : 'text-slate-400'}`} />
+          <div className="text-center">
+            <p className="font-bold text-lg text-white">{t('onboarding.location.gym')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.gymDesc')}</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Sub-step: Tipo di allenamento (CASA) o Area (PALESTRA) */}
+      {selectedLocation === 'home' && (
+        <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+          <div>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.homeTrainingType')}</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setTrainingType('bodyweight')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                trainingType === 'bodyweight'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm">{t('onboarding.location.bodyweight')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.bodyweightDesc')}</p>
+            </button>
+
+            <button
+              onClick={() => setTrainingType('equipment')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                trainingType === 'equipment'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm">{t('onboarding.location.smallEquipment')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.smallEquipmentDesc')}</p>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedLocation === 'gym' && (
+        <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+          <div>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.gymArea')}</h3>
+            <p className="text-xs text-slate-400 mb-3">{t('onboarding.location.gymAreaDesc')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            {/* Area Calisthenics */}
+            <button
+              onClick={() => {
+                setTrainingType('bodyweight');
+                // Pre-configura equipaggiamento per area calisthenics
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: false,
+                  dumbbellMaxKg: 0,
+                  barbell: false,
+                  kettlebell: false,
+                  kettlebellKg: 0,
+                  bench: false,
+                  rings: true,
+                  parallelBars: true
+                });
+              }}
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
+                trainingType === 'bodyweight'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.calisthenics')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.calisthenicsDesc')}</p>
+              <p className="text-xs text-emerald-400 font-medium">{t('onboarding.location.intermediateAdvanced')}</p>
+            </button>
+
+            {/* Sala Pesi - Pesi Liberi */}
+            <button
+              onClick={() => {
+                setTrainingType('equipment');
+                // Pre-configura per pesi liberi (bilanciere, manubri)
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: true,
+                  dumbbellMaxKg: 50,
+                  barbell: true,
+                  kettlebell: true,
+                  kettlebellKg: 32,
+                  bench: true,
+                  rings: false,
+                  parallelBars: false
+                });
+              }}
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
+                trainingType === 'equipment'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.freeWeights')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.freeWeightsDesc')}</p>
+              <p className="text-xs text-emerald-400 font-medium">{t('onboarding.location.allLevels')}</p>
+            </button>
+
+            {/* Sala Pesi - Macchine (per principianti) */}
+            <button
+              onClick={() => {
+                setTrainingType('machines');
+                // Pre-configura per macchine guidate
+                setEquipment({
+                  pullupBar: true,
+                  loopBands: true,
+                  dumbbells: true,
+                  dumbbellMaxKg: 30, // Manubri leggeri come complemento
+                  barbell: false, // NO bilanciere per chi sceglie macchine
+                  kettlebell: false,
+                  kettlebellKg: 0,
+                  bench: true,
+                  rings: false,
+                  parallelBars: false
+                });
+              }}
+              className={`w-full p-4 rounded-lg border-2 transition-all flex flex-col min-h-[140px] ${
+                trainingType === 'machines'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <p className="font-semibold text-white text-sm mb-2 leading-tight">{t('onboarding.location.machines')}</p>
+              <p className="text-xs text-slate-400 mb-2 flex-grow">{t('onboarding.location.machinesDesc')}</p>
+              <p className="text-xs text-yellow-400 font-medium">{t('onboarding.location.recommendedBeginners')}</p>
+            </button>
+          </div>
+
+          {/* Conferma equipaggiamento auto-configurato */}
+          {trainingType && (
+            <div className="bg-emerald-900/20 border border-emerald-500/50 rounded-lg p-4 mt-4">
+              <p className="text-sm text-emerald-300 font-medium mb-2">
+                {t('onboarding.location.equipmentConfigured')}
+              </p>
+              <p className="text-xs text-emerald-200">
+                {trainingType === 'bodyweight'
+                  ? t('onboarding.location.calisthenicsEquipment')
+                  : trainingType === 'equipment'
+                  ? t('onboarding.location.freeWeightsEquipment')
+                  : t('onboarding.location.machinesEquipment')}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* HOME GYM - Selezione attrezzatura disponibile */}
+      {selectedLocation === 'home_gym' && (
+        <div className="space-y-4 p-6 bg-amber-900/20 rounded-xl border border-amber-500/50">
+          <div>
+            <h3 className="font-semibold text-white mb-2">
+              {t('onboarding.location.homeGymEquipment') || 'Attrezzatura disponibile'}
+            </h3>
+            <p className="text-xs text-amber-200 mb-4">
+              {t('onboarding.location.homeGymEquipmentDesc') || 'Seleziona cosa hai nella tua home gym'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Rack/Squat Stand */}
+            <button
+              onClick={() => toggleEquipment('rack')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                (equipment as any).rack
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {(equipment as any).rack ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.rack') || 'Rack / Squat Stand'}</span>
+              </div>
+            </button>
+
+            {/* Bilanciere */}
+            <button
+              onClick={() => toggleEquipment('barbell')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.barbell
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.barbell ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.barbell')}</span>
+              </div>
+            </button>
+
+            {/* Manubri */}
+            <div className={`p-4 rounded-lg border-2 ${
+              equipment.dumbbells
+                ? 'border-amber-500 bg-amber-500/10'
+                : 'border-slate-600'
+            }`}>
+              <button
+                onClick={() => toggleEquipment('dumbbells')}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {equipment.dumbbells ? (
+                    <CheckCircle className="w-5 h-5 text-amber-400" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-slate-500" />
+                  )}
+                  <span className="text-white font-medium">{t('equipment.dumbbells')}</span>
+                </div>
+              </button>
+              {equipment.dumbbells && (
+                <div className="mt-2 ml-8">
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.maxWeight')}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={equipment.dumbbellMaxKg}
+                    onChange={(e) => updateEquipmentWeight('dumbbellMaxKg', parseInt(e.target.value) || 0)}
+                    className="w-24 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Panca */}
+            <button
+              onClick={() => toggleEquipment('bench')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.bench
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.bench ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.bench')}</span>
+              </div>
+            </button>
+
+            {/* Barra Trazioni */}
+            <button
+              onClick={() => toggleEquipment('pullupBar')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.pullupBar
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.pullupBar ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.pullupBar')}</span>
+              </div>
+            </button>
+
+            {/* Kettlebell */}
+            <div className={`p-4 rounded-lg border-2 ${
+              equipment.kettlebell
+                ? 'border-amber-500 bg-amber-500/10'
+                : 'border-slate-600'
+            }`}>
+              <button
+                onClick={() => toggleEquipment('kettlebell')}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {equipment.kettlebell ? (
+                    <CheckCircle className="w-5 h-5 text-amber-400" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-slate-500" />
+                  )}
+                  <span className="text-white font-medium">{t('equipment.kettlebell')}</span>
+                </div>
+              </button>
+              {equipment.kettlebell && (
+                <div className="mt-2 ml-8">
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.weight')}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={equipment.kettlebellKg}
+                    onChange={(e) => updateEquipmentWeight('kettlebellKg', parseInt(e.target.value) || 0)}
+                    className="w-24 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Cavi / Cable Machine */}
+            <button
+              onClick={() => toggleEquipment('cables')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                (equipment as any).cables
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {(equipment as any).cables ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.cables') || 'Cavi / Pulley'}</span>
+              </div>
+            </button>
+
+            {/* Elastici */}
+            <button
+              onClick={() => toggleEquipment('loopBands')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.loopBands
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.loopBands ? (
+                  <CheckCircle className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.loopBands')}</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Summary */}
+          <div className="bg-amber-900/30 border border-amber-500/30 rounded-lg p-4 mt-4">
+            <p className="text-sm text-amber-300 font-medium mb-1">
+              {t('onboarding.location.homeGymSummary') || 'Il programma sarà ottimizzato per la tua attrezzatura'}
+            </p>
+            <p className="text-xs text-amber-200/70">
+              {t('onboarding.location.homeGymNote') || 'Esercizi alternativi verranno suggeriti se manca qualcosa'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Selezione Attrezzatura (solo per CASA + equipment) */}
+      {selectedLocation === 'home' && trainingType === 'equipment' && (
+        <div className="space-y-4 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+          <div>
+            <h3 className="font-semibold text-white mb-3">{t('onboarding.location.homeEquipment')}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t('onboarding.location.selectAvailable')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Barra per Trazioni */}
+            <button
+              onClick={() => toggleEquipment('pullupBar')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.pullupBar
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.pullupBar ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.pullupBar')}</span>
+              </div>
+            </button>
+
+            {/* Loop Bands */}
+            <button
+              onClick={() => toggleEquipment('loopBands')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.loopBands
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.loopBands ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.loopBands')}</span>
+              </div>
+            </button>
+
+            {/* Manubri */}
+            <div className={`p-4 rounded-lg border-2 ${
+              equipment.dumbbells
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-slate-600'
+            }`}>
+              <button
+                onClick={() => toggleEquipment('dumbbells')}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {equipment.dumbbells ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-slate-500" />
+                  )}
+                  <span className="text-white font-medium">{t('equipment.dumbbells')}</span>
+                </div>
+              </button>
+              {equipment.dumbbells && (
+                <div className="mt-2 ml-8">
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.maxWeight')}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={equipment.dumbbellMaxKg}
+                    onChange={(e) => updateEquipmentWeight('dumbbellMaxKg', parseInt(e.target.value) || 0)}
+                    className="w-24 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Bilanciere */}
+            <button
+              onClick={() => toggleEquipment('barbell')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.barbell
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.barbell ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.barbell')}</span>
+              </div>
+            </button>
+
+            {/* Kettlebell */}
+            <div className={`p-4 rounded-lg border-2 ${
+              equipment.kettlebell
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-slate-600'
+            }`}>
+              <button
+                onClick={() => toggleEquipment('kettlebell')}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {equipment.kettlebell ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-slate-500" />
+                  )}
+                  <span className="text-white font-medium">{t('equipment.kettlebell')}</span>
+                </div>
+              </button>
+              {equipment.kettlebell && (
+                <div className="mt-2 ml-8">
+                  <label className="text-xs text-slate-400 block mb-1">{t('equipment.weight')}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={equipment.kettlebellKg}
+                    onChange={(e) => updateEquipmentWeight('kettlebellKg', parseInt(e.target.value) || 0)}
+                    className="w-24 px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Panca */}
+            <button
+              onClick={() => toggleEquipment('bench')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.bench
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.bench ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.bench')}</span>
+              </div>
+            </button>
+
+            {/* Anelli */}
+            <button
+              onClick={() => toggleEquipment('rings')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.rings
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.rings ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.rings')}</span>
+              </div>
+            </button>
+
+            {/* Parallele */}
+            <button
+              onClick={() => toggleEquipment('parallelBars')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                equipment.parallelBars
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {equipment.parallelBars ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-slate-500" />
+                )}
+                <span className="text-white font-medium">{t('equipment.parallelBars')}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end pt-4">
+        <button
+          onClick={handleNext}
+          className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-8 py-3 rounded-lg font-bold text-white hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20"
+        >
+          {t('common.continue')}
+        </button>
+      </div>
+    </div>
+  );
+}
