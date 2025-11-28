@@ -943,35 +943,36 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header con bottoni Reset e History + Sync Status */}
-        <div className="flex justify-between items-center mb-8">
+        {/* Header - Responsive: stacked on mobile, row on desktop */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6 md:mb-8">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-5xl font-display font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
+            className="text-3xl md:text-5xl font-display font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
           >
             {t('dashboard.title')}
           </motion.h1>
 
-          <div className="flex items-center gap-3">
+          {/* Action buttons - horizontal scroll on mobile */}
+          <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             {/* Language Switcher */}
             <LanguageSwitcher />
 
-            {/* Sync Status Indicator */}
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
+            {/* Sync Status Indicator - compact on mobile */}
+            <div className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm whitespace-nowrap ${
               syncStatus === 'synced' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
               syncStatus === 'syncing' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' :
               'bg-amber-500/10 text-amber-400 border border-amber-500/30'
             }`}>
-              {syncStatus === 'synced' ? <Cloud className="w-4 h-4" /> :
-               syncStatus === 'syncing' ? <Cloud className="w-4 h-4 animate-pulse" /> :
-               <CloudOff className="w-4 h-4" />}
-              <span className="font-medium">
-                {syncStatus === 'synced' ? 'Sincronizzato' :
-                 syncStatus === 'syncing' ? 'Sincronizzazione...' :
+              {syncStatus === 'synced' ? <Cloud className="w-3.5 h-3.5 md:w-4 md:h-4" /> :
+               syncStatus === 'syncing' ? <Cloud className="w-3.5 h-3.5 md:w-4 md:h-4 animate-pulse" /> :
+               <CloudOff className="w-3.5 h-3.5 md:w-4 md:h-4" />}
+              <span className="font-medium hidden sm:inline">
+                {syncStatus === 'synced' ? 'Sync' :
+                 syncStatus === 'syncing' ? '...' :
                  'Offline'}
               </span>
             </div>
@@ -979,46 +980,42 @@ export default function Dashboard() {
             {/* Program History Button */}
             {programHistory.length > 1 && (
               <motion.button
-                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowProgramHistory(!showProgramHistory)}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-xl flex items-center gap-1.5 md:gap-2 shadow-lg shadow-blue-500/20 transition-all duration-300 whitespace-nowrap text-sm md:text-base"
               >
                 <History className="w-4 h-4" />
-                Storico ({programHistory.length})
+                <span className="hidden sm:inline">Storico</span> ({programHistory.length})
               </motion.button>
             )}
 
             {/* Admin Panel Button (solo per admin) */}
             {isAdmin && (
               <motion.button
-                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/admin')}
-                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all duration-300"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-xl flex items-center gap-1.5 md:gap-2 shadow-lg shadow-purple-500/20 transition-all duration-300 whitespace-nowrap text-sm md:text-base"
               >
                 <Shield className="w-4 h-4" />
-                Admin Panel
+                <span className="hidden sm:inline">Admin</span>
               </motion.button>
             )}
 
             {/* Logout Button */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
-              className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-slate-500/20 transition-all duration-300"
+              className="bg-gradient-to-r from-slate-600 to-slate-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-xl flex items-center gap-1.5 md:gap-2 shadow-lg shadow-slate-500/20 transition-all duration-300 whitespace-nowrap text-sm md:text-base"
             >
               <LogOut className="w-4 h-4" />
-              {t('nav.logout')}
+              <span className="hidden sm:inline">{t('nav.logout')}</span>
             </motion.button>
 
             {/* Reset Button */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowResetModal(true)}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-red-500/20 transition-all duration-300"
+              className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 md:px-6 py-2 md:py-3 rounded-xl flex items-center gap-1.5 md:gap-2 shadow-lg shadow-red-500/20 transition-all duration-300 whitespace-nowrap text-sm md:text-base"
             >
               <RotateCcw className="w-4 h-4" />
               Reset
@@ -1026,22 +1023,23 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Status Cards - horizontal scroll on mobile, grid on desktop */}
+        <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8 overflow-x-auto pb-2 md:pb-0 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
+            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
           >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2">
-                  {dataStatus.onboarding ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
+            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
+                  {dataStatus.onboarding ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
                   Onboarding
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-400 font-medium">
+              <CardContent className="p-3 md:p-6 pt-0">
+                <p className="text-xs md:text-sm text-slate-400 font-medium">
                   {dataStatus.onboarding ? (
                     <>Goal: <span className="text-emerald-400">{dataStatus.onboarding.goal}</span></>
                   ) : 'Non completato'}
@@ -1054,16 +1052,17 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
+            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
           >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2">
-                  {dataStatus.quiz ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
-                  Quiz Teorico
+            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
+                  {dataStatus.quiz ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
+                  Quiz
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-400 font-medium">
+              <CardContent className="p-3 md:p-6 pt-0">
+                <p className="text-xs md:text-sm text-slate-400 font-medium">
                   {dataStatus.quiz ? (
                     <>Score: <span className="text-emerald-400 font-mono">{dataStatus.quiz.score}%</span></>
                   ) : 'Non completato'}
@@ -1076,16 +1075,17 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
+            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
           >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2">
-                  {dataStatus.screening ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
+            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
+                  {dataStatus.screening ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
                   Screening
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-400 font-medium">
+              <CardContent className="p-3 md:p-6 pt-0">
+                <p className="text-xs md:text-sm text-slate-400 font-medium">
                   {dataStatus.screening ? (
                     <>Level: <span className="text-emerald-400 font-bold">{dataStatus.screening.level?.toUpperCase()}</span></>
                   ) : 'Non completato'}
@@ -1128,13 +1128,13 @@ export default function Dashboard() {
 
         {/* Pain Progress Chart */}
         {hasProgram && (program?.user_id || dataStatus.screening?.userId) && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <PainProgressChart userId={program?.user_id || dataStatus.screening?.userId || ''} />
           </div>
         )}
 
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Analytics Cards - 3 column grid, stacks on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
           {/* Workouts Completed */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1142,18 +1142,18 @@ export default function Dashboard() {
             transition={{ duration: 0.4, delay: 0.4 }}
           >
             <Card className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 backdrop-blur-xl border-emerald-700/50 shadow-2xl shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2 text-emerald-300">
-                  <Activity className="w-5 h-5" />
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-emerald-300">
+                  <Activity className="w-4 h-4 md:w-5 md:h-5" />
                   Giorni Attivi
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6 pt-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-emerald-400">{analytics.daysActive}</span>
-                  <span className="text-sm text-emerald-300/60">{t('onboarding.activity.days')}</span>
+                  <span className="text-3xl md:text-4xl font-bold text-emerald-400">{analytics.daysActive}</span>
+                  <span className="text-xs md:text-sm text-emerald-300/60">{t('onboarding.activity.days')}</span>
                 </div>
-                <p className="text-xs text-emerald-300/50 mt-2">
+                <p className="text-[10px] md:text-xs text-emerald-300/50 mt-1 md:mt-2 line-clamp-1">
                   {analytics.lastWorkoutDays !== null
                     ? `${t('dashboard.analytics.last_workout')}: ${
                         analytics.lastWorkoutDays === 0
@@ -1175,20 +1175,20 @@ export default function Dashboard() {
             transition={{ duration: 0.4, delay: 0.5 }}
           >
             <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-xl border-blue-700/50 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2 text-blue-300">
-                  <Target className="w-5 h-5" />
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-blue-300">
+                  <Target className="w-4 h-4 md:w-5 md:h-5" />
                   {t('dashboard.analytics.total_volume')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6 pt-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-blue-400">
+                  <span className="text-3xl md:text-4xl font-bold text-blue-400">
                     {analytics.totalVolume > 0 ? analytics.totalVolume.toLocaleString() : '0'}
                   </span>
-                  <span className="text-sm text-blue-300/60">reps</span>
+                  <span className="text-xs md:text-sm text-blue-300/60">reps</span>
                 </div>
-                <p className="text-xs text-blue-300/50 mt-2">
+                <p className="text-[10px] md:text-xs text-blue-300/50 mt-1 md:mt-2">
                   {t('dashboard.analytics.weekly').replace('{{volume}}', analytics.weeklyVolume > 0 ? analytics.weeklyVolume.toLocaleString() : '0')}
                 </p>
               </CardContent>
@@ -1202,20 +1202,20 @@ export default function Dashboard() {
             transition={{ duration: 0.4, delay: 0.6 }}
           >
             <Card className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 backdrop-blur-xl border-purple-700/50 shadow-2xl shadow-purple-500/10 hover:shadow-purple-500/20 transition-all duration-300">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-display flex items-center gap-2 text-purple-300">
-                  <Zap className="w-5 h-5" />
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-purple-300">
+                  <Zap className="w-4 h-4 md:w-5 md:h-5" />
                   Progressione
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6 pt-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-purple-400">
+                  <span className="text-3xl md:text-4xl font-bold text-purple-400">
                     {analytics.progression > 0 ? `+${analytics.progression}%` : '0%'}
                   </span>
-                  <span className="text-sm text-purple-300/60">vs baseline</span>
+                  <span className="text-xs md:text-sm text-purple-300/60">vs baseline</span>
                 </div>
-                <div className="mt-3 h-2 bg-purple-900/30 rounded-full overflow-hidden">
+                <div className="mt-2 md:mt-3 h-1.5 md:h-2 bg-purple-900/30 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, analytics.progression)}%` }}
@@ -1233,37 +1233,36 @@ export default function Dashboard() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5">
-            <CardHeader>
-              <CardTitle className="text-3xl font-display font-bold">
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-xl md:text-3xl font-display font-bold">
                 {hasProgram ? '✅ Il Tuo Programma' : '📋 Genera il Tuo Programma'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 md:p-6 pt-0">
               {!hasProgram ? (
                 <>
                   {dataStatus.screening && (
-                    <div className="bg-slate-700/50 backdrop-blur-sm rounded-xl p-6 border border-slate-600/50">
-                      <h3 className="font-display font-semibold text-lg mb-3">Il tuo profilo:</h3>
-                      <ul className="text-sm text-slate-300 space-y-2">
+                    <div className="bg-slate-700/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-600/50">
+                      <h3 className="font-display font-semibold text-base md:text-lg mb-2 md:mb-3">Il tuo profilo:</h3>
+                      <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 md:space-y-2">
                         <li className="flex items-center gap-2">
                           <span>• Livello:</span>
-                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          <span className="px-2 md:px-3 py-0.5 md:py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                             {dataStatus.screening.level?.toUpperCase()}
                           </span>
                         </li>
                         <li>• Goal: <span className="text-emerald-400 font-semibold">{dataStatus.onboarding?.goal}</span></li>
                         <li>• Location: <span className="text-slate-200 font-semibold">{dataStatus.onboarding?.trainingLocation}</span></li>
-                        <li>• Score finale: <span className="text-emerald-400 font-mono font-bold">{dataStatus.screening.finalScore}%</span></li>
+                        <li>• Score: <span className="text-emerald-400 font-mono font-bold">{dataStatus.screening.finalScore}%</span></li>
                       </ul>
                     </div>
                   )}
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleGenerateProgram}
                     disabled={generatingProgram || !dataStatus.screening}
-                    className="w-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 disabled:shadow-none"
+                    className="w-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 disabled:shadow-none text-sm md:text-base"
                   >
                     {generatingProgram ? (
                       <span className="flex items-center gap-2">
@@ -1278,32 +1277,33 @@ export default function Dashboard() {
                     ) : (
                       <>
                         <Zap className="w-5 h-5" />
-                        Genera Programma Personalizzato
+                        <span className="hidden sm:inline">Genera Programma Personalizzato</span>
+                        <span className="sm:hidden">Genera Programma</span>
                       </>
                     )}
                   </motion.button>
 
                   {!dataStatus.screening && (
-                    <p className="text-center text-slate-400 text-sm">
+                    <p className="text-center text-slate-400 text-xs md:text-sm">
                       Completa prima lo screening per generare il programma
                     </p>
                   )}
                 </>
             ) : (
               <>
-                <div className="bg-slate-700/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/50">
-                  <div className="mb-4">
-                    <h3 className="text-2xl font-display font-bold mb-3 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                <div className="bg-slate-700/50 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-600/50">
+                  <div className="mb-3 md:mb-4">
+                    <h3 className="text-lg md:text-2xl font-display font-bold mb-2 md:mb-3 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                       {program.name}
                     </h3>
-                    <div className="flex flex-wrap gap-3 text-sm">
-                      <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
-                        📊 Level: {program.level?.toUpperCase()}
+                    <div className="flex flex-wrap gap-2 md:gap-3 text-xs md:text-sm">
+                      <span className="px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
+                        📊 {program.level?.toUpperCase()}
                       </span>
-                      <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
-                        🎯 Goal: {program.goal}
+                      <span className="px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
+                        🎯 {program.goal}
                       </span>
-                      <span className="px-3 py-1.5 rounded-full bg-slate-600/50 text-slate-300 border border-slate-500/30 font-medium">
+                      <span className="px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-slate-600/50 text-slate-300 border border-slate-500/30 font-medium">
                         📍 {program.location}
                       </span>
                     </div>
@@ -1384,9 +1384,9 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                <div className="flex gap-4">
+                {/* Action buttons - stack on mobile, row on desktop */}
+                <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       // Get first day or full program exercises
@@ -1396,42 +1396,42 @@ export default function Dashboard() {
                       }
                       setShowLiveWorkout(true);
                     }}
-                    className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300"
+                    className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 text-sm md:text-base"
                   >
                     <Activity className="w-5 h-5" />
                     {t('dashboard.start_workout')} LIVE
                   </motion.button>
 
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setSwitchStep('choose');
-                      setSelectedLocation(null);
-                      setShowLocationSwitch(true);
-                    }}
-                    className="px-6 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl border border-purple-500/50 transition-all duration-300 flex items-center gap-2"
-                  >
-                    🏋️
-                    Cambia Location
-                  </motion.button>
+                  <div className="flex gap-2 md:gap-4">
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setSwitchStep('choose');
+                        setSelectedLocation(null);
+                        setShowLocationSwitch(true);
+                      }}
+                      className="flex-1 sm:flex-none px-3 md:px-6 bg-purple-600 hover:bg-purple-700 text-white py-3 md:py-4 rounded-xl border border-purple-500/50 transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base"
+                    >
+                      🏋️
+                      <span className="hidden sm:inline">Location</span>
+                    </motion.button>
 
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={async () => {
-                      if (confirm('Vuoi rigenerare il programma?')) {
-                        localStorage.removeItem('currentProgram');
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={async () => {
+                        if (confirm('Vuoi rigenerare il programma?')) {
+                          localStorage.removeItem('currentProgram');
 
-                        // ✅ React Query: Clear program cache (will show "no program" state)
-                        queryClient.setQueryData(programKeys.current(program?.user_id || ''), null);
-                        await queryClient.invalidateQueries({ queryKey: programKeys.all });
-                      }
-                    }}
-                    className="px-6 bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-xl border border-slate-600/50 transition-all duration-300"
-                  >
-                    Rigenera
-                  </motion.button>
+                          // ✅ React Query: Clear program cache (will show "no program" state)
+                          queryClient.setQueryData(programKeys.current(program?.user_id || ''), null);
+                          await queryClient.invalidateQueries({ queryKey: programKeys.all });
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-3 md:px-6 bg-slate-700 hover:bg-slate-600 text-white py-3 md:py-4 rounded-xl border border-slate-600/50 transition-all duration-300 text-sm md:text-base"
+                    >
+                      Rigenera
+                    </motion.button>
+                  </div>
                 </div>
               </>
             )}

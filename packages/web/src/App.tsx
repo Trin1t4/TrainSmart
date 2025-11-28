@@ -21,6 +21,7 @@ const queryClient = new QueryClient({
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ResponsiveLayout from "./components/ResponsiveLayout";
 
 // Non-critical routes (lazy loaded for code splitting)
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -35,6 +36,8 @@ const RecoveryScreening = lazy(() => import('./components/RecoveryScreening'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const VideoFeedback = lazy(() => import('./pages/VideoFeedback'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const Stats = lazy(() => import('./pages/Stats'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -52,8 +55,9 @@ function App() {
       <LanguageProvider>
         <BrowserRouter>
           <Toaster position="top-right" richColors />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+          <ResponsiveLayout>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -84,9 +88,14 @@ function App() {
               {/* PAYMENT */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
+              {/* MOBILE NAV ROUTES */}
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/profile" element={<Profile />} />
+
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
+              </Routes>
+            </Suspense>
+          </ResponsiveLayout>
         </BrowserRouter>
       </LanguageProvider>
       {/* React Query DevTools - solo in development */}
