@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { UserPlus, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, Users, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
-import type { UserMode } from '@/types';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -16,17 +15,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  // Modalità selezionata (individual o team)
-  const [selectedMode, setSelectedMode] = useState<UserMode>('individual');
-
-  useEffect(() => {
-    // Recupera la modalità dalla pagina di selezione
-    const mode = sessionStorage.getItem('selectedMode') as UserMode;
-    if (mode) {
-      setSelectedMode(mode);
-    }
-  }, []);
 
   // Validazione password
   const validatePassword = (pass: string) => {
@@ -72,12 +60,9 @@ export default function Register() {
         email,
         password,
         options: {
-          emailRedirectTo: selectedMode === 'team'
-            ? `${window.location.origin}/coach/setup`
-            : `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}/onboarding`,
           data: {
             created_at: new Date().toISOString(),
-            user_mode: selectedMode, // Salva la modalità nel profilo
           }
         }
       });
@@ -106,14 +91,10 @@ export default function Register() {
         // Successo!
         setSuccess(true);
         
-        // Se la conferma email è disabilitata, vai direttamente alla destinazione
+        // Se la conferma email è disabilitata, vai direttamente all'onboarding
         if (data.user.confirmed_at || data.session) {
           setTimeout(() => {
-            if (selectedMode === 'team') {
-              navigate('/coach/setup');
-            } else {
-              navigate('/onboarding');
-            }
+            navigate('/onboarding');
           }, 2000);
         }
       }
@@ -198,34 +179,6 @@ export default function Register() {
 
         {/* Form */}
         <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700 shadow-2xl animate-slide-up">
-          {/* Mode indicator */}
-          <div className="flex gap-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setSelectedMode('individual')}
-              className={`flex-1 py-3 px-4 rounded-lg border transition-all flex items-center justify-center gap-2 ${
-                selectedMode === 'individual'
-                  ? 'bg-blue-500/20 border-blue-500 text-blue-400'
-                  : 'bg-slate-700/30 border-slate-600 text-slate-400 hover:border-slate-500'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              <span className="text-sm font-medium">Individuale</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedMode('team')}
-              className={`flex-1 py-3 px-4 rounded-lg border transition-all flex items-center justify-center gap-2 ${
-                selectedMode === 'team'
-                  ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                  : 'bg-slate-700/30 border-slate-600 text-slate-400 hover:border-slate-500'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              <span className="text-sm font-medium">Squadra</span>
-            </button>
-          </div>
-
           {error && (
             <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />

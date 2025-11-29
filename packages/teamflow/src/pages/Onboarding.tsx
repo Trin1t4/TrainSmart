@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { OnboardingData } from '../types/onboarding.types';
+import type { UserMode } from '@/types';
 import { useTranslation } from '../lib/i18n';
+import RoleSelectionStep from '../components/onboarding/RoleSelectionStep';
 import AnagraficaStep from '../components/onboarding/AnagraficaStep';
 import PersonalInfoStep from '../components/onboarding/PersonalInfoStep';
 import LocationStep from '../components/onboarding/LocationStep';
@@ -10,17 +12,23 @@ import ActivityStep from '../components/onboarding/ActivityStep';
 import GoalStep from '../components/onboarding/GoalStep';
 import PainStep from '../components/onboarding/PainStep';
 
+interface ExtendedOnboardingData extends Partial<OnboardingData> {
+  userMode?: UserMode;
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState<Partial<OnboardingData>>({});
+  const [data, setData] = useState<ExtendedOnboardingData>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const totalSteps = 6;
+  // Step 1 = Role Selection, poi gli altri step per atleta individuale
+  // Se coach, dopo step 1 va direttamente a /coach/setup
+  const totalSteps = 7; // 1 (role) + 6 (athlete flow)
   const progress = (currentStep / totalSteps) * 100;
 
-  const updateData = (stepData: Partial<OnboardingData>) => {
+  const updateData = (stepData: ExtendedOnboardingData) => {
     const newData = { ...data, ...stepData };
     
     // 🔍 DEBUG - Log OGNI update
@@ -122,7 +130,7 @@ export default function Onboarding() {
           console.error('[ONBOARDING] ❌ LOCATION IS MISSING! LocationStep.tsx has a bug!');
           alert(t('onboarding.error.location_missing'));
           setIsSaving(false);
-          setCurrentStep(3); // Torna al step della location (ora è step 3)
+          setCurrentStep(4); // Torna al step della location (ora è step 4)
           return;
         }
 
@@ -158,25 +166,58 @@ export default function Onboarding() {
     }
   };
 
-  const handleStepComplete = (stepData: Partial<OnboardingData>) => {
+  const handleStepComplete = (stepData: ExtendedOnboardingData) => {
     console.log(`[ONBOARDING] ✅ Step ${currentStep} completed with data:`, stepData);
     updateData(stepData);
+
+    // Se step 1 (Role Selection) e ha scelto "team" (coach), vai a coach setup
+    if (currentStep === 1 && stepData.userMode === 'team') {
+      console.log('[ONBOARDING] 🏈 Coach mode selected → redirecting to /coach/setup');
+      // Salva la scelta nel profilo utente
+      saveUserMode('team');
+      navigate('/coach/setup');
+      return;
+    }
+
     nextStep();
+  };
+
+  // Salva la modalità utente nel profilo
+  const saveUserMode = async (mode: UserMode) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          email: user.email || '',
+          user_mode: mode,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id',
+        });
+    } catch (error) {
+      console.error('[ONBOARDING] Error saving user mode:', error);
+    }
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <AnagraficaStep data={data} onNext={handleStepComplete} />;
+        return <RoleSelectionStep data={data} onNext={handleStepComplete} />;
       case 2:
-        return <PersonalInfoStep data={data} onNext={handleStepComplete} />;
+        return <AnagraficaStep data={data} onNext={handleStepComplete} />;
       case 3:
-        return <LocationStep data={data} onNext={handleStepComplete} />;
+        return <PersonalInfoStep data={data} onNext={handleStepComplete} />;
       case 4:
-        return <ActivityStep data={data} onNext={handleStepComplete} />;
+        return <LocationStep data={data} onNext={handleStepComplete} />;
       case 5:
-        return <GoalStep data={data} onNext={handleStepComplete} />;
+        return <ActivityStep data={data} onNext={handleStepComplete} />;
       case 6:
+        return <GoalStep data={data} onNext={handleStepComplete} />;
+      case 7:
         return <PainStep data={data} onNext={handleStepComplete} />;
       default:
         return null;

@@ -81,7 +81,7 @@ export default function Landing() {
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
             <Link
-              to="/get-started"
+              to="/register"
               className="group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-orange-500/50 hover:shadow-xl hover:shadow-orange-500/70 transition-all duration-300 flex items-center justify-center gap-2"
             >
               Inizia Gratis
