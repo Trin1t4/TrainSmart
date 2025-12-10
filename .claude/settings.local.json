@@ -35,7 +35,10 @@
       "Bash(timeout 90 npx tsx:*)",
       "Bash(timeout 30 npx tsx:*)",
       "Bash(dir /s /b C:UsersdarioOneDriveDesktopFitnessFlowpackagesteamflowsrc)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: cleanup obsolete files and consolidate shared utilities\n\n- Remove obsolete .md session files (CONVERSATION_CONTEXT, SESSION_SUMMARY, etc.)\n- Remove temporary .sql files (fix_rls_policies, check_programs, etc.)\n- Remove duplicate utils from web/teamflow (now in shared package)\n  - painManagement.ts, programGenerator.ts, validators.ts\n- Add new shared services: achievements, streaks, personal records, social\n- Add pain tracking and rehabilitation services\n- Add biomechanics types and utilities\n- Update exercise variants with station-occupied alternatives\n- Add social features: community, achievements, follow system\n- Add legal pages: Privacy Policy, Terms of Service, Cookie Policy\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

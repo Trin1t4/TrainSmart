@@ -177,7 +177,7 @@ export default function Landing() {
               <div className="bg-slate-800/60 rounded-xl p-4 border border-red-500/30">
                 <div className="text-3xl font-bold text-red-400 mb-1">1°</div>
                 <div className="text-white font-semibold mb-1">Sicurezza</div>
-                <p className="text-slate-400 text-sm">Spine neutrale, articolazioni protette, range of motion corretto</p>
+                <p className="text-slate-400 text-sm">Colonna neutrale, articolazioni protette, range of motion corretto</p>
               </div>
               <div className="bg-slate-800/60 rounded-xl p-4 border border-yellow-500/30">
                 <div className="text-3xl font-bold text-yellow-400 mb-1">2°</div>
@@ -325,11 +325,11 @@ export default function Landing() {
                     </span>
                     <span className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-sm text-red-300">
                       <AlertTriangle className="w-4 h-4" />
-                      Spalle compromesse
+                      Infortuni alle spalle
                     </span>
                     <span className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-sm text-red-300">
                       <AlertTriangle className="w-4 h-4" />
-                      Caviglie instabili
+                      Distorsioni alle caviglie
                     </span>
                   </div>
 
@@ -421,7 +421,7 @@ export default function Landing() {
               </div>
               <Quote className="w-8 h-8 text-emerald-500/30 mb-2" />
               <p className="text-slate-300 mb-4">
-                "I video degli esercizi sono utilissimi. Anche i più strani li capisco subito. E la progressione automatica spacca!"
+                "La progressione si adatta ai miei risultati. Ogni settimana vedo miglioramenti reali senza dover pensare a nulla."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
@@ -429,7 +429,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <p className="text-white font-medium">Alessandro M.</p>
-                  <p className="text-slate-500 text-sm">Calisthenics, 5x settimana</p>
+                  <p className="text-slate-500 text-sm">Palestra, 5x settimana</p>
                 </div>
               </div>
             </div>
@@ -445,15 +445,57 @@ export default function Landing() {
               Piani e Prezzi
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              Scegli il piano adatto a te. Nessun abbonamento, paghi solo quando vuoi.
+              Le prime <span className="text-emerald-400 font-semibold">6 settimane sono GRATIS</span>. Poi scegli il piano adatto a te.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Base */}
-            <div className="bg-gradient-to-b from-emerald-900/50 to-slate-800/50 rounded-2xl p-8 border-2 border-emerald-500 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                DISPONIBILE
+            {/* Early Bird */}
+            <div className="bg-gradient-to-b from-amber-900/50 to-slate-800/50 rounded-2xl p-8 border-2 border-amber-500 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                EARLY BIRD - FINO A MARZO
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Early Bird</h3>
+              <div className="mb-1">
+                <span className="text-lg text-slate-500 line-through">€19.90</span>
+                <p className="text-3xl font-bold text-amber-400">€12.90<span className="text-lg font-normal text-slate-400">/mese</span></p>
+              </div>
+              <p className="text-amber-300/80 text-sm mb-2">Prezzo bloccato per sempre</p>
+              <p className="text-slate-500 text-xs mb-6">+ Prelazione su tutti gli upgrade futuri</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  <span><strong className="text-emerald-400">6 settimane GRATIS</strong></span>
+                </li>
+                <li className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  Programmi personalizzati
+                </li>
+                <li className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  Weekly split intelligente
+                </li>
+                <li className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  Adattamento location e attrezzatura
+                </li>
+                <li className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  Tracking progressi
+                </li>
+              </ul>
+              <Link
+                to="/register"
+                className="block w-full text-center py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-lg transition shadow-lg shadow-amber-500/30"
+              >
+                Blocca il Prezzo
+              </Link>
+            </div>
+
+            {/* Base - dopo Early Bird */}
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                DA APRILE
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Base</h3>
               <p className="text-3xl font-bold text-white mb-1">€19.90<span className="text-lg font-normal text-slate-400">/mese</span></p>
@@ -476,12 +518,12 @@ export default function Landing() {
                   Tracking progressi
                 </li>
               </ul>
-              <Link
-                to="/register"
-                className="block w-full text-center py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition"
+              <button
+                disabled
+                className="block w-full text-center py-3 bg-slate-700 text-slate-400 font-medium rounded-lg cursor-not-allowed"
               >
-                Inizia Ora
-              </Link>
+                Disponibile da Aprile
+              </button>
             </div>
 
             {/* Pro - Coming Soon */}

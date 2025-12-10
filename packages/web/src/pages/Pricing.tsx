@@ -5,9 +5,29 @@ import { motion } from 'framer-motion';
 export default function Pricing() {
   const plans = [
     {
+      name: 'Early Bird',
+      price: 12.90,
+      originalPrice: 19.90,
+      description: 'Prezzo bloccato per sempre',
+      features: [
+        '6 settimane GRATIS per iniziare',
+        'Programmi di allenamento personalizzati',
+        'Weekly split intelligente',
+        'Adattamento a location e attrezzatura',
+        'Tracking progressi',
+        'Prelazione su tutti gli upgrade futuri'
+      ],
+      active: true,
+      highlighted: true,
+      cta: 'Blocca il Prezzo',
+      link: '/register',
+      badge: 'FINO A MARZO',
+      isEarlyBird: true
+    },
+    {
       name: 'Base',
       price: 19.90,
-      description: 'Programmi personalizzati per iniziare',
+      description: 'Programmi personalizzati',
       features: [
         'Programmi di allenamento personalizzati',
         'Weekly split intelligente',
@@ -15,10 +35,10 @@ export default function Pricing() {
         'Tracking progressi',
         'Supporto via email'
       ],
-      active: true,
+      active: false,
       highlighted: false,
-      cta: 'Inizia Ora',
-      link: '/register'
+      cta: 'Da Aprile',
+      badge: 'PREZZO PIENO'
     },
     {
       name: 'Pro',
@@ -30,22 +50,6 @@ export default function Pricing() {
         'Analisi tecnica video',
         'Aggiustamenti biomeccanici',
         'Supporto prioritario'
-      ],
-      active: false,
-      highlighted: true,
-      cta: 'Coming Soon',
-      badge: 'Presto disponibile'
-    },
-    {
-      name: 'Premium',
-      price: 49.90,
-      description: 'Correzioni illimitate',
-      features: [
-        'Tutto del piano Pro',
-        'Correzioni AI illimitate',
-        'Coaching settimanale',
-        'Pianificazione nutrizionale',
-        'Accesso prioritario a nuove feature'
       ],
       active: false,
       highlighted: false,
@@ -68,7 +72,7 @@ export default function Pricing() {
             Scegli il Tuo Piano
           </h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Allenamenti scientifici e personalizzati per raggiungere i tuoi obiettivi
+            Le prime <span className="text-emerald-400 font-semibold">6 settimane sono GRATIS</span>. Allenamenti scientifici e personalizzati.
           </p>
         </motion.div>
 
@@ -94,11 +98,13 @@ export default function Pricing() {
 
               <div className={`
                 relative h-full rounded-2xl p-8 backdrop-blur-lg transition-all duration-300
-                ${plan.highlighted
-                  ? 'bg-gradient-to-br from-emerald-900/60 to-emerald-800/40 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/20'
-                  : plan.active
-                    ? 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/10'
-                    : 'bg-slate-800/30 border border-slate-700/50 opacity-60'
+                ${(plan as any).isEarlyBird
+                  ? 'bg-gradient-to-br from-amber-900/60 to-orange-800/40 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/20'
+                  : plan.highlighted
+                    ? 'bg-gradient-to-br from-emerald-900/60 to-emerald-800/40 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/20'
+                    : plan.active
+                      ? 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/10'
+                      : 'bg-slate-800/30 border border-slate-700/50 opacity-60'
                 }
               `}>
                 {/* Lock Icon for Disabled Plans */}
@@ -120,8 +126,13 @@ export default function Pricing() {
 
                 {/* Price */}
                 <div className="mb-6">
+                  {(plan as any).originalPrice && (
+                    <span className="text-lg text-slate-500 line-through">
+                      €{(plan as any).originalPrice.toFixed(2)}
+                    </span>
+                  )}
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-4xl font-bold ${plan.active ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <span className={`text-4xl font-bold ${(plan as any).isEarlyBird ? 'text-amber-400' : plan.active ? 'text-emerald-400' : 'text-slate-500'}`}>
                       €{plan.price.toFixed(2)}
                     </span>
                     <span className={`text-sm ${plan.active ? 'text-slate-400' : 'text-slate-600'}`}>
