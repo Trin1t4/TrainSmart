@@ -353,6 +353,281 @@ export const EXERCISE_DATABASE = {
             disability: "Wall Fly",                    // ← Facilitato
             pregnancy: "Wall Chest Stretch"            // ← Stretch sicuro
         }
+    },
+
+    // GAMBE - LEG PRESS / LEG EXTENSION / LEG CURL
+    'Leg Press': {
+        gym: {
+            name: "Leg Press",
+            equipment: [['none']],
+            weightMultiplier: 1.2
+        },
+        homeWithEquipment: {
+            name: "Goblet Squat Heavy",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.4,
+            minWeightKg: 20
+        },
+        homeBodyweight: {
+            strength: "Bulgarian Split Squat",         // ← Unilaterale forza
+            muscle_gain: "Wall Sit + Squat Pulses",    // ← Isometrico + volume
+            weight_loss: "Jump Lunges",                // ← Pliometrico
+            endurance: "Wall Sit 60s + Squat",         // ← Endurance gambe
+            performance: "Box Jump",                   // ← Esplosivo
+            general_fitness: "Reverse Lunge",          // ← Standard
+            toning: "Wall Sit Hold",                   // ← Isometrico
+            disability: "Glute Bridge",                // ← Facilitato
+            pregnancy: "Sumo Squat"                    // ← Sicuro
+        }
+    },
+
+    'Leg Extension': {
+        gym: {
+            name: "Leg Extension",
+            equipment: [['none']],
+            weightMultiplier: 0.4
+        },
+        homeWithEquipment: {
+            name: "Leg Extension Elastico",
+            equipment: [['band']],
+            weightMultiplier: 0
+        },
+        homeBodyweight: {
+            strength: "Sissy Squat",                   // ← Quadricipiti forza
+            muscle_gain: "Sissy Squat Tempo",          // ← TUT quad
+            weight_loss: "Squat Jump + Hold",          // ← Metabolico
+            endurance: "Wall Sit 90s",                 // ← Endurance
+            performance: "Sissy Squat Explosive",      // ← Esplosivo
+            general_fitness: "Squat Isometrico",       // ← Base
+            toning: "Quad Isometrico Muro",            // ← Isometrico
+            disability: "Seated Knee Extension",       // ← Facilitato
+            pregnancy: "Seated Quad Stretch"           // ← Mobilità
+        }
+    },
+
+    'Leg Curl': {
+        gym: {
+            name: "Leg Curl",
+            equipment: [['none']],
+            weightMultiplier: 0.4
+        },
+        homeWithEquipment: {
+            name: "Leg Curl Elastico",
+            equipment: [['band']],
+            weightMultiplier: 0
+        },
+        homeBodyweight: {
+            strength: "Nordic Curl",                   // ← Femorali forza
+            muscle_gain: "Nordic Curl Eccentrico",     // ← TUT femorali
+            weight_loss: "Glute Bridge March",         // ← Metabolico
+            endurance: "Glute Bridge 60s Hold",        // ← Endurance
+            performance: "Nordic Curl Assisted",       // ← Progressione
+            general_fitness: "Lying Leg Curl (asciugamano)", // ← Base
+            toning: "Glute Bridge Isometrico",         // ← Isometrico
+            disability: "Prone Knee Flexion",          // ← Facilitato
+            pregnancy: "Side Lying Leg Curl"           // ← Sicuro
+        }
+    },
+
+    'Calf Raises': {
+        gym: {
+            name: "Calf Raises Macchina",
+            equipment: [['none']],
+            weightMultiplier: 0.6
+        },
+        homeWithEquipment: {
+            name: "Calf Raises con Manubri",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.4,
+            minWeightKg: 10
+        },
+        homeBodyweight: {
+            strength: "Single Leg Calf Raise",         // ← Unilaterale forza
+            muscle_gain: "Calf Raise Tempo 3-3-3",     // ← TUT polpacci
+            weight_loss: "Calf Raise Jump",            // ← Pliometrico
+            endurance: "Calf Raise 50 reps",           // ← Endurance
+            performance: "Explosive Calf Raise",       // ← Esplosivo
+            general_fitness: "Calf Raise Standard",    // ← Base
+            toning: "Calf Raise Isometrico",           // ← Isometrico
+            disability: "Seated Calf Raise",           // ← Facilitato
+            pregnancy: "Wall Supported Calf"           // ← Supportato
+        }
+    },
+
+    // BRACCIA
+    'Curl Bilanciere': {
+        gym: {
+            name: "Curl Bilanciere",
+            equipment: [['barbell']],
+            weightMultiplier: 0.3
+        },
+        homeWithEquipment: {
+            name: "Curl Manubri",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.25,
+            minWeightKg: 8
+        },
+        homeBodyweight: {
+            strength: "Chin-up (supinato)",            // ← Bicipiti + dorsali
+            muscle_gain: "Chin-up Tempo",              // ← TUT bicipiti
+            weight_loss: "Burpee + Chin-up",           // ← Metabolico
+            endurance: "Chin-up AMRAP",                // ← Endurance
+            performance: "Explosive Chin-up",          // ← Esplosivo
+            general_fitness: "Inverted Row Supinato",  // ← Base
+            toning: "Inverted Row Iso Hold",           // ← Isometrico
+            disability: "Band Curl",                   // ← Facilitato
+            pregnancy: "Seated Band Curl"              // ← Sicuro
+        }
+    },
+
+    'Tricep Pushdown': {
+        gym: {
+            name: "Tricep Pushdown Cavo",
+            equipment: [['none']],
+            weightMultiplier: 0.3
+        },
+        homeWithEquipment: {
+            name: "Tricep Extension Manubrio",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.25,
+            minWeightKg: 6
+        },
+        homeBodyweight: {
+            strength: "Close Grip Push-up Deficit",    // ← Tricipiti forza
+            muscle_gain: "Diamond Push-up Tempo",      // ← TUT tricipiti
+            weight_loss: "Diamond Push-up Burpee",     // ← Metabolico
+            endurance: "Diamond Push-up AMRAP",        // ← Endurance
+            performance: "Clapping Diamond Push",      // ← Esplosivo
+            general_fitness: "Diamond Push-up",        // ← Base
+            toning: "Tricep Plank Hold",               // ← Isometrico
+            disability: "Wall Tricep Press",           // ← Facilitato
+            pregnancy: "Incline Tricep Push"           // ← Sicuro
+        }
+    },
+
+    // CORE
+    'Plank': {
+        gym: {
+            name: "Plank",
+            equipment: [['none']],
+            weightMultiplier: 0
+        },
+        homeWithEquipment: {
+            name: "Plank",
+            equipment: [['none']],
+            weightMultiplier: 0
+        },
+        homeBodyweight: {
+            strength: "RKC Plank Weighted",            // ← Plank intenso
+            muscle_gain: "Plank Variations Circuit",   // ← Volume core
+            weight_loss: "Mountain Climber",           // ← Cardio core
+            endurance: "Plank 2min Challenge",         // ← Endurance
+            performance: "Body Saw Plank",             // ← Dinamico
+            general_fitness: "Plank Standard",         // ← Base
+            toning: "Plank Hip Dips",                  // ← Obliqui
+            disability: "Incline Plank",               // ← Facilitato
+            pregnancy: "Bird Dog"                      // ← Sicuro gravidanza
+        }
+    },
+
+    'Crunch': {
+        gym: {
+            name: "Crunch Macchina",
+            equipment: [['none']],
+            weightMultiplier: 0.3
+        },
+        homeWithEquipment: {
+            name: "Crunch con Peso",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.15,
+            minWeightKg: 5
+        },
+        homeBodyweight: {
+            strength: "Dragon Flag Negativa",          // ← Core forza estrema
+            muscle_gain: "Crunch Tempo 3-2-1",         // ← TUT addominali
+            weight_loss: "Bicycle Crunch 60s",         // ← Metabolico
+            endurance: "Crunch 100 reps",              // ← Endurance
+            performance: "V-up",                       // ← Esplosivo
+            general_fitness: "Crunch Standard",        // ← Base
+            toning: "Dead Bug",                        // ← Core stability
+            disability: "Pelvic Tilt",                 // ← Facilitato
+            pregnancy: "Pelvic Floor Activation"       // ← Sicuro
+        }
+    },
+
+    'Leg Raises': {
+        gym: {
+            name: "Leg Raise alla Spalliera",
+            equipment: [['none']],
+            weightMultiplier: 0
+        },
+        homeWithEquipment: {
+            name: "Hanging Leg Raise",
+            equipment: [['pullup_bar']],
+            weightMultiplier: 0
+        },
+        homeBodyweight: {
+            strength: "Toes to Bar",                   // ← Core forza
+            muscle_gain: "Leg Raise Tempo",            // ← TUT addominali bassi
+            weight_loss: "Flutter Kicks 60s",          // ← Metabolico
+            endurance: "Leg Raise Slow 30 reps",       // ← Endurance
+            performance: "Windshield Wipers",          // ← Rotazionale
+            general_fitness: "Lying Leg Raise",        // ← Base
+            toning: "Reverse Crunch",                  // ← Addominali bassi
+            disability: "Knee Raise",                  // ← Facilitato
+            pregnancy: "Seated Knee Lift"              // ← Sicuro
+        }
+    },
+
+    // GLUTEI
+    'Hip Thrust': {
+        gym: {
+            name: "Hip Thrust Bilanciere",
+            equipment: [['barbell', 'bench']],
+            weightMultiplier: 0.8
+        },
+        homeWithEquipment: {
+            name: "Hip Thrust Manubri",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.4,
+            minWeightKg: 15
+        },
+        homeBodyweight: {
+            strength: "Single Leg Hip Thrust",         // ← Unilaterale forza
+            muscle_gain: "Hip Thrust Tempo 4-2-2",     // ← TUT glutei
+            weight_loss: "Glute Bridge March",         // ← Metabolico
+            endurance: "Glute Bridge 100 reps",        // ← Endurance
+            performance: "Hip Thrust Jump",            // ← Esplosivo
+            general_fitness: "Glute Bridge",           // ← Base
+            toning: "Hip Thrust Isometrico",           // ← Isometrico
+            disability: "Glute Squeeze",               // ← Facilitato
+            pregnancy: "Side Lying Hip Abduction"      // ← Sicuro laterale
+        }
+    },
+
+    'Affondi': {
+        gym: {
+            name: "Affondi con Bilanciere",
+            equipment: [['barbell']],
+            weightMultiplier: 0.5
+        },
+        homeWithEquipment: {
+            name: "Affondi con Manubri",
+            equipment: [['dumbbell']],
+            weightMultiplier: 0.4,
+            minWeightKg: 10
+        },
+        homeBodyweight: {
+            strength: "Bulgarian Split Squat",         // ← Unilaterale forza
+            muscle_gain: "Walking Lunge Tempo",        // ← TUT gambe
+            weight_loss: "Jump Lunges",                // ← Pliometrico
+            endurance: "Walking Lunge 50m",            // ← Endurance
+            performance: "Explosive Lunge",            // ← Esplosivo
+            general_fitness: "Reverse Lunge",          // ← Standard
+            toning: "Static Lunge Hold",               // ← Isometrico
+            disability: "Supported Lunge",             // ← Con supporto
+            pregnancy: "Reverse Lunge Shallow"         // ← ROM ridotto
+        }
     }
 };
 

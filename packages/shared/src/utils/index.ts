@@ -243,6 +243,77 @@ export {
   DEFAULT_THRESHOLDS
 } from './levelCalculation';
 
+// Data Sync (localStorage ↔ Supabase)
+export type { SyncableData, SyncResult, SyncConfig, SyncStatus } from './dataSync';
+export {
+  safeStorage,
+  STORAGE_KEYS,
+  TABLE_MAPPINGS,
+  compareTimestamps,
+  mergeData,
+  getSyncStatus,
+  updateSyncStatus,
+  markPendingSync,
+  clearPendingSync,
+  validateOnboardingData,
+  validateScreeningData,
+  createSyncedSaver,
+  onboardingSaver,
+  screeningSaver,
+  recoverySaver,
+  programSaver,
+  exportUserData,
+  importUserData
+} from './dataSync';
+
+// Detraining Model (evidence-based)
+export type { TrainingGoal, DetrainingConfig, DetrainingResult } from './detrainingModel';
+export {
+  calculateDetraining,
+  getDetrainingFactor,
+  getDaysUntilDetraining,
+  STRENGTH_DECAY_CURVE,
+  ENDURANCE_DECAY_CURVE,
+  MUSCLE_MASS_DECAY_CURVE
+} from './detrainingModel';
+
+// Pain Load Reduction (evidence-based)
+export type {
+  PainType,
+  PainCharacter,
+  PainTiming,
+  MovementPhase,
+  PainAssessment,
+  LoadReductionResult
+} from './painLoadReduction';
+export {
+  calculatePainLoadReduction,
+  getSimplePainReduction,
+  shouldModifyForPain,
+  classifyPainType,
+  isDOMS
+} from './painLoadReduction';
+
+// Workout Tracking & Missed Sessions
+export type {
+  WorkoutStatus,
+  WorkoutSession,
+  SessionFeedback,
+  WorkoutStreak,
+  MissedWorkoutAnalysis,
+  MissedWorkoutRecommendation,
+  UnvalidatedSession
+} from './workoutTracking';
+export {
+  daysSinceLastWorkout,
+  analyzeMissedWorkouts,
+  findUnvalidatedSessions,
+  getUnvalidatedSessionPrompt,
+  calculateStreak,
+  getStreakMessage,
+  shouldShowMissedWarning
+} from './workoutTracking';
+
 // Pain Tracking System (real-time & cross-session)
 export type {
   // Base types
