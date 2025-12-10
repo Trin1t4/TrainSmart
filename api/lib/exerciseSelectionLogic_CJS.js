@@ -2,8 +2,15 @@ import { GOAL_CONFIGS, EXERCISE_PROGRESSIONS } from './GOAL_CONFIGS_COMPLETE_CJS
 
 /**
  * Seleziona l'esercizio corretto basato su assessment, goal e livello
+ * @param {string} exerciseBaseName - Nome base esercizio (es. 'Squat', 'Trazioni')
+ * @param {string} level - Livello utente ('beginner', 'intermediate', 'advanced')
+ * @param {string} goal - Obiettivo ('strength', 'muscle_gain', 'fat_loss', etc.)
+ * @param {object} assessment - Dati assessment (opzionale)
+ * @param {number} weekNumber - Settimana corrente (default: 1)
  */
-function selectExerciseByGoal(exerciseBaseName, assessment, goal, weekNumber = 1) {
+function selectExerciseByGoal(exerciseBaseName, level, goal, assessment = null, weekNumber = 1) {
+  console.log(`[SELECT] selectExerciseByGoal: exercise=${exerciseBaseName}, level=${level}, goal=${goal}`);
+
   const goalConfig = GOAL_CONFIGS[goal] || GOAL_CONFIGS.muscle_gain;
   const progressions = EXERCISE_PROGRESSIONS[exerciseBaseName];
   if (!progressions || !progressions[goal]) {
@@ -18,7 +25,7 @@ function selectExerciseByGoal(exerciseBaseName, assessment, goal, weekNumber = 1
   }
 
   // ===== ALTRI GOAL: Selezione per livello =====
-  return selectByLevel(exerciseList, assessment);
+  return selectByLevel(exerciseList, level, assessment);
 }
 
 /**
@@ -119,18 +126,28 @@ function calculateLinearReps(startReps, weekNumber) {
 
 /**
  * ALTRI GOAL: Selezione per livello
+ * @param {array} exerciseList - Lista esercizi per questo goal
+ * @param {string} level - Livello utente ('beginner', 'intermediate', 'advanced')
+ * @param {object} assessment - Dati assessment (opzionale)
  */
-function selectByLevel(exerciseList, assessment) {
-  if (!assessment || !assessment.level) {
-    return exerciseList[0];
-  }
+function selectByLevel(exerciseList, level, assessment) {
   const levelMap = {
     beginner: 1,
     intermediate: 2,
     advanced: 3,
   };
-  const levelNum = levelMap[assessment.level] || 1;
+
+  // Usa assessment.level se presente, altrimenti usa level passato come parametro
+  const effectiveLevel = assessment?.level || level || 'intermediate';
+  const levelNum = levelMap[effectiveLevel] || 2;
+
+  console.log(`[SELECT] selectByLevel: effectiveLevel=${effectiveLevel}, levelNum=${levelNum}`);
+
+  // Trova l'esercizio corrispondente al livello
   const exercise = exerciseList.find((ex) => ex.level === levelNum) || exerciseList[0];
+
+  console.log(`[SELECT] → Selected: ${exercise.name} (level ${exercise.level})`);
+
   return {
     ...exercise,
     sets: 3,

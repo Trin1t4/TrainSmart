@@ -192,10 +192,30 @@ console.log("🏋️ PESO DEBUG:", {
           </div>
 
           {(state.adjustment.volumeMultiplier < 1 || state.adjustment.intensityMultiplier < 1) && (
-            <div className="mt-4 bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-4">
-              <p className="text-yellow-300 text-sm">
-                ⚡ <strong>AdaptFlow:</strong> {state.adjustment.recommendation}
+            <div className="mt-4 bg-yellow-900/30 border border-yellow-500/60 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">⚡</span>
+                <span className="text-yellow-300 font-bold text-lg">AdaptFlow Attivo</span>
+              </div>
+              <p className="text-yellow-200/90 text-sm leading-relaxed">
+                {state.adjustment.recommendation}
               </p>
+              <div className="flex gap-4 mt-3 pt-3 border-t border-yellow-500/30">
+                {state.adjustment.volumeMultiplier < 1 && (
+                  <div className="bg-yellow-500/20 px-3 py-1.5 rounded-lg">
+                    <span className="text-yellow-300 font-semibold">
+                      📊 Volume: -{Math.round((1 - state.adjustment.volumeMultiplier) * 100)}%
+                    </span>
+                  </div>
+                )}
+                {state.adjustment.intensityMultiplier < 1 && (
+                  <div className="bg-yellow-500/20 px-3 py-1.5 rounded-lg">
+                    <span className="text-yellow-300 font-semibold">
+                      💪 Intensità: -{Math.round((1 - state.adjustment.intensityMultiplier) * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

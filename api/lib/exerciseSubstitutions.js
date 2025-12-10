@@ -4,12 +4,16 @@ import { selectExerciseByGoal } from './exerciseSelectionLogic_CJS.js';
 /**
  * Seleziona la variante corretta usando selectExerciseByGoal (assessment-aware)
  */
-export function selectExerciseVariant(exerciseName, location, equipment = {}, goal = 'muscle_gain', weekNumber = 1, assessment = null) {
+export function selectExerciseVariant(exerciseName, location, equipment = {}, goal = 'muscle_gain', level = 'intermediate', weekNumber = 1, assessment = null) {
+  console.log(`[VARIANT] selectExerciseVariant: ${exerciseName}, location=${location}, goal=${goal}, level=${level}`);
+
   // Se home senza equipment, usa selectExerciseByGoal per logica intelligente
   if (location === 'home' && !hasEquipment(equipment)) {
     const baseName = mapToBaseName(exerciseName);
-    const selected = selectExerciseByGoal(baseName, assessment, goal, weekNumber);
+    // FIXED: Parametri corretti (exerciseBaseName, level, goal, assessment, weekNumber)
+    const selected = selectExerciseByGoal(baseName, level, goal, assessment, weekNumber);
     if (selected) {
+      console.log(`[VARIANT] → Selected from selectExerciseByGoal: ${selected.name}`);
       return {
         name: selected.name,
         sets: selected.sets,
@@ -22,6 +26,7 @@ export function selectExerciseVariant(exerciseName, location, equipment = {}, go
   }
 
   // Fallback: ritorna esercizio standard
+  console.log(`[VARIANT] → Fallback to original: ${exerciseName}`);
   return {
     name: exerciseName,
     sets: 3,
@@ -40,18 +45,38 @@ export function getExerciseForLocation(exerciseName, location, equipment = {}, g
     console.warn(`[SUBSTITUTION] Exercise "${exerciseName}" not found in database`);
     return exerciseName;
   }
+
+  console.log(`[SUBSTITUTION] getExerciseForLocation: ${exerciseName}, location=${location}, goal=${goal}, level=${level}`);
+
   // Se gym, ritorna variante gym
   if (location === 'gym' && exerciseData.gym) {
+    console.log(`[SUBSTITUTION] → GYM variant: ${exerciseData.gym.name}`);
     return exerciseData.gym.name || exerciseName;
   }
+
   // Se home con equipment
-  if (location === 'home' && hasEquipment(equipment) && exerciseData.homeEquipment) {
-    return exerciseData.homeEquipment[goal]?.[level] || exerciseData.homeEquipment.name || exerciseName;
+  if (location === 'home' && hasEquipment(equipment) && exerciseData.homeWithEquipment) {
+    const homeName = exerciseData.homeWithEquipment.name || exerciseName;
+    console.log(`[SUBSTITUTION] → HOME with equipment: ${homeName}`);
+    return homeName;
   }
-  // Se home bodyweight
+
+  // Se home bodyweight - FIXED: homeBodyweight[goal] è una stringa, non un oggetto
   if (location === 'home' && exerciseData.homeBodyweight) {
-    return exerciseData.homeBodyweight[goal]?.[level] || exerciseData.homeBodyweight.name || exerciseName;
+    const goalVariant = exerciseData.homeBodyweight[goal];
+    if (goalVariant && typeof goalVariant === 'string') {
+      console.log(`[SUBSTITUTION] → HOME bodyweight for goal ${goal}: ${goalVariant}`);
+      return goalVariant;
+    }
+    // Fallback a muscle_gain se goal non trovato
+    const fallbackVariant = exerciseData.homeBodyweight.muscle_gain || exerciseData.homeBodyweight.general_fitness;
+    if (fallbackVariant) {
+      console.log(`[SUBSTITUTION] → HOME bodyweight fallback: ${fallbackVariant}`);
+      return fallbackVariant;
+    }
   }
+
+  console.log(`[SUBSTITUTION] → No substitution found, returning original: ${exerciseName}`);
   return exerciseName;
 }
 

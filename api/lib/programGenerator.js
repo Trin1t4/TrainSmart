@@ -3,6 +3,45 @@ import { selectExerciseByGoal } from './exerciseSelectionLogic_CJS.js'
 import { selectExerciseVariant, getExerciseForLocation } from './exerciseSubstitutions.js';
 import { GOAL_CONFIGS as GOAL_CONFIGS_NEW } from './GOAL_CONFIGS_COMPLETE_CJS.js'
 
+// ===== GOAL NORMALIZATION (Frontend Italian → Backend English) =====
+// Il frontend usa nomi italiani, il backend usa nomi inglesi
+const GOAL_NORMALIZATION = {
+  // Italian → English mapping
+  'forza': 'strength',
+  'ipertrofia': 'muscle_gain',
+  'massa': 'muscle_gain',
+  'massa_muscolare': 'muscle_gain',
+  'dimagrimento': 'fat_loss',
+  'perdita_peso': 'fat_loss',
+  'tonificazione': 'toning',
+  'resistenza': 'endurance',
+  'performance': 'performance',
+  'performance_sportiva': 'performance',
+  'recupero_motorio': 'motor_recovery',
+  'motor_recovery': 'motor_recovery',
+  'generale': 'general_fitness',
+  'fitness_generale': 'general_fitness',
+  'general_fitness': 'general_fitness',
+  // Already correct (passthrough)
+  'strength': 'strength',
+  'muscle_gain': 'muscle_gain',
+  'fat_loss': 'fat_loss',
+  'toning': 'toning',
+  'endurance': 'endurance',
+  'disability': 'disability',
+  'pregnancy': 'pregnancy'
+};
+
+/**
+ * Normalizza il goal dal formato frontend (italiano) al formato backend (inglese)
+ */
+function normalizeGoal(goal) {
+  if (!goal) return 'muscle_gain'; // Default
+  const normalized = GOAL_NORMALIZATION[goal.toLowerCase()] || goal;
+  console.log(`[GOAL] Normalized: "${goal}" → "${normalized}"`);
+  return normalized;
+}
+
 // ===== MAPPING PROGRESSIONI BODYWEIGHT =====
 
 const BODYWEIGHT_PROGRESSIONS = {
@@ -942,9 +981,12 @@ function applyScreeningReductions(plannedSession, screeningResults) {
 // ===== MAIN BRANCHING LOGIC: ENTRY POINT =====
 
 export function generateProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole } = input
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal: rawGoal, disabilityType, sportRole } = input
 
-  console.log('[PROGRAM] 🎯 ENTRY POINT:', { level, frequency, location, goal, sportRole })
+  // ✅ NORMALIZZA GOAL (forza → strength, dimagrimento → fat_loss, etc.)
+  const goal = normalizeGoal(rawGoal);
+
+  console.log('[PROGRAM] 🎯 ENTRY POINT:', { level, frequency, location, rawGoal, goal, sportRole })
 
   // ===== RAMO 1: MOTOR RECOVERY (invariato) =====
   if (goal === 'motor_recovery' || goal === 'rehabilitation') {
@@ -1625,20 +1667,33 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
   
   console.log('[PROGRAM] 🎯 createExercise:', { name, level, goal, type, location })
   
-  // ✅ FIX TRAZIONI (invariato)
-  if ((name.toLowerCase().includes('trazioni') || name.toLowerCase().includes('pull-up')) && 
-      location === 'gym' && 
-      baseWeight > 0) {
+  // ✅ FIX TRAZIONI - Se in palestra e non riesce a fare pull-up, usa Lat Machine con peso
+  let useLatMachine = false;
+  let latMachineWeight = null;
+
+  if ((name.toLowerCase().includes('trazioni') || name.toLowerCase().includes('pull-up')) &&
+      location === 'gym') {
     const bodyweight = assessments?.find(a => a.bodyweight)?.bodyweight || 80;
-    const ratio = baseWeight / bodyweight;
-    
-    if (ratio < 0.9) {
-      if (level === 'beginner') {
+
+    // Se non c'è assessment o baseWeight è 0, significa che non può fare pull-up
+    if (!baseWeight || baseWeight === 0) {
+      // Usa Lat Machine per tutti i livelli se non possono fare pull-up
+      name = 'Lat Machine';
+      useLatMachine = true;
+      // Stima peso Lat Machine: beginner 40-50% BW, intermediate 60-70% BW, advanced 80% BW
+      const latMachinePercentage = level === 'beginner' ? 0.45 : level === 'intermediate' ? 0.65 : 0.80;
+      latMachineWeight = Math.round(bodyweight * latMachinePercentage);
+      console.log(`[TRAZIONI] Non può fare pull-up → Lat Machine ${latMachineWeight}kg (${level})`);
+    } else {
+      const ratio = baseWeight / bodyweight;
+
+      if (ratio < 0.9) {
+        // Per tutti i livelli che non raggiungono il 90% del bodyweight, usa Lat Machine
         name = 'Lat Machine';
-      } else {
-        if (ratio < 0.6) name = 'Negative Pull-ups';
-        else if (ratio < 0.75) name = 'Banded Pull-ups';
-        else name = 'Pull-ups con Pausa';
+        useLatMachine = true;
+        // Usa il baseWeight dell'assessment come riferimento per Lat Machine
+        latMachineWeight = Math.round(baseWeight * 0.8); // 80% del peso assessment
+        console.log(`[TRAZIONI] Ratio ${(ratio*100).toFixed(0)}% < 90% → Lat Machine ${latMachineWeight}kg`);
       }
     }
   }
@@ -1730,7 +1785,7 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
     }
 
     // Fallback se non trova
-    const variant = selectExerciseVariant(name, 'home', {}, goal, 1, assessment)    
+    const variant = selectExerciseVariant(name, 'home', {}, goal, level, 1, assessment)    
     // Se è un Giant Set, ritorna così com'è
     if (variant.type === 'giant_set' || variant.rounds) {
       return variant
@@ -1805,16 +1860,20 @@ function createExercise(name, location, equipment, baseWeight, level, goal, type
   // ✅ CALCOLO PESO
   let trainingWeight = null
 
-  if (isBodyweight) {
+  // 🆕 FIX: Se useLatMachine è true, usa il peso calcolato per Lat Machine
+  if (useLatMachine && latMachineWeight) {
+    trainingWeight = latMachineWeight;
+    console.log(`[WEIGHT] Lat Machine weight: ${trainingWeight}kg`);
+  } else if (isBodyweight) {
     trainingWeight = null
   } else if (location === 'gym' || hasEquipment) {
     if (baseWeight > 0) {
       const finalReps = typeof reps === 'string' && reps.includes('-')
         ? parseInt(reps.split('-')[1])
         : targetReps
-      
+
       trainingWeight = calculateTrainingWeight(baseWeight, finalReps, config.RIR)
-      
+
       if (hasEquipment && equipment.dumbbellMaxKg && trainingWeight > equipment.dumbbellMaxKg) {
         trainingWeight = equipment.dumbbellMaxKg
       }

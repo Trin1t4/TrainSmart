@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { User, Settings, LogOut, ChevronRight, Shield, Bell, Globe, Moon, HelpCircle, FileText } from 'lucide-react';
+import { User, Settings, LogOut, ChevronRight, Shield, Bell, Globe, Moon, HelpCircle, FileText, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../lib/i18n';
 import { supabase } from '../lib/supabaseClient';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 
 interface UserData {
   email: string;
@@ -20,6 +21,7 @@ export default function Profile() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [onboardingData, setOnboardingData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -94,7 +96,7 @@ export default function Profile() {
       icon: Shield,
       label: 'Privacy',
       description: 'Gestisci i tuoi dati',
-      onClick: () => {},
+      onClick: () => navigate('/privacy-policy'),
       color: 'text-amber-400'
     },
     {
@@ -108,8 +110,15 @@ export default function Profile() {
       icon: FileText,
       label: 'Termini di Servizio',
       description: 'Leggi i termini',
-      onClick: () => {},
+      onClick: () => navigate('/terms-of-service'),
       color: 'text-slate-400'
+    },
+    {
+      icon: Trash2,
+      label: 'Elimina Account',
+      description: 'Cancella tutti i tuoi dati',
+      onClick: () => setShowDeleteModal(true),
+      color: 'text-red-400'
     }
   ];
 
@@ -234,6 +243,16 @@ export default function Profile() {
           FitnessFlow v1.0.0
         </p>
       </div>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        userEmail={userData?.email || ''}
+        onSuccess={() => {
+          navigate('/login');
+        }}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { OnboardingData } from '../types/onboarding.types';
@@ -9,13 +9,44 @@ import LocationStep from '../components/onboarding/LocationStep';
 import ActivityStep from '../components/onboarding/ActivityStep';
 import GoalStep from '../components/onboarding/GoalStep';
 import PainStep from '../components/onboarding/PainStep';
+import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<Partial<OnboardingData>>({});
   const [isSaving, setIsSaving] = useState(false);
+
+  // Check if user already accepted disclaimer
+  useEffect(() => {
+    const disclaimerAccepted = localStorage.getItem('medical_disclaimer_accepted');
+    if (disclaimerAccepted === 'true') {
+      setShowDisclaimer(false);
+    }
+  }, []);
+
+  const handleDisclaimerAccept = () => {
+    localStorage.setItem('medical_disclaimer_accepted', 'true');
+    localStorage.setItem('medical_disclaimer_date', new Date().toISOString());
+    setShowDisclaimer(false);
+  };
+
+  const handleDisclaimerDecline = () => {
+    // Navigate back to home if user doesn't accept
+    navigate('/');
+  };
+
+  // Show medical disclaimer first
+  if (showDisclaimer) {
+    return (
+      <MedicalDisclaimer
+        onAccept={handleDisclaimerAccept}
+        onDecline={handleDisclaimerDecline}
+      />
+    );
+  }
 
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;

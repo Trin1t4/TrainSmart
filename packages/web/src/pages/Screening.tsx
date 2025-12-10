@@ -2,15 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import ScreeningFlow from '../components/ScreeningFlow';
+import WarmupGuide from '../components/assessment/WarmupGuide';
 
 export default function Screening() {
   const [userId, setUserId] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showWarmup, setShowWarmup] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserData();
+    // Check if warmup was already completed this session
+    const warmupCompleted = sessionStorage.getItem('warmup_completed');
+    if (warmupCompleted === 'true') {
+      setShowWarmup(false);
+    }
   }, []);
 
   const fetchUserData = async () => {
@@ -53,10 +60,31 @@ export default function Screening() {
     }, 150);
   };
 
+  const handleWarmupComplete = () => {
+    sessionStorage.setItem('warmup_completed', 'true');
+    setShowWarmup(false);
+  };
+
+  const handleWarmupSkip = () => {
+    // Still mark as "done" but show warning
+    sessionStorage.setItem('warmup_completed', 'skipped');
+    setShowWarmup(false);
+  };
+
   if (loading) return <div>Caricamento...</div>;
 
+  // Show warmup guide first
+  if (showWarmup) {
+    return (
+      <WarmupGuide
+        onComplete={handleWarmupComplete}
+        onSkip={handleWarmupSkip}
+      />
+    );
+  }
+
   return (
-    <ScreeningFlow 
+    <ScreeningFlow
       onComplete={handleComplete}
       userData={userData}
       userId={userId}
