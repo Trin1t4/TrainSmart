@@ -308,7 +308,7 @@ export {
   daysSinceLastWorkout,
   analyzeMissedWorkouts,
   findUnvalidatedSessions,
-  getUnvalidatedSessionPrompt,
+  getUnvalidatedSessionDecision,
   calculateStreak,
   getStreakMessage,
   shouldShowMissedWarning

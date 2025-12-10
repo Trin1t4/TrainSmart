@@ -56,8 +56,14 @@ export interface MissedWorkoutRecommendation {
   action: 'continue' | 'restart_week' | 'deload' | 'reset_program';
   volumeAdjustment: number; // 0.5 - 1.0
   intensityAdjustment: number; // 0.5 - 1.0
-  message: string;
-  additionalNotes: string[];
+  /** Main coaching message - authoritative, not a question */
+  coachingMessage: string;
+  /** Scientific explanation - why we're doing this */
+  explanation: string;
+  /** What will change in the program */
+  programChanges: string[];
+  /** Motivational note */
+  motivation: string;
 }
 
 export interface UnvalidatedSession {
@@ -179,7 +185,8 @@ export function analyzeMissedWorkouts(
 }
 
 /**
- * Generate recommendation based on missed workout analysis
+ * Generate coaching decision for missed workouts
+ * NO user choice - authoritative coach approach
  */
 function generateMissedWorkoutRecommendation(
   consecutiveMissed: number,
@@ -194,54 +201,86 @@ function generateMissedWorkoutRecommendation(
     goal: 'general'
   });
 
-  // Determine action based on severity
-  let action: 'continue' | 'restart_week' | 'deload' | 'reset_program';
-  let message: string;
-  const additionalNotes: string[] = [];
+  // COACHING DECISIONS - No choices, just clear direction
 
   if (consecutiveMissed === 0 || daysSinceLast <= 3) {
-    action = 'continue';
-    message = 'Continua normalmente con il tuo programma';
-  }
-  else if (consecutiveMissed <= 2 || daysSinceLast <= 7) {
-    action = 'continue';
-    message = 'Riprendi da dove avevi lasciato';
-    additionalNotes.push('Aumenta il riscaldamento di 5 minuti');
-  }
-  else if (consecutiveMissed <= 4 || daysSinceLast <= 14) {
-    action = 'restart_week';
-    message = 'Ricomincia la settimana corrente con volume ridotto';
-    additionalNotes.push('Prima sessione: 70% del volume');
-    additionalNotes.push('Focus su tecnica e connessione mente-muscolo');
-  }
-  else if (consecutiveMissed <= 7 || daysSinceLast <= 21) {
-    action = 'deload';
-    message = 'Settimana di deload prima di riprendere';
-    additionalNotes.push('50% volume, 80% intensità per 1 settimana');
-    additionalNotes.push('Priorità a mobilità e recupero');
-    additionalNotes.push('Non inseguire i pesi precedenti subito');
-  }
-  else {
-    action = 'reset_program';
-    message = 'Programma di ri-adattamento consigliato';
-    additionalNotes.push(`${detraining.reAdaptationWeeks} settimane di riadattamento`);
-    additionalNotes.push('Inizia con 50% del volume precedente');
-    additionalNotes.push('Aumenta gradualmente 10-15% a settimana');
-    additionalNotes.push('Considera una nuova valutazione fisica');
+    return {
+      action: 'continue',
+      volumeAdjustment: 1.0,
+      intensityAdjustment: 1.0,
+      coachingMessage: 'Tutto regolare. Alleniamoci.',
+      explanation: 'Nessuna pausa significativa rilevata.',
+      programChanges: [],
+      motivation: 'La costanza batte l\'intensità. Sempre.'
+    };
   }
 
-  // Adjust for completion rate
-  if (completionRate < 50) {
-    additionalNotes.push('📊 Tasso completamento basso - considera obiettivi più realistici');
-    additionalNotes.push('Prova a ridurre la frequenza settimanale');
+  if (daysSinceLast <= 7) {
+    return {
+      action: 'continue',
+      volumeAdjustment: 0.95,
+      intensityAdjustment: 1.0,
+      coachingMessage: 'Bentornato. Ho aggiunto 5 minuti di riscaldamento.',
+      explanation: `Sono passati ${daysSinceLast} giorni. Il tuo corpo è ancora "caldo" - nessuna perdita significativa di forza o massa.`,
+      programChanges: [
+        'Riscaldamento esteso (+5 min)',
+        'Prime serie di attivazione leggere'
+      ],
+      motivation: 'Una settimana di pausa non cancella mesi di lavoro. Ripartiamo.'
+    };
   }
 
+  if (daysSinceLast <= 14) {
+    const volumeReduction = Math.round((1 - detraining.volumeMultiplier) * 100);
+    return {
+      action: 'restart_week',
+      volumeAdjustment: detraining.volumeMultiplier,
+      intensityAdjustment: 0.90,
+      coachingMessage: `${daysSinceLast} giorni di stop. Ricominciamo la settimana con volume ridotto.`,
+      explanation: 'Dopo 1-2 settimane, i tuoi muscoli sono ancora lì ma il sistema nervoso ha bisogno di "risvegliarsi". Riduco il volume per evitare DOMS eccessivo e permetterti di riprendere il ritmo.',
+      programChanges: [
+        `Volume ridotto del ${volumeReduction}% questa settimana`,
+        'Focus sulla tecnica, non sui numeri',
+        'Riscaldamento esteso con mobilità articolare'
+      ],
+      motivation: 'Non stai ricominciando da zero. Stai ricominciando con esperienza.'
+    };
+  }
+
+  if (daysSinceLast <= 28) {
+    return {
+      action: 'deload',
+      volumeAdjustment: 0.50,
+      intensityAdjustment: 0.80,
+      coachingMessage: `${daysSinceLast} giorni di pausa. Questa settimana facciamo deload intelligente.`,
+      explanation: `Dopo ${Math.floor(daysSinceLast / 7)} settimane, hai perso circa il ${Math.round((1 - detraining.strengthRetention / 100) * 100)}% della forza e il ${Math.round((1 - detraining.enduranceRetention / 100) * 100)}% della resistenza. È normale e recuperabile. Ma se riparti troppo forte, rischi infortuni o sovrallenamento.`,
+      programChanges: [
+        '50% del volume normale',
+        '80% dell\'intensità (pesi più leggeri)',
+        'Niente cedimento muscolare',
+        'Focus su mobilità e recupero attivo',
+        'Riscaldamento di 10-15 minuti'
+      ],
+      motivation: 'Il deload non è una punizione. È il trampolino per tornare più forte.'
+    };
+  }
+
+  // > 4 settimane
   return {
-    action,
-    volumeAdjustment: detraining.volumeMultiplier,
-    intensityAdjustment: detraining.intensityMultiplier,
-    message,
-    additionalNotes
+    action: 'reset_program',
+    volumeAdjustment: 0.50,
+    intensityAdjustment: 0.70,
+    coachingMessage: `${daysSinceLast} giorni di stop. Ho preparato un programma di ri-adattamento di ${detraining.reAdaptationWeeks} settimane.`,
+    explanation: `Dopo più di un mese, il corpo ha bisogno di tempo per riadattarsi. Non è un reset - è una rampa di lancio. La ricerca mostra che chi riprende troppo intensamente dopo pause lunghe ha il 3x di probabilità di infortunarsi.`,
+    programChanges: [
+      `Programma di ${detraining.reAdaptationWeeks} settimane progressivo`,
+      'Settimana 1-2: 50% volume, focus tecnica',
+      'Settimana 3-4: 70% volume, introduzione intensità',
+      'Settimana 5+: ritorno graduale al 100%',
+      'Riscaldamento esteso ogni sessione',
+      'Consiglio: ripeti la valutazione fisica'
+    ],
+    motivation: 'Non importa quanto tempo sei stato fermo. Importa che sei tornato. Il tuo corpo ha memoria muscolare - recupererai più velocemente di quanto pensi.'
   };
 }
 
@@ -266,25 +305,33 @@ export function findUnvalidatedSessions(sessions: WorkoutSession[]): Unvalidated
 }
 
 /**
- * Prompt user about unvalidated session
+ * Get coaching decision for unvalidated session
+ * NO user choice - the system decides what's best
  */
-export function getUnvalidatedSessionPrompt(session: UnvalidatedSession): {
+export function getUnvalidatedSessionDecision(session: UnvalidatedSession): {
+  action: 'restart_fresh' | 'count_as_partial';
   title: string;
-  message: string;
-  options: Array<{ label: string; action: 'complete' | 'discard' | 'resume' }>;
+  explanation: string;
+  coachingNote: string;
 } {
-  const exerciseProgress = session.exercisesCompleted > 0
-    ? `(${session.exercisesCompleted}/${session.exercisesStarted} esercizi)`
-    : '';
+  const completionRatio = session.exercisesCompleted / session.exercisesStarted;
+  const hoursSinceStart = (Date.now() - new Date(session.startedAt).getTime()) / (1000 * 60 * 60);
+
+  // Decision logic: if completed >50% recently, count as partial. Otherwise restart.
+  if (completionRatio >= 0.5 && hoursSinceStart < 48) {
+    return {
+      action: 'count_as_partial',
+      title: 'Sessione parziale registrata',
+      explanation: `Hai completato ${session.exercisesCompleted} esercizi su ${session.exercisesStarted}. Li conto come allenamento parziale - meglio metà che niente.`,
+      coachingNote: 'Oggi riparti con una sessione completa. Il corpo si adatta alla costanza, non alla perfezione.'
+    };
+  }
 
   return {
-    title: 'Sessione non completata',
-    message: `Hai iniziato "${session.dayName}" il ${new Date(session.startedAt).toLocaleDateString('it-IT')} ma non l'hai completato ${exerciseProgress}. Cosa vuoi fare?`,
-    options: [
-      { label: 'Segna come completato', action: 'complete' },
-      { label: 'Riprendi da dove ero', action: 'resume' },
-      { label: 'Scarta e ricomincia', action: 'discard' }
-    ]
+    action: 'restart_fresh',
+    title: 'Ricominciamo da zero',
+    explanation: `La sessione del ${new Date(session.startedAt).toLocaleDateString('it-IT')} era incompleta. Non la conto - oggi riparti fresco.`,
+    coachingNote: 'Meglio un allenamento completo fatto bene che due mezzi fatti male. Concentrati sulla qualità.'
   };
 }
 
@@ -402,7 +449,7 @@ export default {
   daysSinceLastWorkout,
   analyzeMissedWorkouts,
   findUnvalidatedSessions,
-  getUnvalidatedSessionPrompt,
+  getUnvalidatedSessionDecision,
   calculateStreak,
   getStreakMessage,
   shouldShowMissedWarning
