@@ -120,23 +120,6 @@ export const PULLUP_SAFETY_CHECKS: SafetyCheck[] = [
     check: (frame) => {
       return false; // Richiede tracking 3D
     }
-  },
-  {
-    code: 'KIPPING_EXCESSIVE',
-    severity: 'MEDIUM',
-    description: 'Kipping eccessivo (oscillazione anche)',
-    correction: 'Per ipertrofia, controlla la discesa. Kipping solo per performance/CrossFit.',
-    check: (frames) => {
-      // Calcola oscillazione delle anche
-      const hipPositions = frames.map(f => {
-        // Usa posizione y delle anche come proxy
-        return f.barPath?.y || 0;
-      });
-
-      if (hipPositions.length < 5) return false;
-      const amplitude = Math.max(...hipPositions) - Math.min(...hipPositions);
-      return amplitude > 0.15; // 15% della frame height
-    }
   }
 ];
 
@@ -177,6 +160,19 @@ export const PULLUP_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
     check: (frames) => {
       // Pattern proxy: se i gomiti restano troppo avanti
       return false;
+    }
+  },
+  {
+    code: 'KIPPING_EXCESSIVE',
+    severity: 'MEDIUM',
+    description: 'Kipping eccessivo (oscillazione anche)',
+    correction: 'Per ipertrofia, controlla la discesa. Kipping solo per performance/CrossFit.',
+    check: (frames) => {
+      // Calcola oscillazione delle anche
+      const hipPositions = frames.map(f => f.barPath?.y || 0);
+      if (hipPositions.length < 5) return false;
+      const amplitude = Math.max(...hipPositions) - Math.min(...hipPositions);
+      return amplitude > 0.15; // 15% della frame height
     }
   }
 ];

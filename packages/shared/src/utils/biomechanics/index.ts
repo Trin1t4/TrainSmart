@@ -187,7 +187,8 @@ function analyzeFrameSequence(
       case 'CABLE_ROW':
       case 'CHEST_PRESS':
       case 'SHOULDER_PRESS_MACHINE':
-        frameAnalysis = analyzeMachineFrame(currentFrame, i, timestamp, phase, morphotype, exercise);
+        const machineType = exercise.toLowerCase().replace('_machine', '') as 'leg_press' | 'leg_curl' | 'lat_pulldown' | 'leg_extension' | 'cable_row' | 'chest_press' | 'shoulder_press';
+        frameAnalysis = analyzeMachineFrame(currentFrame, i, timestamp, phase, machineType, morphotype);
         break;
 
       // Corpo libero e Unilaterali
@@ -197,7 +198,7 @@ function analyzeFrameSequence(
       case 'BULGARIAN_SPLIT_SQUAT':
       case 'ROMANIAN_DEADLIFT':
       case 'HIP_THRUST':
-        frameAnalysis = analyzeBodyweightFrame(currentFrame, i, timestamp, phase, morphotype, exercise);
+        frameAnalysis = analyzeBodyweightFrame(currentFrame, i, timestamp, phase, exercise, morphotype);
         break;
 
       default:
@@ -261,7 +262,8 @@ function performFullAnalysis(
     case 'CABLE_ROW':
     case 'CHEST_PRESS':
     case 'SHOULDER_PRESS_MACHINE':
-      return analyzeFullMachine(frames, morphotype, exercise);
+      const fullMachineType = exercise.toLowerCase().replace('_machine', '') as 'leg_press' | 'leg_curl' | 'lat_pulldown' | 'leg_extension' | 'cable_row' | 'chest_press' | 'shoulder_press';
+      return analyzeFullMachine(frames, fullMachineType, morphotype);
 
     // Corpo libero, Hip Hinge e Unilaterali
     case 'PUSH_UP':
@@ -270,7 +272,7 @@ function performFullAnalysis(
     case 'BULGARIAN_SPLIT_SQUAT':
     case 'ROMANIAN_DEADLIFT':
     case 'HIP_THRUST':
-      return analyzeFullBodyweight(frames, morphotype, exercise);
+      return analyzeFullBodyweight(frames, exercise, morphotype);
 
     default:
       return {

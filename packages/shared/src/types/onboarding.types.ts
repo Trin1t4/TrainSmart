@@ -3,18 +3,35 @@
  * Definizioni complete per il flow di onboarding
  */
 
-export type TrainingLocation = 'gym' | 'home';
+export type TrainingLocation = 'gym' | 'home' | 'home_gym';
 
 export type TrainingType = 'bodyweight' | 'equipment' | 'machines';
 
 export type Goal =
+  // Fitness goals
   | 'forza'
+  | 'ipertrofia'
+  | 'tonificazione'
+  | 'dimagrimento'
+  | 'resistenza'
+  // Legacy values (backward compatibility)
   | 'massa'
   | 'massa muscolare'
   | 'endurance'
   | 'general_fitness'
+  // Sport & Wellness
+  | 'prestazioni_sportive'
+  | 'sport_performance'
+  | 'benessere'
+  // Health & Special Needs
   | 'motor_recovery'
-  | 'sport_performance';
+  | 'pre_partum'      // prenatal (Italian UI value)
+  | 'post_partum'     // postnatal (Italian UI value)
+  | 'disabilita'      // disability (Italian UI value)
+  // Legacy values (keep for backward compatibility)
+  | 'prenatal'
+  | 'postnatal'
+  | 'disability';
 
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 

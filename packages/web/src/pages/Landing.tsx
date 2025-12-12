@@ -3,7 +3,8 @@ import {
   Dumbbell, Target, TrendingUp, ChevronRight, User,
   CheckCircle, Play, Star, Shield, Zap, Clock,
   Smartphone, Brain, Activity, ArrowRight, Quote,
-  Instagram, Mail, Heart, Flame, AlertTriangle
+  Instagram, Mail, Heart, Flame, AlertTriangle,
+  MapPin, RefreshCw, Home, Building2
 } from 'lucide-react';
 import { useState } from 'react';
 import VideoMosaicBackground from '../components/VideoMosaicBackground';
@@ -20,9 +21,9 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-2 mb-6">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-emerald-400 font-medium">Programmi basati sulla scienza</span>
+            <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-full px-4 py-2 mb-6">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <span className="text-sm text-red-400 font-medium">Basta infortuni evitabili</span>
             </div>
 
             {/* Logo/Icon */}
@@ -35,11 +36,11 @@ export default function Landing() {
               TrainSmart
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-4">
-              Il tuo coach personale, sempre in tasca
+              L'app che ascolta il tuo corpo
             </p>
             <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto">
-              Programmi di allenamento personalizzati basati su assessment scientifico.
-              Palestra, casa o calisthenics - TrainSmart si adatta a te.
+              Hai dolori? TrainSmart li rileva e adatta automaticamente gli esercizi.
+              Il primo sistema che protegge le tue articolazioni PRIMA che succeda qualcosa.
             </p>
 
             {/* CTA Buttons */}
@@ -74,26 +75,106 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ===== VIDEO DEMO SECTION ===== */}
+      <section className="py-16 bg-slate-800/50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            {/* Video Container with play overlay */}
+            <div className="relative aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl shadow-emerald-500/10 group cursor-pointer mb-8">
+              {/* Placeholder gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-purple-900/30" />
+
+              {/* Video preview mockup */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center p-8">
+                  {/* App Preview Cards floating */}
+                  <div className="flex items-center justify-center gap-4 mb-8 opacity-60">
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700 transform -rotate-6 shadow-lg">
+                      <Activity className="w-8 h-8 text-red-400 mb-2" />
+                      <div className="text-xs text-slate-400">Pain Detect</div>
+                    </div>
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-emerald-500/50 transform rotate-3 shadow-lg scale-110">
+                      <TrendingUp className="w-10 h-10 text-emerald-400 mb-2" />
+                      <div className="text-sm text-slate-300">Il tuo programma</div>
+                    </div>
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700 transform rotate-6 shadow-lg">
+                      <RefreshCw className="w-8 h-8 text-purple-400 mb-2" />
+                      <div className="text-xs text-slate-400">Adatta</div>
+                    </div>
+                  </div>
+
+                  {/* Play button */}
+                  <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/50 group-hover:shadow-emerald-500/70">
+                    <Play className="w-10 h-10 text-white ml-1" fill="white" />
+                  </div>
+                  <p className="text-slate-400 mt-4 text-sm">Guarda come funziona in 90 secondi</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Video Key Points */}
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700/50">
+                <div className="text-3xl font-bold text-emerald-400 mb-1">10 min</div>
+                <p className="text-slate-400 text-sm">Per avere il tuo programma personalizzato</p>
+              </div>
+              <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700/50">
+                <div className="text-3xl font-bold text-emerald-400 mb-1">21</div>
+                <p className="text-slate-400 text-sm">Domande adattive per capire il tuo livello</p>
+              </div>
+              <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700/50">
+                <div className="text-3xl font-bold text-emerald-400 mb-1">0</div>
+                <p className="text-slate-400 text-sm">Esercizi pericolosi se hai dolori</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== FEATURES SECTION ===== */}
       <section className="py-20 border-t border-slate-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Perché scegliere TrainSmart?
+              Cosa rende TrainSmart diverso?
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              Non è l'ennesima app con schede preconfezionate. TrainSmart analizza il TUO corpo e crea il TUO programma.
+              Non è l'ennesima app con schede preconfezionate. È un sistema che protegge il tuo corpo mentre ti fa progredire.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* PAIN DETECT - Feature principale */}
+            <div className="bg-gradient-to-br from-red-900/30 to-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border-2 border-red-500/50 hover:border-red-400 transition-colors md:col-span-2">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Activity className="w-7 h-7 text-red-400" />
+                </div>
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-red-500/20 rounded-full px-3 py-1 mb-2">
+                    <span className="text-xs font-bold text-red-400">FEATURE PRINCIPALE</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">Pain Detect & AdaptFlow</h3>
+                  <p className="text-slate-300 mb-4">
+                    Segnali un dolore alla spalla? Il sistema <strong className="text-red-400">blocca automaticamente</strong> gli esercizi a rischio e li sostituisce con alternative sicure. Non devi improvvisare, non devi chiedere al "personal trainer" di turno.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs bg-slate-700/50 text-slate-300 px-2 py-1 rounded">Rilevamento zone doloranti</span>
+                    <span className="text-xs bg-slate-700/50 text-slate-300 px-2 py-1 rounded">Sostituzione automatica esercizi</span>
+                    <span className="text-xs bg-slate-700/50 text-slate-300 px-2 py-1 rounded">Deload intelligente</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Assessment */}
             <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700 hover:border-emerald-500/50 transition-colors">
               <div className="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6">
                 <Target className="w-7 h-7 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Assessment Scientifico</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Assessment Completo</h3>
               <p className="text-slate-400">
-                Quiz biomeccanico + test di movimento per valutare forza, mobilità e identificare squilibri muscolari.
+                Quiz + test pratici per valutare il tuo livello reale. Non chiediamo solo "quanti anni ti alleni", ma testiamo forza e mobilità.
               </p>
             </div>
 
@@ -101,19 +182,9 @@ export default function Landing() {
               <div className="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6">
                 <Brain className="w-7 h-7 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">AI che Impara da Te</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Sistema Adattivo</h3>
               <p className="text-slate-400">
-                Il programma si adatta in base ai tuoi feedback, RPE e progressi. Più ti alleni, più diventa preciso.
-              </p>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700 hover:border-emerald-500/50 transition-colors">
-              <div className="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6">
-                <Activity className="w-7 h-7 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Pain Management</h3>
-              <p className="text-slate-400">
-                Hai dolori articolari? TrainSmart modifica automaticamente gli esercizi per proteggerti e aiutarti a recuperare.
+                Il programma evolve in base ai tuoi feedback e RPE. Regole intelligenti, non scatole nere incomprensibili.
               </p>
             </div>
 
@@ -123,7 +194,7 @@ export default function Landing() {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Video Dimostrativi</h3>
               <p className="text-slate-400">
-                Ogni esercizio con video HD che mostra la tecnica corretta. Non sai come fare un movimento? Guarda e impara.
+                Ogni esercizio con video che mostra la tecnica corretta. Non sai come fare un movimento? Guarda e impara.
               </p>
             </div>
 
@@ -133,7 +204,7 @@ export default function Landing() {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Progressione Automatica</h3>
               <p className="text-slate-400">
-                Deload automatici, aumento carichi intelligente, retest periodici. Il programma evolve con te.
+                Aumento carichi basato sui tuoi risultati reali. Deload automatici quando serve. Il programma cresce con te.
               </p>
             </div>
 
@@ -141,11 +212,106 @@ export default function Landing() {
               <div className="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6">
                 <Clock className="w-7 h-7 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Flessibilità Totale</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Ovunque tu sia</h3>
               <p className="text-slate-400">
-                2, 3, 4 o 5 giorni a settimana. Casa, palestra o parco. Il programma si adatta alla tua vita, non il contrario.
+                Casa, palestra, parco. Con bilanciere o a corpo libero. Il programma si genera per la TUA situazione.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== ADAPTIVE INTELLIGENCE SECTION ===== */}
+      <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800/50 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-full px-4 py-2 mb-6">
+              <Zap className="w-4 h-4 text-purple-400" />
+              <span className="text-sm text-purple-400 font-medium">Intelligenza Adattiva</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              E se oggi non va come previsto?
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+              La vita è imprevedibile. Il tuo allenamento si adatta.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Card 1: Location Change */}
+            <div className="group relative bg-gradient-to-br from-purple-900/40 to-slate-800/60 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+              {/* Icone animate */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative">
+                  <div className="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-7 h-7 text-purple-400 group-hover:opacity-0 transition-opacity duration-300" />
+                    <Home className="w-7 h-7 text-purple-400 absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                </div>
+                <RefreshCw className="w-6 h-6 text-purple-400/50 group-hover:rotate-180 transition-transform duration-500" />
+                <div className="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <Home className="w-7 h-7 text-purple-400 group-hover:opacity-0 transition-opacity duration-300" />
+                  <Building2 className="w-7 h-7 text-purple-400 absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Oggi non vai in palestra?
+              </h3>
+              <p className="text-slate-300 mb-4 text-lg">
+                <span className="text-purple-400 font-semibold">Un tap.</span> Il tuo workout si trasforma istantaneamente per casa o palestra.
+              </p>
+              <p className="text-slate-400">
+                Stessa struttura, stessi muscoli, esercizi diversi. Panca → Push-up. Lat machine → Trazioni. Leg press → Pistol squat. Zero scuse.
+              </p>
+
+              <div className="mt-6 flex items-center gap-2 text-sm text-purple-300">
+                <MapPin className="w-4 h-4" />
+                <span>Palestra ↔ Casa ↔ Home Gym</span>
+              </div>
+            </div>
+
+            {/* Card 2: Station Occupied */}
+            <div className="group relative bg-gradient-to-br from-orange-900/40 to-slate-800/60 backdrop-blur-lg rounded-2xl p-8 border border-orange-500/30 hover:border-orange-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10">
+              {/* Visual: macchina occupata */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative w-14 h-14 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                  <Dumbbell className="w-7 h-7 text-orange-400" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">!</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-6 h-6 text-orange-400/50 group-hover:translate-x-2 transition-transform duration-300" />
+                <div className="relative w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                  <Dumbbell className="w-7 h-7 text-emerald-400" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Macchina occupata?
+              </h3>
+              <p className="text-slate-300 mb-4 text-lg">
+                <span className="text-orange-400 font-semibold">Nessun problema.</span> Premi "Occupata" e ricevi l'alternativa migliore per te.
+              </p>
+              <p className="text-slate-400">
+                Non una variante a caso: quella <span className="text-white font-medium">biomeccanicamente equivalente</span> per le tue proporzioni. Stessi muscoli, stesso ROM, diversa macchina.
+              </p>
+
+              <div className="mt-6 flex items-center gap-2 text-sm text-orange-300">
+                <RefreshCw className="w-4 h-4" />
+                <span>Alternative immediate basate su anatomia</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom message */}
+          <div className="text-center mt-12">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Perché l'allenamento perfetto è quello che <span className="text-emerald-400 font-semibold">riesci a fare</span>, non quello che sta sulla carta.
+            </p>
           </div>
         </div>
       </section>
@@ -473,7 +639,7 @@ export default function Landing() {
                 </li>
                 <li className="flex items-center gap-2 text-slate-300">
                   <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                  Weekly split intelligente
+                  Pain Detect
                 </li>
                 <li className="flex items-center gap-2 text-slate-300">
                   <CheckCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
@@ -492,60 +658,26 @@ export default function Landing() {
               </Link>
             </div>
 
-            {/* Base - dopo Early Bird */}
-            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                DA APRILE
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Base</h3>
-              <p className="text-3xl font-bold text-white mb-1">€19.90<span className="text-lg font-normal text-slate-400">/mese</span></p>
-              <p className="text-slate-500 text-sm mb-6">Programmi personalizzati</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2 text-slate-300">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Programmi di allenamento personalizzati
-                </li>
-                <li className="flex items-center gap-2 text-slate-300">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Weekly split intelligente
-                </li>
-                <li className="flex items-center gap-2 text-slate-300">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Adattamento location e attrezzatura
-                </li>
-                <li className="flex items-center gap-2 text-slate-300">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Tracking progressi
-                </li>
-              </ul>
-              <button
-                disabled
-                className="block w-full text-center py-3 bg-slate-700 text-slate-400 font-medium rounded-lg cursor-not-allowed"
-              >
-                Disponibile da Aprile
-              </button>
-            </div>
-
             {/* Pro - Coming Soon */}
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 relative opacity-70">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 COMING SOON
               </div>
               <h3 className="text-xl font-bold text-slate-400 mb-2">Pro</h3>
-              <p className="text-3xl font-bold text-slate-400 mb-1">€29.90<span className="text-lg font-normal text-slate-500">/mese</span></p>
-              <p className="text-slate-500 text-sm mb-6">Con correzioni AI</p>
+              <p className="text-3xl font-bold text-slate-400 mb-1">€24.90<span className="text-lg font-normal text-slate-500">/mese</span></p>
+              <p className="text-slate-500 text-sm mb-6">Con analisi video tecnica</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  Tutto del piano Base
+                  Tutto del piano Early Bird
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  2 correzioni AI al mese
+                  2 analisi video al mese
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  Analisi tecnica video
+                  Feedback tecnica con Gemini
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
@@ -556,18 +688,18 @@ export default function Landing() {
                 disabled
                 className="block w-full text-center py-3 bg-slate-700 text-slate-500 font-medium rounded-lg cursor-not-allowed"
               >
-                Presto disponibile
+                Prossimamente
               </button>
             </div>
 
-            {/* Premium - Coming Soon */}
+            {/* Coach - Coming Soon */}
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 relative opacity-70">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 COMING SOON
               </div>
-              <h3 className="text-xl font-bold text-slate-400 mb-2">Premium</h3>
-              <p className="text-3xl font-bold text-slate-400 mb-1">€49.90<span className="text-lg font-normal text-slate-500">/mese</span></p>
-              <p className="text-slate-500 text-sm mb-6">Correzioni illimitate</p>
+              <h3 className="text-xl font-bold text-slate-400 mb-2">Coach</h3>
+              <p className="text-3xl font-bold text-slate-400 mb-1">€39.90<span className="text-lg font-normal text-slate-500">/mese</span></p>
+              <p className="text-slate-500 text-sm mb-6">Coaching 1:1</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
@@ -575,22 +707,22 @@ export default function Landing() {
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  Correzioni AI illimitate
+                  Analisi video illimitate
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  Coaching settimanale
+                  Chat supporto dedicata
                 </li>
                 <li className="flex items-center gap-2 text-slate-400">
                   <CheckCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  Pianificazione nutrizionale
+                  Consulenza tecnica diretta
                 </li>
               </ul>
               <button
                 disabled
                 className="block w-full text-center py-3 bg-slate-700 text-slate-500 font-medium rounded-lg cursor-not-allowed"
               >
-                Presto disponibile
+                Prossimamente
               </button>
             </div>
           </div>
@@ -631,8 +763,8 @@ export default function Landing() {
                 a: "Se indichi di avere dolore a un'articolazione, il sistema evita o modifica automaticamente gli esercizi che potrebbero aggravarlo, suggerendo alternative sicure."
               },
               {
-                q: "Cosa sono le video correzioni AI?",
-                a: "Puoi caricare un video di te che fai un esercizio e l'AI analizza la tua tecnica, identificando errori e suggerendo correzioni specifiche."
+                q: "Cosa sono le analisi video?",
+                a: "Carichi un video di te che fai un esercizio e Gemini (Google) analizza la tua tecnica, identificando errori e suggerendo correzioni specifiche per le tue proporzioni."
               },
               {
                 q: "Posso annullare in qualsiasi momento?",

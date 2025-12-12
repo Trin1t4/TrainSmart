@@ -120,6 +120,17 @@ export const PAIN_EXERCISE_MAP: Record<PainArea, PainExerciseMapping> = {
       'pistol': ['Squat Assistito', 'Goblet Squat', 'Leg Press']
     },
     correctives: ['Hip Circles', 'Pigeon Stretch', 'Hip Flexor Stretch', 'Glute Activation']
+  },
+
+  neck: {
+    avoid: ['overhead', 'hspu', 'shrug'],
+    substitutions: {
+      'overhead': ['Landmine Press', 'Floor Press', 'Push-up'],
+      'military press': ['Landmine Press', 'Floor Press', 'Push-up'],
+      'shrug': ['Face Pull', 'Band Pull-Apart', 'Reverse Fly'],
+      'pull-up': ['Lat Pulldown', 'Inverted Row', 'Seated Row']
+    },
+    correctives: ['Neck Stretches', 'Chin Tucks', 'Upper Trap Release', 'Levator Scapulae Stretch']
   }
 };
 
@@ -144,15 +155,16 @@ export function applyPainDeload(
   severity: PainSeverity,
   sets: number,
   reps: number,
-  location: 'gym' | 'home'
+  location: 'gym' | 'home' | 'home_gym'
 ): DeloadResult {
+  const hasWeights = location === 'gym' || location === 'home_gym';
   if (severity === 'mild') {
     // MILD (1-3): Deload leggero, continua con cautela
     // Stesso esercizio, volume/intensità ridotti, monitora
     return {
       sets: sets,
       reps: Math.max(3, Math.floor(reps * 0.85)), // -15% reps
-      loadReduction: location === 'gym' ? 0.85 : 1.0, // -15% kg se gym
+      loadReduction: hasWeights ? 0.85 : 1.0, // -15% kg se gym/home_gym
       needsReplacement: false,
       needsEasierVariant: false,
       note: '⚠️ Dolore lieve - Deload applicato, monitora durante esecuzione'
@@ -163,7 +175,7 @@ export function applyPainDeload(
     return {
       sets: Math.max(2, sets - 1),
       reps: Math.max(3, Math.floor(reps * 0.7)),
-      loadReduction: location === 'gym' ? 0.70 : 1.0,
+      loadReduction: hasWeights ? 0.70 : 1.0,
       needsReplacement: true, // Ora anche moderate = evita
       needsEasierVariant: true,
       note: '🛑 Dolore moderato - Esercizio sostituito per sicurezza'
@@ -174,7 +186,7 @@ export function applyPainDeload(
     return {
       sets: Math.max(2, Math.floor(sets * 0.5)), // Sets ridotti per l'alternativa
       reps: Math.max(5, Math.floor(reps * 0.6)), // Reps ridotte per l'alternativa
-      loadReduction: location === 'gym' ? 0.5 : 1.0,
+      loadReduction: hasWeights ? 0.5 : 1.0,
       needsReplacement: true, // EVITA - sostituisci con esercizio sicuro
       needsEasierVariant: true,
       note: '🛑 EVITA - Dolore significativo, esercizio sostituito + correttivi'

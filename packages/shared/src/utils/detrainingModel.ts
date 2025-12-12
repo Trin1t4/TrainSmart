@@ -71,7 +71,7 @@ interface DecayCurve {
   retention: number;
 }
 
-const STRENGTH_DECAY_CURVE: Record<Level, DecayCurve[]> = {
+export const STRENGTH_DECAY_CURVE: Record<Level, DecayCurve[]> = {
   beginner: [
     { days: 7, retention: 100 },   // Beginners retain better short-term
     { days: 14, retention: 98 },
@@ -101,7 +101,7 @@ const STRENGTH_DECAY_CURVE: Record<Level, DecayCurve[]> = {
   ]
 };
 
-const ENDURANCE_DECAY_CURVE: Record<Level, DecayCurve[]> = {
+export const ENDURANCE_DECAY_CURVE: Record<Level, DecayCurve[]> = {
   beginner: [
     { days: 7, retention: 98 },
     { days: 14, retention: 93 },
@@ -131,7 +131,7 @@ const ENDURANCE_DECAY_CURVE: Record<Level, DecayCurve[]> = {
   ]
 };
 
-const MUSCLE_MASS_DECAY_CURVE: Record<Level, DecayCurve[]> = {
+export const MUSCLE_MASS_DECAY_CURVE: Record<Level, DecayCurve[]> = {
   beginner: [
     { days: 7, retention: 100 },
     { days: 14, retention: 99 },

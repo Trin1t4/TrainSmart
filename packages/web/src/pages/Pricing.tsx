@@ -12,10 +12,10 @@ export default function Pricing() {
       features: [
         '6 settimane GRATIS per iniziare',
         'Programmi di allenamento personalizzati',
+        'Pain Detect',
         'Weekly split intelligente',
-        'Adattamento a location e attrezzatura',
-        'Tracking progressi',
-        'Prelazione su tutti gli upgrade futuri'
+        'Adattamento location e attrezzatura',
+        'Tracking progressi'
       ],
       active: true,
       highlighted: true,
@@ -25,36 +25,36 @@ export default function Pricing() {
       isEarlyBird: true
     },
     {
-      name: 'Base',
-      price: 19.90,
-      description: 'Programmi personalizzati',
-      features: [
-        'Programmi di allenamento personalizzati',
-        'Weekly split intelligente',
-        'Adattamento a location e attrezzatura',
-        'Tracking progressi',
-        'Supporto via email'
-      ],
-      active: false,
-      highlighted: false,
-      cta: 'Da Aprile',
-      badge: 'PREZZO PIENO'
-    },
-    {
       name: 'Pro',
-      price: 29.90,
-      description: 'Con correzioni AI mensili',
+      price: 24.90,
+      description: 'Con analisi video tecnica',
       features: [
-        'Tutto del piano Base',
-        '2 correzioni AI al mese',
-        'Analisi tecnica video',
-        'Aggiustamenti biomeccanici',
+        'Tutto di Early Bird',
+        '2 analisi video al mese',
+        'Feedback tecnica con Gemini',
+        'Suggerimenti biomeccanici personalizzati',
         'Supporto prioritario'
       ],
       active: false,
       highlighted: false,
-      cta: 'Coming Soon',
-      badge: 'Presto disponibile'
+      cta: 'Prossimamente',
+      badge: 'COMING SOON'
+    },
+    {
+      name: 'Coach',
+      price: 39.90,
+      description: 'Coaching 1:1',
+      features: [
+        'Tutto di Pro',
+        'Analisi video illimitate',
+        'Chat supporto dedicata',
+        'Programmazione personalizzata avanzata',
+        'Consulenza tecnica diretta'
+      ],
+      active: false,
+      highlighted: false,
+      cta: 'Prossimamente',
+      badge: 'COMING SOON'
     }
   ];
 
@@ -77,7 +77,7 @@ export default function Pricing() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -89,7 +89,11 @@ export default function Pricing() {
               {/* Badge */}
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <span className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg flex items-center gap-1">
+                  <span className={`text-xs font-bold px-4 py-1 rounded-full shadow-lg flex items-center gap-1 ${
+                    (plan as any).isEarlyBird
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                      : 'bg-slate-600 text-white'
+                  }`}>
                     <Sparkles className="w-3 h-3" />
                     {plan.badge}
                   </span>
@@ -100,11 +104,9 @@ export default function Pricing() {
                 relative h-full rounded-2xl p-8 backdrop-blur-lg transition-all duration-300
                 ${(plan as any).isEarlyBird
                   ? 'bg-gradient-to-br from-amber-900/60 to-orange-800/40 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/20'
-                  : plan.highlighted
-                    ? 'bg-gradient-to-br from-emerald-900/60 to-emerald-800/40 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/20'
-                    : plan.active
-                      ? 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/10'
-                      : 'bg-slate-800/30 border border-slate-700/50 opacity-60'
+                  : plan.active
+                    ? 'bg-slate-800/50 border border-slate-700 hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/10'
+                    : 'bg-slate-800/30 border border-slate-700/50 opacity-60'
                 }
               `}>
                 {/* Lock Icon for Disabled Plans */}
@@ -132,7 +134,13 @@ export default function Pricing() {
                     </span>
                   )}
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-4xl font-bold ${(plan as any).isEarlyBird ? 'text-amber-400' : plan.active ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    <span className={`text-4xl font-bold ${
+                      (plan as any).isEarlyBird
+                        ? 'text-amber-400'
+                        : plan.active
+                          ? 'text-emerald-400'
+                          : 'text-slate-500'
+                    }`}>
                       €{plan.price.toFixed(2)}
                     </span>
                     <span className={`text-sm ${plan.active ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -145,7 +153,13 @@ export default function Pricing() {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.active ? 'text-emerald-400' : 'text-slate-600'}`} />
+                      <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                        (plan as any).isEarlyBird
+                          ? 'text-amber-500'
+                          : plan.active
+                            ? 'text-emerald-400'
+                            : 'text-slate-600'
+                      }`} />
                       <span className={`text-sm ${plan.active ? 'text-slate-300' : 'text-slate-500'}`}>
                         {feature}
                       </span>
@@ -156,8 +170,8 @@ export default function Pricing() {
                 {/* CTA Button */}
                 {plan.active ? (
                   <Link
-                    to={plan.link}
-                    className="block w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 rounded-lg text-center shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300"
+                    to={plan.link || '/register'}
+                    className="block w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 rounded-lg text-center shadow-lg shadow-amber-500/30 hover:shadow-xl transition-all duration-300"
                   >
                     {plan.cta}
                   </Link>
@@ -172,6 +186,30 @@ export default function Pricing() {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Value Comparison */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <div className="bg-slate-800/30 rounded-xl p-8 border border-slate-700">
+            <h3 className="text-xl font-bold text-white mb-6 text-center">Confronto valore</h3>
+            <div className="grid md:grid-cols-3 gap-6 text-sm">
+              <div className="text-center p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <div className="text-amber-400 font-bold text-lg mb-2">Early Bird</div>
+                <p className="text-slate-300">Programmi personalizzati + Pain Detect base</p>
+                <p className="text-slate-500 text-xs mt-2">Segnalazione zone doloranti e adattamento automatico</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <div className="text-emerald-400 font-bold text-lg mb-2">Pro</div>
+                <p className="text-slate-300">+ Analisi video della tua tecnica</p>
+                <p className="text-slate-500 text-xs mt-2">Gemini analizza i tuoi movimenti e suggerisce correzioni</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-purple-500/10 border border-purple-500/30">
+                <div className="text-purple-400 font-bold text-lg mb-2">Coach</div>
+                <p className="text-slate-300">+ Supporto diretto e programmazione avanzata</p>
+                <p className="text-slate-500 text-xs mt-2">Consulenza tecnica e chat dedicata</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Back Link */}

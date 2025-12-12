@@ -35,6 +35,7 @@ import {
   getUpgradedExercise,
   isBodyweightExercise,
   getExerciseAlternatives,
+  isSpecialPopulation,
   DifficultyFeedback,
   ProgressionResult,
   ExerciseAlternative
@@ -210,6 +211,7 @@ export default function LiveWorkoutSession({
   const [cycleDayNumber, setCycleDayNumber] = useState<number>(14);
   const [showCycleTracker, setShowCycleTracker] = useState(false);
   const [isFemale, setIsFemale] = useState(false);
+  const [userGoal, setUserGoal] = useState<string>(''); // Per rilevare popolazioni speciali (gravidanza, etc.)
 
   // User data for relative strength calculation
   const [userBodyweight, setUserBodyweight] = useState<number>(75); // Default 75kg
@@ -304,6 +306,11 @@ export default function LiveWorkoutSession({
             // Gender for menstrual tracking
             if (onboarding.personalInfo?.gender === 'F') {
               setIsFemale(true);
+            }
+
+            // Goal per rilevare popolazioni speciali (gravidanza, disabilità, etc.)
+            if (onboarding.goal) {
+              setUserGoal(onboarding.goal);
             }
 
             // PESO CORPOREO - fondamentale per calcolo forza relativa
@@ -2076,62 +2083,102 @@ export default function LiveWorkoutSession({
           {isFemale && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
-                <label className="text-slate-300 text-sm font-semibold">🩸 {t('menstrual.track')}</label>
-                {menstrualPhase !== 'none' && (
+                <label className={`text-sm font-semibold ${isSpecialPopulation(userGoal) ? 'text-slate-500' : 'text-slate-300'}`}>
+                  🩸 {t('menstrual.track')}
+                </label>
+                {menstrualPhase !== 'none' && !isSpecialPopulation(userGoal) && (
                   <span className="text-xs text-pink-400 font-bold">
                     Giorno {cycleDayNumber}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mb-3">
-                I numeri indicano i giorni del ciclo (es: 6-13 = giorni dal 6° al 13° del tuo ciclo mestruale)
-              </p>
 
-              {/* Cycle Phase Selection */}
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { key: 'none', label: t('menstrual.not_track'), emoji: '⚪', color: 'gray', days: '' },
-                  { key: 'follicular', label: t('menstrual.follicular'), emoji: '💪', color: 'green', days: '(6-13)' },
-                  { key: 'ovulation', label: t('menstrual.ovulation'), emoji: '🔥', color: 'orange', days: '(14-16)' },
-                  { key: 'luteal', label: t('menstrual.luteal'), emoji: '⚠️', color: 'yellow', days: '(17-28)' },
-                  { key: 'menstrual', label: t('menstrual.menstruation'), emoji: '🩸', color: 'red', days: '(1-5)' }
-                ].map(({ key, label, emoji, color, days }) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setMenstrualPhase(key as any);
-                      if (key === 'follicular') setCycleDayNumber(10);
-                      else if (key === 'ovulation') setCycleDayNumber(14);
-                      else if (key === 'luteal') setCycleDayNumber(21);
-                      else if (key === 'menstrual') setCycleDayNumber(3);
-                    }}
-                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                      menstrualPhase === key
-                        ? color === 'green'
-                          ? 'bg-green-500/20 border-green-500 text-green-300'
-                          : color === 'orange'
-                          ? 'bg-orange-500/20 border-orange-500 text-orange-300'
-                          : color === 'yellow'
-                          ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
-                          : color === 'red'
-                          ? 'bg-red-500/20 border-red-500 text-red-300'
-                          : 'bg-slate-700 border-slate-600 text-slate-400'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{emoji}</span>
-                      <div className="flex-1 text-left">
-                        <div className="text-xs font-semibold">{label}</div>
-                        {days && <div className="text-xs opacity-60">{days}</div>}
+              {/* Messaggio per gravidanza/popolazioni speciali */}
+              {isSpecialPopulation(userGoal) ? (
+                <div className="bg-slate-800/50 border border-slate-600 rounded-lg p-3">
+                  <p className="text-xs text-slate-400 mb-2">
+                    🤰 Durante la gravidanza il tracking del ciclo mestruale non è applicabile.
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Il tuo programma è già ottimizzato per questa fase speciale.
+                  </p>
+                  {/* Mostra i pulsanti ma disabilitati e anneriti */}
+                  <div className="grid grid-cols-2 gap-2 mt-3 opacity-40 pointer-events-none">
+                    {[
+                      { key: 'none', label: t('menstrual.not_track'), emoji: '⚪', days: '' },
+                      { key: 'follicular', label: t('menstrual.follicular'), emoji: '💪', days: '(6-13)' },
+                      { key: 'ovulation', label: t('menstrual.ovulation'), emoji: '🔥', days: '(14-16)' },
+                      { key: 'luteal', label: t('menstrual.luteal'), emoji: '⚠️', days: '(17-28)' },
+                      { key: 'menstrual', label: t('menstrual.menstruation'), emoji: '🩸', days: '(1-5)' }
+                    ].map(({ key, label, emoji, days }) => (
+                      <div
+                        key={key}
+                        className="p-3 rounded-lg border-2 bg-slate-800 border-slate-700 text-slate-500"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl grayscale">{emoji}</span>
+                          <div className="flex-1 text-left">
+                            <div className="text-xs font-semibold">{label}</div>
+                            {days && <div className="text-xs opacity-60">{days}</div>}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-slate-500 mb-3">
+                    I numeri indicano i giorni del ciclo (es: 6-13 = giorni dal 6° al 13° del tuo ciclo mestruale)
+                  </p>
 
-              {/* Cycle Day Number Slider (shown when phase selected) */}
-              {menstrualPhase !== 'none' && (
+                  {/* Cycle Phase Selection */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { key: 'none', label: t('menstrual.not_track'), emoji: '⚪', color: 'gray', days: '' },
+                      { key: 'follicular', label: t('menstrual.follicular'), emoji: '💪', color: 'green', days: '(6-13)' },
+                      { key: 'ovulation', label: t('menstrual.ovulation'), emoji: '🔥', color: 'orange', days: '(14-16)' },
+                      { key: 'luteal', label: t('menstrual.luteal'), emoji: '⚠️', color: 'yellow', days: '(17-28)' },
+                      { key: 'menstrual', label: t('menstrual.menstruation'), emoji: '🩸', color: 'red', days: '(1-5)' }
+                    ].map(({ key, label, emoji, color, days }) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setMenstrualPhase(key as any);
+                          if (key === 'follicular') setCycleDayNumber(10);
+                          else if (key === 'ovulation') setCycleDayNumber(14);
+                          else if (key === 'luteal') setCycleDayNumber(21);
+                          else if (key === 'menstrual') setCycleDayNumber(3);
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                          menstrualPhase === key
+                            ? color === 'green'
+                              ? 'bg-green-500/20 border-green-500 text-green-300'
+                              : color === 'orange'
+                              ? 'bg-orange-500/20 border-orange-500 text-orange-300'
+                              : color === 'yellow'
+                              ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300'
+                              : color === 'red'
+                              ? 'bg-red-500/20 border-red-500 text-red-300'
+                              : 'bg-slate-700 border-slate-600 text-slate-400'
+                            : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{emoji}</span>
+                          <div className="flex-1 text-left">
+                            <div className="text-xs font-semibold">{label}</div>
+                            {days && <div className="text-xs opacity-60">{days}</div>}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Cycle Day Number Slider (shown when phase selected, NOT for special populations) */}
+              {menstrualPhase !== 'none' && !isSpecialPopulation(userGoal) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -2160,8 +2207,8 @@ export default function LiveWorkoutSession({
                 </motion.div>
               )}
 
-              {/* Cycle Info Box */}
-              {menstrualPhase !== 'none' && (
+              {/* Cycle Info Box (NOT for special populations) */}
+              {menstrualPhase !== 'none' && !isSpecialPopulation(userGoal) && (
                 <div className={`mt-3 rounded-lg p-3 border ${
                   menstrualPhase === 'follicular'
                     ? 'bg-green-500/10 border-green-500/30'

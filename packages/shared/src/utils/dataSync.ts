@@ -205,7 +205,7 @@ export function getSyncStatus(): SyncStatus {
     lastSyncAt: null,
     pendingChanges: [],
     syncErrors: [],
-    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true
+    isOnline: typeof navigator !== 'undefined' ? (navigator as Navigator & { onLine: boolean }).onLine : true
   };
 }
 

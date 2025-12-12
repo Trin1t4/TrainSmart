@@ -93,6 +93,10 @@ export interface BenchImplications {
 
 export interface Morphotype {
   type: MorphotypeType;
+  // Limb-to-torso ratios (for biomechanical calculations)
+  armToTorso?: number;    // e.g., 1.1 means arms 10% longer than torso
+  legToTorso?: number;    // e.g., 0.9 means legs 10% shorter than torso
+  femurToTibia?: number;  // femur length relative to tibia
   squatImplications?: SquatImplications;
   deadliftImplications?: DeadliftImplications;
   benchImplications?: BenchImplications;

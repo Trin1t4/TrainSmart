@@ -491,6 +491,28 @@ const MEDICAL_ALERT_THRESHOLDS = {
   BILATERAL_SEVERE_MIN: 5,     // Bilaterale severo
 };
 
+/**
+ * Popolazioni speciali che richiedono riscaldamento autonomo
+ * - Gravidanza/Pre-partum: esercizi ad impatto vietati
+ * - Post-partum: fase delicata di recupero
+ * - Recupero motorio: necessità specifiche
+ * - Disabilità: adattamenti individuali
+ */
+export const SPECIAL_POPULATION_GOALS = [
+  'gravidanza',
+  'pregnancy',
+  'pre_partum',
+  'prepartum',
+  'post_partum',
+  'postpartum',
+  'motor_recovery',
+  'recupero_motorio',
+  'disability',
+  'disabilita'
+] as const;
+
+export type SpecialPopulationGoal = typeof SPECIAL_POPULATION_GOALS[number];
+
 /** Warm-up base per zona (esercizi e durata) */
 const WARMUP_EXERCISES_BY_AREA: Record<ExtendedPainArea, WarmupExercise[]> = {
   knee: [
@@ -1008,7 +1030,7 @@ export function updateProgressivePainState(
       existingState.alertTriggered = true;
       alert = {
         action: newRecord.severity >= 6 ? 'end_session' : 'skip_exercise',
-        message: `🚨 ALERT: Dolore a ${EXTENDED_PAIN_AREA_LABELS[newRecord.area]} in aumento (${prevSeverity} → ${newRecord.severity})`,
+        message: `🚨 ALERT: Dolore a ${getPainAreaLabel(newRecord.area)} in aumento (${prevSeverity} → ${newRecord.severity})`,
         emoji: '📈',
         suggestions: [
           'Il dolore sta peggiorando durante la sessione',
@@ -1170,7 +1192,9 @@ export function updatePainMemory(
         firstReported: today,
         lastReported: today,
         averageSeverity: severity,
-        occurrences: 1
+        occurrences: 1,
+        trend: 'stable',
+        weeklyHistory: []
       });
     }
   });
@@ -1412,7 +1436,7 @@ export function prepareNextSessionAdaptations(
   });
 
   if (recentChronic.length > 0) {
-    warnings.push(`📌 Zone con dolore ricorrente: ${recentChronic.map(c => EXTENDED_PAIN_AREA_LABELS[c.area]).join(', ')}`);
+    warnings.push(`📌 Zone con dolore ricorrente: ${recentChronic.map(c => getPainAreaLabel(c.area as AllPainAreas)).join(', ')}`);
   }
 
   return {
@@ -1791,17 +1815,71 @@ export function getPainTypeQuestions(): {
 // ============================================================================
 
 /**
+ * Verifica se un goal appartiene alle popolazioni speciali
+ */
+export function isSpecialPopulation(goal?: string): boolean {
+  if (!goal) return false;
+  const normalizedGoal = goal.toLowerCase().trim();
+  return SPECIAL_POPULATION_GOALS.some(sp => normalizedGoal.includes(sp) || sp.includes(normalizedGoal));
+}
+
+/**
  * Genera warm-up adattivo basato su zone doloranti
+ *
+ * @param painAreas - Aree doloranti con severità
+ * @param baseDurationMinutes - Durata base in minuti (default 5)
+ * @param goal - Obiettivo utente (per rilevare popolazioni speciali)
+ *
+ * Per popolazioni speciali (gravidanza, post-partum, recupero motorio, disabilità):
+ * - NON vengono prescritti esercizi di riscaldamento standard (no jumping jacks, etc.)
+ * - Si invita l'utente a scaldarsi autonomamente per 3 minuti come meglio crede
+ * - Questo per sicurezza: ogni condizione speciale richiede adattamenti individuali
  */
 export function generateAdaptiveWarmup(
   painAreas: { area: AllPainAreas; severity: number; painType?: PainType }[],
-  baseDurationMinutes: number = 5
+  baseDurationMinutes: number = 5,
+  goal?: string
 ): AdaptiveWarmup {
   const focusAreas: AdaptiveWarmup['focusAreas'] = [];
   let additionalMinutes = 0;
   const notes: string[] = [];
 
-  // General warm-up exercises (sempre inclusi)
+  // ================================================================
+  // POPOLAZIONI SPECIALI: riscaldamento autonomo
+  // ================================================================
+  if (isSpecialPopulation(goal)) {
+    // Per popolazioni speciali: nessun esercizio prescritto
+    // L'utente si scalda come meglio crede per 3 minuti
+    const selfWarmupExercises: WarmupExercise[] = [
+      {
+        name: 'Riscaldamento autonomo',
+        duration: 180, // 3 minuti
+        targetArea: 'general',
+        notes: 'Scaldati come preferisci per 3 minuti prima di iniziare i test. ' +
+               'Puoi camminare sul posto, fare movimenti articolari leggeri, ' +
+               'o qualsiasi attività a bassa intensità che ti faccia sentire pronto/a.'
+      }
+    ];
+
+    notes.push('Riscaldamento autonomo: scaldati per 3 minuti come meglio credi');
+    notes.push('Evita salti, movimenti bruschi e attività ad alto impatto');
+    notes.push('Ascolta il tuo corpo e procedi gradualmente');
+
+    return {
+      baseDuration: 3, // 3 minuti fissi per popolazioni speciali
+      additionalMinutes: 0,
+      totalDuration: 3,
+      focusAreas: [],
+      generalExercises: selfWarmupExercises,
+      notes
+    };
+  }
+
+  // ================================================================
+  // WARM-UP STANDARD per utenti normali
+  // ================================================================
+
+  // General warm-up exercises (sempre inclusi per utenti standard)
   const generalExercises: WarmupExercise[] = [
     { name: 'Jumping Jacks leggeri', duration: 60, targetArea: 'general' },
     { name: 'Arm Circles', duration: 30, targetArea: 'general' },

@@ -240,6 +240,17 @@ function createWarmupSets(zone: MuscleZone, targetReps: number | string = 10): W
 }
 
 /**
+ * Goal che richiedono valutazione speciale per il warmup
+ * Per ora il warmup è disabilitato per questi goal in attesa di test specifici
+ */
+const GOALS_WITHOUT_AUTO_WARMUP = [
+  'motor_recovery',
+  'prenatal',
+  'postnatal',
+  'disability'
+];
+
+/**
  * Applica il riscaldamento agli esercizi di un giorno
  *
  * Logica:
@@ -247,8 +258,15 @@ function createWarmupSets(zone: MuscleZone, targetReps: number | string = 10): W
  * - Aggiunge warmup solo al PRIMO esercizio di ogni zona
  * - Adatta lo schema di warmup al tipo di lavoro (forza/ipertrofia/resistenza)
  * - Core/correttivi non ricevono warmup con pesi
+ * - Goal speciali (prenatal, postnatal, motor_recovery, disability) non ricevono warmup automatico
  */
-function applyWarmupToExercises(exercises: Exercise[]): Exercise[] {
+function applyWarmupToExercises(exercises: Exercise[], goal?: Goal): Exercise[] {
+  // Skip warmup per goal che richiedono valutazione speciale
+  if (goal && GOALS_WITHOUT_AUTO_WARMUP.includes(goal)) {
+    console.log(`⚠️ Warmup automatico disabilitato per goal: ${goal} (richiede valutazione specifica)`);
+    return exercises;
+  }
+
   const warmedUpZones: Set<MuscleZone> = new Set();
 
   return exercises.map(exercise => {
@@ -510,7 +528,7 @@ interface SplitGeneratorOptions {
   level: Level;
   goal: Goal;
   goals?: string[]; // Multi-goal support (max 3)
-  location: 'gym' | 'home';
+  location: 'gym' | 'home' | 'home_gym';
   trainingType: 'bodyweight' | 'equipment' | 'machines';
   frequency: number;
   baselines: PatternBaselines;
@@ -1889,7 +1907,7 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   // Riscaldamento: 2x6 @ 60% sul PRIMO esercizio di ogni zona (upper/lower)
   console.log('\n🔥 Applicazione riscaldamento specifico per zona');
   split.days.forEach(day => {
-    day.exercises = applyWarmupToExercises(day.exercises);
+    day.exercises = applyWarmupToExercises(day.exercises, options.goal);
   });
 
   // Calcola durata stimata per ogni giorno (include warmup)

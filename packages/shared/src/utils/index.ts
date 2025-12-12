@@ -50,7 +50,7 @@ export type {
   RuntimeContext,
   RuntimeAdaptation,
   ScreeningResults as PreWorkoutScreening,
-  SessionFeedback,
+  SessionFeedback as ProgramSessionFeedback,
   PainAdaptation,
   ExerciseReplacement,
   TimeCompression
@@ -279,9 +279,9 @@ export {
 
 // Pain Load Reduction (evidence-based)
 export type {
-  PainType,
-  PainCharacter,
-  PainTiming,
+  PainType as LoadPainType,
+  PainCharacter as LoadPainCharacter,
+  PainTiming as LoadPainTiming,
   MovementPhase,
   PainAssessment,
   LoadReductionResult
@@ -299,7 +299,7 @@ export type {
   WorkoutStatus,
   WorkoutSession,
   SessionFeedback,
-  WorkoutStreak,
+  WorkoutStreak as CalculatedStreak,
   MissedWorkoutAnalysis,
   MissedWorkoutRecommendation,
   UnvalidatedSession
@@ -400,5 +400,8 @@ export {
   // Medical alerts
   generateMedicalAlerts,
   hasUrgentAlerts,
-  acknowledgeAlert
+  acknowledgeAlert,
+  // Special populations
+  SPECIAL_POPULATION_GOALS,
+  isSpecialPopulation
 } from './painTracking';

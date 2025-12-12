@@ -17,8 +17,9 @@
 // URL base di Supabase Storage per immagini esercizi
 // Costruito dinamicamente dall'URL Supabase configurato
 const getSupabaseStorageUrl = () => {
-  const supabaseUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL
-    ? import.meta.env.VITE_SUPABASE_URL
+  const importMeta = typeof import.meta !== 'undefined' ? (import.meta as any) : {};
+  const supabaseUrl = importMeta.env?.VITE_SUPABASE_URL
+    ? importMeta.env.VITE_SUPABASE_URL
     : process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mhcdxqhhlrujbjxtgnmz.supabase.co';
   return `${supabaseUrl}/storage/v1/object/public/exercise-images`;
 };

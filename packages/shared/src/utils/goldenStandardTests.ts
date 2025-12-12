@@ -13,6 +13,7 @@ export type BodyRegion =
   | 'knee'
   | 'ankle'
   | 'shoulder'
+  | 'scapula'
   | 'elbow'
   | 'wrist';
 

@@ -33,7 +33,7 @@ import {
   adaptWorkoutToRuntime,
   formatValidationResult,
   type ValidationResult,
-  type RuntimeContext,
+  type RuntimeContext as BaseRuntimeContext,
   type RuntimeAdaptation
 } from './programValidation';
 
@@ -84,12 +84,8 @@ export interface ScreeningResult {
   warnings: string[];
 }
 
-export interface RuntimeContext {
-  actualLocation?: string;
-  emergingPainAreas?: string[];
+export interface RuntimeContext extends BaseRuntimeContext {
   currentAssessments?: any[];
-  detrainingFactor?: number;
-  screeningResults?: ScreeningResult | null;
 }
 
 // ============================================================================
@@ -1138,13 +1134,20 @@ function isExerciseSafeForPregnancy(exerciseName: string): boolean {
 }
 
 function isExerciseSafeForDisability(exerciseName: string, _disabilityType?: string): boolean {
-  const complexExercises = [
+  // Per disabilità e recupero motorio: evita esercizi complessi e ad alto impatto
+  const unsafeExercises = [
+    // Esercizi complessi
     'Clean', 'Snatch', 'Clean & Jerk',
     'Bulgarian Split Squat', 'Single Leg RDL', 'Pistol Squat',
-    'Overhead Squat', 'Snatch Grip Deadlift'
+    'Overhead Squat', 'Snatch Grip Deadlift',
+    // Esercizi ad impatto (salti)
+    'Box Jump', 'Burpees', 'Jump Squat', 'Jump Lunge', 'Jumping',
+    'Tuck Jump', 'Star Jump', 'Broad Jump', 'Drop Jump',
+    // Esercizi esplosivi
+    'Plyometric', 'Power Clean', 'Power Snatch'
   ];
-  return !complexExercises.some(complex =>
-    exerciseName.toLowerCase().includes(complex.toLowerCase())
+  return !unsafeExercises.some(unsafe =>
+    exerciseName.toLowerCase().includes(unsafe.toLowerCase())
   );
 }
 
@@ -1155,7 +1158,16 @@ function getPregnancySafeAlternative(exerciseName: string): string {
     'Stacco': 'Hip Thrust',
     'Deadlift': 'Goblet Squat',
     'Squat': 'Goblet Squat',
-    'Crunch': 'Bird Dog'
+    'Crunch': 'Bird Dog',
+    // Esercizi esplosivi → Affondi o alternative sicure
+    'Jump Squat': 'Affondi',
+    'Squat Jump': 'Affondi',
+    'Jump Lunge': 'Affondi Statici',
+    'Box Jump': 'Step Up',
+    'Burpees': 'Squat Completo',
+    'Tuck Jump': 'Affondi',
+    'Star Jump': 'Squat Completo',
+    'Broad Jump': 'Affondi Camminati'
   };
   for (const [unsafe, safe] of Object.entries(alternatives)) {
     if (exerciseName.toLowerCase().includes(unsafe.toLowerCase())) return safe;
@@ -1165,9 +1177,20 @@ function getPregnancySafeAlternative(exerciseName: string): string {
 
 function getDisabilitySafeAlternative(exerciseName: string): string {
   const alternatives: Record<string, string> = {
+    // Esercizi complessi → versioni semplificate
     'Bulgarian Split Squat': 'Leg Press',
     'Single Leg RDL': 'Seated Leg Curl',
-    'Pistol Squat': 'Chair Squat'
+    'Pistol Squat': 'Chair Squat',
+    // Esercizi esplosivi → alternative senza impatto
+    'Jump Squat': 'Affondi',
+    'Squat Jump': 'Affondi',
+    'Jump Lunge': 'Affondi Statici',
+    'Box Jump': 'Step Up',
+    'Burpees': 'Squat Completo',
+    'Tuck Jump': 'Affondi',
+    'Star Jump': 'Squat Completo',
+    'Broad Jump': 'Affondi Camminati',
+    'Drop Jump': 'Step Down'
   };
   for (const [complex, simple] of Object.entries(alternatives)) {
     if (exerciseName.toLowerCase().includes(complex.toLowerCase())) return simple;
@@ -1406,8 +1429,9 @@ function convertHomeExerciseToGym(exercise: any, assessments: any[]): any {
   };
 }
 
-function adaptToPain(plannedSession: any, painAreas: string[]): any {
-  console.log('[ADAPT] Adapting to pain:', painAreas);
+function adaptToPain(plannedSession: any, painAreas: NormalizedPainArea[]): any {
+  const areaNames = painAreas.map(p => p.area);
+  console.log('[ADAPT] Adapting to pain:', areaNames);
 
   const painContraindications: Record<string, string[]> = {
     'neck': ['neck', 'heavy rows', 'shrugs'],
@@ -1423,7 +1447,7 @@ function adaptToPain(plannedSession: any, painAreas: string[]): any {
     .map((exercise: any) => {
       const name = exercise.name.toLowerCase();
 
-      for (const painArea of painAreas) {
+      for (const painArea of areaNames) {
         const contraindications = painContraindications[painArea] || [];
         if (contraindications.some(keyword => name.includes(keyword))) {
           console.log(`[ADAPT] Removing ${exercise.name} due to ${painArea} pain`);
@@ -1444,7 +1468,7 @@ function adaptToPain(plannedSession: any, painAreas: string[]): any {
     ...plannedSession,
     exercises: adaptedExercises,
     isAdapted: true,
-    notes: `Adapted for: ${painAreas.join(', ')}`
+    notes: `Adapted for: ${areaNames.join(', ')}`
   };
 }
 
@@ -2833,10 +2857,17 @@ function generateWeeklyScheduleAPI(
   const config = LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG] || LEVEL_CONFIG.intermediate;
 
   const safeExercise = (name: string): string => {
+    // Gravidanza: controlli più restrittivi
     if (goal === 'pregnancy' || goal === 'gravidanza') {
       return isExerciseSafeForPregnancy(name) ? name : getPregnancySafeAlternative(name);
     }
-    if (goal === 'disability' || goal === 'disabilita') {
+    // Post-partum: stessi controlli della gravidanza (fase delicata)
+    if (goal === 'post_partum' || goal === 'postpartum') {
+      return isExerciseSafeForPregnancy(name) ? name : getPregnancySafeAlternative(name);
+    }
+    // Disabilità e recupero motorio: evita esercizi complessi e ad impatto
+    if (goal === 'disability' || goal === 'disabilita' ||
+        goal === 'motor_recovery' || goal === 'recupero_motorio') {
       return isExerciseSafeForDisability(name, disabilityType) ? name : getDisabilitySafeAlternative(name);
     }
     return name;

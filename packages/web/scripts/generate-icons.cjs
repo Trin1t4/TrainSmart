@@ -30,16 +30,34 @@ const ICON_SIZES = [
 // Apple touch icon
 const APPLE_TOUCH_SIZE = 180;
 
-// Splash screen sizes for iOS
+// Splash screen sizes for iOS (complete list for all modern devices)
 const SPLASH_SIZES = [
-  { width: 2048, height: 2732, name: 'apple-splash-2048-2732.png' },
-  { width: 1668, height: 2388, name: 'apple-splash-1668-2388.png' },
-  { width: 1536, height: 2048, name: 'apple-splash-1536-2048.png' },
-  { width: 1125, height: 2436, name: 'apple-splash-1125-2436.png' },
-  { width: 1242, height: 2688, name: 'apple-splash-1242-2688.png' },
-  { width: 828, height: 1792, name: 'apple-splash-828-1792.png' },
-  { width: 1170, height: 2532, name: 'apple-splash-1170-2532.png' },
+  // iPhone 16 Pro Max
+  { width: 1320, height: 2868, name: 'apple-splash-1320-2868.png' },
+  // iPhone 16 Pro
+  { width: 1206, height: 2622, name: 'apple-splash-1206-2622.png' },
+  // iPhone 16 Plus, 15 Plus
+  { width: 1290, height: 2796, name: 'apple-splash-1290-2796.png' },
+  // iPhone 16, 15, 14 Pro
   { width: 1179, height: 2556, name: 'apple-splash-1179-2556.png' },
+  // iPhone 14 Pro Max
+  { width: 1290, height: 2796, name: 'apple-splash-1290-2796.png' },
+  // iPhone 14 Plus, 13 Pro Max, 12 Pro Max
+  { width: 1284, height: 2778, name: 'apple-splash-1284-2778.png' },
+  // iPhone 14, 13, 13 Pro, 12, 12 Pro
+  { width: 1170, height: 2532, name: 'apple-splash-1170-2532.png' },
+  // iPhone 13 Mini, 12 Mini, 11 Pro, XS, X
+  { width: 1125, height: 2436, name: 'apple-splash-1125-2436.png' },
+  // iPhone 11 Pro Max, XS Max
+  { width: 1242, height: 2688, name: 'apple-splash-1242-2688.png' },
+  // iPhone 11, XR
+  { width: 828, height: 1792, name: 'apple-splash-828-1792.png' },
+  // iPad Pro 12.9"
+  { width: 2048, height: 2732, name: 'apple-splash-2048-2732.png' },
+  // iPad Pro 11"
+  { width: 1668, height: 2388, name: 'apple-splash-1668-2388.png' },
+  // iPad Air, iPad Pro 10.5"
+  { width: 1536, height: 2048, name: 'apple-splash-1536-2048.png' },
 ];
 
 // Create a simple PNG placeholder (1x1 pixel expanded)

@@ -18,7 +18,7 @@ export interface LevelThresholds {
 }
 
 // Default thresholds based on practical assessment scoring
-const DEFAULT_THRESHOLDS: LevelThresholds = {
+export const DEFAULT_THRESHOLDS: LevelThresholds = {
   advanced: 75,      // 75%+ = advanced
   intermediate: 55   // 55-74% = intermediate, <55% = beginner
 };

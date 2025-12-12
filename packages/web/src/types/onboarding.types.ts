@@ -8,13 +8,26 @@ export type TrainingLocation = 'gym' | 'home' | 'home_gym';
 export type TrainingType = 'bodyweight' | 'equipment' | 'machines';
 
 export type Goal =
+  // Fitness goals
   | 'forza'
+  | 'ipertrofia'
+  | 'tonificazione'
+  | 'dimagrimento'
+  | 'resistenza'
+  // Legacy values (backward compatibility)
   | 'massa'
   | 'massa muscolare'
   | 'endurance'
   | 'general_fitness'
+  // Sport & Wellness
+  | 'prestazioni_sportive'
+  | 'sport_performance'
+  | 'benessere'
+  // Health & Special Needs
   | 'motor_recovery'
-  | 'sport_performance';
+  | 'pre_partum'
+  | 'post_partum'
+  | 'disabilita';
 
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 
