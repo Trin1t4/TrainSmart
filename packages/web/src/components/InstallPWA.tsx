@@ -103,7 +103,7 @@ export default function InstallPWA() {
 
           <div className="flex-1 pr-6">
             <h3 className="text-white font-semibold mb-1">
-              Installa FitnessFlow
+              Installa TrainSmart
             </h3>
             <p className="text-sm text-slate-400 mb-3">
               {isIOS

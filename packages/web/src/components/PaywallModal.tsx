@@ -341,7 +341,7 @@ export default function PaywallModal({ open, onClose, onSelectPlan, userProgress
                     <th className="text-left text-gray-400 pb-2"></th>
                     <th className="text-center text-gray-400 pb-2">{t('paywall.comparison.pdf_sheets')}</th>
                     <th className="text-center text-gray-400 pb-2">{t('paywall.comparison.generic_apps')}</th>
-                    <th className="text-center text-blue-400 pb-2 font-bold">FitnessFlow PRO</th>
+                    <th className="text-center text-blue-400 pb-2 font-bold">TrainSmart PRO</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-300">

@@ -240,7 +240,7 @@ export default function Profile() {
 
         {/* App Version */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          FitnessFlow v1.0.0
+          TrainSmart v1.0.0
         </p>
       </div>
 

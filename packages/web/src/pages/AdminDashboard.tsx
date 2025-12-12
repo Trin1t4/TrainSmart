@@ -118,7 +118,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">🎛️ Admin Dashboard</h1>
-            <p className="text-gray-400 text-sm">FitnessFlow Analytics & Monitoring</p>
+            <p className="text-gray-400 text-sm">TrainSmart Analytics & Monitoring</p>
           </div>
           <button
             onClick={() => navigate('/dashboard')}

@@ -118,7 +118,7 @@ export default function AnagraficaStep({ data, onNext }: AnagraficaStepProps) {
             <a href="/terms-of-service" target="_blank" className="text-blue-400 hover:text-blue-300 underline mx-1">
               Termini e Condizioni d'Uso
             </a>
-            del servizio FitnessFlow.
+            del servizio TrainSmart.
           </label>
         </div>
 

@@ -25,6 +25,7 @@ import ResponsiveLayout from "./components/ResponsiveLayout";
 import CookieBanner from "./components/CookieBanner";
 import InstallPWA from "./components/InstallPWA";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Non-critical routes (lazy loaded for code splitting)
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -79,38 +80,38 @@ function App() {
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
 
-              {/* ONBOARDING - Senza auth per test */}
-              <Route path="/onboarding" element={<Onboarding />} />
+              {/* ONBOARDING - Protected */}
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
-              {/* PERCORSO PRINCIPALE - Senza auth per test */}
-              <Route path="/body-scan" element={<BodyCompositionScan />} />
-              <Route path="/quiz" element={<BiomechanicsQuiz />} />
-              <Route path="/screening" element={<Screening />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              {/* PERCORSO PRINCIPALE - Protected */}
+              <Route path="/body-scan" element={<ProtectedRoute><BodyCompositionScan /></ProtectedRoute>} />
+              <Route path="/quiz" element={<ProtectedRoute><BiomechanicsQuiz /></ProtectedRoute>} />
+              <Route path="/screening" element={<ProtectedRoute><Screening /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-              {/* RECOVERY - Senza auth per test */}
-              <Route path="/recovery-screening" element={<RecoveryScreening />} />
+              {/* RECOVERY - Protected */}
+              <Route path="/recovery-screening" element={<ProtectedRoute><RecoveryScreening /></ProtectedRoute>} />
 
-              {/* WORKOUT */}
-              <Route path="/workout" element={<Workout />} />
-              <Route path="/workout-session" element={<WorkoutSession />} />
+              {/* WORKOUT - Protected */}
+              <Route path="/workout" element={<ProtectedRoute><Workout /></ProtectedRoute>} />
+              <Route path="/workout-session" element={<ProtectedRoute><WorkoutSession /></ProtectedRoute>} />
 
-              {/* ADMIN DASHBOARD */}
-              <Route path="/admin" element={<AdminDashboard />} />
+              {/* ADMIN DASHBOARD - Protected + Role Check in component */}
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
-              {/* VIDEO FEEDBACK */}
-              <Route path="/video-feedback/:correctionId" element={<VideoFeedback />} />
+              {/* VIDEO FEEDBACK - Protected */}
+              <Route path="/video-feedback/:correctionId" element={<ProtectedRoute><VideoFeedback /></ProtectedRoute>} />
 
-              {/* PAYMENT */}
-              <Route path="/payment-success" element={<PaymentSuccess />} />
+              {/* PAYMENT - Protected */}
+              <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
 
-              {/* MOBILE NAV ROUTES */}
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/profile" element={<Profile />} />
+              {/* MOBILE NAV ROUTES - Protected */}
+              <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-              {/* SOCIAL FEATURES */}
-              <Route path="/community" element={<Community />} />
-              <Route path="/achievements" element={<Achievements />} />
+              {/* SOCIAL FEATURES - Protected */}
+              <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+              <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

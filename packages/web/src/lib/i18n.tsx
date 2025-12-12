@@ -664,7 +664,7 @@ const translations: Translations = {
   "paywall.feature.early_access": { it: "Early access nuove features", en: "Early access to new features", fr: "Accès anticipé aux nouvelles fonctionnalités", es: "Acceso anticipado a nuevas funciones" },
 
   // Paywall - Why Different Section
-  "paywall.why_different": { it: "Perché FitnessFlow è diverso?", en: "Why is FitnessFlow different?", fr: "Pourquoi FitnessFlow est différent?", es: "¿Por qué FitnessFlow es diferente?" },
+  "paywall.why_different": { it: "Perché TrainSmart è diverso?", en: "Why is TrainSmart different?", fr: "Pourquoi TrainSmart est différent?", es: "¿Por qué TrainSmart es diferente?" },
   "paywall.benefit.pain_title": { it: "Pain Management Intelligente", en: "Intelligent Pain Management", fr: "Gestion Intelligente de la Douleur", es: "Gestión Inteligente del Dolor" },
   "paywall.benefit.pain_desc": { it: "L'app sostituisce automaticamente esercizi se hai dolore. Mai più fermi per infortuni.", en: "The app automatically replaces exercises if you have pain. Never stop for injuries again.", fr: "L'application remplace automatiquement les exercices si vous avez mal. Plus jamais d'arrêt pour blessures.", es: "La app reemplaza automáticamente ejercicios si tienes dolor. Nunca más paradas por lesiones." },
   "paywall.benefit.progressive_title": { it: "Progressive Overload su Misura", en: "Customized Progressive Overload", fr: "Surcharge Progressive Personnalisée", es: "Sobrecarga Progresiva Personalizada" },
@@ -675,7 +675,7 @@ const translations: Translations = {
   "paywall.benefit.no_commitment_desc": { it: "Paghi per 6 settimane, vedi i risultati, decidi TU se continuare. Zero rinnovi nascosti.", en: "Pay for 6 weeks, see the results, YOU decide if to continue. Zero hidden renewals.", fr: "Payez pour 6 semaines, voyez les résultats, VOUS décidez de continuer. Zéro renouvellements cachés.", es: "Pagas por 6 semanas, ves los resultados, TÚ decides si continuar. Cero renovaciones ocultas." },
 
   // Paywall - Comparison Table
-  "paywall.comparison_title": { it: "FitnessFlow vs Alternative", en: "FitnessFlow vs Alternatives", fr: "FitnessFlow vs Alternatives", es: "FitnessFlow vs Alternativas" },
+  "paywall.comparison_title": { it: "TrainSmart vs Alternative", en: "TrainSmart vs Alternatives", fr: "TrainSmart vs Alternatives", es: "TrainSmart vs Alternativas" },
   "paywall.comparison.pdf_sheets": { it: "Schede PDF", en: "PDF Sheets", fr: "Fiches PDF", es: "Fichas PDF" },
   "paywall.comparison.generic_apps": { it: "App Generiche", en: "Generic Apps", fr: "Apps Génériques", es: "Apps Genéricas" },
   "paywall.comparison.custom_weights": { it: "Carichi personalizzati", en: "Custom weights", fr: "Charges personnalisées", es: "Pesos personalizados" },
