@@ -38,6 +38,7 @@ import { toast } from 'sonner';
 // ✅ React Query hooks
 import { useCurrentProgram, useUserPrograms, useCreateProgram, programKeys } from '../hooks/useProgram';
 import VideoMosaicBackground from './VideoMosaicBackground';
+import { useAppStore } from '../store/useAppStore';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -51,6 +52,9 @@ export default function Dashboard() {
   // ✅ Derived states from React Query
   const hasProgram = !!program;
   const syncStatus: 'synced' | 'offline' | 'syncing' = programLoading ? 'syncing' : programError ? 'offline' : 'synced';
+
+  // ✅ Beta tester overrides
+  const { betaOverrides, fitnessLevelOverride } = useAppStore();
 
   // UI states (not related to data fetching)
   const [loading, setLoading] = useState(false);
@@ -608,7 +612,8 @@ export default function Dashboard() {
         return;
       }
 
-      const userLevel = screening.level;
+      // ✅ Beta tester can override the screening level
+      const userLevel = fitnessLevelOverride || screening.level;
 
       // ✅ GOAL: Keep original Italian values for Supabase
       // Database constraint expects Italian values
@@ -616,7 +621,9 @@ export default function Dashboard() {
       const mappedGoal = originalGoal; // No mapping - use Italian directly
 
       console.group('🎯 PROGRAM GENERATION');
-      console.log('Level from Screening:', userLevel);
+      console.log('Level from Screening:', screening.level);
+      console.log('Level Override (Beta):', fitnessLevelOverride);
+      console.log('Final Level:', userLevel);
       console.log('Screening Scores:', {
         final: screening.finalScore,
         quiz: quiz?.score,
@@ -725,54 +732,70 @@ export default function Dashboard() {
   /**
    * Wrapper per generazione programma - usa utils estratti
    * Mantiene compatibilità con il codice esistente del Dashboard
+   * ✅ Applica beta overrides per testing rapido
    */
   function generateLocalProgram(level: string, goal: string, onboarding: any) {
-    const location = onboarding?.trainingLocation || 'gym'; // ✅ FIX: Default gym invece di home
-    const frequency = onboarding?.activityLevel?.weeklyFrequency || 3;
-    const sessionDuration = onboarding?.activityLevel?.sessionDuration; // ✅ Get session duration
+    // ✅ BETA OVERRIDES: Applica override per i beta tester
+    const finalLevel = betaOverrides.fitnessLevel || level;
+    const finalGoal = betaOverrides.goal || goal;
+    const finalLocation = betaOverrides.location || onboarding?.trainingLocation || 'gym';
+    const finalFrequency = betaOverrides.frequency || onboarding?.activityLevel?.weeklyFrequency || 3;
+    const finalSessionDuration = betaOverrides.sessionDuration || onboarding?.activityLevel?.sessionDuration;
+
     const trainingType = onboarding?.trainingType || 'bodyweight';
     const equipment = onboarding?.equipment || {};
     const baselines = dataStatus.screening?.patternBaselines || {};
-    const muscularFocus = onboarding?.muscularFocus || ''; // ✅ Get muscular focus from onboarding
-    const goals = onboarding?.goals || [goal]; // ✅ Multi-goal support (fallback to single goal)
-    const sport = onboarding?.sport || ''; // ✅ Sport-specific training
-    const sportRole = onboarding?.sportRole || ''; // ✅ Sport role (attaccante, portiere, etc.)
+    const muscularFocus = onboarding?.muscularFocus || '';
+    const goals = onboarding?.goals || [finalGoal];
+    const sport = onboarding?.sport || '';
+    const sportRole = onboarding?.sportRole || '';
 
     // ⚠️ VALIDAZIONE: Avvisa se location mancante
-    if (!onboarding?.trainingLocation) {
+    if (!onboarding?.trainingLocation && !betaOverrides.location) {
       console.warn('⚠️ trainingLocation missing in onboarding, defaulting to gym');
     }
 
-    // Valida pain areas usando il validator estratto
-    const rawPainAreas = onboarding?.painAreas || [];
+    // ✅ BETA: Pain areas override
+    const rawPainAreas = betaOverrides.painAreas || onboarding?.painAreas || [];
     const painAreas = validateAndNormalizePainAreas(rawPainAreas);
 
+    // Log beta overrides for debugging
+    if (Object.values(betaOverrides).some(v => v !== null)) {
+      console.log('🧪 BETA OVERRIDES APPLIED:', {
+        level: betaOverrides.fitnessLevel ? `${level} → ${finalLevel}` : level,
+        goal: betaOverrides.goal ? `${goal} → ${finalGoal}` : goal,
+        location: betaOverrides.location ? `→ ${finalLocation}` : finalLocation,
+        frequency: betaOverrides.frequency ? `→ ${finalFrequency}` : finalFrequency,
+        painAreas: betaOverrides.painAreas ? painAreas : 'original',
+      });
+    }
+
     // Log session duration for debugging
-    if (sessionDuration) {
-      console.log(`⏱️ Session duration: ${sessionDuration} minutes`);
+    if (finalSessionDuration) {
+      console.log(`⏱️ Session duration: ${finalSessionDuration} minutes`);
     }
 
     // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal + sport
     const program = generateProgramWithSplit({
-      level: level as any,
-      goal: goal as any,
-      goals, // ✅ Multi-goal support
-      location,
+      level: finalLevel as any,
+      goal: finalGoal as any,
+      goals,
+      location: finalLocation,
       trainingType: trainingType as any,
-      frequency,
+      frequency: finalFrequency,
       baselines,
       painAreas,
       equipment,
-      muscularFocus, // ✅ Pass muscular focus to generator
-      sessionDuration, // ✅ Pass session duration for time adaptation
-      sport, // ✅ Sport-specific training
-      sportRole // ✅ Sport role for position-specific training
+      muscularFocus,
+      sessionDuration: finalSessionDuration,
+      sport,
+      sportRole
     });
 
     // Aggiungi campi richiesti dal formato esistente
     return {
       ...program,
-      location,
+      location: finalLocation,
       totalWeeks: 8,
       createdAt: new Date().toISOString()
     };
@@ -903,13 +926,14 @@ export default function Dashboard() {
         return;
       }
 
-      const userLevel = screening.level;
+      // ✅ Beta tester can override the screening level
+      const userLevel = fitnessLevelOverride || screening.level;
 
       // ✅ GOAL: Keep original Italian values for Supabase
       const originalGoal = onboarding?.goal || 'ipertrofia';
       const mappedGoal = originalGoal; // No mapping - use Italian directly
 
-      console.log('🎯 Generating program with:', { level: userLevel, goal: mappedGoal, location: newLocation });
+      console.log('🎯 Generating program with:', { level: userLevel, goal: mappedGoal, location: newLocation, override: fitnessLevelOverride });
 
       const generatedProgram = generateLocalProgram(userLevel, mappedGoal, onboarding);
 
@@ -1312,11 +1336,12 @@ export default function Dashboard() {
                       return;
                     }
 
-                    const userLevel = screening.level || (screening.finalScore >= 70 ? 'intermediate' : 'beginner');
+                    // ✅ Beta tester can override the screening level
+                    const userLevel = fitnessLevelOverride || screening.level || (screening.finalScore >= 70 ? 'intermediate' : 'beginner');
                     const newLocation = data.location;
                     const newGoal = data.goal;
 
-                    console.log('🎯 Generating new program with:', { level: userLevel, goal: newGoal, location: newLocation });
+                    console.log('🎯 Generating new program with:', { level: userLevel, goal: newGoal, location: newLocation, override: fitnessLevelOverride });
 
                     // 1. Generate new program
                     const generatedProgram = generateLocalProgram(userLevel, newGoal, {

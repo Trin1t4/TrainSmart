@@ -16,6 +16,16 @@ interface OnboardingData {
   painAreas?: Array<{ area: string; intensity: number }>;
 }
 
+// Beta overrides interface
+interface BetaOverrides {
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced' | null;
+  goal: string | null;
+  location: 'home' | 'gym' | null;
+  painAreas: Array<{ area: string; intensity: number }> | null;
+  frequency: number | null;
+  sessionDuration: number | null;
+}
+
 interface AppState {
   // Onboarding
   onboardingData: OnboardingData | null;
@@ -34,6 +44,15 @@ interface AppState {
   // Program state
   currentProgramId: string | null;
   setCurrentProgramId: (id: string) => void;
+
+  // Beta tester overrides (complete)
+  betaOverrides: BetaOverrides;
+  setBetaOverride: <K extends keyof BetaOverrides>(key: K, value: BetaOverrides[K]) => void;
+  resetBetaOverrides: () => void;
+
+  // Legacy compatibility
+  fitnessLevelOverride: 'beginner' | 'intermediate' | 'advanced' | null;
+  setFitnessLevelOverride: (level: 'beginner' | 'intermediate' | 'advanced' | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -56,6 +75,39 @@ export const useAppStore = create<AppState>()(
       // Program state
       currentProgramId: null,
       setCurrentProgramId: (id) => set({ currentProgramId: id }),
+
+      // Beta tester overrides (complete)
+      betaOverrides: {
+        fitnessLevel: null,
+        goal: null,
+        location: null,
+        painAreas: null,
+        frequency: null,
+        sessionDuration: null,
+      },
+      setBetaOverride: (key, value) => set((state) => ({
+        betaOverrides: { ...state.betaOverrides, [key]: value },
+        // Sync legacy fitnessLevelOverride
+        ...(key === 'fitnessLevel' ? { fitnessLevelOverride: value as any } : {}),
+      })),
+      resetBetaOverrides: () => set({
+        betaOverrides: {
+          fitnessLevel: null,
+          goal: null,
+          location: null,
+          painAreas: null,
+          frequency: null,
+          sessionDuration: null,
+        },
+        fitnessLevelOverride: null,
+      }),
+
+      // Legacy compatibility
+      fitnessLevelOverride: null,
+      setFitnessLevelOverride: (level) => set((state) => ({
+        fitnessLevelOverride: level,
+        betaOverrides: { ...state.betaOverrides, fitnessLevel: level },
+      })),
     }),
     {
       name: 'fitness-flow-app-storage',
@@ -65,6 +117,8 @@ export const useAppStore = create<AppState>()(
         onboardingData: state.onboardingData,
         userId: state.userId,
         currentProgramId: state.currentProgramId,
+        betaOverrides: state.betaOverrides,
+        fitnessLevelOverride: state.fitnessLevelOverride,
         // sidebarOpen NON viene persistito (UI state temporaneo)
       }),
     }

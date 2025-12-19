@@ -7,6 +7,7 @@ import { useTranslation } from '../lib/i18n';
 import { supabase } from '../lib/supabaseClient';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DeleteAccountModal from '../components/DeleteAccountModal';
+import BetaTesterPanel from '../components/BetaTesterPanel';
 
 interface UserData {
   email: string;
@@ -197,6 +198,11 @@ export default function Profile() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Beta Tester Panel */}
+        <div className="mb-6">
+          <BetaTesterPanel />
+        </div>
 
         {/* Menu Items */}
         <motion.div

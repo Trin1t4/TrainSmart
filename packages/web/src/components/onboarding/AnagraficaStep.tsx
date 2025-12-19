@@ -1,6 +1,21 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { OnboardingData } from '../../types/onboarding.types';
 import { useTranslation } from '../../lib/i18n';
+
+// Calcola età dalla data di nascita
+function calculateAge(birthDate: string): number | null {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  if (isNaN(birth.getTime())) return null;
+
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age > 0 && age < 120 ? age : null;
+}
 
 interface AnagraficaStepProps {
   data: Partial<OnboardingData>;
@@ -14,6 +29,9 @@ export default function AnagraficaStep({ data, onNext }: AnagraficaStepProps) {
   const [birthDate, setBirthDate] = useState(data.anagrafica?.birthDate || '');
   const [privacyAccepted, setPrivacyAccepted] = useState(data.anagrafica?.privacyAccepted || false);
   const [termsAccepted, setTermsAccepted] = useState(data.anagrafica?.termsAccepted || false);
+
+  // Calcola età in tempo reale
+  const calculatedAge = useMemo(() => calculateAge(birthDate), [birthDate]);
 
   const handleSubmit = () => {
     if (!firstName || !lastName || !privacyAccepted || !termsAccepted) return;
@@ -81,6 +99,14 @@ export default function AnagraficaStep({ data, onNext }: AnagraficaStepProps) {
             max={new Date().toISOString().split('T')[0]}
             className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
           />
+          {/* Mostra età calcolata */}
+          {calculatedAge !== null && (
+            <div className="mt-2 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2">
+              <span className="text-emerald-400 text-lg">🎂</span>
+              <span className="text-emerald-400 font-semibold text-lg">{calculatedAge} anni</span>
+              <span className="text-slate-400 text-sm ml-auto">Età calcolata automaticamente</span>
+            </div>
+          )}
         </div>
       </div>
 
