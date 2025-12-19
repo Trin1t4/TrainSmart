@@ -45,7 +45,11 @@
       "Bash(dir /b \"C:\\Users\\dario\\OneDrive\\Desktop\\FitnessFlow\\packages\\web\\public\\splash\")",
       "Bash(dir /b \"C:\\Users\\dario\\OneDrive\\Desktop\\FitnessFlow\\packages\\web\\src\\pages\")",
       "Bash(dir /b \"C:\\Users\\dario\\OneDrive\\Desktop\\FitnessFlow\\docs\")",
-      "Bash(del /Q ANALISI_COMPLETA.md ANALYTICS_SYSTEM_README.md ANATOMICAL_PAIN_SYSTEM.md CHANGELOG.md CLOUD_SYNC_README.md DELIVERABLES_OVERVIEW.md DEPLOY_EMAIL_FUNCTION.md DEPLOYMENT_VERIFICATION.md HYBRID_RECOVERY_MODAL_IMPLEMENTATION.md HYBRID_RECOVERY_SYSTEM.md LINK_ESERCIZI_STATICI.md LIVE_WORKOUT_PAIN_INTEGRATION.md METABOLIC_CIRCUIT_SYSTEM_V2.md MIGRATIONS_README.md PAIN_MANAGEMENT_SYSTEM.md PAIN_TRACKING_MIGRATION_GUIDE.md PAIN_TRACKING_SYSTEM.md QUICK_START_TESTING.md)"
+      "Bash(del /Q ANALISI_COMPLETA.md ANALYTICS_SYSTEM_README.md ANATOMICAL_PAIN_SYSTEM.md CHANGELOG.md CLOUD_SYNC_README.md DELIVERABLES_OVERVIEW.md DEPLOY_EMAIL_FUNCTION.md DEPLOYMENT_VERIFICATION.md HYBRID_RECOVERY_MODAL_IMPLEMENTATION.md HYBRID_RECOVERY_SYSTEM.md LINK_ESERCIZI_STATICI.md LIVE_WORKOUT_PAIN_INTEGRATION.md METABOLIC_CIRCUIT_SYSTEM_V2.md MIGRATIONS_README.md PAIN_MANAGEMENT_SYSTEM.md PAIN_TRACKING_MIGRATION_GUIDE.md PAIN_TRACKING_SYSTEM.md QUICK_START_TESTING.md)",
+      "Bash(git merge:*)",
+      "Bash(timeout:*)",
+      "Bash(vercel alias:*)",
+      "Bash(dir /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\videos\\\\exercises\")"
     ],
     "deny": [],
     "ask": []

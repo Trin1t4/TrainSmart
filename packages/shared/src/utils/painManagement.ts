@@ -408,16 +408,6 @@ export const PAIN_EXERCISE_MAP: Record<PainArea, PainExerciseMapping> = {
     correctives: ['Wrist Flexor Stretch', 'Wrist Extensor Stretch', 'Forearm Pronation/Supination']
   },
 
-  hip: {
-    avoid: ['squat', 'lunge', 'pistol'],
-    substitutions: {
-      'squat': ['Box Squat', 'Goblet Squat', 'Leg Press'],
-      'lunge': ['Step Up', 'Split Squat', 'Leg Press'],
-      'pistol': ['Squat Assistito', 'Goblet Squat', 'Leg Press']
-    },
-    correctives: ['Hip Circles', 'Pigeon Stretch', 'Hip Flexor Stretch', 'Glute Activation']
-  },
-
   neck: {
     avoid: ['overhead', 'hspu', 'shrug'],
     substitutions: {

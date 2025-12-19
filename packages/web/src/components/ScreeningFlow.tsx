@@ -8,38 +8,97 @@ import { getExerciseImageWithFallback, calculateLevelFromScreening } from '@fitn
 const SCREENING_VIDEOS: Record<string, string> = {
   // === PUSH-UPS (verificati) ===
   'Pike Push-up': '/videos/exercises/pike-push-up.mp4',
+  'Pike Push Up': '/videos/exercises/pike-push-up.mp4',
+  'Elevated Pike Push-up': '/videos/exercises/pike-push-up.mp4',
   'Wall HSPU (ROM parziale)': '/videos/exercises/wall-handstand-push-up.mp4',
   'Wall HSPU (ROM completo)': '/videos/exercises/wall-handstand-push-up.mp4',
   'Freestanding HSPU': '/videos/exercises/wall-handstand-push-up.mp4',
   'Wall Push-up': '/videos/exercises/wall-push-up.mp4',
+  'Incline Push-up': '/videos/exercises/incline-push-up.mp4',
   'Incline Push-up (rialzato)': '/videos/exercises/incline-push-up.mp4',
   'Push-up Standard': '/videos/exercises/standard-push-up.mp4',
+  'Push-up su Ginocchia': '/videos/exercises/standard-push-up.mp4',
   'Diamond Push-up': '/videos/exercises/diamond-push-up.mp4',
-  // MANCANO: Push-up su Ginocchia, Archer, Pseudo Planche, One Arm, Elevated Pike, Wall Walk
+  'Decline Push-up': '/videos/exercises/decline-push-up.mp4',
+  'Archer Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
+  'Pseudo Planche Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
+  'One Arm Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
 
   // === SQUAT (verificati) ===
+  'Squat Assistito (con supporto)': '/videos/exercises/bodyweight-squat.mp4',
   'Air Squat': '/videos/exercises/bodyweight-squat.mp4',
+  'Jump Squat': '/videos/exercises/bodyweight-squat.mp4', // usa bodyweight come fallback
   'Bulgarian Split Squat': '/videos/exercises/bulgarian-split-squat.mp4',
-  'Pistol Squat': '/videos/exercises/pistol-squat.mp4',
   'Pistol Squat Assistito': '/videos/exercises/pistol-squat.mp4',
-  // MANCANO: Squat Assistito, Jump Squat, Shrimp Squat
+  'Shrimp Squat': '/videos/exercises/pistol-squat.mp4', // usa pistol come fallback
+  'Pistol Squat': '/videos/exercises/pistol-squat.mp4',
 
   // === PULL (verificati) ===
   'Inverted Row (barra alta)': '/videos/exercises/inverted-row.mp4',
   'Inverted Row (barra media)': '/videos/exercises/inverted-row.mp4',
   'Inverted Row (barra bassa)': '/videos/exercises/inverted-row.mp4',
+  'Australian Pull-up': '/videos/exercises/inverted-row.mp4',
+  'Negative Pull-up (solo eccentrica)': '/videos/exercises/standard-pull-up.mp4',
+  'Band-Assisted Pull-up': '/videos/exercises/assisted-pull-up.mp4',
   'Pull-up Standard': '/videos/exercises/standard-pull-up.mp4',
   'Chin-up': '/videos/exercises/chin-up.mp4',
-  // MANCANO: Negative Pull-up, Band-Assisted Pull-up, Archer Pull-up
+  'Archer Pull-up': '/videos/exercises/standard-pull-up.mp4', // usa standard come fallback
+  'One Arm Pull-up Progression': '/videos/exercises/standard-pull-up.mp4', // usa standard come fallback
 
   // === HINGE/CORE (verificati) ===
   'Glute Bridge': '/videos/exercises/glute-bridge.mp4',
+  'Single Leg Glute Bridge': '/videos/exercises/glute-bridge.mp4',
+  'Hip Thrust': '/videos/exercises/hip-thrust.mp4',
+  'Single Leg RDL (corpo libero)': '/videos/exercises/romanian-deadlift.mp4',
+  'Romanian Deadlift': '/videos/exercises/romanian-deadlift.mp4',
+  'Good Morning': '/videos/exercises/good-morning.mp4',
+  'Good Morning BW': '/videos/exercises/good-morning.mp4',
   'Nordic Curl (solo eccentrica)': '/videos/exercises/nordic-hamstring-curl.mp4',
   'Nordic Curl (completo)': '/videos/exercises/nordic-hamstring-curl.mp4',
+  'Sliding Leg Curl': '/videos/exercises/standing-leg-curl.mp4',
+  'Leg Curl': '/videos/exercises/leg-curl.mp4',
   'Plank': '/videos/exercises/plank.mp4',
+  'Side Plank': '/videos/exercises/side-plank-modified.mp4',
   'Bird Dog': '/videos/exercises/bird-dog.mp4',
   'Dead Bug': '/videos/exercises/dead-bug.mp4',
-  // MANCANO: Single Leg Glute Bridge, RDL bodyweight, Sliding Leg Curl, Side Plank, Hollow Body, L-sit, Dragon Flag
+  'Dead Bug Progression': '/videos/exercises/dead-bug-progression.mp4',
+  'Bear Hold': '/videos/exercises/bear-hold.mp4',
+  'Pallof Press': '/videos/exercises/pallof-press.mp4',
+  'Hanging Leg Raise': '/videos/exercises/hanging-leg-raise.mp4',
+
+  // === ROW / PULL (palestra) ===
+  'Barbell Row': '/videos/exercises/barbell-row.mp4',
+  'Dumbbell Row': '/videos/exercises/dumbbell-row.mp4',
+  'T-Bar Row': '/videos/exercises/t-bar-row.mp4',
+  'Lat Pulldown': '/videos/exercises/lat-pulldown.mp4',
+  'Lat Machine': '/videos/exercises/lat-pulldown.mp4',
+  'Face Pull': '/videos/exercises/face-pull.mp4',
+  'Seated Cable Row': '/videos/exercises/seated-cable-row.mp4',
+
+  // === SHOULDER (palestra) ===
+  'Military Press': '/videos/exercises/military-press.mp4',
+  'Dumbbell Shoulder Press': '/videos/exercises/dumbbell-shoulder-press.mp4',
+  'Arnold Press': '/videos/exercises/arnold-press.mp4',
+  'Lateral Raise': '/videos/exercises/lateral-raise.mp4',
+  'Front Raise': '/videos/exercises/front-raise.mp4',
+
+  // === LOWER (palestra) ===
+  'Leg Press': '/videos/exercises/leg-press.mp4',
+  'Leg Extension': '/videos/exercises/leg-extension.mp4',
+  'Lunges': '/videos/exercises/lunges.mp4',
+  'Affondi': '/videos/exercises/lunges.mp4',
+  'Step-up': '/videos/exercises/step-up.mp4',
+  'Goblet Squat': '/videos/exercises/goblet-squat.mp4',
+  'Front Squat': '/videos/exercises/front-squat.mp4',
+  'Back Squat': '/videos/exercises/back-squat.mp4',
+  'Sumo Deadlift': '/videos/exercises/sumo-deadlift.mp4',
+  'Conventional Deadlift': '/videos/exercises/conventional-deadlift.mp4',
+
+  // === BENCH / DIPS ===
+  'Bench Press': '/videos/exercises/flat-barbell-bench-press.mp4',
+  'Dumbbell Bench Press': '/videos/exercises/dumbbell-bench-press.mp4',
+  'Chest Dips': '/videos/exercises/chest-dips.mp4',
+  'Tricep Dips': '/videos/exercises/tricep-dips.mp4',
 };
 
 /**

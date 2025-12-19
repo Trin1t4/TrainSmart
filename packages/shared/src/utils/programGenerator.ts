@@ -1837,7 +1837,7 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
 
     for (const painEntry of painAreas) {
       const painArea = painEntry.area;
-      const severity = painEntry.severity || (painEntry.intensity >= 5 ? 'moderate' : 'mild');
+      const severity = painEntry.severity;
 
       // Passa severity a isExerciseConflicting per attivare sostituzione con dolore 5+
       if (isExerciseConflicting(exerciseName, painArea, severity)) {

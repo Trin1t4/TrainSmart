@@ -316,6 +316,12 @@ const translations: Translations = {
   "onboarding.pain.mild": { it: "Lieve", en: "Mild", fr: "Léger", es: "Leve" },
   "onboarding.pain.moderate": { it: "Moderato", en: "Moderate", fr: "Modéré", es: "Moderado" },
   "onboarding.pain.severe": { it: "Grave", en: "Severe", fr: "Grave", es: "Grave" },
+  "onboarding.pain.selectAreas": { it: "Seleziona le aree interessate", en: "Select affected areas", fr: "Sélectionnez les zones concernées", es: "Selecciona las áreas afectadas" },
+  "onboarding.pain.intensity": { it: "Intensità del dolore", en: "Pain intensity", fr: "Intensité de la douleur", es: "Intensidad del dolor" },
+  "onboarding.pain.mildRange": { it: "1-3: Lieve", en: "1-3: Mild", fr: "1-3: Léger", es: "1-3: Leve" },
+  "onboarding.pain.moderateRange": { it: "4-7: Moderato", en: "4-7: Moderate", fr: "4-7: Modéré", es: "4-7: Moderado" },
+  "onboarding.pain.severeRange": { it: "8-10: Grave", en: "8-10: Severe", fr: "8-10: Grave", es: "8-10: Grave" },
+  "onboarding.pain.warning": { it: "⚠️ Il programma verrà adattato per proteggere le aree doloranti. Consulta un medico prima di iniziare qualsiasi programma di allenamento.", en: "⚠️ The program will be adapted to protect painful areas. Consult a doctor before starting any training program.", fr: "⚠️ Le programme sera adapté pour protéger les zones douloureuses. Consultez un médecin avant de commencer tout programme d'entraînement.", es: "⚠️ El programa se adaptará para proteger las áreas dolorosas. Consulta a un médico antes de comenzar cualquier programa de entrenamiento." },
 
   // Workout Tracker
   "workout.complete": { it: "Completa", en: "Complete", fr: "Terminer", es: "Completar" },

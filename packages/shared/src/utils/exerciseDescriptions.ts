@@ -260,6 +260,26 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
     ]
   },
 
+  'Pike Push-up Facile': {
+    description: 'Versione facilitata del Pike Push-up con angolo meno accentuato.',
+    technique: [
+      'Scapole retratte in partenza',
+      'Angolo del corpo meno acuto',
+      'Testa verso il pavimento tra le mani',
+      'Mantieni il core contratto'
+    ]
+  },
+
+  'Pike Push-up Elevato': {
+    description: 'Pike Push-up con piedi elevati per maggiore difficoltà e range of motion.',
+    technique: [
+      'Scapole retratte in partenza',
+      'Piedi su rialzo (sedia/step)',
+      'Corpo più verticale possibile',
+      'Testa verso il pavimento tra le mani'
+    ]
+  },
+
   'Wall Handstand Push-up': {
     description: 'Push-up in verticale contro il muro. Esercizio avanzato per forza esplosiva delle spalle.',
     technique: [
@@ -385,6 +405,27 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Corpo dritto come una tavola',
       'Tira il petto verso la sbarra',
       'Gomiti a 45° dal corpo'
+    ]
+  },
+
+  // Australian Pull-up = Inverted Row orizzontale (alias comune)
+  'Australian Pull-up': {
+    description: 'Rematore orizzontale a corpo libero (anche detto Inverted Row). Propedeutico alle trazioni.',
+    technique: [
+      'Scapole retratte in partenza',
+      'Corpo dritto come una tavola',
+      'Sbarra all\'altezza del petto',
+      'Tira il petto verso la sbarra'
+    ]
+  },
+
+  'Australian Pull-up Veloci': {
+    description: 'Versione esplosiva dell\'Australian Pull-up per resistenza e cardio.',
+    technique: [
+      'Scapole retratte in partenza',
+      'Movimento esplosivo ma controllato',
+      'Corpo sempre rigido',
+      'Minimizza la pausa in alto'
     ]
   },
 

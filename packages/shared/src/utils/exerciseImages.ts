@@ -291,6 +291,21 @@ export const EXERCISE_IMAGES: Record<string, {
     source: 'Spotebi',
     type: 'illustration'
   },
+  'Pike Push Up': {
+    url: `${SUPABASE_STORAGE_URL}/pike-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Pike Push-up Facile': {
+    url: `${SUPABASE_STORAGE_URL}/pike-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
+  'Pike Push-up Elevato': {
+    url: `${SUPABASE_STORAGE_URL}/pike-push-up.jpg`,
+    source: 'Spotebi',
+    type: 'illustration'
+  },
   // NOTA: Questi esercizi usano VIDEO invece di immagini nei test iniziali
   // I video sono disponibili in /videos/exercises/:
   // - wall-handstand-push-up.mp4 (per Wall HSPU, Freestanding HSPU)
@@ -314,6 +329,22 @@ export const EXERCISE_IMAGES: Record<string, {
     type: 'illustration'
   },
   'Inverted Row (barra bassa)': {
+    url: `${SUPABASE_STORAGE_URL}/inverted-row.jpg`,
+    source: 'IconScout',
+    type: 'illustration'
+  },
+  // Australian Pull-up = Inverted Row (alias comune)
+  'Australian Pull-up': {
+    url: `${SUPABASE_STORAGE_URL}/inverted-row.jpg`,
+    source: 'IconScout',
+    type: 'illustration'
+  },
+  'Australian Pull-up Veloci': {
+    url: `${SUPABASE_STORAGE_URL}/inverted-row.jpg`,
+    source: 'IconScout',
+    type: 'illustration'
+  },
+  'Australian Pull Up': {
     url: `${SUPABASE_STORAGE_URL}/inverted-row.jpg`,
     source: 'IconScout',
     type: 'illustration'
