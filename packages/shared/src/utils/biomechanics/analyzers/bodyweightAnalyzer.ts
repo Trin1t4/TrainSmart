@@ -412,6 +412,265 @@ const RDL_CONFIG: ExerciseConfig = {
 };
 
 // ============================================
+// PISTOL SQUAT
+// ============================================
+
+const PISTOL_SQUAT_CONFIG: ExerciseConfig = {
+  safetyChecks: [
+    {
+      code: 'KNEE_VALGUS',
+      severity: 'HIGH',
+      description: 'Ginocchio che collassa verso l\'interno',
+      correction: 'Spingi il ginocchio in fuori, in linea col 2° dito del piede.',
+      check: (frame) => Math.abs(frame.angles.kneeValgus || 0) > 10
+    },
+    {
+      code: 'HEEL_RISE',
+      severity: 'MEDIUM',
+      description: 'Tallone che si alza durante la discesa',
+      correction: 'Lavora sulla mobilità della caviglia. Usa un rialzo sotto il tallone.',
+      check: (frame) => frame.heelContact === false
+    },
+    {
+      code: 'LUMBAR_FLEXION',
+      severity: 'MEDIUM',
+      description: 'Schiena che si arrotonda in basso',
+      correction: 'Core attivo, petto in fuori. Fermati dove perdi la postura.',
+      check: (frame) => frame.spineNeutral === false
+    },
+    {
+      code: 'FORWARD_LEAN_EXCESSIVE',
+      severity: 'LOW',
+      description: 'Busto troppo inclinato in avanti',
+      correction: 'Braccia avanti per controbilanciare, ma cerca di restare più verticale.',
+      check: (frame) => (frame.angles.torso || 0) > 55
+    }
+  ],
+
+  efficiencyChecks: [
+    {
+      code: 'INSUFFICIENT_DEPTH',
+      description: 'Non scendi abbastanza in profondità',
+      correction: 'Full ROM: sedere quasi a toccare il tallone.',
+      check: (frames) => {
+        const bottom = frames.find(f => f.phase === 'BOTTOM');
+        return bottom ? (bottom.angles.knee || 180) > 70 : false;
+      }
+    },
+    {
+      code: 'LEG_NOT_EXTENDED',
+      description: 'Gamba libera non completamente estesa',
+      correction: 'Mantieni la gamba avanti dritta e parallela al pavimento.',
+      check: (frames) => false // Richiede tracking gamba libera
+    },
+    {
+      code: 'USING_MOMENTUM',
+      description: 'Usi lo slancio invece della forza',
+      correction: '3 secondi in discesa, pausa in basso, poi sali.',
+      check: (frames) => false // Richiede analisi velocità
+    }
+  ],
+
+  strengthChecks: [
+    (frames) => {
+      const bottom = frames.find(f => f.phase === 'BOTTOM');
+      return bottom && (bottom.angles.knee || 180) < 60 ? 'Full depth raggiunta' : null;
+    },
+    (frames) => {
+      const valgusIssues = frames.filter(f => Math.abs(f.angles.kneeValgus || 0) > 10);
+      return valgusIssues.length === 0 ? 'Ginocchio stabile e allineato' : null;
+    },
+    (frames) => {
+      const spineOk = frames.every(f => f.spineNeutral !== false);
+      return spineOk ? 'Ottimo controllo del core' : null;
+    }
+  ]
+};
+
+// ============================================
+// SKATER SQUAT
+// ============================================
+
+const SKATER_SQUAT_CONFIG: ExerciseConfig = {
+  safetyChecks: [
+    {
+      code: 'KNEE_VALGUS',
+      severity: 'HIGH',
+      description: 'Ginocchio che collassa verso l\'interno',
+      correction: 'Spingi il ginocchio in fuori, attiva il gluteo medio.',
+      check: (frame) => Math.abs(frame.angles.kneeValgus || 0) > 10
+    },
+    {
+      code: 'TORSO_COLLAPSE',
+      severity: 'MEDIUM',
+      description: 'Torso che si inclina lateralmente',
+      correction: 'Core attivo, spalle dritte. Braccia avanti per equilibrio.',
+      check: (frame) => (frame.angles.torso || 0) > 20
+    },
+    {
+      code: 'LUMBAR_HYPEREXTENSION',
+      severity: 'MEDIUM',
+      description: 'Eccessiva lordosi lombare',
+      correction: 'Leggera retroversione del bacino durante la discesa.',
+      check: (frame) => (frame.angles.lumbar || 0) > 20
+    }
+  ],
+
+  efficiencyChecks: [
+    {
+      code: 'INSUFFICIENT_DEPTH',
+      description: 'Non scendi abbastanza',
+      correction: 'Ginocchio posteriore quasi a terra (o tocca leggermente).',
+      check: (frames) => {
+        const bottom = frames.find(f => f.phase === 'BOTTOM');
+        return bottom ? (bottom.angles.knee || 180) > 100 : false;
+      }
+    },
+    {
+      code: 'BACK_LEG_HELPS',
+      description: 'La gamba posteriore aiuta a spingere',
+      correction: 'Solo equilibrio con la gamba dietro, tutto il drive dalla gamba davanti.',
+      check: (frames) => false // Difficile da rilevare
+    }
+  ],
+
+  strengthChecks: [
+    (frames) => {
+      const bottom = frames.find(f => f.phase === 'BOTTOM');
+      return bottom && (bottom.angles.knee || 180) < 95 ? 'Ottima profondità' : null;
+    },
+    (frames) => {
+      const valgusIssues = frames.filter(f => Math.abs(f.angles.kneeValgus || 0) > 10);
+      return valgusIssues.length === 0 ? 'Stabilità del ginocchio eccellente' : null;
+    }
+  ]
+};
+
+// ============================================
+// ARCHER PUSH-UP
+// ============================================
+
+const ARCHER_PUSHUP_CONFIG: ExerciseConfig = {
+  safetyChecks: [
+    {
+      code: 'HIP_SAG',
+      severity: 'MEDIUM',
+      description: 'Anche che cedono verso il basso',
+      correction: 'Stringi glutei e core. Mantieni la linea del corpo.',
+      check: (frame) => (frame.angles.hip || 180) > 190
+    },
+    {
+      code: 'HIP_ROTATION',
+      severity: 'MEDIUM',
+      description: 'Bacino che ruota durante il movimento',
+      correction: 'Mantieni il bacino parallelo al pavimento.',
+      check: (frame) => false // Richiede tracking rotazione
+    },
+    {
+      code: 'ELBOW_FLARE',
+      severity: 'MEDIUM',
+      description: 'Gomito del braccio che lavora a 90°',
+      correction: 'Gomito a 45° dal corpo, forma una freccia.',
+      check: (frame) => (frame.angles.elbowFlare || 0) > 70
+    },
+    {
+      code: 'ASSIST_ARM_BENT',
+      severity: 'LOW',
+      description: 'Braccio d\'assistenza piegato',
+      correction: 'Il braccio laterale deve restare completamente esteso.',
+      check: (frame) => false // Richiede tracking braccio specifico
+    }
+  ],
+
+  efficiencyChecks: [
+    {
+      code: 'INCOMPLETE_ROM',
+      description: 'Non scendi abbastanza verso il lato',
+      correction: 'Petto verso la mano che lavora, quasi a toccare.',
+      check: (frames) => {
+        const bottom = frames.find(f => f.phase === 'BOTTOM');
+        return bottom ? (bottom.angles.elbow || 180) > 100 : false;
+      }
+    },
+    {
+      code: 'WEIGHT_DISTRIBUTION',
+      description: 'Peso non spostato correttamente',
+      correction: 'Sposta il peso verso il braccio che lavora nella discesa.',
+      check: (frames) => false
+    }
+  ],
+
+  strengthChecks: [
+    (frames) => {
+      const bottom = frames.find(f => f.phase === 'BOTTOM');
+      return bottom && (bottom.angles.elbow || 180) < 95 ? 'Ottimo ROM raggiunto' : null;
+    },
+    (frames) => {
+      const hipIssues = frames.filter(f => (f.angles.hip || 180) > 190);
+      return hipIssues.length === 0 ? 'Ottimo allineamento del corpo' : null;
+    }
+  ]
+};
+
+// ============================================
+// INVERTED ROW (Australian Pull-up)
+// ============================================
+
+const INVERTED_ROW_CONFIG: ExerciseConfig = {
+  safetyChecks: [
+    {
+      code: 'HIP_SAG',
+      severity: 'MEDIUM',
+      description: 'Corpo che cede al centro',
+      correction: 'Linea retta testa-talloni. Stringi glutei.',
+      check: (frame) => (frame.angles.hip || 180) > 185
+    },
+    {
+      code: 'NECK_PROTRACTION',
+      severity: 'LOW',
+      description: 'Testa che va in avanti',
+      correction: 'Mento retratto, collo in linea con la colonna.',
+      check: (frame) => (frame.angles.neck || 0) > 20
+    }
+  ],
+
+  efficiencyChecks: [
+    {
+      code: 'INCOMPLETE_ROM',
+      description: 'Non tiri abbastanza in alto',
+      correction: 'Petto che tocca la barra/anelli.',
+      check: (frames) => {
+        const top = frames.find(f => f.phase === 'TOP' || f.phase === 'LOCKOUT');
+        return top ? (top.angles.elbow || 180) > 100 : false;
+      }
+    },
+    {
+      code: 'NO_SCAPULAR_RETRACTION',
+      description: 'Scapole non retratte in alto',
+      correction: 'Stringi le scapole insieme quando tiri.',
+      check: (frames) => false // Difficile da rilevare
+    },
+    {
+      code: 'PULLING_WITH_ARMS',
+      description: 'Tiri solo con le braccia',
+      correction: 'Inizia il movimento con la retrazione scapolare.',
+      check: (frames) => false
+    }
+  ],
+
+  strengthChecks: [
+    (frames) => {
+      const top = frames.find(f => f.phase === 'TOP');
+      return top && (top.angles.elbow || 180) < 100 ? 'Full ROM raggiunto' : null;
+    },
+    (frames) => {
+      const hipOk = frames.every(f => (f.angles.hip || 180) <= 185);
+      return hipOk ? 'Ottimo allineamento del corpo' : null;
+    }
+  ]
+};
+
+// ============================================
 // REGISTRY - Mappa esercizio -> config
 // ============================================
 
@@ -426,7 +685,12 @@ const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
   'HIP_THRUST': HIP_THRUST_CONFIG,
   'GLUTE_BRIDGE': HIP_THRUST_CONFIG,
   'ROMANIAN_DEADLIFT': RDL_CONFIG,
-  'GOOD_MORNING': RDL_CONFIG
+  'GOOD_MORNING': RDL_CONFIG,
+  // Nuovi esercizi bodyweight avanzati
+  'PISTOL_SQUAT': PISTOL_SQUAT_CONFIG,
+  'SKATER_SQUAT': SKATER_SQUAT_CONFIG,
+  'ARCHER_PUSH_UP': ARCHER_PUSHUP_CONFIG,
+  'INVERTED_ROW': INVERTED_ROW_CONFIG
 };
 
 // ============================================

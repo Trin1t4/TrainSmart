@@ -241,6 +241,10 @@ export type SupportedExercise =
   // Corpo libero
   | 'PUSH_UP'
   | 'DIP'
+  | 'PISTOL_SQUAT'
+  | 'SKATER_SQUAT'
+  | 'ARCHER_PUSH_UP'
+  | 'INVERTED_ROW'
 
   // Macchine
   | 'LEG_PRESS'

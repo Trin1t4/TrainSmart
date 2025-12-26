@@ -1,11 +1,18 @@
 /**
  * Video Upload Modal - Record or upload exercise video for AI analysis
+ *
+ * Usa il sistema ibrido:
+ * 1. MediaPipe per estrazione landmark (in-browser)
+ * 2. Biomechanics Engine interno per analisi
+ * 3. Gemini 1.5 Pro come fallback
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Video, Upload, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { checkVideoQuota, uploadExerciseVideo, pollProcessingStatus, type QuotaInfo } from '../lib/videoCorrectionService';
+import { X, Video, Upload, CheckCircle, AlertCircle, Loader2, Cpu, Sparkles } from 'lucide-react';
+import { checkVideoQuota, type QuotaInfo } from '../lib/videoCorrectionService';
+import { analyzeExerciseVideo, isExerciseSupportedInternally, type CorrectionProgress, type CorrectionResult } from '../lib/videoCorrectionEngine';
+import { supabase } from '../lib/supabaseClient';
 import { useAppStore } from '../store/useAppStore';
 
 interface VideoUploadModalProps {
@@ -36,6 +43,8 @@ export default function VideoUploadModal({
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [processingStatus, setProcessingStatus] = useState<string>('');
+  const [analysisSource, setAnalysisSource] = useState<'internal' | 'gemini' | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<CorrectionResult | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -123,57 +132,94 @@ export default function VideoUploadModal({
     }
   }
 
-  // Upload video
+  // Upload and analyze video with hybrid system
   async function handleUpload() {
     if (!recordedBlob || !userId) return;
 
     setUploadStatus('uploading');
     setUploadProgress(0);
     setErrorMessage('');
+    setAnalysisSource(null);
+    setAnalysisResult(null);
 
-    // Convert blob to File
-    const videoFile = recordedBlob instanceof File
-      ? recordedBlob
-      : new File([recordedBlob], `${exerciseName}_${Date.now()}.mp4`, { type: 'video/mp4' });
+    try {
+      // 1. First create a correction record in the database
+      const timestamp = Date.now();
+      const filename = `${exerciseName.replace(/\s+/g, '-')}_${timestamp}.mp4`;
+      const filePath = `${userId}/${filename}`;
 
-    // Simulate upload progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => Math.min(prev + 10, 90));
-    }, 200);
+      // Upload video to storage
+      setProcessingStatus('Caricamento video...');
+      const { error: uploadError } = await supabase.storage
+        .from('user-exercise-videos')
+        .upload(filePath, recordedBlob, { contentType: 'video/mp4' });
 
-    const result = await uploadExerciseVideo(
-      userId,
-      videoFile,
-      exerciseName,
-      exercisePattern,
-      workoutLogId,
-      setNumber
-    );
+      if (uploadError) {
+        throw new Error(`Upload fallito: ${uploadError.message}`);
+      }
 
-    clearInterval(progressInterval);
-    setUploadProgress(100);
+      setUploadProgress(20);
 
-    if (result.success && result.correctionId) {
+      // Create correction record
+      const { data: correctionData, error: insertError } = await supabase
+        .from('video_corrections')
+        .insert({
+          user_id: userId,
+          video_url: filePath,
+          video_filename: filename,
+          video_size_bytes: recordedBlob.size,
+          exercise_name: exerciseName,
+          exercise_pattern: exercisePattern,
+          workout_log_id: workoutLogId,
+          set_number: setNumber,
+          processing_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (insertError || !correctionData) {
+        throw new Error(`Creazione record fallita: ${insertError?.message}`);
+      }
+
+      setUploadProgress(30);
       setUploadStatus('processing');
-      setProcessingStatus('Analisi video in corso...');
 
-      // Poll for processing status
-      pollProcessingStatus(result.correctionId, (status, correction) => {
-        if (status === 'processing') {
-          setProcessingStatus('Gemini AI sta analizzando il tuo movimento...');
-        } else if (status === 'completed') {
-          setUploadStatus('success');
-          setProcessingStatus('Analisi completata!');
-          onUploadComplete?.(result.correctionId);
-        } else if (status === 'failed') {
-          setUploadStatus('error');
-          setErrorMessage('Analisi fallita. Riprova.');
+      // Check if exercise is supported internally
+      const useInternal = isExerciseSupportedInternally(exerciseName);
+      setAnalysisSource(useInternal ? 'internal' : 'gemini');
+
+      // 2. Analyze with hybrid engine
+      const result = await analyzeExerciseVideo(
+        recordedBlob,
+        exerciseName,
+        userId,
+        correctionData.id,
+        (progress: CorrectionProgress) => {
+          // Map progress to our UI
+          setUploadProgress(30 + (progress.percentage * 0.7)); // 30-100%
+          setProcessingStatus(progress.message);
+
+          if (progress.stage === 'fallback') {
+            setAnalysisSource('gemini');
+          }
         }
-      });
+      );
 
-    } else {
+      // 3. Handle result
+      if (result.success) {
+        setUploadStatus('success');
+        setAnalysisResult(result);
+        setAnalysisSource(result.source === 'internal' ? 'internal' : 'gemini');
+        setProcessingStatus('Analisi completata!');
+        onUploadComplete?.(correctionData.id);
+      } else {
+        throw new Error(result.error || 'Analisi fallita');
+      }
+
+    } catch (error) {
+      console.error('Video analysis failed:', error);
       setUploadStatus('error');
-      setErrorMessage(result.error || 'Upload fallito');
+      setErrorMessage(error instanceof Error ? error.message : 'Analisi fallita. Riprova.');
     }
   }
 
@@ -185,6 +231,8 @@ export default function VideoUploadModal({
     setIsRecording(false);
     setProcessingStatus('');
     setErrorMessage('');
+    setAnalysisSource(null);
+    setAnalysisResult(null);
     if (videoRef.current) {
       videoRef.current.src = '';
       videoRef.current.srcObject = null;
@@ -295,9 +343,35 @@ export default function VideoUploadModal({
             >
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-6 h-6 text-green-400" />
-                <div>
-                  <p className="text-green-400 font-medium">Analisi Completata!</p>
-                  <p className="text-sm text-gray-300">Puoi visualizzare il feedback ora.</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-green-400 font-medium">Analisi Completata!</p>
+                    {analysisSource && (
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        analysisSource === 'internal'
+                          ? 'bg-blue-800 text-blue-300'
+                          : 'bg-purple-800 text-purple-300'
+                      }`}>
+                        {analysisSource === 'internal' ? 'Biomechanica' : 'Gemini AI'}
+                      </span>
+                    )}
+                  </div>
+                  {analysisResult?.score && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-gray-300">Punteggio:</span>
+                      <span className={`font-bold ${
+                        analysisResult.score >= 8 ? 'text-green-400' :
+                        analysisResult.score >= 6 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>
+                        {analysisResult.score}/10
+                      </span>
+                      {analysisResult.morphotype && (
+                        <span className="text-xs text-gray-400">
+                          • {analysisResult.morphotype.type.replace('_', ' ')}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -318,11 +392,39 @@ export default function VideoUploadModal({
         {uploadStatus === 'processing' && (
           <div className="bg-blue-900/50 border border-blue-700 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
-              <div>
-                <p className="text-blue-400 font-medium">{processingStatus}</p>
-                <p className="text-sm text-gray-300">Ci vorranno 30-60 secondi</p>
+              {analysisSource === 'internal' ? (
+                <Cpu className="w-6 h-6 text-blue-400 animate-pulse" />
+              ) : (
+                <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
+              )}
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-blue-400 font-medium">{processingStatus}</p>
+                  {analysisSource && (
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      analysisSource === 'internal'
+                        ? 'bg-blue-800 text-blue-300'
+                        : 'bg-purple-800 text-purple-300'
+                    }`}>
+                      {analysisSource === 'internal' ? 'Analisi Locale' : 'Gemini AI'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-300">
+                  {analysisSource === 'internal'
+                    ? 'Analisi in tempo reale sul tuo dispositivo'
+                    : 'Analisi cloud con AI avanzata'}
+                </p>
               </div>
+            </div>
+            {/* Progress bar */}
+            <div className="mt-3 w-full bg-gray-700 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  analysisSource === 'internal' ? 'bg-blue-500' : 'bg-purple-500'
+                }`}
+                style={{ width: `${uploadProgress}%` }}
+              />
             </div>
           </div>
         )}

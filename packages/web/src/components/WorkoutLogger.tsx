@@ -23,6 +23,7 @@ import autoRegulationService, { ExerciseLog } from '../lib/autoRegulationService
 import { toast } from 'sonner';
 import { useTranslation } from '../lib/i18n';
 import VideoUploadModal from './VideoUploadModal';
+import { isExerciseSupportedInternally } from '../lib/videoCorrectionEngine';
 
 interface Exercise {
   name: string;
@@ -382,22 +383,24 @@ export default function WorkoutLogger({
                     />
                   </div>
 
-                  {/* Video Form Check Button */}
-                  <div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedExercise(exercise);
-                        setShowVideoUpload(true);
-                      }}
-                      className="w-full"
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      📹 Record Form Check
-                    </Button>
-                  </div>
+                  {/* Video Form Check Button - only for supported exercises */}
+                  {isExerciseSupportedInternally(exercise.name) && (
+                    <div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedExercise(exercise);
+                          setShowVideoUpload(true);
+                        }}
+                        className="w-full"
+                      >
+                        <Video className="w-4 h-4 mr-2" />
+                        📹 Record Form Check
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })}

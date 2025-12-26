@@ -25,6 +25,7 @@ import { getExerciseDescription } from '../utils/exerciseDescriptions';
 import painManagementService from '../lib/painManagementService';
 import HybridRecoveryModal from './HybridRecoveryModal';
 import VideoUploadModal from './VideoUploadModal';
+import { isExerciseSupportedInternally } from '../lib/videoCorrectionEngine';
 import ExerciseDislikeModal from './ExerciseDislikeModal';
 import ExerciseVideoPlayer from './ExerciseVideoPlayer';
 import { getVariantsForExercise } from '../utils/exerciseVariants';
@@ -3206,14 +3207,16 @@ export default function LiveWorkoutSession({
               </div>
             )}
 
-            {/* Video Upload Button */}
-            <button
-              onClick={() => setShowVideoUpload(true)}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 mb-3"
-            >
-              <span>📹</span>
-              <span>Carica Video Form Check</span>
-            </button>
+            {/* Video Upload Button - only for supported exercises */}
+            {isExerciseSupportedInternally(currentExercise.name) && (
+              <button
+                onClick={() => setShowVideoUpload(true)}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 mb-3"
+              >
+                <span>📹</span>
+                <span>Carica Video Form Check</span>
+              </button>
+            )}
 
             <button
               onClick={handleRPESubmit}

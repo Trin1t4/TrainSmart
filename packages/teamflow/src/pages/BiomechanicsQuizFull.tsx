@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain, AlertTriangle, Shield, BookOpen, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { Brain, AlertTriangle, Shield, BookOpen, CheckCircle, XCircle, ArrowRight, MapPin, Clock, Edit3, Dumbbell } from 'lucide-react';
 
 // ============================================================================
 // TYPES
@@ -58,8 +58,8 @@ const QUESTIONS: Question[] = [
     weight: 3,
     text: 'Nello squat, le ginocchia non devono MAI superare la punta dei piedi',
     options: [
-      { text: 'Vero, è pericoloso per le ginocchia', correct: false, flag: 'bro_science_believer' },
       { text: 'Falso, dipende dalla struttura e dalla profondità', correct: true },
+      { text: 'Vero, è pericoloso per le ginocchia', correct: false, flag: 'bro_science_believer' },
       { text: 'Solo se fai squat frontale', correct: false },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -84,8 +84,8 @@ const QUESTIONS: Question[] = [
     weight: 3,
     text: 'Se non senti bruciare il muscolo, non stai lavorando bene',
     options: [
-      { text: 'Vero, il bruciore indica che funziona', correct: false, flag: 'bro_science_believer' },
       { text: 'Falso, il bruciore è solo accumulo di metaboliti', correct: true },
+      { text: 'Vero, il bruciore indica che funziona', correct: false, flag: 'bro_science_believer' },
       { text: 'Dipende dall\'esercizio', correct: false, partial: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -98,8 +98,8 @@ const QUESTIONS: Question[] = [
     text: 'Più sudi, più dimagrisci',
     options: [
       { text: 'Vero, il sudore elimina il grasso', correct: false, flag: 'bro_science_believer' },
-      { text: 'Falso, il sudore è solo termoregolazione', correct: true },
       { text: 'Parzialmente vero', correct: false },
+      { text: 'Falso, il sudore è solo termoregolazione', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Il sudore è acqua, non grasso. Il peso perso sudando si riprende bevendo. La perdita di grasso avviene solo con deficit calorico.',
@@ -124,8 +124,8 @@ const QUESTIONS: Question[] = [
     text: 'Per definirti devi usare pesi leggeri e tante ripetizioni',
     options: [
       { text: 'Vero, i pesi pesanti sono per la massa', correct: false, flag: 'bro_science_believer' },
-      { text: 'Falso, la definizione dipende dalla dieta', correct: true },
       { text: 'Dipende dal tipo di corpo', correct: false },
+      { text: 'Falso, la definizione dipende dalla dieta', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Non esiste "allenamento per definizione". La definizione è perdita di grasso = deficit calorico. L\'allenamento serve a mantenere il muscolo.',
@@ -151,8 +151,8 @@ const QUESTIONS: Question[] = [
     weight: 2,
     text: 'Durante la panca piana, le scapole dovrebbero essere:',
     options: [
-      { text: 'Rilassate e naturali', correct: false, flag: 'technique_gap' },
       { text: 'Retratte e depresse (indietro e in basso)', correct: true },
+      { text: 'Rilassate e naturali', correct: false, flag: 'technique_gap' },
       { text: 'Protratte in avanti', correct: false, flag: 'technique_gap' },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -178,8 +178,8 @@ const QUESTIONS: Question[] = [
     text: 'Quando sollevi un peso pesante, dovresti:',
     options: [
       { text: 'Espirare sempre durante lo sforzo', correct: false, partial: true },
-      { text: 'Trattenere il respiro e creare pressione addominale', correct: true },
       { text: 'Respirare normalmente', correct: false, flag: 'technique_gap' },
+      { text: 'Trattenere il respiro e creare pressione addominale', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'La manovra di Valsalva (trattenere + pressione) stabilizza la colonna. "Espira durante lo sforzo" va bene solo per carichi leggeri.',
@@ -190,8 +190,8 @@ const QUESTIONS: Question[] = [
     weight: 2,
     text: 'Quanto dovresti scendere nello squat?',
     options: [
-      { text: 'Fino a che le cosce sono parallele al pavimento', correct: false, partial: true },
       { text: 'Fin dove mantieni la schiena neutra senza compensi', correct: true },
+      { text: 'Fino a che le cosce sono parallele al pavimento', correct: false, partial: true },
       { text: 'Più scendi meglio è, sempre', correct: false, flag: 'technique_gap' },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -204,8 +204,8 @@ const QUESTIONS: Question[] = [
     text: 'Nelle trazioni alla sbarra, il movimento parte da:',
     options: [
       { text: 'Piegare le braccia', correct: false, flag: 'technique_gap' },
-      { text: 'Deprimere le scapole, poi piegare', correct: true },
       { text: 'Usare lo slancio', correct: false, flag: 'technique_gap' },
+      { text: 'Deprimere le scapole, poi piegare', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Attivare prima i dorsali (deprimere scapole) protegge le spalle e rende il movimento più efficace.',
@@ -230,8 +230,8 @@ const QUESTIONS: Question[] = [
     text: 'Se senti dolore (non fatica) durante un esercizio, dovresti:',
     options: [
       { text: 'Continuare, è normale', correct: false, flag: 'safety_risk' },
-      { text: 'Fermarti e valutare', correct: true },
       { text: 'Abbassare il peso e continuare', correct: false, partial: true },
+      { text: 'Fermarti e valutare', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Dolore ≠ fatica. Il dolore è un segnale da non ignorare mai durante l\'esecuzione.',
@@ -257,8 +257,8 @@ const QUESTIONS: Question[] = [
     weight: 1,
     text: 'Sai cosa significa RIR o RPE?',
     options: [
-      { text: 'Mai sentito', correct: false, partial: true },
       { text: 'Ripetizioni in riserva / sforzo percepito', correct: true, flag: 'knows_rpe' },
+      { text: 'Mai sentito', correct: false, partial: true },
       { text: 'Ha a che fare con la frequenza cardiaca', correct: false },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -271,8 +271,8 @@ const QUESTIONS: Question[] = [
     text: 'Cosa si intende per "volume" di allenamento?',
     options: [
       { text: 'Quanto sudi', correct: false },
-      { text: 'Serie × ripetizioni × carico', correct: true },
       { text: 'Quante ore ti alleni', correct: false },
+      { text: 'Serie × ripetizioni × carico', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Il volume è il lavoro totale svolto. È il driver principale dell\'ipertrofia.',
@@ -297,8 +297,8 @@ const QUESTIONS: Question[] = [
     text: 'Qual è la differenza principale tra allenare la forza e l\'ipertrofia?',
     options: [
       { text: 'Nessuna, sono la stessa cosa', correct: false },
-      { text: 'Range di ripetizioni e recupero diversi', correct: true },
       { text: 'La forza usa macchine, l\'ipertrofia pesi liberi', correct: false },
+      { text: 'Range di ripetizioni e recupero diversi', correct: true },
       { text: 'Non lo so', correct: false, partial: true },
     ],
     explanation: 'Forza = carichi alti, poche reps, recuperi lunghi. Ipertrofia = carichi medi, più reps, recuperi moderati.',
@@ -309,8 +309,8 @@ const QUESTIONS: Question[] = [
     weight: 1,
     text: 'Quante volte a settimana dovresti allenare un muscolo per farlo crescere?',
     options: [
-      { text: '1 volta, poi deve riposare 7 giorni', correct: false },
       { text: '2-3 volte funziona meglio per la maggior parte', correct: true },
+      { text: '1 volta, poi deve riposare 7 giorni', correct: false },
       { text: 'Tutti i giorni per massimizzare', correct: false },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -323,8 +323,8 @@ const QUESTIONS: Question[] = [
     text: 'Cos\'è un "deload"?',
     options: [
       { text: 'Quando smetti di allenarti', correct: false },
-      { text: 'Una settimana a intensità/volume ridotto per recuperare', correct: true, flag: 'knows_periodization' },
       { text: 'Un tipo di esercizio', correct: false },
+      { text: 'Una settimana a intensità/volume ridotto per recuperare', correct: true, flag: 'knows_periodization' },
       { text: 'Mai sentito', correct: false, partial: true },
     ],
     explanation: 'Il deload permette il recupero accumulato senza perdere gli adattamenti. È parte della periodizzazione.',
@@ -335,8 +335,8 @@ const QUESTIONS: Question[] = [
     weight: 1,
     text: 'Qual è la differenza tra esercizi "compound" e "isolation"?',
     options: [
-      { text: 'Compound usa macchine, isolation pesi liberi', correct: false },
       { text: 'Compound coinvolge più articolazioni, isolation una', correct: true },
+      { text: 'Compound usa macchine, isolation pesi liberi', correct: false },
       { text: 'Sono la stessa cosa', correct: false },
       { text: 'Non lo so', correct: false, partial: true },
     ],
@@ -483,6 +483,7 @@ export default function BiomechanicsQuizFull() {
   const [selected, setSelected] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [testChoice, setTestChoice] = useState<'gym' | 'know_maxes' | 'later' | null>(null);
 
   const result = useMemo(() => calculateLevel(state), [state]);
 
@@ -576,8 +577,19 @@ export default function BiomechanicsQuizFull() {
     };
 
     localStorage.setItem('quiz_data', JSON.stringify(quizData));
-    navigate('/screening-full');
-  }, [state, navigate]);
+
+    if (testChoice === 'gym') {
+      // Vai ai test pratici con riscaldamento
+      navigate('/screening-full');
+    } else if (testChoice === 'know_maxes') {
+      // Vai a inserire i massimali manualmente
+      navigate('/screening-full', { state: { manualEntry: true } });
+    } else {
+      // Salta i test, vai alla dashboard
+      localStorage.setItem('screening_pending', 'true');
+      navigate('/dashboard');
+    }
+  }, [state, navigate, testChoice]);
 
   // Schermata risultato
   if (isComplete) {
@@ -647,11 +659,94 @@ export default function BiomechanicsQuizFull() {
               </div>
             )}
 
+            {/* Domanda: Sei in palestra? */}
+            <div className="bg-slate-700/30 rounded-xl p-4 mb-6 text-left">
+              <p className="text-white font-semibold mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-emerald-400" />
+                Sei in palestra adesso?
+              </p>
+
+              <div className="space-y-3">
+                {/* Opzione 1: In palestra */}
+                <button
+                  onClick={() => setTestChoice('gym')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'gym'
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'gym' ? 'bg-emerald-500/30' : 'bg-slate-600/50'
+                    }`}>
+                      <Dumbbell className={`w-5 h-5 ${testChoice === 'gym' ? 'text-emerald-400' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'gym' ? 'text-white' : 'text-slate-300'}`}>
+                        Si, faccio i test adesso
+                      </p>
+                      <p className="text-xs text-slate-400">4 test pratici (~10 min)</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Opzione 2: Conosco i massimali */}
+                <button
+                  onClick={() => setTestChoice('know_maxes')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'know_maxes'
+                      ? 'border-blue-500 bg-blue-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'know_maxes' ? 'bg-blue-500/30' : 'bg-slate-600/50'
+                    }`}>
+                      <Edit3 className={`w-5 h-5 ${testChoice === 'know_maxes' ? 'text-blue-400' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'know_maxes' ? 'text-white' : 'text-slate-300'}`}>
+                        No, ma conosco i miei massimali
+                      </p>
+                      <p className="text-xs text-slate-400">Inserisco i valori manualmente</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Opzione 3: Dopo */}
+                <button
+                  onClick={() => setTestChoice('later')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'later'
+                      ? 'border-amber-500 bg-amber-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'later' ? 'bg-amber-500/30' : 'bg-slate-600/50'
+                    }`}>
+                      <Clock className={`w-5 h-5 ${testChoice === 'later' ? 'text-amber-400' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'later' ? 'text-white' : 'text-slate-300'}`}>
+                        Faro i test dopo
+                      </p>
+                      <p className="text-xs text-slate-400">Inizia con un programma base</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <button
               onClick={handleFinish}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition flex items-center justify-center gap-2"
+              disabled={!testChoice}
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continua con lo Screening
+              Continua
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

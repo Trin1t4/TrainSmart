@@ -198,6 +198,10 @@ function analyzeFrameSequence(
       case 'BULGARIAN_SPLIT_SQUAT':
       case 'ROMANIAN_DEADLIFT':
       case 'HIP_THRUST':
+      case 'PISTOL_SQUAT':
+      case 'SKATER_SQUAT':
+      case 'ARCHER_PUSH_UP':
+      case 'INVERTED_ROW':
         frameAnalysis = analyzeBodyweightFrame(currentFrame, i, timestamp, phase, exercise, morphotype);
         break;
 
@@ -272,6 +276,10 @@ function performFullAnalysis(
     case 'BULGARIAN_SPLIT_SQUAT':
     case 'ROMANIAN_DEADLIFT':
     case 'HIP_THRUST':
+    case 'PISTOL_SQUAT':
+    case 'SKATER_SQUAT':
+    case 'ARCHER_PUSH_UP':
+    case 'INVERTED_ROW':
       return analyzeFullBodyweight(frames, exercise, morphotype);
 
     default:
@@ -374,6 +382,10 @@ export const SUPPORTED_EXERCISES: { id: SupportedExercise; name: string; categor
   // Bodyweight
   { id: 'PUSH_UP', name: 'Push-up', category: 'Bodyweight' },
   { id: 'DIP', name: 'Dip', category: 'Bodyweight' },
+  { id: 'PISTOL_SQUAT', name: 'Pistol Squat', category: 'Bodyweight' },
+  { id: 'SKATER_SQUAT', name: 'Skater Squat', category: 'Bodyweight' },
+  { id: 'ARCHER_PUSH_UP', name: 'Archer Push-up', category: 'Bodyweight' },
+  { id: 'INVERTED_ROW', name: 'Inverted Row', category: 'Bodyweight' },
   // Macchine
   { id: 'LEG_PRESS', name: 'Leg Press', category: 'Machine' },
   { id: 'LEG_EXTENSION', name: 'Leg Extension', category: 'Machine' },
