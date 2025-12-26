@@ -14,6 +14,7 @@ export interface RecoveryData {
   injuryDetails: string | null;
   menstrualCycle: 'follicular' | 'ovulation' | 'luteal' | 'menstruation' | 'menopause' | 'prefer_not_say' | null;
   isFemale: boolean;
+  availableTime: number; // minuti disponibili per l'allenamento
   timestamp: string;
 }
 
@@ -31,6 +32,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   >(null);
   const [isFemale, setIsFemale] = useState<boolean>(false);
   const [hasMenopausePreference, setHasMenopausePreference] = useState<boolean>(false);
+  const [availableTime, setAvailableTime] = useState<number>(45); // default 45 min
 
   useEffect(() => {
     fetchUserGender();
@@ -80,6 +82,15 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   const getAdaptations = () => {
     const adaptations: string[] = [];
 
+    // Tempo disponibile
+    if (availableTime <= 20) {
+      adaptations.push('⚡ Allenamento Express - solo esercizi principali');
+    } else if (availableTime <= 30) {
+      adaptations.push('🏃 Allenamento Veloce - riduzione pause e accessori');
+    } else if (availableTime >= 75) {
+      adaptations.push('🏋️ Allenamento Completo - tutti gli esercizi + accessori');
+    }
+
     if (sleepHours < 6) {
       const reduction = sleepHours < 5 ? 30 : 20;
       adaptations.push(`🔻 Volume ridotto del ${reduction}% per sonno insufficiente`);
@@ -118,6 +129,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
       injuryDetails: hasInjury ? injuryDetails : null,
       menstrualCycle: isFemale ? menstrualCycle : null,
       isFemale,
+      availableTime,
       timestamp: new Date().toISOString(),
     };
 
@@ -132,6 +144,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           injury_details: hasInjury ? injuryDetails : null,
           menstrual_cycle: isFemale ? menstrualCycle : null,
           is_female: isFemale,
+          available_time: availableTime,
           created_at: new Date().toISOString(),
         });
       }
@@ -155,6 +168,36 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
         </div>
 
         <div className="space-y-8">
+          {/* Tempo Disponibile */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-lg font-semibold text-gray-900">⏱️ Quanto tempo hai oggi?</span>
+            </label>
+            <div className="grid grid-cols-5 gap-2">
+              {[
+                { min: 20, label: '20 min', icon: '⚡', desc: 'Express' },
+                { min: 30, label: '30 min', icon: '🏃', desc: 'Veloce' },
+                { min: 45, label: '45 min', icon: '💪', desc: 'Standard' },
+                { min: 60, label: '60 min', icon: '🔥', desc: 'Completo' },
+                { min: 90, label: '90+ min', icon: '🏋️', desc: 'Lungo' },
+              ].map((option) => (
+                <button
+                  key={option.min}
+                  onClick={() => setAvailableTime(option.min)}
+                  className={`p-3 border-2 rounded-xl text-center transition-all ${
+                    availableTime === option.min
+                      ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="text-xl">{option.icon}</div>
+                  <div className="font-bold text-sm">{option.label}</div>
+                  <div className="text-xs text-gray-500">{option.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Sonno */}
           <div className="space-y-3">
             <label className="block">

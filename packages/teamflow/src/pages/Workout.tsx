@@ -226,8 +226,32 @@ export default function Workout() {
     console.log("🔍 RECOVERY DATA:", recovery);
     let volumeMultiplier = 1.0;
     let intensityMultiplier = 1.0;
+    let restMultiplier = 1.0;
+    let exerciseMode: 'express' | 'reduced' | 'standard' | 'full' | 'extended' = 'standard';
     const skipExercises: string[] = [];
     const warnings: string[] = [];
+
+    // TEMPO DISPONIBILE - adatta struttura allenamento
+    const availableTime = recovery.availableTime || 45;
+    if (availableTime <= 20) {
+      exerciseMode = 'express';
+      volumeMultiplier *= 0.5;
+      restMultiplier = 0.6;
+      warnings.push('⚡ Express 20min: solo esercizi principali, pause ridotte');
+    } else if (availableTime <= 30) {
+      exerciseMode = 'reduced';
+      volumeMultiplier *= 0.7;
+      restMultiplier = 0.8;
+      warnings.push('🏃 Veloce 30min: esercizi ridotti, pause brevi');
+    } else if (availableTime >= 75) {
+      exerciseMode = 'extended';
+      volumeMultiplier *= 1.15;
+      warnings.push('🏋️ Lungo 90min+: allenamento completo con accessori');
+    } else if (availableTime >= 60) {
+      exerciseMode = 'full';
+      volumeMultiplier *= 1.1;
+      warnings.push('🔥 Completo 60min: tutti gli esercizi');
+    }
 
     if (recovery.sleepHours < 6) {
       volumeMultiplier = 0.8;
@@ -285,10 +309,12 @@ export default function Workout() {
       warnings.push('Programma menopausa: focus resistenza e densità ossea');
     }
 
-console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier });
+console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier, restMultiplier, exerciseMode });
     return {
-      volumeMultiplier: Math.max(0.6, volumeMultiplier),
+      volumeMultiplier: Math.max(0.5, volumeMultiplier),
       intensityMultiplier: Math.max(0.7, intensityMultiplier),
+      restMultiplier,
+      exerciseMode,
       skipExercises,
       recommendation: getRecommendation(volumeMultiplier, intensityMultiplier, warnings)
     };

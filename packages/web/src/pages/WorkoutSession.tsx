@@ -29,6 +29,8 @@ interface WorkoutSessionState {
   adjustment: {
     volumeMultiplier: number;
     intensityMultiplier: number;
+    restMultiplier?: number;
+    exerciseMode?: 'express' | 'reduced' | 'standard' | 'full' | 'extended';
     skipExercises: string[];
     recommendation: string;
   };
@@ -72,9 +74,26 @@ export default function WorkoutSession() {
   }
 
   const workout = state.program.weekly_schedule[state.dayIndex];
-  const exercises = workout.exercises.filter(
+
+  // Filtra esercizi in base a skipExercises e exerciseMode
+  let filteredExercises = workout.exercises.filter(
     (ex: Exercise) => !state.adjustment.skipExercises.some(skip => ex.name.includes(skip))
   );
+
+  // Limita numero esercizi in base a exerciseMode (tempo disponibile)
+  const exerciseMode = state.adjustment.exerciseMode || 'standard';
+  if (exerciseMode === 'express') {
+    // 20 min: solo primi 2-3 esercizi principali
+    filteredExercises = filteredExercises.slice(0, 3);
+    console.log('⚡ EXPRESS MODE: limitato a 3 esercizi');
+  } else if (exerciseMode === 'reduced') {
+    // 30 min: primi 4 esercizi
+    filteredExercises = filteredExercises.slice(0, 4);
+    console.log('🏃 REDUCED MODE: limitato a 4 esercizi');
+  }
+  // standard (45), full (60), extended (90+) = tutti gli esercizi
+
+  const exercises = filteredExercises;
   const currentExercise = exercises[currentExerciseIndex];
 console.log("🎯 STATE RICEVUTO:", state.adjustment);
 console.log("⚙️ ESERCIZIO CORRENTE:", {
@@ -128,7 +147,9 @@ console.log("🏋️ PESO DEBUG:", {
 
     if (currentSet < adjustedSets) {
       setCurrentSet(currentSet + 1);
-      setRestTimeLeft(currentExercise.rest);
+      // Applica restMultiplier per ridurre pause in modalità express/veloce
+      const adjustedRest = Math.round(currentExercise.rest * (state.adjustment.restMultiplier || 1));
+      setRestTimeLeft(Math.max(30, adjustedRest)); // Minimo 30 secondi
       setIsResting(true);
     } else {
       if (currentExerciseIndex < exercises.length - 1) {
