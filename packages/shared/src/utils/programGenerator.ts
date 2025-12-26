@@ -939,11 +939,24 @@ export function generateMetabolicFinisher(type: string, level: string): any {
   const finisher = METABOLIC_FINISHERS[type as keyof typeof METABOLIC_FINISHERS];
   if (!finisher) return null;
 
-  const duration = level === 'beginner'
-    ? finisher.duration?.min || 5
-    : level === 'intermediate'
-      ? Math.round((finisher.duration?.min || 5 + finisher.duration?.max || 10) / 2)
-      : finisher.duration?.max || 10;
+  // Calculate duration based on finisher type
+  let duration: number;
+
+  if ('duration' in finisher && finisher.duration) {
+    // AMRAP, EMOM have explicit duration
+    duration = level === 'beginner'
+      ? finisher.duration.min || 5
+      : level === 'intermediate'
+        ? Math.round((finisher.duration.min + finisher.duration.max) / 2)
+        : finisher.duration.max || 10;
+  } else if ('rounds' in finisher && 'workSeconds' in finisher && 'restSeconds' in finisher) {
+    // Tabata: calculate from rounds * (work + rest)
+    const totalSeconds = finisher.rounds * (finisher.workSeconds + finisher.restSeconds);
+    duration = Math.round(totalSeconds / 60);
+  } else {
+    // Ladder or other: use default
+    duration = level === 'beginner' ? 5 : level === 'intermediate' ? 8 : 10;
+  }
 
   return {
     name: finisher.name,
@@ -951,7 +964,7 @@ export function generateMetabolicFinisher(type: string, level: string): any {
     notation: finisher.notation,
     duration: `${duration} min`,
     description: finisher.description,
-    exercises: finisher.exercises || [],
+    exercises: 'exercises' in finisher ? finisher.exercises : [],
     notes: `Finisher metabolico - ${finisher.name}`
   };
 }

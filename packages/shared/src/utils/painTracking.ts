@@ -378,7 +378,7 @@ export interface PainTypeEvaluation {
 
 /** Mapping zone estese → pattern affetti */
 const EXTENDED_PAIN_PATTERN_MAP: Record<ExtendedPainArea, string[]> = {
-  // Zone originali
+  // Zone base
   knee: ['lower_push', 'lower_pull'],
   shoulder: ['horizontal_push', 'vertical_push', 'vertical_pull'],
   lower_back: ['lower_push', 'lower_pull', 'core'],
@@ -386,16 +386,47 @@ const EXTENDED_PAIN_PATTERN_MAP: Record<ExtendedPainArea, string[]> = {
   ankle: ['lower_push'],
   elbow: ['horizontal_push', 'vertical_push', 'horizontal_pull'],
   hip: ['lower_push', 'lower_pull'],
-  // Zone estese
   neck: ['vertical_push', 'core', 'vertical_pull'],
   upper_back: ['horizontal_pull', 'vertical_pull', 'core'],
   forearm: ['horizontal_pull', 'vertical_pull', 'horizontal_push'],
   calf: ['lower_push'],
-  chest: ['horizontal_push', 'vertical_push']
+  chest: ['horizontal_push', 'vertical_push'],
+
+  // Sub-aree gomito
+  elbow_pull: ['horizontal_pull', 'vertical_pull'],
+  elbow_push: ['horizontal_push', 'vertical_push'],
+
+  // Sub-aree spalla
+  shoulder_overhead: ['vertical_push', 'vertical_pull'],
+  shoulder_push: ['horizontal_push', 'vertical_push'],
+  shoulder_rotation: ['horizontal_pull', 'horizontal_push'],
+
+  // Sub-aree ginocchio
+  knee_flexion: ['lower_push'],
+  knee_extension: ['lower_push'],
+  knee_load: ['lower_push', 'lower_pull'],
+
+  // Sub-aree anca
+  hip_flexion: ['lower_push', 'core'],
+  hip_extension: ['lower_pull'],
+  hip_abduction: ['lower_push', 'lower_pull'],
+  hip_rotation: ['lower_push', 'lower_pull'],
+
+  // Sub-aree zona lombare
+  lower_back_flexion: ['lower_push', 'core'],
+  lower_back_extension: ['lower_pull', 'core'],
+  lower_back_load: ['lower_push', 'lower_pull'],
+  lower_back_rotation: ['core'],
+
+  // Sub-aree caviglia
+  ankle_dorsiflexion: ['lower_push'],
+  ankle_plantarflexion: ['lower_push'],
+  ankle_stability: ['lower_push'],
 };
 
 /** Label italiane per zone estese */
 export const EXTENDED_PAIN_AREA_LABELS: Record<ExtendedPainArea, string> = {
+  // Zone base
   knee: 'Ginocchio',
   shoulder: 'Spalla',
   lower_back: 'Zona Lombare',
@@ -407,7 +438,38 @@ export const EXTENDED_PAIN_AREA_LABELS: Record<ExtendedPainArea, string> = {
   upper_back: 'Zona Dorsale',
   forearm: 'Avambraccio',
   calf: 'Polpaccio',
-  chest: 'Petto/Sterno'
+  chest: 'Petto/Sterno',
+
+  // Sub-aree gomito
+  elbow_pull: 'Gomito (tirate)',
+  elbow_push: 'Gomito (spinte)',
+
+  // Sub-aree spalla
+  shoulder_overhead: 'Spalla (sopra la testa)',
+  shoulder_push: 'Spalla (spinte)',
+  shoulder_rotation: 'Spalla (rotazione)',
+
+  // Sub-aree ginocchio
+  knee_flexion: 'Ginocchio (flessione)',
+  knee_extension: 'Ginocchio (estensione)',
+  knee_load: 'Ginocchio (carico)',
+
+  // Sub-aree anca
+  hip_flexion: 'Anca (flessione)',
+  hip_extension: 'Anca (estensione)',
+  hip_abduction: 'Anca (abduzione)',
+  hip_rotation: 'Anca (rotazione)',
+
+  // Sub-aree zona lombare
+  lower_back_flexion: 'Lombare (flessione)',
+  lower_back_extension: 'Lombare (estensione)',
+  lower_back_load: 'Lombare (carico)',
+  lower_back_rotation: 'Lombare (rotazione)',
+
+  // Sub-aree caviglia
+  ankle_dorsiflexion: 'Caviglia (dorsiflessione)',
+  ankle_plantarflexion: 'Caviglia (plantarflessione)',
+  ankle_stability: 'Caviglia (stabilità)',
 };
 
 /** Soglie per azioni */
@@ -579,7 +641,114 @@ const WARMUP_EXERCISES_BY_AREA: Record<ExtendedPainArea, WarmupExercise[]> = {
     { name: 'Arm Circles', duration: 30, targetArea: 'chest' },
     { name: 'Doorway Stretch', duration: 45, targetArea: 'chest' },
     { name: 'Push-up Plus', duration: 45, sets: 2, reps: 10, targetArea: 'chest' }
-  ]
+  ],
+
+  // Sub-aree gomito (ereditano da elbow)
+  elbow_pull: [
+    { name: 'Elbow Circles', duration: 30, targetArea: 'elbow' },
+    { name: 'Forearm Supination', duration: 45, targetArea: 'elbow' },
+    { name: 'Light Bicep Curls', duration: 45, sets: 2, reps: 10, targetArea: 'elbow' }
+  ],
+  elbow_push: [
+    { name: 'Elbow Circles', duration: 30, targetArea: 'elbow' },
+    { name: 'Tricep Stretch', duration: 45, targetArea: 'elbow' },
+    { name: 'Light Tricep Extensions', duration: 45, sets: 2, reps: 10, targetArea: 'elbow' }
+  ],
+
+  // Sub-aree spalla (ereditano da shoulder)
+  shoulder_overhead: [
+    { name: 'Arm Circles', duration: 30, targetArea: 'shoulder' },
+    { name: 'Wall Slides', duration: 45, sets: 2, reps: 10, targetArea: 'shoulder' },
+    { name: 'Shoulder Dislocations', duration: 45, sets: 2, reps: 10, targetArea: 'shoulder' }
+  ],
+  shoulder_push: [
+    { name: 'Arm Circles', duration: 30, targetArea: 'shoulder' },
+    { name: 'Band Pull-Aparts', duration: 45, sets: 2, reps: 15, targetArea: 'shoulder' },
+    { name: 'Push-up Plus', duration: 45, sets: 2, reps: 10, targetArea: 'shoulder' }
+  ],
+  shoulder_rotation: [
+    { name: 'Arm Circles', duration: 30, targetArea: 'shoulder' },
+    { name: 'External Rotation', duration: 45, sets: 2, reps: 10, targetArea: 'shoulder' },
+    { name: 'Internal Rotation', duration: 45, sets: 2, reps: 10, targetArea: 'shoulder' }
+  ],
+
+  // Sub-aree ginocchio (ereditano da knee)
+  knee_flexion: [
+    { name: 'Knee Circles', duration: 30, targetArea: 'knee' },
+    { name: 'Partial ROM Squats', duration: 60, sets: 2, reps: 10, targetArea: 'knee' },
+    { name: 'Hamstring Curls', duration: 45, sets: 2, reps: 10, targetArea: 'knee' }
+  ],
+  knee_extension: [
+    { name: 'Knee Circles', duration: 30, targetArea: 'knee' },
+    { name: 'VMO Activation', duration: 45, targetArea: 'knee' },
+    { name: 'Terminal Knee Extensions', duration: 45, sets: 2, reps: 10, targetArea: 'knee' }
+  ],
+  knee_load: [
+    { name: 'Knee Circles', duration: 30, targetArea: 'knee' },
+    { name: 'Bodyweight Squats (partial ROM)', duration: 60, sets: 2, reps: 10, targetArea: 'knee' },
+    { name: 'Wall Sits', duration: 45, targetArea: 'knee' }
+  ],
+
+  // Sub-aree anca (ereditano da hip)
+  hip_flexion: [
+    { name: 'Hip Circles', duration: 30, targetArea: 'hip' },
+    { name: 'Hip Flexor Stretch', duration: 45, targetArea: 'hip' },
+    { name: 'Leg Swings (front-back)', duration: 30, targetArea: 'hip' }
+  ],
+  hip_extension: [
+    { name: 'Hip Circles', duration: 30, targetArea: 'hip' },
+    { name: 'Glute Bridges', duration: 45, sets: 2, reps: 10, targetArea: 'hip' },
+    { name: 'Bird Dog', duration: 60, sets: 2, reps: 8, targetArea: 'hip' }
+  ],
+  hip_abduction: [
+    { name: 'Hip Circles', duration: 30, targetArea: 'hip' },
+    { name: 'Side Leg Raises', duration: 45, sets: 2, reps: 10, targetArea: 'hip' },
+    { name: 'Clamshells', duration: 45, sets: 2, reps: 10, targetArea: 'hip' }
+  ],
+  hip_rotation: [
+    { name: 'Hip Circles', duration: 30, targetArea: 'hip' },
+    { name: '90/90 Stretch', duration: 60, targetArea: 'hip' },
+    { name: 'Piriformis Stretch', duration: 45, targetArea: 'hip' }
+  ],
+
+  // Sub-aree zona lombare (ereditano da lower_back)
+  lower_back_flexion: [
+    { name: 'Cat-Cow', duration: 60, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Pelvic Tilts', duration: 45, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Child Pose', duration: 45, targetArea: 'lower_back' }
+  ],
+  lower_back_extension: [
+    { name: 'Cat-Cow', duration: 60, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Cobra Stretch', duration: 45, targetArea: 'lower_back' },
+    { name: 'Prone Press-ups', duration: 45, sets: 2, reps: 8, targetArea: 'lower_back' }
+  ],
+  lower_back_load: [
+    { name: 'Cat-Cow', duration: 60, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Dead Bug', duration: 60, sets: 2, reps: 8, targetArea: 'lower_back' },
+    { name: 'Bird Dog', duration: 60, sets: 2, reps: 8, targetArea: 'lower_back' }
+  ],
+  lower_back_rotation: [
+    { name: 'Cat-Cow', duration: 60, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Lumbar Rotations', duration: 45, sets: 2, reps: 10, targetArea: 'lower_back' },
+    { name: 'Thread the Needle', duration: 60, sets: 2, reps: 8, targetArea: 'lower_back' }
+  ],
+
+  // Sub-aree caviglia (ereditano da ankle)
+  ankle_dorsiflexion: [
+    { name: 'Ankle Circles', duration: 30, targetArea: 'ankle' },
+    { name: 'Dorsiflexion Stretch', duration: 45, targetArea: 'ankle' },
+    { name: 'Wall Ankle Mobilization', duration: 45, targetArea: 'ankle' }
+  ],
+  ankle_plantarflexion: [
+    { name: 'Ankle Circles', duration: 30, targetArea: 'ankle' },
+    { name: 'Calf Raises (slow)', duration: 45, sets: 2, reps: 10, targetArea: 'ankle' },
+    { name: 'Toe Walks', duration: 30, targetArea: 'ankle' }
+  ],
+  ankle_stability: [
+    { name: 'Ankle Circles', duration: 30, targetArea: 'ankle' },
+    { name: 'Single Leg Balance', duration: 45, targetArea: 'ankle' },
+    { name: 'Alphabet Ankles', duration: 45, targetArea: 'ankle' }
+  ],
 };
 
 // ============================================================================
@@ -1532,6 +1701,7 @@ export function evaluateMultiAreaPain(
 
 function getGenericAlternative(area: ExtendedPainArea): string {
   const alternatives: Record<ExtendedPainArea, string> = {
+    // Zone base
     knee: 'Glute Bridge',
     shoulder: 'Landmine Press / Floor Press',
     lower_back: 'Glute Bridge / Bird Dog',
@@ -1543,13 +1713,45 @@ function getGenericAlternative(area: ExtendedPainArea): string {
     upper_back: 'Face Pulls / Band Pull-aparts',
     forearm: 'Wrist-neutral Grips',
     calf: 'Seated Exercises / Low Impact',
-    chest: 'Incline / Decline Variations'
+    chest: 'Incline / Decline Variations',
+
+    // Sub-aree gomito
+    elbow_pull: 'Hammer Curl / Neutral Grip Pull',
+    elbow_push: 'Close Grip Press / Pushdown',
+
+    // Sub-aree spalla
+    shoulder_overhead: 'Landmine Press / High Incline',
+    shoulder_push: 'Floor Press / Cable Fly',
+    shoulder_rotation: 'External Rotation Band / Face Pull',
+
+    // Sub-aree ginocchio
+    knee_flexion: 'Partial ROM Squat / Leg Press',
+    knee_extension: 'Isometric Wall Sit / Terminal Extension',
+    knee_load: 'Bodyweight Squat / Low Box Step',
+
+    // Sub-aree anca
+    hip_flexion: 'Glute Bridge / Reverse Hyper',
+    hip_extension: 'Hip Thrust / Cable Pull-through',
+    hip_abduction: 'Banded Clamshell / Side Lying Raise',
+    hip_rotation: '90/90 Stretch / Pigeon',
+
+    // Sub-aree zona lombare
+    lower_back_flexion: 'Hip Hinge / RDL Light',
+    lower_back_extension: 'Glute Bridge / Bird Dog',
+    lower_back_load: 'Belt Squat / Leg Press',
+    lower_back_rotation: 'Pallof Press / Dead Bug',
+
+    // Sub-aree caviglia
+    ankle_dorsiflexion: 'Heel Elevated Squat / Leg Press',
+    ankle_plantarflexion: 'Seated Calf Raise / Toe Press',
+    ankle_stability: 'Machine-based Exercises / Seated',
   };
   return alternatives[area] || 'Variante a basso impatto';
 }
 
 function getCorrectivesForArea(area: ExtendedPainArea): string[] {
   const correctives: Record<ExtendedPainArea, string[]> = {
+    // Zone base
     knee: ['VMO Activation', 'Wall Sit Isometric', 'Quad Stretch', 'Knee Circles'],
     shoulder: ['Shoulder Dislocations', 'Band Pull-Aparts', 'Face Pulls', 'Wall Slides'],
     lower_back: ['Cat-Cow', 'Bird Dog', 'Dead Bug', 'Pelvic Tilts'],
@@ -1561,7 +1763,38 @@ function getCorrectivesForArea(area: ExtendedPainArea): string[] {
     upper_back: ['Thoracic Extension', 'Thread the Needle', 'Foam Roll T-Spine'],
     forearm: ['Wrist Curls', 'Reverse Wrist Curls', 'Forearm Pronation/Supination'],
     calf: ['Standing Calf Stretch', 'Eccentric Heel Drops', 'Foam Roll Calves'],
-    chest: ['Doorway Stretch', 'Foam Roll Pecs', 'Arm Circles']
+    chest: ['Doorway Stretch', 'Foam Roll Pecs', 'Arm Circles'],
+
+    // Sub-aree gomito
+    elbow_pull: ['Forearm Supination', 'Bicep Stretch', 'Light Curls'],
+    elbow_push: ['Tricep Stretch', 'Elbow Extensions', 'Forearm Pronation'],
+
+    // Sub-aree spalla
+    shoulder_overhead: ['Wall Slides', 'Shoulder Dislocations', 'Y-T-W Raises'],
+    shoulder_push: ['Band Pull-Aparts', 'External Rotation', 'Pec Stretch'],
+    shoulder_rotation: ['Internal Rotation', 'External Rotation', 'Sleeper Stretch'],
+
+    // Sub-aree ginocchio
+    knee_flexion: ['Hamstring Curls', 'Quad Stretch', 'Partial Squats'],
+    knee_extension: ['VMO Activation', 'Terminal Extensions', 'Quad Sets'],
+    knee_load: ['Wall Sits', 'Box Squats', 'Step Downs'],
+
+    // Sub-aree anca
+    hip_flexion: ['Hip Flexor Stretch', 'Leg Swings', 'Kneeling Lunge'],
+    hip_extension: ['Glute Bridge', 'Bird Dog', 'Hip Thrust'],
+    hip_abduction: ['Clamshells', 'Side Leg Raises', 'Banded Walks'],
+    hip_rotation: ['90/90 Stretch', 'Pigeon Pose', 'Piriformis Stretch'],
+
+    // Sub-aree zona lombare
+    lower_back_flexion: ['Cat-Cow', 'Child Pose', 'Pelvic Tilts'],
+    lower_back_extension: ['Cobra Stretch', 'Prone Press-ups', 'McKenzie Extensions'],
+    lower_back_load: ['Dead Bug', 'Bird Dog', 'Pallof Press'],
+    lower_back_rotation: ['Thread the Needle', 'Lumbar Rotations', 'Supine Twist'],
+
+    // Sub-aree caviglia
+    ankle_dorsiflexion: ['Wall Ankle Mobilization', 'Banded Distraction', 'Calf Stretch'],
+    ankle_plantarflexion: ['Toe Raises', 'Calf Raises', 'Toe Curls'],
+    ankle_stability: ['Single Leg Balance', 'Alphabet Ankles', 'BOSU Drills'],
   };
   return correctives[area] || ['Mobilità generale', 'Stretching leggero'];
 }
