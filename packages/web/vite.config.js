@@ -11,7 +11,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@shared": path.resolve(__dirname, "../shared"),
-      "@fitnessflow/shared": path.resolve(__dirname, "../shared/src"),
+      "@trainsmart/shared": path.resolve(__dirname, "../shared/src"),
     },
   },
   build: {
@@ -34,9 +34,6 @@ export default defineConfig({
             './src/utils/exerciseDescriptions',
             './src/utils/correctiveExerciseDescriptions'
           ],
-
-          // Shared utilities (loaded with exercise data)
-          'shared-utils': ['@fitnessflow/shared'],
         },
       },
     },
