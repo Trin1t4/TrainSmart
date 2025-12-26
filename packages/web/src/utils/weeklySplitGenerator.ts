@@ -5,7 +5,7 @@
  */
 
 import { Level, Goal, PatternBaselines, Exercise } from '../types';
-import { NormalizedPainArea, calculateVolume } from '@fitnessflow/shared';
+import { NormalizedPainArea, calculateVolume } from '@trainsmart/shared';
 import {
   isExerciseConflicting,
   applyPainDeload,

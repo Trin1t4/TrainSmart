@@ -50,7 +50,15 @@
       "Bash(timeout:*)",
       "Bash(vercel alias:*)",
       "Bash(dir /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\videos\\\\exercises\")",
-      "Bash(dir /s /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\videos\")"
+      "Bash(dir /s /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\videos\")",
+      "Bash(vercel project:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(vercel)",
+      "WebFetch(domain:exrx.net)",
+      "WebFetch(domain:iconscout.com)",
+      "Bash(dir /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\exercises\")",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

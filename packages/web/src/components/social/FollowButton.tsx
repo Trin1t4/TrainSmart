@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { followUser, unfollowUser } from '@fitnessflow/shared';
+import { followUser, unfollowUser } from '@trainsmart/shared';
 
 interface FollowButtonProps {
   userId: string;

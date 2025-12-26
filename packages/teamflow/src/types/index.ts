@@ -46,7 +46,7 @@ export type {
   ModeSelectionState,
 } from './team.types';
 
-// Pain Tracking System (re-exported from @fitnessflow/shared)
+// Pain Tracking System (re-exported from @trainsmart/shared)
 // Complete system with lateralized areas, recovery plans, DOMS detection, etc.
 export type {
   // Base types
@@ -87,4 +87,4 @@ export type {
   PainExerciseMapping,
   DeloadResult,
   NormalizedPainArea,
-} from '@fitnessflow/shared';
+} from '@trainsmart/shared';

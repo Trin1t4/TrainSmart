@@ -156,7 +156,7 @@ export default function About() {
                 icon: Heart,
                 title: "Dolori Ignorati",
                 problem: "Continuare ad allenarsi nonostante fastidi, peggiorando la situazione.",
-                solution: "Pain tracking integrato con programmi di riabilitazione automatici."
+                solution: "Pain tracking integrato con programmi di rieducazione automatici."
               },
               {
                 icon: Lightbulb,

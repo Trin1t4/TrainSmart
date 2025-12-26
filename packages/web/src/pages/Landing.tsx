@@ -690,7 +690,7 @@ export default function Landing() {
               },
               {
                 q: "Posso cambiare obiettivo o attrezzatura dopo?",
-                a: "Certo! Puoi modificare le tue preferenze in qualsiasi momento e il programma si rigenera automaticamente."
+                a: "Sì, puoi modificare le preferenze, ma il programma non si rigenera automaticamente. Dovrai iniziare un nuovo ciclo di allenamento con le nuove impostazioni."
               },
               {
                 q: "Funziona anche se mi alleno a casa senza attrezzi?",
@@ -702,7 +702,7 @@ export default function Landing() {
               },
               {
                 q: "Cosa sono le analisi video?",
-                a: "Carichi un video di te che fai un esercizio e Gemini (Google) analizza la tua tecnica, identificando errori e suggerendo correzioni specifiche per le tue proporzioni."
+                a: "Carichi un video di te che esegui un esercizio e il nostro sistema di analisi biomeccanica esamina la tua tecnica frame per frame, identificando errori e suggerendo correzioni personalizzate. Disponibile per: Squat, Stacco, Panca, Trazioni, Rematore e altri esercizi fondamentali."
               },
               {
                 q: "Posso annullare in qualsiasi momento?",

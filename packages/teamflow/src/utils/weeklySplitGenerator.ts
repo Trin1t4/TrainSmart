@@ -13,7 +13,7 @@ import {
   applyPainDeload,
   findSafeAlternative,
   getCorrectiveExercises
-} from '@fitnessflow/shared';
+} from '@trainsmart/shared';
 import { convertToMachineVariant } from './exerciseMapping';
 import {
   getVariantForPattern,

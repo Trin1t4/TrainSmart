@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { OnboardingData, PainArea, PainSeverity, PainEntry } from '../../types/onboarding.types';
 import { useTranslation } from '../../lib/i18n';
-import { numericSeverityToString } from '@fitnessflow/shared';
+import { numericSeverityToString } from '@trainsmart/shared';
 
 interface PainStepProps {
   data: Partial<OnboardingData>;
@@ -63,7 +63,7 @@ const getPainAreas = (t: (key: string) => string): Array<{ value: ExtendedPainAr
  * - 1-3: mild (deload leggero, continua)
  * - 4+: severe (EVITA esercizio, sostituisci)
  *
- * Usa numericSeverityToString da @fitnessflow/shared per consistenza
+ * Usa numericSeverityToString da @trainsmart/shared per consistenza
  */
 function intensityToSeverity(intensity: number): PainSeverity {
   return numericSeverityToString(intensity);

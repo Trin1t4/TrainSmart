@@ -2,7 +2,7 @@
 
 ## STATUS VIDEO
 
-### Video GIA' PRESENTI (88 video) - USATI NEI TEST INIZIALI
+### Video GIA' PRESENTI (90 video) - USATI NEI TEST INIZIALI
 La cartella `packages/web/public/videos/exercises/` contiene gia':
 - ab-wheel-rollout, arnold-press, assisted-pull-up, back-squat, barbell-curl, barbell-row
 - bear-hold, bird-dog-modified, bird-dog, bodyweight-hip-hinge, bodyweight-squat
@@ -16,6 +16,8 @@ La cartella `packages/web/public/videos/exercises/` contiene gia':
 - leg-curl, leg-extension, leg-press, lunges, military-press, modified-squat
 - nordic-hamstring-curl, pallof-press (+ kneeling), pelvic-floor-activation, pelvic-tilts
 - **pike-push-up** (GIA' INTEGRATO NEI TEST INIZIALI)
+- **knee-push-up** (NUOVO - Push-up su Ginocchia)
+- **one-arm-push-up** (NUOVO - One Arm Push-up)
 - pistol-squat, plank, romanian-deadlift, seated-cable-row, seated-calf-raise
 - seated-knee-lifts, seated-row-band, shoulder-blade-squeeze, side-lying-leg-lift
 - side-plank-modified, skull-crushers, squat-to-stand, standard-pull-up, standard-push-up
@@ -33,7 +35,9 @@ I seguenti esercizi ora mostrano VIDEO invece di immagini nei test:
 - Wall Push-up ✓
 - Incline Push-up ✓
 - Push-up Standard ✓
+- Push-up su Ginocchia ✓ (NUOVO)
 - Diamond Push-up ✓
+- One Arm Push-up ✓ (NUOVO)
 
 **SQUAT con video:**
 - Air Squat ✓
@@ -59,10 +63,10 @@ I seguenti esercizi ora mostrano VIDEO invece di immagini nei test:
 **PUSH-UPS mancanti:**
 | Esercizio | Prompt Canva |
 |-----------|--------------|
-| Push-up su Ginocchia | "knee push up modified exercise" |
-| Archer Push-up | "archer pushup one arm variation" |
+| ~~Push-up su Ginocchia~~ | ✅ AGGIUNTO (knee-push-up.mp4) |
+| ~~Archer Push-up~~ | ✅ USA IMMAGINE (archer-push-up.jpg) |
 | Pseudo Planche Push-up | "pseudo planche pushup lean forward" |
-| One Arm Push-up | "one arm push up single arm" |
+| ~~One Arm Push-up~~ | ✅ AGGIUNTO (one-arm-push-up.mp4) |
 | Elevated Pike Push-up | "elevated pike pushup feet on box" |
 | Wall Walk | "wall walk handstand exercise" |
 
@@ -266,7 +270,7 @@ I seguenti esercizi ora mostrano VIDEO invece di immagini nei test:
 
 | Esercizio | Prompt Canva |
 |-----------|--------------|
-| Archer Push-up | "archer pushup one arm variation" |
+| ~~Archer Push-up~~ | ✅ USA IMMAGINE (archer-push-up.jpg) |
 
 ---
 
@@ -293,11 +297,11 @@ I seguenti esercizi ora mostrano VIDEO invece di immagini nei test:
 
 ## RIEPILOGO QUANTITA'
 
-- **Video esistenti**: 88
-- **Video mancanti PRIORITA' ALTA**: ~15
+- **Video esistenti**: 90 (+2 nuovi: knee-push-up, one-arm-push-up)
+- **Video mancanti PRIORITA' ALTA**: ~13
 - **Video mancanti PRIORITA' MEDIA**: ~30
 - **Video mancanti PRIORITA' BASSA**: ~45
-- **TOTALE MANCANTI**: ~90
+- **TOTALE MANCANTI**: ~88
 
 **Suggerimento**: Inizia dai PRIORITA' ALTA che servono per:
 1. Test iniziali (onboarding)

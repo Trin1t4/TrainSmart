@@ -1,5 +1,5 @@
 # PowerShell script to rename and copy exercise videos
-# Run from FitnessFlow root folder
+# Run from TrainSmart root folder
 
 $source = ".\final"
 $dest = ".\packages\web\public\videos\exercises"

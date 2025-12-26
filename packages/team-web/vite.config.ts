@@ -8,7 +8,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared/src'),
-      '@fitnessflow/shared': path.resolve(__dirname, '../shared/src'),
+      '@trainsmart/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
   server: {

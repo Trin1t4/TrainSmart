@@ -38,7 +38,7 @@ import type {
   PRShareCardData,
   StreakShareCardData,
   AchievementShareCardData,
-} from '@fitnessflow/shared/types/social.types';
+} from '@trainsmart/shared/types/social.types';
 
 // ============================================================
 // TYPES

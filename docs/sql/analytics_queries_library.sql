@@ -1,7 +1,7 @@
 -- ================================================================
 -- ANALYTICS QUERIES LIBRARY
 -- ================================================================
--- Pre-built queries per dashboard analytics FitnessFlow
+-- Pre-built queries per dashboard analytics TrainSmart
 -- Organizzate per priorità
 --
 -- PRIORITIES:

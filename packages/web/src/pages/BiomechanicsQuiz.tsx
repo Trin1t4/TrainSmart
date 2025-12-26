@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Target, Brain, ArrowRight, CheckCircle } from 'lucide-react';
+import { Dumbbell, Target, Brain, ArrowRight, CheckCircle, MapPin, Clock, Edit3 } from 'lucide-react';
 
 // ============================================================================
 // BETA: Quiz Semplificato - Solo 3 domande veloci
@@ -72,6 +72,7 @@ export default function BiomechanicsQuiz() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [testChoice, setTestChoice] = useState<'gym' | 'know_maxes' | 'later' | null>(null);
 
   const question = BETA_QUESTIONS[currentQuestion];
   const progress = ((currentQuestion + 1) / BETA_QUESTIONS.length) * 100;
@@ -111,7 +112,18 @@ export default function BiomechanicsQuiz() {
   };
 
   const handleFinish = () => {
-    navigate('/screening');
+    if (testChoice === 'gym') {
+      // Vai ai test pratici
+      navigate('/screening');
+    } else if (testChoice === 'know_maxes') {
+      // Vai a inserire i massimali manualmente
+      navigate('/screening', { state: { manualEntry: true } });
+    } else {
+      // Salta i test, vai alla dashboard
+      // Salva che i test sono da fare dopo
+      localStorage.setItem('screening_pending', 'true');
+      navigate('/dashboard');
+    }
   };
 
   // Schermata risultato
@@ -135,32 +147,97 @@ export default function BiomechanicsQuiz() {
             </h2>
 
             <p className="text-slate-400 mb-6">
-              Ora passiamo ai test pratici per calibrare il tuo programma
+              Per calibrare il programma, dobbiamo valutare le tue capacita fisiche
             </p>
 
-            {/* Punteggio */}
-            <div className="bg-slate-700/50 rounded-lg p-4 mb-8">
-              <div className="flex justify-center gap-6">
-                {answers.map((score, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-1 ${
-                      score === 2 ? 'bg-emerald-500/20 text-emerald-400' :
-                      score === 1 ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-slate-600/50 text-slate-400'
+            {/* Domanda: Sei in palestra? */}
+            <div className="bg-slate-700/30 rounded-xl p-4 mb-6">
+              <p className="text-white font-semibold mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-emerald-400" />
+                Sei in palestra adesso?
+              </p>
+
+              <div className="space-y-3">
+                {/* Opzione 1: In palestra */}
+                <button
+                  onClick={() => setTestChoice('gym')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'gym'
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'gym' ? 'bg-emerald-500/30' : 'bg-slate-600/50'
                     }`}>
-                      {score === 2 ? '++' : score === 1 ? '+' : '-'}
+                      <Dumbbell className={`w-5 h-5 ${testChoice === 'gym' ? 'text-emerald-400' : 'text-slate-400'}`} />
                     </div>
-                    <p className="text-xs text-slate-500">Q{idx + 1}</p>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'gym' ? 'text-white' : 'text-slate-300'}`}>
+                        Si, faccio i test adesso
+                      </p>
+                      <p className="text-xs text-slate-400">2-4 test pratici (~5 min)</p>
+                    </div>
                   </div>
-                ))}
+                </button>
+
+                {/* Opzione 2: Conosco i massimali */}
+                <button
+                  onClick={() => setTestChoice('know_maxes')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'know_maxes'
+                      ? 'border-blue-500 bg-blue-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'know_maxes' ? 'bg-blue-500/30' : 'bg-slate-600/50'
+                    }`}>
+                      <Edit3 className={`w-5 h-5 ${testChoice === 'know_maxes' ? 'text-blue-400' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'know_maxes' ? 'text-white' : 'text-slate-300'}`}>
+                        No, ma conosco i miei massimali
+                      </p>
+                      <p className="text-xs text-slate-400">Inserisco i valori manualmente</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Opzione 3: Dopo */}
+                <button
+                  onClick={() => setTestChoice('later')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    testChoice === 'later'
+                      ? 'border-amber-500 bg-amber-500/20'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      testChoice === 'later' ? 'bg-amber-500/30' : 'bg-slate-600/50'
+                    }`}>
+                      <Clock className={`w-5 h-5 ${testChoice === 'later' ? 'text-amber-400' : 'text-slate-400'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${testChoice === 'later' ? 'text-white' : 'text-slate-300'}`}>
+                        Faro i test dopo
+                      </p>
+                      <p className="text-xs text-slate-400">Inizia con un programma base</p>
+                    </div>
+                  </div>
+                </button>
               </div>
             </div>
 
             <button
               onClick={handleFinish}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition flex items-center justify-center gap-2"
+              disabled={!testChoice}
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Vai ai Test Pratici
+              Continua
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

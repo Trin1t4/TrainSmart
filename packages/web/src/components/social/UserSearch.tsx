@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { searchUsers } from '@fitnessflow/shared';
+import { searchUsers } from '@trainsmart/shared';
 import { UserCard } from './UserCard';
 
 interface SearchResult {

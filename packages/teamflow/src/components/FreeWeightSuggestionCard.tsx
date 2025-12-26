@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dumbbell, X, Play, ChevronRight, Sparkles } from 'lucide-react';
-import { markSuggestionShown, recordSuggestionResponse } from '@fitnessflow/shared';
+import { markSuggestionShown, recordSuggestionResponse } from '@trainsmart/shared';
 
 interface FreeWeightSuggestionCardProps {
   machineExercise: string;

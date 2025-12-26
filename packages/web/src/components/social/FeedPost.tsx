@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { SocialPost, PostComment } from '@fitnessflow/shared';
-import { likePost, unlikePost, addComment, getComments } from '@fitnessflow/shared';
+import type { SocialPost, PostComment } from '@trainsmart/shared';
+import { likePost, unlikePost, addComment, getComments } from '@trainsmart/shared';
 
 interface FeedPostProps {
   post: SocialPost;

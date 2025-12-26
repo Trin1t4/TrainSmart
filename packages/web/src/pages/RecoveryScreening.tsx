@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useTranslation } from '../lib/i18n';
-import { shouldSuggestFreeWeight, type FreeWeightSuggestion } from '@fitnessflow/shared';
+import { shouldSuggestFreeWeight, type FreeWeightSuggestion } from '@trainsmart/shared';
 import FreeWeightSuggestionCard from '../components/FreeWeightSuggestionCard';
 
 interface RecoveryScreeningProps {

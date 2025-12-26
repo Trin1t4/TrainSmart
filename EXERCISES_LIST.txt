@@ -1,4 +1,4 @@
-# FitnessFlow - Lista Esercizi Database con Cues Tecniche
+# TrainSmart - Lista Esercizi Database con Cues Tecniche
 # Totale: 86 esercizi (55 base + 11 pelvic floor + 10 diastasi + 8 pre-partum + 2 polpacci)
 # Per videomaker: ogni esercizio include setup, execution cues e errori comuni
 

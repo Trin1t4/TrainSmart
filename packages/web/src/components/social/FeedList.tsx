@@ -5,8 +5,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import type { SocialPost, FeedFilters } from '@fitnessflow/shared';
-import { getFeed, getFollowingFeed } from '@fitnessflow/shared';
+import type { SocialPost, FeedFilters } from '@trainsmart/shared';
+import { getFeed, getFollowingFeed } from '@trainsmart/shared';
 import { FeedPost } from './FeedPost';
 
 interface FeedListProps {

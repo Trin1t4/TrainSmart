@@ -5,7 +5,7 @@ import { X, Info, AlertCircle, RefreshCw, ChevronDown, ChevronUp, Dumbbell } fro
 import { RecoveryScreening } from '../pages/RecoveryScreening';
 import type { RecoveryData } from '../pages/RecoveryScreening';
 import { useTranslation } from '../lib/i18n';
-import { getAlternativesWithParams, hasAlternatives, type ExerciseAlternative, type SuggestedParams } from '@fitnessflow/shared';
+import { getAlternativesWithParams, hasAlternatives, type ExerciseAlternative, type SuggestedParams } from '@trainsmart/shared';
 
 export default function Workout() {
   const navigate = useNavigate();

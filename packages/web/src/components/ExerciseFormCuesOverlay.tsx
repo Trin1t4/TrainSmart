@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getFormCues, getCriticalCues, FormCue } from '@fitnessflow/shared';
+import { getFormCues, getCriticalCues, FormCue } from '@trainsmart/shared';
 import { Info, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 
 interface ExerciseFormCuesOverlayProps {

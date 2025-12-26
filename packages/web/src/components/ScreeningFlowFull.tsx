@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check, Timer, RotateCw, X, ZoomIn, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
-import { getExerciseImageWithFallback, calculateLevelFromScreening } from '@fitnessflow/shared';
+import { getExerciseImageWithFallback, calculateLevelFromScreening } from '@trainsmart/shared';
 
 // Video disponibili per i test iniziali (SOLO quelli verificati esistenti)
 const SCREENING_VIDEOS: Record<string, string> = {

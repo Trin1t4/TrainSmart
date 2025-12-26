@@ -31,8 +31,8 @@ export default function Pricing() {
       features: [
         'Tutto di Early Bird',
         '2 analisi video al mese',
-        'Feedback tecnica con Gemini',
-        'Suggerimenti biomeccanici personalizzati',
+        'Analisi biomeccanica automatica',
+        'Correzioni personalizzate per le tue proporzioni',
         'Supporto prioritario'
       ],
       active: false,
@@ -201,7 +201,7 @@ export default function Pricing() {
               <div className="text-center p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
                 <div className="text-emerald-400 font-bold text-lg mb-2">Pro</div>
                 <p className="text-slate-300">+ Analisi video della tua tecnica</p>
-                <p className="text-slate-500 text-xs mt-2">Gemini analizza i tuoi movimenti e suggerisce correzioni</p>
+                <p className="text-slate-500 text-xs mt-2">Sistema biomeccanico che analizza i tuoi movimenti (Squat, Stacco, Panca, Trazioni...)</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-purple-500/10 border border-purple-500/30">
                 <div className="text-purple-400 font-bold text-lg mb-2">Coach</div>
@@ -211,6 +211,49 @@ export default function Pricing() {
             </div>
           </div>
         </div>
+
+        {/* Consulenza Diretta */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-12 max-w-2xl mx-auto"
+        >
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 rounded-2xl p-8 border border-slate-600 text-center">
+            <h3 className="text-2xl font-bold text-white mb-2">Consulenza Diretta</h3>
+            <p className="text-slate-400 mb-4">
+              Vuoi una sessione 1:1 con un preparatore atletico professionista?
+            </p>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="text-4xl font-bold text-emerald-400">€100</span>
+              <span className="text-slate-500">/sessione</span>
+            </div>
+            <ul className="text-sm text-slate-300 space-y-2 mb-6 text-left max-w-sm mx-auto">
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span>Videochiamata di 60 minuti</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span>Analisi posturale e biomeccanica</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span>Correzione tecnica esercizi</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span>Piano d'azione personalizzato</span>
+              </li>
+            </ul>
+            <a
+              href="mailto:dario@trainsmart.me?subject=Richiesta%20Consulenza"
+              className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300"
+            >
+              Prenota Consulenza
+            </a>
+          </div>
+        </motion.div>
 
         {/* Back Link */}
         <div className="text-center mt-12">

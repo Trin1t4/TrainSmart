@@ -1,6 +1,6 @@
 /**
  * Types - Export Centrale
- * Import centralizzato: import { OnboardingData, Program, etc } from '@fitnessflow/shared'
+ * Import centralizzato: import { OnboardingData, Program, etc } from '@trainsmart/shared'
  */
 
 // Onboarding
@@ -127,3 +127,41 @@ export type {
   NotificationType,
   SocialNotification,
 } from './social.types';
+
+// Biomechanics Engine Types
+export type {
+  PoseLandmark,
+  PoseLandmarks,
+  UserProportions,
+  Morphotype,
+  MorphotypeType,
+  SquatImplications,
+  DeadliftImplications,
+  BenchImplications,
+  ExercisePhase,
+  IssueSeverity,
+  IssueType,
+  Issue,
+  BarPath,
+  FrameAngles,
+  FrameAnalysis,
+  StickingPosition,
+  StickingPointDiagnosis,
+  StickingPointRecommendations,
+  StickingPointAnalysis,
+  SupportedExercise,
+  AnalysisRecommendations,
+  FormAnalysisResult,
+  SideAnalysis,
+  Asymmetry,
+  BilateralComparison,
+  CameraPosition,
+  CameraHeight,
+  VideoSetupInstructions,
+  CameraValidationResult,
+  SafetyCheck,
+  EfficiencyCheck,
+  RecurringIssue,
+  AdaptFlowWarning,
+  AdaptFlowIntegration,
+} from './biomechanics.types';

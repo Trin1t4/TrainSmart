@@ -9,7 +9,7 @@ import { WeeklySplit, DayWorkout, Exercise } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Target, Zap, Activity, Info, ChevronDown, ImageIcon } from 'lucide-react';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
-import { getExerciseImageWithFallback, isStaticExercise } from '@fitnessflow/shared';
+import { getExerciseImageWithFallback, isStaticExercise } from '@trainsmart/shared';
 
 interface WeeklySplitViewProps {
   weeklySplit: WeeklySplit;

@@ -1,7 +1,7 @@
 ---
 name: app-debugger-fixer
 description: Use this agent when the user needs to diagnose and fix problems in a non-functional application. Examples include:\n\n- <example>\nContext: The user has an application that is not working and needs debugging assistance.\nuser: "Questa app non funziona, ci sono degli errori"\nassistant: "I'm going to use the Task tool to launch the app-debugger-fixer agent to diagnose and resolve the issues."\n<commentary>The user has indicated the app is broken, so use the app-debugger-fixer agent to investigate and fix problems.</commentary>\n</example>\n\n- <example>\nContext: The user has just written code and the application is failing.\nuser: "Ho appena finito di scrivere il codice ma l'app crasha all'avvio"\nassistant: "Let me use the app-debugger-fixer agent to identify why the application is crashing and fix it."\n<commentary>The app has runtime failures, so deploy the app-debugger-fixer agent to debug and resolve.</commentary>\n</example>\n\n- <example>\nContext: The user mentions unexpected behavior in the application.\nuser: "L'applicazione si comporta in modo strano, alcune funzionalità non rispondono"\nassistant: "I'll use the app-debugger-fixer agent to investigate the unexpected behavior and fix the non-responsive features."\n<commentary>Unexpected behavior requires debugging, so use the app-debugger-fixer agent.</commentary>\n</example>
-model: sonnet
+model: opus
 color: red
 ---
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Home, Dumbbell, HelpCircle } from "lucide-react";
-import { adaptExercisesForLocation, LocationAdaptationOptions, Exercise } from "@fitnessflow/shared";
+import { adaptExercisesForLocation, LocationAdaptationOptions, Exercise } from "@trainsmart/shared";
 
 interface AdaptLocationDialogProps {
   isOpen: boolean;

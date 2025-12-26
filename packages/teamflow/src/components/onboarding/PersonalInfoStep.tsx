@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { OnboardingData } from '../../types/onboarding.types';
 import { useTranslation } from '../../lib/i18n';
-import { calculateBodyComposition, validateMeasurements } from '@fitnessflow/shared';
+import { calculateBodyComposition, validateMeasurements } from '@trainsmart/shared';
 
 interface PersonalInfoStepProps {
   data: Partial<OnboardingData>;

@@ -1,6 +1,6 @@
 /**
  * Utils - Export Centrale
- * Import centralizzato: import { calculateVolume, generateWeeklySplit, etc } from '@fitnessflow/shared'
+ * Import centralizzato: import { calculateVolume, generateWeeklySplit, etc } from '@trainsmart/shared'
  */
 
 // Exercise Variants
@@ -405,3 +405,32 @@ export {
   SPECIAL_POPULATION_GOALS,
   isSpecialPopulation
 } from './painTracking';
+
+// Biomechanics Engine - Video Form Analysis
+export {
+  // Main analyzer
+  analyzeExercise,
+  CAMERA_SETUP_INSTRUCTIONS,
+  SUPPORTED_EXERCISES,
+  type AnalysisConfig,
+  // Core utilities
+  calculateAngle,
+  getKneeAngle,
+  getHipAngle,
+  getTorsoAngle,
+  getKneeValgus,
+  isSpineNeutral,
+  areHeelsDown,
+  calculateProportions,
+  classifyMorphotype,
+  validateCameraAngle,
+  distance,
+  midpoint,
+  // Analyzers
+  analyzeSquatFrame,
+  analyzeFullSquat,
+  analyzeDeadliftFrame,
+  analyzeFullDeadlift,
+  analyzeBenchFrame,
+  analyzeFullBench
+} from './biomechanics';

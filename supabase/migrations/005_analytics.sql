@@ -1,7 +1,7 @@
 -- ================================================================
 -- ANALYTICS DATABASE SYSTEM - SUPABASE MIGRATION
 -- ================================================================
--- Sistema di analytics separato per FitnessFlow
+-- Sistema di analytics separato per TrainSmart
 --
 -- ARCHITECTURE:
 -- - Schema separato 'analytics'

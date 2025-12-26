@@ -1,5 +1,5 @@
 /**
- * @fitnessflow/shared
+ * @trainsmart/shared
  * Codice condiviso tra web e mobile
  */
 

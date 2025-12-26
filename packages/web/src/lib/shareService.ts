@@ -3,7 +3,7 @@
  * Handles sharing to external platforms (Instagram, WhatsApp, Twitter, Facebook)
  */
 
-import type { SharePlatform, ShareOptions, ShareResult } from '@fitnessflow/shared/types/social.types';
+import type { SharePlatform, ShareOptions, ShareResult } from '@trainsmart/shared/types/social.types';
 
 // ============================================================
 // WEB SHARE API (Native)

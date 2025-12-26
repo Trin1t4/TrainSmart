@@ -11,7 +11,7 @@ import type {
   PRShareCardData,
   StreakShareCardData,
   AchievementShareCardData,
-} from '@fitnessflow/shared/types/social.types';
+} from '@trainsmart/shared/types/social.types';
 
 // ============================================================
 // SHARE CARD WRAPPER (Hidden, used for generation)

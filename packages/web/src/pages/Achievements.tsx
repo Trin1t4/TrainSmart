@@ -5,8 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import type { AchievementProgress } from '@fitnessflow/shared';
-import { getAchievementProgress } from '@fitnessflow/shared';
+import type { AchievementProgress } from '@trainsmart/shared';
+import { getAchievementProgress } from '@trainsmart/shared';
 
 type FilterType = 'all' | 'unlocked' | 'locked';
 
