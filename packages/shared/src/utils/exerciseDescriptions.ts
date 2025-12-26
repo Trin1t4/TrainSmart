@@ -166,6 +166,16 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
   // HORIZONTAL PUSH (Bench Press pattern)
   // ============================================
 
+  'Push-up su Ginocchia': {
+    description: 'Versione facilitata del push-up con ginocchia a terra. Ideale per principianti o per chi ha meno forza nella parte superiore.',
+    technique: [
+      'Ginocchia appoggiate a terra',
+      'Mani poco più larghe delle spalle',
+      'Corpo in linea dalle ginocchia alla testa',
+      'Gomiti a 45° dal corpo'
+    ]
+  },
+
   'Piegamenti': {
     description: 'Esercizio classico per petto e tricipiti. Spingi il corpo dal pavimento mantenendo il corpo rigido.',
     technique: [
@@ -193,6 +203,16 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Mani molto larghe',
       'Un braccio si piega, l\'altro resta teso',
       'Mantieni il core stabile'
+    ]
+  },
+
+  'One Arm Push-up': {
+    description: 'Push-up avanzato eseguito con un solo braccio. Richiede forza eccezionale, stabilità del core e controllo totale del corpo.',
+    technique: [
+      'Piedi larghi per maggiore stabilità',
+      'Mano sotto la spalla, braccio libero dietro la schiena',
+      'Core contrattissimo, evita rotazioni',
+      'Scendi lentamente, spingi con esplosività'
     ]
   },
 
@@ -1656,6 +1676,43 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Gamba sotto tesa, afferrata dalla mano sopra',
       'Ruota il torace aprendo verso il soffitto',
       'Respira e aumenta gradualmente la rotazione'
+    ]
+  },
+
+  // ============================================
+  // HOME PULL ALTERNATIVES (No Equipment)
+  // ============================================
+
+  'Floor Pull (asciugamano)': {
+    description: 'Trazione a pavimento con asciugamano. Esercizio per dorsali senza attrezzature, ideale per allenamento a casa.',
+    technique: [
+      'Sdraiato prono, braccia tese avanti con asciugamano',
+      'Tira l\'asciugamano verso il petto facendo scorrere a terra',
+      'Scapole addotte, spremi i dorsali',
+      'Mantieni il core attivo e lombare neutra',
+      'Ritorna lentamente alla posizione iniziale'
+    ]
+  },
+
+  'Prone Y-raise': {
+    description: 'Sollevamento a Y da prono. Rinforza i muscoli della parte alta della schiena e delle spalle posteriori.',
+    technique: [
+      'Sdraiato prono a terra, braccia tese sopra la testa',
+      'Pollici verso l\'alto, braccia a forma di Y',
+      'Solleva le braccia contraendo la schiena alta',
+      'Mantieni la testa neutra guardando il pavimento',
+      'Controlla il movimento in discesa'
+    ]
+  },
+
+  'Superman Row': {
+    description: 'Remata in posizione superman. Combina estensione della schiena con movimento di trazione.',
+    technique: [
+      'Posizione superman prono con braccia tese avanti',
+      'Mantieni petto e gambe sollevati da terra',
+      'Tira i gomiti indietro come una remata',
+      'Spremi le scapole insieme a fine movimento',
+      'Distendi le braccia e ripeti mantenendo la posizione'
     ]
   }
 };

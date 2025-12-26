@@ -16,6 +16,8 @@ interface OnboardingData {
     bench?: boolean;
     rings?: boolean;
     parallelBars?: boolean;
+    sturdyTable?: boolean;
+    noEquipment?: boolean;
   };
 }
 
@@ -45,13 +47,16 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
     parallelBars: data.equipment?.parallelBars || false,
     rack: (data.equipment as any)?.rack || false,
     cables: (data.equipment as any)?.cables || false,
-    sturdyTable: (data.equipment as any)?.sturdyTable || false
+    sturdyTable: (data.equipment as any)?.sturdyTable || false,
+    noEquipment: (data.equipment as any)?.noEquipment || false
   });
 
   const toggleEquipment = (key: string) => {
     setEquipment(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
+      // Se seleziona un attrezzo, resetta noEquipment
+      noEquipment: key === 'noEquipment' ? !prev[key] : false
     }));
   };
 
@@ -229,7 +234,44 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
                     <p className="text-xs text-slate-400">Loop bands o resistance bands</p>
                   </div>
                 </button>
+
+                {/* Nessuna delle precedenti */}
+                <button
+                  onClick={() => {
+                    setEquipment(prev => ({
+                      ...prev,
+                      pullupBar: false,
+                      sturdyTable: false,
+                      loopBands: false,
+                      noEquipment: true
+                    }));
+                  }}
+                  className={`w-full p-3 rounded-lg border text-left flex items-center gap-3 ${
+                    (equipment as any).noEquipment && !equipment.pullupBar && !(equipment as any).sturdyTable && !equipment.loopBands
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  {(equipment as any).noEquipment && !equipment.pullupBar && !(equipment as any).sturdyTable && !equipment.loopBands ? (
+                    <CheckCircle className="w-5 h-5 text-amber-400" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-slate-500" />
+                  )}
+                  <div>
+                    <p className="text-white text-sm font-medium">Nessuna delle precedenti</p>
+                    <p className="text-xs text-slate-400">Solo corpo libero senza attrezzi</p>
+                  </div>
+                </button>
               </div>
+
+              {/* Info se nessun attrezzo */}
+              {(equipment as any).noEquipment && !equipment.pullupBar && !(equipment as any).sturdyTable && !equipment.loopBands && (
+                <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-xs text-amber-300">
+                    Nessun problema! Il programma includerà esercizi di tirata a pavimento e alternative senza attrezzi.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

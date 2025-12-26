@@ -260,6 +260,14 @@ export const LOWER_PULL_VARIANTS: ExerciseVariant[] = [
  */
 export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
   {
+    id: 'pushup_knee',
+    name: 'Push-up su Ginocchia',
+    difficulty: 2,
+    equipment: 'bodyweight',
+    primary: ['pectorals', 'triceps'],
+    secondary: ['front_delts', 'core']
+  },
+  {
     id: 'pushup_standard',
     name: 'Piegamenti',
     difficulty: 4,
@@ -282,6 +290,14 @@ export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
     equipment: 'bodyweight',
     primary: ['pectorals', 'triceps'],
     secondary: ['front_delts', 'core', 'obliques']
+  },
+  {
+    id: 'pushup_one_arm',
+    name: 'One Arm Push-up',
+    difficulty: 9,
+    equipment: 'bodyweight',
+    primary: ['pectorals', 'triceps'],
+    secondary: ['front_delts', 'core', 'obliques', 'stabilizers']
   },
   {
     id: 'bench_flat',

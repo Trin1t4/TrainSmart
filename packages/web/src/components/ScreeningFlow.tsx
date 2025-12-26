@@ -17,12 +17,12 @@ const SCREENING_VIDEOS: Record<string, string> = {
   'Incline Push-up': '/videos/exercises/incline-push-up.mp4',
   'Incline Push-up (rialzato)': '/videos/exercises/incline-push-up.mp4',
   'Push-up Standard': '/videos/exercises/standard-push-up.mp4',
-  'Push-up su Ginocchia': '/videos/exercises/standard-push-up.mp4',
+  'Push-up su Ginocchia': '/videos/exercises/knee-push-up.mp4',
   'Diamond Push-up': '/videos/exercises/diamond-push-up.mp4',
   'Decline Push-up': '/videos/exercises/decline-push-up.mp4',
-  'Archer Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
+  // 'Archer Push-up' - usa immagine (archer-push-up.jpg) invece di video
   'Pseudo Planche Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
-  'One Arm Push-up': '/videos/exercises/standard-push-up.mp4', // usa standard come fallback
+  'One Arm Push-up': '/videos/exercises/one-arm-push-up.mp4',
 
   // === SQUAT (verificati) ===
   'Squat Assistito (con supporto)': '/videos/exercises/bodyweight-squat.mp4',

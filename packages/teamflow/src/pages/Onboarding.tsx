@@ -7,6 +7,7 @@ import { useTranslation } from '../lib/i18n';
 import RoleSelectionStep from '../components/onboarding/RoleSelectionStep';
 import AnagraficaStep from '../components/onboarding/AnagraficaStep';
 import PersonalInfoStep from '../components/onboarding/PersonalInfoStep';
+import ScreeningTypeStep from '../components/onboarding/ScreeningTypeStep';
 import LocationStep from '../components/onboarding/LocationStep';
 import ActivityStep from '../components/onboarding/ActivityStep';
 import GoalStep from '../components/onboarding/GoalStep';
@@ -25,7 +26,7 @@ export default function Onboarding() {
 
   // Step 1 = Role Selection, poi gli altri step per atleta individuale
   // Se coach, dopo step 1 va direttamente a /coach/setup
-  const totalSteps = 7; // 1 (role) + 6 (athlete flow)
+  const totalSteps = 8; // 1 (anagrafica) + 1 (role) + 1 (personal) + 1 (screening type) + 4 (location, activity, goal, pain)
   const progress = (currentStep / totalSteps) * 100;
 
   const updateData = (stepData: ExtendedOnboardingData) => {
@@ -130,7 +131,7 @@ export default function Onboarding() {
           console.error('[ONBOARDING] ❌ LOCATION IS MISSING! LocationStep.tsx has a bug!');
           alert(t('onboarding.error.location_missing'));
           setIsSaving(false);
-          setCurrentStep(4); // Torna al step della location (ora è step 4)
+          setCurrentStep(5); // Torna al step della location (ora è step 5)
           return;
         }
 
@@ -138,18 +139,25 @@ export default function Onboarding() {
         console.log('[ONBOARDING] 💾 Saving to localStorage...');
         localStorage.setItem('onboarding_data', JSON.stringify(data));
         console.log('[ONBOARDING] ✅ Saved to localStorage');
-        
+
         // 2. Salva in Supabase
         console.log('[ONBOARDING] 🔄 Saving to Supabase...');
         await saveOnboardingToDatabase(data);
-        
-        // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Flow Normale
+
+        // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Screening Type
         if (data.goal === 'motor_recovery') {
           console.log('[ONBOARDING] 🏥 Motor recovery goal detected → navigating to /recovery-screening');
           navigate('/recovery-screening');
         } else {
-          console.log('[ONBOARDING] 💪 Standard goal → navigating to /quiz');
-          navigate('/quiz');
+          // Naviga in base al tipo di screening scelto
+          const screeningType = (data as any).screeningType;
+          if (screeningType === 'thorough') {
+            console.log('[ONBOARDING] 📋 Thorough screening selected → navigating to /quiz-full');
+            navigate('/quiz-full');
+          } else {
+            console.log('[ONBOARDING] ⚡ Light screening selected → navigating to /quiz');
+            navigate('/quiz');
+          }
         }
       } catch (error) {
         console.error('[ONBOARDING] ❌ Error saving onboarding:', error);
@@ -218,12 +226,14 @@ export default function Onboarding() {
       case 3:
         return <PersonalInfoStep data={data} onNext={handleStepComplete} />;
       case 4:
-        return <LocationStep data={data} onNext={handleStepComplete} />;
+        return <ScreeningTypeStep data={data} onNext={handleStepComplete} />;
       case 5:
-        return <ActivityStep data={data} onNext={handleStepComplete} />;
+        return <LocationStep data={data} onNext={handleStepComplete} />;
       case 6:
-        return <GoalStep data={data} onNext={handleStepComplete} />;
+        return <ActivityStep data={data} onNext={handleStepComplete} />;
       case 7:
+        return <GoalStep data={data} onNext={handleStepComplete} />;
+      case 8:
         return <PainStep data={data} onNext={handleStepComplete} />;
       default:
         return null;

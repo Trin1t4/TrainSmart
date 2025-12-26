@@ -14,8 +14,10 @@ const SCREENING_VIDEOS: Record<string, string> = {
   'Wall Push-up': '/videos/exercises/wall-push-up.mp4',
   'Incline Push-up (rialzato)': '/videos/exercises/incline-push-up.mp4',
   'Push-up Standard': '/videos/exercises/standard-push-up.mp4',
+  'Push-up su Ginocchia': '/videos/exercises/knee-push-up.mp4',
   'Diamond Push-up': '/videos/exercises/diamond-push-up.mp4',
-  // MANCANO: Push-up su Ginocchia, Archer, Pseudo Planche, One Arm, Elevated Pike, Wall Walk
+  'One Arm Push-up': '/videos/exercises/one-arm-push-up.mp4',
+  // MANCANO: Archer, Pseudo Planche, Elevated Pike, Wall Walk
 
   // === SQUAT (verificati) ===
   'Air Squat': '/videos/exercises/bodyweight-squat.mp4',

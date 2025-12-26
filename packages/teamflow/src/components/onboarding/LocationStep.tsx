@@ -16,6 +16,8 @@ interface OnboardingData {
     bench?: boolean;
     rings?: boolean;
     parallelBars?: boolean;
+    sturdyTable?: boolean;
+    noEquipment?: boolean;
   };
 }
 
@@ -44,13 +46,17 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
     rings: data.equipment?.rings || false,
     parallelBars: data.equipment?.parallelBars || false,
     rack: (data.equipment as any)?.rack || false,
-    cables: (data.equipment as any)?.cables || false
+    cables: (data.equipment as any)?.cables || false,
+    sturdyTable: (data.equipment as any)?.sturdyTable || false,
+    noEquipment: (data.equipment as any)?.noEquipment || false
   });
 
   const toggleEquipment = (key: string) => {
     setEquipment(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
+      // Se seleziona un attrezzo, resetta noEquipment
+      noEquipment: key === 'noEquipment' ? !prev[key] : false
     }));
   };
 
@@ -166,6 +172,104 @@ export default function LocationStep({ data, onNext }: LocationStepProps) {
               <p className="text-xs text-slate-400 mt-1">{t('onboarding.location.smallEquipmentDesc')}</p>
             </button>
           </div>
+
+          {/* Selezione attrezzatura per tirata (bodyweight) */}
+          {trainingType === 'bodyweight' && (
+            <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-slate-600">
+              <h4 className="text-sm font-semibold text-white mb-3">
+                {t('onboarding.location.pullEquipment') || 'Attrezzatura per tirare'}
+              </h4>
+              <p className="text-xs text-slate-400 mb-3">
+                {t('onboarding.location.pullEquipmentDesc') || 'Cosa hai a disposizione per esercizi di tirata?'}
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  onClick={() => {
+                    setEquipment(prev => ({
+                      ...prev,
+                      pullupBar: true,
+                      sturdyTable: false,
+                      noEquipment: false
+                    }));
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    equipment.pullupBar
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {equipment.pullupBar ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-slate-500" />
+                    )}
+                    <div>
+                      <span className="text-white font-medium">{t('equipment.pullupBar') || 'Barra per trazioni'}</span>
+                      <p className="text-xs text-slate-400">{t('equipment.pullupBarDesc') || 'Trazioni classiche'}</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEquipment(prev => ({
+                      ...prev,
+                      pullupBar: false,
+                      sturdyTable: true,
+                      noEquipment: false
+                    }));
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    equipment.sturdyTable
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {equipment.sturdyTable ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-slate-500" />
+                    )}
+                    <div>
+                      <span className="text-white font-medium">{t('equipment.sturdyTable') || 'Tavolo robusto'}</span>
+                      <p className="text-xs text-slate-400">{t('equipment.sturdyTableDesc') || 'Trazioni orizzontali (inverted row)'}</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEquipment(prev => ({
+                      ...prev,
+                      pullupBar: false,
+                      sturdyTable: false,
+                      loopBands: false,
+                      noEquipment: true
+                    }));
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    equipment.noEquipment
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {equipment.noEquipment ? (
+                      <CheckCircle className="w-5 h-5 text-amber-400" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-slate-500" />
+                    )}
+                    <div>
+                      <span className="text-white font-medium">{t('equipment.noEquipment') || 'Nessuna delle precedenti'}</span>
+                      <p className="text-xs text-slate-400">{t('equipment.noEquipmentDesc') || 'Useremo esercizi a pavimento'}</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

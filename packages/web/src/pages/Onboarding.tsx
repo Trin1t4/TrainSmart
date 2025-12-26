@@ -5,15 +5,17 @@ import { OnboardingData } from '../types/onboarding.types';
 import { useTranslation } from '../lib/i18n';
 import AnagraficaStep from '../components/onboarding/AnagraficaStep';
 import PersonalInfoStep from '../components/onboarding/PersonalInfoStep';
+import ScreeningTypeStep from '../components/onboarding/ScreeningTypeStep';
 import LocationStep from '../components/onboarding/LocationStep';
 import GoalStep from '../components/onboarding/GoalStep';
 import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
 
-// BETA: Onboarding semplificato - solo 4 step essenziali
+// Onboarding - 5 step
 // 1. Anagrafica (nome, cognome, data nascita)
 // 2. Personal Info (genere, età, altezza, peso)
-// 3. Location (casa/palestra)
-// 4. Goal (obiettivo)
+// 3. Screening Type (approfondito vs leggero) - NEW
+// 4. Location (casa/palestra)
+// 5. Goal (obiettivo)
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -52,8 +54,8 @@ export default function Onboarding() {
     );
   }
 
-  // BETA: 4 step invece di 6
-  const totalSteps = 4;
+  // 5 step: Anagrafica, PersonalInfo, ScreeningType, Location, Goal
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   const updateData = (stepData: Partial<OnboardingData>) => {
@@ -158,7 +160,7 @@ export default function Onboarding() {
           console.error('[ONBOARDING] ❌ LOCATION IS MISSING! LocationStep.tsx has a bug!');
           alert(t('onboarding.error.location_missing'));
           setIsSaving(false);
-          setCurrentStep(3); // Torna al step della location (step 3 nella versione beta)
+          setCurrentStep(4); // Torna al step della location (step 4)
           return;
         }
 
@@ -171,13 +173,20 @@ export default function Onboarding() {
         console.log('[ONBOARDING] 🔄 Saving to Supabase...');
         await saveOnboardingToDatabase(data);
         
-        // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Flow Normale
+        // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Screening Type
         if (data.goal === 'motor_recovery') {
           console.log('[ONBOARDING] 🏥 Motor recovery goal detected → navigating to /recovery-screening');
           navigate('/recovery-screening');
         } else {
-          console.log('[ONBOARDING] 💪 Standard goal → navigating to /quiz');
-          navigate('/quiz');
+          // Controlla il tipo di screening scelto
+          const screeningType = (data as any).screeningType;
+          if (screeningType === 'thorough') {
+            console.log('[ONBOARDING] 📊 Thorough screening → navigating to /quiz-full');
+            navigate('/quiz-full');
+          } else {
+            console.log('[ONBOARDING] ⚡ Light screening → navigating to /quiz');
+            navigate('/quiz');
+          }
         }
       } catch (error) {
         console.error('[ONBOARDING] ❌ Error saving onboarding:', error);
@@ -200,7 +209,7 @@ export default function Onboarding() {
     nextStep();
   };
 
-  // BETA: Solo 4 step essenziali
+  // 5 step: Anagrafica, PersonalInfo, ScreeningType, Location, Goal
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -208,8 +217,10 @@ export default function Onboarding() {
       case 2:
         return <PersonalInfoStep data={data} onNext={handleStepComplete} />;
       case 3:
-        return <LocationStep data={data} onNext={handleStepComplete} />;
+        return <ScreeningTypeStep data={data} onNext={handleStepComplete} />;
       case 4:
+        return <LocationStep data={data} onNext={handleStepComplete} />;
+      case 5:
         return <GoalStep data={data} onNext={handleStepComplete} />;
       default:
         return null;

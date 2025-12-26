@@ -2904,20 +2904,28 @@ function getCurrentPoolSet(sessionNumber: number, rotationConfig: { sessionsBefo
  */
 const EQUIPMENT_REQUIREMENTS: Record<string, { requires: string[], alternatives: string[] }> = {
   // Esercizi che richiedono barra trazioni o tavolo robusto
-  'Inverted Row': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Prone Y-raise', 'Superman Row', 'Doorway Row'] },
-  'Inverted Row Alta': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Prone Y-raise', 'Superman Row'] },
-  'Inverted Row 45°': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Prone Y-raise', 'Superman Row'] },
-  'Inverted Row 30°': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Prone Y-raise', 'Superman Row'] },
-  'Australian Pull-up': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Prone Y-raise', 'Superman Row'] },
-  'Pull-up': { requires: ['pullupBar'], alternatives: ['Doorway Curl', 'Band Pull-down'] },
-  'Chin-up': { requires: ['pullupBar'], alternatives: ['Doorway Curl', 'Band Pull-down'] },
+  // Floor Pull (asciugamano) è l'alternativa principale per chi non ha attrezzi
+  'Inverted Row': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Inverted Row Alta': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Inverted Row 45°': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Inverted Row 30°': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Inverted Row Orizzontale': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Australian Pull-up': { requires: ['pullupBar', 'sturdyTable'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Pull-up': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Chin-up': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Trazioni': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Trazioni Larghe': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Trazioni Neutre': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Trazioni Strette': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
+  'Trazioni Supine': { requires: ['pullupBar'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
   'Hanging Leg Raise': { requires: ['pullupBar'], alternatives: ['Lying Leg Raise', 'V-up'] },
   'Hanging Knee Raise': { requires: ['pullupBar'], alternatives: ['Lying Knee Raise', 'Dead Bug'] },
   // Esercizi che richiedono elastici
-  'Band Row': { requires: ['loopBands'], alternatives: ['Prone Y-raise', 'Superman Row'] },
+  'Band Row': { requires: ['loopBands'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise', 'Superman Row'] },
   'Band Face Pull': { requires: ['loopBands'], alternatives: ['Prone Y-raise', 'Prone I-Y-T'] },
   'Face Pull': { requires: ['loopBands'], alternatives: ['Prone Y-raise', 'Prone I-Y-T'] },
   'Band Pull-apart': { requires: ['loopBands'], alternatives: ['Prone Y-raise', 'Reverse Snow Angel'] },
+  'Band Pull-down': { requires: ['loopBands'], alternatives: ['Floor Pull (asciugamano)', 'Prone Y-raise'] },
 };
 
 /**

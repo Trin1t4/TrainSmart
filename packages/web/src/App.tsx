@@ -36,7 +36,9 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const BodyCompositionScan = lazy(() => import("./pages/BodyCompositionScan"));
 const BiomechanicsQuiz = lazy(() => import("./pages/BiomechanicsQuiz"));
+const BiomechanicsQuizFull = lazy(() => import("./pages/BiomechanicsQuizFull"));
 const Screening = lazy(() => import("./pages/Screening"));
+const ScreeningFull = lazy(() => import("./pages/ScreeningFull"));
 const Dashboard = lazy(() => import("./components/Dashboard"));
 const Workout = lazy(() => import('./pages/Workout'));
 const WorkoutSession = lazy(() => import('./pages/WorkoutSession'));
@@ -88,7 +90,9 @@ function App() {
               {/* PERCORSO PRINCIPALE - Protected */}
               <Route path="/body-scan" element={<ProtectedRoute><BodyCompositionScan /></ProtectedRoute>} />
               <Route path="/quiz" element={<ProtectedRoute><BiomechanicsQuiz /></ProtectedRoute>} />
+              <Route path="/quiz-full" element={<ProtectedRoute><BiomechanicsQuizFull /></ProtectedRoute>} />
               <Route path="/screening" element={<ProtectedRoute><Screening /></ProtectedRoute>} />
+              <Route path="/screening-full" element={<ProtectedRoute><ScreeningFull /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
               {/* RECOVERY - Protected */}
