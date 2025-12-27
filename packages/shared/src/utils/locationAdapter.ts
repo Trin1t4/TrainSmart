@@ -258,25 +258,27 @@ const RELATIVE_STRENGTH_ALTERNATIVES: Record<string, { minRatio: number; exercis
     { minRatio: 0, exercise: 'Wall Shoulder Tap', notes: 'Principiante' }
   ],
   // VERTICAL PULL - Basato su lat pulldown/weighted pull-up come riferimento
-  // NOTA: Senza sbarra, usiamo esercizi a terra per la schiena
+  // SENZA SBARRA: Floor Pull (trazioni scivolate) e Inverted Row sono i sostituti validi
+  // Chi tira 1x BW ha bisogno di esercizi VERI, non riabilitazione!
   'vertical_pull': [
-    { minRatio: 1.2, exercise: 'Prone Y-T-W Raise', notes: 'Elite - combinazione completa' },
-    { minRatio: 1.0, exercise: 'Superman Hold + Row', notes: 'Avanzato - isometrico + dinamico' },
-    { minRatio: 0.75, exercise: 'Prone Y-raise Tempo', notes: 'Intermedio - tempo 3-1-3' },
-    { minRatio: 0.5, exercise: 'Superman Row', notes: 'Intermedio base' },
-    { minRatio: 0.25, exercise: 'Prone Y-raise', notes: 'Base' },
-    { minRatio: 0, exercise: 'Prone I-raise', notes: 'Principiante' }
+    { minRatio: 1.2, exercise: 'Floor Pull Singolo Braccio', notes: 'Elite - unilaterale con asciugamano' },
+    { minRatio: 1.0, exercise: 'Floor Pull (asciugamano)', notes: 'Avanzato - trazioni scivolate a terra' },
+    { minRatio: 0.8, exercise: 'Inverted Row (tavolo)', notes: 'Avanzato - sotto un tavolo robusto' },
+    { minRatio: 0.6, exercise: 'Floor Pull Facilitato', notes: 'Intermedio - ginocchia piegate' },
+    { minRatio: 0.4, exercise: 'Inverted Row Facilitato', notes: 'Intermedio - angolo più verticale' },
+    { minRatio: 0.2, exercise: 'Scapular Pull (a terra)', notes: 'Base - solo retrazione scapolare' },
+    { minRatio: 0, exercise: 'Band Pull-apart', notes: 'Principiante - con elastico leggero' }
   ],
   // HORIZONTAL PULL (row come riferimento - bent over row/cable row)
-  // NOTA: Senza attrezzatura, progressione basata su varianti prone/superman
+  // SENZA ATTREZZATURA: Inverted Row e Floor Pull sono esercizi ALLENANTI
   'horizontal_pull': [
-    { minRatio: 1.2, exercise: 'Prone Y-T-W Raise', notes: 'Elite - combinazione completa' },
-    { minRatio: 1.0, exercise: 'Superman Hold + Row', notes: 'Molto avanzato - isometrico' },
-    { minRatio: 0.85, exercise: 'Superman Row Tempo', notes: 'Avanzato - tempo 3-1-3' },
-    { minRatio: 0.7, exercise: 'Superman Row', notes: 'Intermedio-avanzato' },
-    { minRatio: 0.5, exercise: 'Prone Y-raise', notes: 'Intermedio' },
-    { minRatio: 0.3, exercise: 'Prone I-raise', notes: 'Base' },
-    { minRatio: 0, exercise: 'Reverse Snow Angel', notes: 'Principiante' }
+    { minRatio: 1.2, exercise: 'Inverted Row Singolo Braccio', notes: 'Elite - unilaterale sotto tavolo' },
+    { minRatio: 1.0, exercise: 'Floor Pull (asciugamano)', notes: 'Avanzato - trazioni scivolate orizzontali' },
+    { minRatio: 0.85, exercise: 'Inverted Row (tavolo)', notes: 'Avanzato - gambe tese' },
+    { minRatio: 0.7, exercise: 'Inverted Row Piedi Elevati', notes: 'Intermedio-avanzato - piedi su sedia' },
+    { minRatio: 0.5, exercise: 'Inverted Row (tavolo)', notes: 'Intermedio - ginocchia piegate' },
+    { minRatio: 0.3, exercise: 'Floor Pull Facilitato', notes: 'Base - ginocchia piegate' },
+    { minRatio: 0, exercise: 'Scapular Pull (a terra)', notes: 'Principiante - retrazione scapolare' }
   ]
 };
 
