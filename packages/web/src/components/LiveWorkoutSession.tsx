@@ -14,7 +14,7 @@
  * - RPE 6-8 (ottimale) → Mantieni programmazione
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X, Info, ThumbsDown, ArrowLeftRight, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -168,6 +168,140 @@ const parseRestTimeToSeconds = (rest: string): number => {
   return 90;
 };
 
+// Pattern degli esercizi principali (compound)
+const COMPOUND_PATTERNS = [
+  'lower_push', 'lower_pull', 'squat', 'deadlift',
+  'horizontal_push', 'horizontal_pull', 'bench', 'row',
+  'vertical_push', 'vertical_pull', 'press', 'pullup'
+];
+
+// Pattern degli esercizi complementari/accessori
+const ACCESSORY_PATTERNS = ['accessory', 'core', 'corrective', 'isolation'];
+
+/**
+ * Adatta gli esercizi in base al tempo disponibile:
+ * - 45+ min: tutti gli esercizi normali
+ * - 30-44 min: crea superset per complementari (riduce tempi recupero)
+ * - 20-29 min: rimuove esercizi complementari, tiene solo compound
+ *
+ * NOTA: Superset/jumpset NON applicabili in gravidanza per sicurezza
+ */
+const adaptExercisesForTime = (
+  exercises: Exercise[],
+  availableTime: number,
+  isPregnancy: boolean = false
+): { exercises: Exercise[]; adaptationMode: 'full' | 'superset' | 'compound_only'; message: string } => {
+  // 45+ minuti: allenamento completo
+  if (availableTime >= 45) {
+    return {
+      exercises,
+      adaptationMode: 'full',
+      message: ''
+    };
+  }
+
+  // Gravidanza: NO superset/jumpset, taglia solo i complementari se necessario
+  if (isPregnancy) {
+    if (availableTime < 30) {
+      // Rimuovi complementari
+      const compoundExercises = exercises.filter(ex => {
+        const pattern = ex.pattern?.toLowerCase() || '';
+        const name = ex.name?.toLowerCase() || '';
+        if (ACCESSORY_PATTERNS.some(p => pattern.includes(p))) return false;
+        const compoundNames = ['squat', 'stacco', 'deadlift', 'panca', 'bench', 'press', 'row', 'rematore', 'trazioni', 'pullup'];
+        return compoundNames.some(n => name.includes(n)) || COMPOUND_PATTERNS.some(p => pattern.includes(p));
+      });
+
+      return {
+        exercises: compoundExercises,
+        adaptationMode: 'compound_only',
+        message: `🤰 Gravidanza: esercizi ridotti per ${availableTime} minuti (no superset per sicurezza)`
+      };
+    }
+
+    // 30-44 min in gravidanza: nessun superset, mantieni tutto con pause normali
+    return {
+      exercises,
+      adaptationMode: 'full',
+      message: '🤰 Gravidanza: pause normali mantenute per sicurezza'
+    };
+  }
+
+  // Identifica esercizi compound vs accessori
+  const isCompound = (ex: Exercise) => {
+    const pattern = ex.pattern?.toLowerCase() || '';
+    const name = ex.name?.toLowerCase() || '';
+
+    // Check pattern
+    if (COMPOUND_PATTERNS.some(p => pattern.includes(p))) return true;
+    if (ACCESSORY_PATTERNS.some(p => pattern.includes(p))) return false;
+
+    // Check name per esercizi comuni
+    const compoundNames = ['squat', 'stacco', 'deadlift', 'panca', 'bench', 'press', 'row', 'rematore', 'trazioni', 'pullup', 'pull-up', 'dip', 'military'];
+    if (compoundNames.some(n => name.includes(n))) return true;
+
+    // Default: considera compound se ha peso significativo
+    return ex.weight && Number(ex.weight) >= 20;
+  };
+
+  const compoundExercises = exercises.filter(isCompound);
+  const accessoryExercises = exercises.filter(ex => !isCompound(ex));
+
+  // 20-29 minuti: solo compound, rimuovi complementari
+  if (availableTime < 30) {
+    return {
+      exercises: compoundExercises,
+      adaptationMode: 'compound_only',
+      message: `⚡ Modalità Express: ${accessoryExercises.length} esercizi complementari rimossi per rispettare i ${availableTime} minuti`
+    };
+  }
+
+  // 30-44 minuti: crea superset/jumpset per gli accessori
+  // Raggruppa accessori a 2 a 2 in superset (stessa pausa per entrambi)
+  const supersetAccessories: Exercise[] = [];
+  for (let i = 0; i < accessoryExercises.length; i += 2) {
+    const ex1 = accessoryExercises[i];
+    const ex2 = accessoryExercises[i + 1];
+
+    if (ex2) {
+      // Crea superset: marca entrambi con stesso supersetGroup
+      const groupId = Math.floor(i / 2) + 100; // ID univoco per superset
+      supersetAccessories.push({
+        ...ex1,
+        supersetGroup: groupId,
+        rest: '60s', // Riduce pausa tra esercizi superset
+        notes: `${ex1.notes || ''} [SUPERSET con ${ex2.name}]`.trim()
+      });
+      supersetAccessories.push({
+        ...ex2,
+        supersetGroup: groupId,
+        rest: ex1.rest, // Pausa normale dopo il secondo esercizio
+        notes: `${ex2.notes || ''} [SUPERSET]`.trim()
+      });
+    } else {
+      // Esercizio singolo rimasto
+      supersetAccessories.push(ex1);
+    }
+  }
+
+  return {
+    exercises: [...compoundExercises, ...supersetAccessories],
+    adaptationMode: 'superset',
+    message: `🔄 Modalità Superset: ${Math.floor(accessoryExercises.length / 2)} superset creati per ottimizzare i ${availableTime} minuti`
+  };
+};
+
+interface RecoveryData {
+  sleepHours: number;
+  stressLevel: number;
+  hasInjury: boolean;
+  injuryDetails: string | null;
+  menstrualCycle: string | null;
+  availableTime: number; // minuti disponibili
+  isFemale: boolean;
+  timestamp: string;
+}
+
 interface LiveWorkoutSessionProps {
   open: boolean;
   onClose: () => void;
@@ -177,6 +311,7 @@ interface LiveWorkoutSessionProps {
   exercises: Exercise[];
   onWorkoutComplete?: (logs: any[]) => void;
   onLocationChange?: (newLocation: 'gym' | 'home', equipment: Record<string, boolean>) => Promise<void>;
+  recoveryData?: RecoveryData; // Dati dal RecoveryScreening pre-workout
 }
 
 export default function LiveWorkoutSession({
@@ -187,17 +322,23 @@ export default function LiveWorkoutSession({
   dayName,
   exercises: initialExercises,
   onWorkoutComplete,
-  onLocationChange
+  onLocationChange,
+  recoveryData
 }: LiveWorkoutSessionProps) {
   const { t } = useTranslation();
 
-  // Pre-workout state
-  const [showPreWorkout, setShowPreWorkout] = useState(true);
-  const [mood, setMood] = useState<'great' | 'good' | 'ok' | 'tired'>('good');
-  const [sleepQuality, setSleepQuality] = useState(7);
+  // Pre-workout state - se abbiamo recoveryData, bypassa il check interno
+  const [showPreWorkout, setShowPreWorkout] = useState(!recoveryData);
+  const [mood, setMood] = useState<'great' | 'good' | 'ok' | 'tired'>(
+    recoveryData ? (recoveryData.sleepHours >= 7 ? 'good' : 'tired') : 'good'
+  );
+  const [sleepQuality, setSleepQuality] = useState(recoveryData?.sleepHours ?? 7);
 
   // NEW: Contextual feedback
-  const [stressLevel, setStressLevel] = useState(5);
+  const [stressLevel, setStressLevel] = useState(recoveryData?.stressLevel ?? 5);
+
+  // Tempo disponibile per la sessione (in minuti)
+  const [availableTime] = useState(recoveryData?.availableTime ?? 45);
   const [nutritionQuality, setNutritionQuality] = useState<'good' | 'normal' | 'poor'>('normal');
   const [hydration, setHydration] = useState<'good' | 'normal' | 'poor'>('normal');
   const [showLocationSwitch, setShowLocationSwitch] = useState(false);
@@ -231,8 +372,10 @@ export default function LiveWorkoutSession({
   const [userBodyweight, setUserBodyweight] = useState<number>(75); // Default 75kg
   const [realLoads, setRealLoads] = useState<Record<string, number>>({}); // Carichi reali dai test
 
-  // Workout state
+  // Workout state - adatta esercizi in base al tempo disponibile
+  // Nota: isPregnancy viene determinato da userGoal che è caricato async
   const [exercises, setExercises] = useState<Exercise[]>(initialExercises);
+  const [adaptationMessage, setAdaptationMessage] = useState('');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [setLogs, setSetLogs] = useState<Record<string, SetLog[]>>({});
@@ -414,6 +557,58 @@ export default function LiveWorkoutSession({
 
     fetchUserData();
   }, []);
+
+  // Adatta esercizi per il tempo disponibile (inclusa logica gravidanza)
+  useEffect(() => {
+    // Applica adattamento solo se abbiamo recoveryData e non è già stato fatto
+    if (recoveryData && !workoutStartTime) {
+      const isPregnancy = isSpecialPopulation(userGoal);
+      const adaptation = adaptExercisesForTime(initialExercises, availableTime, isPregnancy);
+
+      if (adaptation.exercises.length !== exercises.length || adaptation.message) {
+        setExercises(adaptation.exercises);
+        setAdaptationMessage(adaptation.message);
+        console.log(`⏱️ Time adaptation (${availableTime}min, pregnancy=${isPregnancy}):`, adaptation.message);
+      }
+    }
+  }, [recoveryData, availableTime, userGoal, initialExercises, workoutStartTime]);
+
+  // Auto-start workout when recoveryData is provided (bypassing internal pre-workout)
+  useEffect(() => {
+    if (recoveryData && !showPreWorkout && !workoutStartTime) {
+      // Mostra messaggio adattamento tempo se presente
+      if (adaptationMessage) {
+        toast.info(adaptationMessage, { duration: 5000 });
+      }
+
+      // Avvia il workout
+      setWorkoutStartTime(new Date());
+
+      // Crea workout log per salvataggio progressivo
+      const initProgressiveWorkout = async () => {
+        try {
+          const { workoutId, error } = await startProgressiveWorkout({
+            userId,
+            programId,
+            dayName,
+            totalExercises: exercises.length,
+            mood: recoveryData.sleepHours >= 7 ? 'good' : 'tired',
+            sleepQuality: recoveryData.sleepHours,
+            notes: recoveryData.hasInjury ? `Injury: ${recoveryData.injuryDetails}` : undefined,
+          });
+
+          if (workoutId) {
+            setWorkoutLogId(workoutId);
+            console.log('[ProgressiveWorkout] Auto-started with ID:', workoutId);
+          }
+        } catch (err) {
+          console.error('[ProgressiveWorkout] Failed to start:', err);
+        }
+      };
+
+      initProgressiveWorkout();
+    }
+  }, [recoveryData, showPreWorkout, workoutStartTime, adaptationMessage, userId, programId, dayName, exercises.length]);
 
   // Fetch pain thresholds for exercises at workout start
   useEffect(() => {

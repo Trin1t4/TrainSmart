@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import WeeklySplitView from './WeeklySplitView';
 import WorkoutLogger from './WorkoutLogger';
 import LiveWorkoutSession from './LiveWorkoutSession';
+import { RecoveryScreening, RecoveryData } from '../pages/RecoveryScreening';
 import PainTrackingChart from './PainTrackingChart';
 import StrengthProgressChart from './StrengthProgressChart';
 import ScientificProgressPanel from './ScientificProgressPanel';
@@ -68,6 +69,8 @@ export default function Dashboard() {
   const [showWorkoutLogger, setShowWorkoutLogger] = useState(false);
   const [currentWorkoutDay, setCurrentWorkoutDay] = useState<any>(null);
   const [showLiveWorkout, setShowLiveWorkout] = useState(false);
+  const [showRecoveryScreening, setShowRecoveryScreening] = useState(false);
+  const [recoveryData, setRecoveryData] = useState<RecoveryData | null>(null);
   const [showLocationSwitch, setShowLocationSwitch] = useState(false);
   const [switchingLocation, setSwitchingLocation] = useState(false);
   const [switchStep, setSwitchStep] = useState<'choose' | 'equipment'>('choose');
@@ -1718,7 +1721,8 @@ export default function Dashboard() {
                       if (firstDay) {
                         setCurrentWorkoutDay(firstDay);
                       }
-                      setShowLiveWorkout(true);
+                      // Mostra prima il RecoveryScreening per chiedere tempo disponibile
+                      setShowRecoveryScreening(true);
                     }}
                     className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 text-sm md:text-base"
                   >
@@ -2174,6 +2178,32 @@ export default function Dashboard() {
         </motion.div>
       )}
 
+      {/* Recovery Screening Modal - Pre-workout check */}
+      {showRecoveryScreening && (
+        <RecoveryScreening
+          onComplete={(data: RecoveryData) => {
+            setRecoveryData(data);
+            setShowRecoveryScreening(false);
+            setShowLiveWorkout(true);
+          }}
+          onSkip={() => {
+            // Default values se salta
+            setRecoveryData({
+              sleepHours: 7,
+              stressLevel: 5,
+              hasInjury: false,
+              injuryDetails: null,
+              menstrualCycle: null,
+              availableTime: 45,
+              isFemale: false,
+              timestamp: new Date().toISOString(),
+            });
+            setShowRecoveryScreening(false);
+            setShowLiveWorkout(true);
+          }}
+        />
+      )}
+
       {/* Live Workout Session Modal */}
       {showLiveWorkout && currentWorkoutDay && program && (
         <LiveWorkoutSession
@@ -2181,11 +2211,13 @@ export default function Dashboard() {
           onClose={() => {
             setShowLiveWorkout(false);
             setCurrentWorkoutDay(null);
+            setRecoveryData(null);
           }}
           userId={dataStatus.screening?.userId || program.user_id || ''}
           programId={program.id || ''}
           dayName={currentWorkoutDay.name || 'Day 1'}
           exercises={currentWorkoutDay.exercises || []}
+          recoveryData={recoveryData || undefined}
           onWorkoutComplete={async () => {
             console.log('✅ Workout completato, refreshing program...');
 

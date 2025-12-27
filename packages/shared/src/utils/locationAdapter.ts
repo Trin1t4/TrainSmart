@@ -168,23 +168,27 @@ const PULLUP_BAR_EXERCISES = [
  * Alternative senza sbarra (English + Italian)
  */
 const NO_PULLUP_BAR_ALTERNATIVES: Record<string, string> = {
-  // English
-  'standard pull-up': 'Superman Row',
-  'pull-up': 'Superman Row',
-  'wide grip pull-up': 'Prone Y-raise',
-  'chin-up': 'Superman Row',
-  'chin-up (supinated)': 'Superman Row',
-  'neutral grip pull-up': 'Superman Row',
+  // English - Floor Pull come alternativa principale (trazione a pavimento con asciugamano)
+  'standard pull-up': 'Floor Pull (asciugamano)',
+  'pull-up': 'Floor Pull (asciugamano)',
+  'wide grip pull-up': 'Floor Pull (asciugamano)',
+  'chin-up': 'Floor Pull (asciugamano)',
+  'chin-up (supinated)': 'Floor Pull (asciugamano)',
+  'neutral grip pull-up': 'Floor Pull (asciugamano)',
   'negative pull-up': 'Prone Y-raise',
   'hanging leg raise': 'Alzate Gambe a Terra',
-  // Italian
-  'trazioni alla sbarra': 'Superman Row',
-  'trazioni': 'Superman Row',
-  'trazioni presa larga': 'Prone Y-raise',
-  'chin-up (supinato)': 'Superman Row',
-  'trazioni presa neutra': 'Superman Row',
+  // Italian - Floor Pull come alternativa principale
+  'trazioni alla sbarra': 'Floor Pull (asciugamano)',
+  'trazioni': 'Floor Pull (asciugamano)',
+  'trazioni presa larga': 'Floor Pull (asciugamano)',
+  'chin-up (supinato)': 'Floor Pull (asciugamano)',
+  'trazioni presa neutra': 'Floor Pull (asciugamano)',
   'trazioni negative': 'Prone Y-raise',
-  'alzate gambe alla sbarra': 'Alzate Gambe a Terra'
+  'alzate gambe alla sbarra': 'Alzate Gambe a Terra',
+  // Lat pulldown (gym) -> Floor Pull (home senza sbarra)
+  'lat pulldown': 'Floor Pull (asciugamano)',
+  'lat pulldown machine': 'Floor Pull (asciugamano)',
+  'lat pulldown (machine)': 'Floor Pull (asciugamano)'
 };
 
 /**
