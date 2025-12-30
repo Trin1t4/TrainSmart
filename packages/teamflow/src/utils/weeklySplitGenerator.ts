@@ -32,62 +32,53 @@ import {
 } from './sportSpecificTraining';
 
 /**
- * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
- * LOGICA: Mix intelligente + rotazione DUP per Full Body 7 esercizi
+ * Determina l'intensità dell'esercizio con ROTAZIONE DUP COMPLETA
  *
- * FULL BODY 3x - 7 esercizi/giorno:
- * 1. Squat, 2. Deadlift, 3. Bench, 4. Row, 5. Military, 6. Pulldown, 7. Core
+ * Sistema DUP (Daily Undulating Periodization):
+ * - Ogni pattern ruota attraverso HEAVY → MODERATE → VOLUME
+ * - Questo garantisce varietà di stimoli per ogni gruppo muscolare
+ * - Previene plateau e ottimizza adattamenti
  *
- * Rotazione intensità per evitare CNS burnout e ottimizzare recupero
+ * FULL BODY 3x - Rotazione settimanale:
+ * Day 1: Squat HEAVY, Deadlift MODERATE, Bench VOLUME...
+ * Day 2: Squat MODERATE, Deadlift VOLUME, Bench HEAVY...
+ * Day 3: Squat VOLUME, Deadlift HEAVY, Bench MODERATE...
  */
 function getIntensityForPattern(
   patternId: string,
   exerciseIndex: number,
   dayIndex: number
 ): 'heavy' | 'volume' | 'moderate' {
-  // 🎯 CORE/ACCESSORI: SEMPRE VOLUME (non cambiano)
+  // 🎯 CORE/ACCESSORI: SEMPRE VOLUME (focus su endurance e controllo)
   if (patternId === 'core' || patternId === 'corrective') {
     return 'volume';
   }
 
-  // 🔄 ROTAZIONE DUP PER COMPOUND MOVEMENTS (Full Body 7 pattern)
-  // Ogni giorno 2 esercizi HEAVY, 4 MODERATE, 1 VOLUME (core)
+  // 🔄 DUP ROTATION - Ogni pattern cicla attraverso tutte e 3 le fasi
+  // Offset per pattern → distribuisce le fasi tra i vari esercizi
+  const patternDupOffset: Record<string, number> = {
+    lower_push: 0,       // Squat: Day1=Heavy, Day2=Mod, Day3=Vol
+    lower_pull: 1,       // Deadlift: Day1=Mod, Day2=Vol, Day3=Heavy
+    horizontal_push: 2,  // Bench: Day1=Vol, Day2=Heavy, Day3=Mod
+    horizontal_pull: 0,  // Row: Day1=Heavy, Day2=Mod, Day3=Vol
+    vertical_push: 1,    // Military: Day1=Mod, Day2=Vol, Day3=Heavy
+    vertical_pull: 2     // Pulldown: Day1=Vol, Day2=Heavy, Day3=Mod
+  };
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 1 (Monday): Lower Push (Squat) + Horizontal Push (Bench) HEAVY
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  if (dayIndex === 0) {
-    if (patternId === 'lower_push' || patternId === 'horizontal_push') {
-      return 'heavy'; // Squat HEAVY, Bench HEAVY
-    }
-    // Tutti gli altri: MODERATE (Deadlift, Row, Military, Pulldown)
-    return 'moderate';
+  const patternOffset = patternDupOffset[patternId] ?? 0;
+
+  // Calcola fase DUP: (offset + dayIndex) % 3
+  // 0 = HEAVY (forza massimale: 3-5 reps)
+  // 1 = MODERATE (forza submassimale: 5-8 reps)
+  // 2 = VOLUME (ipertrofia/work capacity: 10-15 reps)
+  const dupPhase = (patternOffset + dayIndex) % 3;
+
+  switch (dupPhase) {
+    case 0: return 'heavy';
+    case 1: return 'moderate';
+    case 2: return 'volume';
+    default: return 'moderate';
   }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 2 (Wednesday): Lower Pull (Deadlift) + Horizontal Pull (Row) + Vertical Push (Military) HEAVY
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  if (dayIndex === 1) {
-    if (patternId === 'lower_pull' || patternId === 'horizontal_pull' || patternId === 'vertical_push') {
-      return 'heavy'; // Deadlift HEAVY, Row HEAVY, Military HEAVY
-    }
-    // Tutti gli altri: MODERATE (Squat, Bench, Pulldown)
-    return 'moderate';
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 3 (Friday): Lower Push (Squat) + Vertical Pull (Pulldown) HEAVY
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  if (dayIndex === 2) {
-    if (patternId === 'lower_push' || patternId === 'vertical_pull') {
-      return 'heavy'; // Squat HEAVY, Pulldown HEAVY
-    }
-    // Tutti gli altri: MODERATE (Deadlift, Bench, Row, Military)
-    return 'moderate';
-  }
-
-  // Default: moderate
-  return 'moderate';
 }
 
 export interface DayWorkout {
