@@ -2547,13 +2547,13 @@ export function calculateVolume(
         reps = Math.max(4, Math.min(workingReps, 6));
         rest = '2-3min';
         intensity = '80-85%';
-        notes = 'Forza - Skill strength';
+        notes = 'Forza - Abilità di forza';
       } else if (dayType === 'volume') {
         sets = 5;
         reps = Math.max(10, Math.min(workingReps, 15));
         rest = '90s';
         intensity = '60-70%';
-        notes = 'Volume - Work capacity';
+        notes = 'Volume - Capacità di lavoro';
       } else {
         // Moderate: range ipertrofia per complementare la forza
         sets = 4;
@@ -2571,19 +2571,19 @@ export function calculateVolume(
       reps = workingReps <= 6 ? 6 : 8;
       rest = '90-120s';
       intensity = '80-85%';
-      notes = 'Heavy Day - Tensione meccanica';
+      notes = 'Pesante - Tensione meccanica';
     } else if (dayType === 'volume') {
       sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
       reps = Math.max(10, Math.min(workingReps, 15));
       rest = '60-75s';
       intensity = '65-70%';
-      notes = 'Volume Day - Stress metabolico';
+      notes = 'Volume - Stress metabolico';
     } else {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
       reps = Math.max(8, Math.min(workingReps, 12));
       rest = '75-90s';
       intensity = '70-80%';
-      notes = 'Moderate Day - Ipertrofia classica';
+      notes = 'Moderato - Ipertrofia classica';
     }
   }
   // FAT LOSS
@@ -2593,19 +2593,19 @@ export function calculateVolume(
       reps = Math.max(8, Math.min(workingReps, 10));
       rest = '75-90s';
       intensity = '75-80%';
-      notes = 'Heavy Day - Preservazione massa';
+      notes = 'Pesante - Preservazione massa';
     } else if (dayType === 'volume') {
       sets = level === 'beginner' ? 4 : 5;
       reps = Math.max(12, Math.min(workingReps, 15));
       rest = '45-60s';
       intensity = '60-70%';
-      notes = 'Volume Day - Consumo calorico';
+      notes = 'Volume - Consumo calorico';
     } else {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(10, Math.min(workingReps, 12));
       rest = '60-75s';
       intensity = '70-75%';
-      notes = 'Moderate Day - Definizione';
+      notes = 'Moderato - Definizione';
     }
   }
   // ENDURANCE
@@ -2615,19 +2615,19 @@ export function calculateVolume(
       reps = Math.max(12, Math.min(workingReps, 15));
       rest = '60s';
       intensity = '65-70%';
-      notes = 'Heavy Day - Forza resistente';
+      notes = 'Pesante - Forza resistente';
     } else if (dayType === 'volume') {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
       reps = Math.max(15, Math.min(workingReps, 20));
       rest = '30-45s';
       intensity = '55-65%';
-      notes = 'Volume Day - Capacità aerobica';
+      notes = 'Volume - Capacità aerobica';
     } else {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(12, Math.min(workingReps, 18));
       rest = '45-60s';
       intensity = '60-70%';
-      notes = 'Moderate Day - Endurance muscolare';
+      notes = 'Moderato - Endurance muscolare';
     }
   }
   // GENERAL FITNESS
@@ -2637,19 +2637,19 @@ export function calculateVolume(
       reps = Math.max(6, Math.min(workingReps, 10));
       rest = '90s';
       intensity = '75-80%';
-      notes = 'Heavy Day - Forza generale';
+      notes = 'Pesante - Forza generale';
     } else if (dayType === 'volume') {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(10, Math.min(workingReps, 15));
       rest = '60-75s';
       intensity = '65-75%';
-      notes = 'Volume Day - Fitness generale';
+      notes = 'Volume - Fitness generale';
     } else {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(8, Math.min(workingReps, 12));
       rest = '75-90s';
       intensity = '70-78%';
-      notes = 'Moderate Day - Bilanciato';
+      notes = 'Moderato - Bilanciato';
     }
   }
   // SPECIAL GOALS

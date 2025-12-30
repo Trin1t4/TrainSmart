@@ -148,7 +148,20 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
     corrective: 'bg-gray-600'
   };
 
+  // Traduzioni pattern in italiano
+  const patternLabels: Record<string, string> = {
+    lower_push: 'gambe',
+    lower_pull: 'femorali',
+    horizontal_push: 'petto',
+    horizontal_pull: 'dorsali',
+    vertical_push: 'spalle',
+    vertical_pull: 'dorsali',
+    core: 'core',
+    corrective: 'correttivo'
+  };
+
   const patternColor = patternColors[exercise.pattern] || 'bg-gray-600';
+  const patternLabel = patternLabels[exercise.pattern] || exercise.pattern.replace('_', ' ');
 
   return (
     <motion.div
@@ -190,7 +203,7 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
                   {exercise.name}
                 </p>
                 <div className={`${patternColor} rounded px-1.5 py-0.5 text-[10px] md:text-xs font-medium text-white uppercase tracking-wider`}>
-                  {exercise.pattern.replace('_', ' ')}
+                  {patternLabel}
                 </div>
               </div>
               {/* Warmup indicator */}
@@ -283,7 +296,7 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
               {exercise.baseline && (
                 <div className="text-[10px] text-green-400 flex items-center gap-1 bg-green-400/10 px-1.5 py-0.5 rounded">
                   <Activity className="w-3 h-3" />
-                  <span>Baseline: {exercise.baseline.maxReps} reps</span>
+                  <span>Riferimento: {exercise.baseline.maxReps} reps</span>
                 </div>
               )}
               {exercise.wasReplaced && (
