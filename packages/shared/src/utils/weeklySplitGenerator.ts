@@ -22,6 +22,139 @@ import {
 import { adaptExercisesForLocation } from './locationAdapter';
 
 /**
+ * Mapping nomi esercizi inglese -> italiano
+ */
+const EXERCISE_NAMES_IT: Record<string, string> = {
+  // Lower Push
+  'Back Squat': 'Squat con Bilanciere',
+  'Bodyweight Squat': 'Squat a Corpo Libero',
+  'Front Squat': 'Squat Frontale',
+  'Goblet Squat': 'Goblet Squat',
+  'Bulgarian Split Squat': 'Squat Bulgaro',
+  'Leg Press': 'Pressa',
+  'Pistol Squat': 'Pistol Squat',
+  'Hack Squat': 'Hack Squat',
+  'Smith Machine Squat': 'Squat al Multipower',
+
+  // Lower Pull
+  'Conventional Deadlift': 'Stacco da Terra',
+  'Romanian Deadlift (RDL)': 'Romanian Deadlift',
+  'Romanian Deadlift': 'Romanian Deadlift',
+  'Sumo Deadlift': 'Stacco Sumo',
+  'Trap Bar Deadlift': 'Stacco Trap Bar',
+  'Nordic Hamstring Curl': 'Nordic Curl',
+  'Leg Curl (Machine)': 'Leg Curl',
+  'Leg Curl': 'Leg Curl',
+  'Bodyweight Hip Hinge': 'Good Morning Bodyweight',
+  'Good Morning': 'Good Morning',
+  'Hip Thrust': 'Hip Thrust',
+  'Glute Bridge': 'Glute Bridge',
+
+  // Horizontal Push
+  'Standard Push-up': 'Push-up',
+  'Push-up': 'Push-up',
+  'Diamond Push-up': 'Diamond Push-up',
+  'Archer Push-up': 'Archer Push-up',
+  'Flat Barbell Bench Press': 'Panca Piana',
+  'Barbell Bench Press': 'Panca Piana',
+  'Bench Press': 'Panca Piana',
+  'Incline Bench Press': 'Panca Inclinata',
+  'Decline Bench Press': 'Panca Declinata',
+  'Dumbbell Bench Press': 'Panca con Manubri',
+  'Incline Dumbbell Press': 'Panca Inclinata Manubri',
+  'Chest Press (Machine)': 'Chest Press',
+  'Chest Press': 'Chest Press',
+  'Cable Fly': 'Croci ai Cavi',
+  'Dips': 'Dips',
+
+  // Horizontal Pull
+  'Barbell Row': 'Rematore con Bilanciere',
+  'Bent Over Row': 'Rematore con Bilanciere',
+  'Dumbbell Row': 'Rematore con Manubrio',
+  'One Arm Dumbbell Row': 'Rematore con Manubrio',
+  'Inverted Row': 'Rematore Inverso',
+  'Cable Row': 'Pulley Basso',
+  'Seated Cable Row': 'Pulley Basso',
+  'T-Bar Row': 'Rematore T-Bar',
+  'Machine Row': 'Pulley Basso',
+  'Floor Pull': 'Floor Pull',
+
+  // Vertical Push
+  'Overhead Press': 'Military Press',
+  'Barbell Overhead Press': 'Military Press',
+  'Standing Barbell Press': 'Military Press',
+  'Military Press': 'Military Press',
+  'Dumbbell Shoulder Press': 'Shoulder Press con Manubri',
+  'Seated Dumbbell Press': 'Shoulder Press con Manubri',
+  'Arnold Press': 'Arnold Press',
+  'Pike Push-up': 'Pike Push-up',
+  'Handstand Push-up': 'Handstand Push-up',
+  'Machine Shoulder Press': 'Shoulder Press Macchina',
+
+  // Vertical Pull
+  'Pull-up': 'Trazioni Presa Prona',
+  'Chin-up': 'Trazioni Presa Supina',
+  'Wide Grip Pull-up': 'Trazioni Presa Larga',
+  'Close Grip Chin-up': 'Trazioni Presa Stretta',
+  'Lat Pulldown': 'Lat Machine',
+  'Lat Pulldown Wide': 'Lat Machine Presa Larga',
+  'Lat Pulldown Close': 'Lat Machine Presa Stretta',
+  'Cable Pulldown': 'Lat Machine',
+  'Assisted Pull-up': 'Trazioni Assistite',
+
+  // Core
+  'Plank': 'Plank',
+  'Side Plank': 'Side Plank',
+  'Dead Bug': 'Dead Bug',
+  'Bird Dog': 'Bird Dog',
+  'Pallof Press': 'Pallof Press',
+  'Ab Wheel Rollout': 'Ab Wheel',
+  'Ab Wheel': 'Ab Wheel',
+  'Hanging Leg Raise': 'Leg Raise alla Sbarra',
+  'Cable Crunch': 'Crunch ai Cavi',
+  'Russian Twist': 'Russian Twist',
+  'Bicycle Crunch': 'Crunch Bicicletta',
+  'Reverse Crunch': 'Crunch Inverso',
+  'Mountain Climber': 'Mountain Climber',
+
+  // Accessori
+  'Bicep Curl': 'Curl con Manubri',
+  'Dumbbell Curl': 'Curl con Manubri',
+  'Barbell Curl': 'Curl con Bilanciere',
+  'Hammer Curl': 'Hammer Curl',
+  'Tricep Extension': 'French Press',
+  'Tricep Pushdown': 'Tricep Pushdown',
+  'Skull Crusher': 'French Press',
+  'Lateral Raise': 'Alzate Laterali',
+  'Front Raise': 'Alzate Frontali',
+  'Face Pull': 'Face Pull',
+  'Calf Raise': 'Calf Raise',
+  'Seated Calf Raise': 'Calf Raise Seduto',
+  'Walking Lunge': 'Affondi Camminati',
+  'Lunge': 'Affondi',
+  'Cable Crossover': 'Croci ai Cavi',
+  'Band Pull Apart': 'Band Pull Apart',
+  'Chest Fly': 'Croci con Manubri',
+  'Reverse Fly': 'Alzate Posteriori'
+};
+
+/**
+ * Traduce il nome dell'esercizio in italiano
+ */
+function translateExerciseName(name: string): string {
+  if (EXERCISE_NAMES_IT[name]) {
+    return EXERCISE_NAMES_IT[name];
+  }
+  const key = Object.keys(EXERCISE_NAMES_IT).find(
+    k => k.toLowerCase() === name.toLowerCase()
+  );
+  if (key) {
+    return EXERCISE_NAMES_IT[key];
+  }
+  return name;
+}
+
+/**
  * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
  * LOGICA: Mix intelligente + rotazione DUP per Full Body 7 esercizi
  *
@@ -1444,7 +1577,7 @@ function createExercise(
 
   return {
     pattern: patternId as any,
-    name: exerciseName,
+    name: translateExerciseName(exerciseName),
     sets: finalSets,
     reps: finalReps,
     rest: volumeCalc.rest,
@@ -1510,7 +1643,7 @@ function createHorizontalPullExercise(
 
   return {
     pattern: 'horizontal_pull' as any, // Pattern corretto per Row
-    name: exerciseName,
+    name: translateExerciseName(exerciseName),
     sets: volumeCalc.sets,
     reps: volumeCalc.reps,
     rest: volumeCalc.rest,
@@ -1572,7 +1705,7 @@ function createAccessoryExercise(
 
   return {
     pattern: 'core', // Usiamo core come pattern generico per accessori
-    name: exerciseName,
+    name: translateExerciseName(exerciseName),
     sets: sets,
     reps: reps,
     rest: '60s',
@@ -1594,7 +1727,7 @@ function generateCorrectiveExercises(painAreas: NormalizedPainArea[]): Exercise[
     for (const corrective of correctives) {
       correctiveExercises.push({
         pattern: 'corrective',
-        name: corrective,
+        name: translateExerciseName(corrective),
         sets: 2,
         reps: '10-15',
         rest: '30s',
