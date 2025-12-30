@@ -1718,13 +1718,147 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
 };
 
 /**
+ * Alias mapping: nomi inglesi → nomi italiani nel database
+ */
+const EXERCISE_ALIASES: Record<string, string> = {
+  // Lower Push
+  'Back Squat': 'Squat con Bilanciere',
+  'Bodyweight Squat': 'Squat a Corpo Libero',
+  'Front Squat': 'Squat Frontale',
+  'Goblet Squat': 'Goblet Squat',
+  'Bulgarian Split Squat': 'Squat Bulgaro',
+  'Leg Press': 'Pressa',
+  'Pistol Squat': 'Pistol Squat',
+
+  // Lower Pull
+  'Conventional Deadlift': 'Stacco da Terra',
+  'Romanian Deadlift (RDL)': 'Romanian Deadlift',
+  'Romanian Deadlift': 'Romanian Deadlift',
+  'RDL': 'Romanian Deadlift',
+  'Sumo Deadlift': 'Stacco Sumo',
+  'Trap Bar Deadlift': 'Stacco Trap Bar',
+  'Nordic Hamstring Curl': 'Nordic Curl',
+  'Leg Curl (Machine)': 'Leg Curl',
+  'Bodyweight Hip Hinge': 'Good Morning Bodyweight',
+
+  // Horizontal Push
+  'Standard Push-up': 'Push-up',
+  'Push-up': 'Push-up',
+  'Diamond Push-up': 'Diamond Push-up',
+  'Archer Push-up': 'Archer Push-up',
+  'Flat Barbell Bench Press': 'Panca Piana con Bilanciere',
+  'Barbell Bench Press': 'Panca Piana con Bilanciere',
+  'Bench Press': 'Panca Piana con Bilanciere',
+  'Incline Bench Press': 'Panca Inclinata',
+  'Decline Bench Press': 'Panca Declinata',
+  'Dumbbell Bench Press': 'Panca con Manubri',
+  'Chest Press (Machine)': 'Chest Press',
+  'Cable Fly': 'Croci ai Cavi',
+
+  // Horizontal Pull
+  'Barbell Row': 'Rematore con Bilanciere',
+  'Bent Over Row': 'Rematore con Bilanciere',
+  'Dumbbell Row': 'Rematore con Manubrio',
+  'One Arm Dumbbell Row': 'Rematore con Manubrio',
+  'Inverted Row': 'Inverted Row',
+  'Cable Row': 'Pulley Basso',
+  'Seated Cable Row': 'Pulley Basso',
+  'T-Bar Row': 'Rematore T-Bar',
+  'Machine Row': 'Pulley Basso',
+  'Floor Pull': 'Floor Pull',
+
+  // Vertical Push
+  'Overhead Press': 'Military Press',
+  'Barbell Overhead Press': 'Military Press',
+  'Standing Barbell Press': 'Military Press',
+  'Dumbbell Shoulder Press': 'Shoulder Press con Manubri',
+  'Seated Dumbbell Press': 'Shoulder Press con Manubri',
+  'Arnold Press': 'Arnold Press',
+  'Pike Push-up': 'Pike Push-up',
+  'Handstand Push-up': 'Handstand Push-up',
+  'Machine Shoulder Press': 'Shoulder Press Macchina',
+
+  // Vertical Pull
+  'Pull-up': 'Trazioni Presa Prona',
+  'Chin-up': 'Trazioni Presa Supina',
+  'Wide Grip Pull-up': 'Trazioni Presa Larga',
+  'Close Grip Chin-up': 'Trazioni Presa Stretta',
+  'Lat Pulldown': 'Lat Machine',
+  'Lat Pulldown Wide': 'Lat Machine Presa Larga',
+  'Lat Pulldown Close': 'Lat Machine Presa Stretta',
+  'Cable Pulldown': 'Lat Machine',
+  'Assisted Pull-up': 'Trazioni Assistite',
+
+  // Core
+  'Plank': 'Plank',
+  'Side Plank': 'Side Plank',
+  'Dead Bug': 'Dead Bug',
+  'Bird Dog': 'Bird Dog',
+  'Pallof Press': 'Pallof Press',
+  'Ab Wheel Rollout': 'Ab Wheel',
+  'Hanging Leg Raise': 'Leg Raise alla Sbarra',
+  'Cable Crunch': 'Crunch ai Cavi',
+  'Russian Twist': 'Russian Twist',
+  'Bicycle Crunch': 'Crunch Bicicletta',
+
+  // Accessori
+  'Bicep Curl': 'Curl con Manubri',
+  'Dumbbell Curl': 'Curl con Manubri',
+  'Barbell Curl': 'Curl con Bilanciere',
+  'Hammer Curl': 'Hammer Curl',
+  'Tricep Extension': 'French Press',
+  'Tricep Pushdown': 'Tricep Pushdown',
+  'Skull Crusher': 'French Press',
+  'Lateral Raise': 'Alzate Laterali',
+  'Front Raise': 'Alzate Frontali',
+  'Face Pull': 'Face Pull',
+  'Calf Raise': 'Calf Raise',
+  'Seated Calf Raise': 'Calf Raise Seduto',
+  'Hip Thrust': 'Hip Thrust',
+  'Glute Bridge': 'Glute Bridge',
+  'Walking Lunge': 'Affondi Camminati',
+  'Cable Crossover': 'Croci ai Cavi',
+  'Band Pull Apart': 'Band Pull Apart',
+  'Chest Fly': 'Croci con Manubri'
+};
+
+/**
  * Trova descrizione e technique per un esercizio dato il nome
+ * Supporta alias inglese → italiano
  */
 export function getExerciseDescription(exerciseName: string): ExerciseDescription | null {
-  // Cerca match esatto (case-insensitive)
-  const key = Object.keys(EXERCISE_DESCRIPTIONS).find(
-    k => k.toLowerCase() === exerciseName.toLowerCase()
+  const normalizedName = exerciseName.trim();
+
+  // 1. Cerca match esatto (case-insensitive)
+  let key = Object.keys(EXERCISE_DESCRIPTIONS).find(
+    k => k.toLowerCase() === normalizedName.toLowerCase()
   );
+
+  if (key) {
+    return EXERCISE_DESCRIPTIONS[key];
+  }
+
+  // 2. Cerca tramite alias
+  const aliasKey = Object.keys(EXERCISE_ALIASES).find(
+    k => k.toLowerCase() === normalizedName.toLowerCase()
+  );
+
+  if (aliasKey) {
+    const italianName = EXERCISE_ALIASES[aliasKey];
+    key = Object.keys(EXERCISE_DESCRIPTIONS).find(
+      k => k.toLowerCase() === italianName.toLowerCase()
+    );
+    if (key) {
+      return EXERCISE_DESCRIPTIONS[key];
+    }
+  }
+
+  // 3. Cerca match parziale (contiene)
+  key = Object.keys(EXERCISE_DESCRIPTIONS).find(k => {
+    const kLower = k.toLowerCase();
+    const nameLower = normalizedName.toLowerCase();
+    return kLower.includes(nameLower) || nameLower.includes(kLower);
+  });
 
   if (key) {
     return EXERCISE_DESCRIPTIONS[key];

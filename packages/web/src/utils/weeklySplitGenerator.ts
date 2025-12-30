@@ -30,6 +30,144 @@ import {
 } from './sportSpecificTraining';
 
 /**
+ * Traduzione nomi esercizi: Inglese → Italiano
+ */
+const EXERCISE_NAMES_IT: Record<string, string> = {
+  // Lower Push
+  'Back Squat': 'Squat con Bilanciere',
+  'Bodyweight Squat': 'Squat a Corpo Libero',
+  'Front Squat': 'Squat Frontale',
+  'Goblet Squat': 'Goblet Squat',
+  'Bulgarian Split Squat': 'Squat Bulgaro',
+  'Leg Press': 'Pressa',
+  'Pistol Squat': 'Pistol Squat',
+  'Hack Squat': 'Hack Squat',
+  'Smith Machine Squat': 'Squat al Multipower',
+
+  // Lower Pull
+  'Conventional Deadlift': 'Stacco da Terra',
+  'Romanian Deadlift (RDL)': 'Romanian Deadlift',
+  'Romanian Deadlift': 'Romanian Deadlift',
+  'Sumo Deadlift': 'Stacco Sumo',
+  'Trap Bar Deadlift': 'Stacco Trap Bar',
+  'Nordic Hamstring Curl': 'Nordic Curl',
+  'Leg Curl (Machine)': 'Leg Curl',
+  'Leg Curl': 'Leg Curl',
+  'Bodyweight Hip Hinge': 'Good Morning Bodyweight',
+  'Good Morning': 'Good Morning',
+  'Hip Thrust': 'Hip Thrust',
+  'Glute Bridge': 'Glute Bridge',
+
+  // Horizontal Push
+  'Standard Push-up': 'Push-up',
+  'Push-up': 'Push-up',
+  'Diamond Push-up': 'Diamond Push-up',
+  'Archer Push-up': 'Archer Push-up',
+  'Flat Barbell Bench Press': 'Panca Piana',
+  'Barbell Bench Press': 'Panca Piana',
+  'Bench Press': 'Panca Piana',
+  'Incline Bench Press': 'Panca Inclinata',
+  'Decline Bench Press': 'Panca Declinata',
+  'Dumbbell Bench Press': 'Panca con Manubri',
+  'Incline Dumbbell Press': 'Panca Inclinata Manubri',
+  'Chest Press (Machine)': 'Chest Press',
+  'Chest Press': 'Chest Press',
+  'Cable Fly': 'Croci ai Cavi',
+  'Dips': 'Dips',
+
+  // Horizontal Pull
+  'Barbell Row': 'Rematore con Bilanciere',
+  'Bent Over Row': 'Rematore con Bilanciere',
+  'Dumbbell Row': 'Rematore con Manubrio',
+  'One Arm Dumbbell Row': 'Rematore con Manubrio',
+  'Inverted Row': 'Inverted Row',
+  'Cable Row': 'Pulley Basso',
+  'Seated Cable Row': 'Pulley Basso',
+  'T-Bar Row': 'Rematore T-Bar',
+  'Machine Row': 'Pulley Basso',
+  'Floor Pull': 'Floor Pull',
+
+  // Vertical Push
+  'Overhead Press': 'Military Press',
+  'Barbell Overhead Press': 'Military Press',
+  'Standing Barbell Press': 'Military Press',
+  'Military Press': 'Military Press',
+  'Dumbbell Shoulder Press': 'Shoulder Press con Manubri',
+  'Seated Dumbbell Press': 'Shoulder Press con Manubri',
+  'Arnold Press': 'Arnold Press',
+  'Pike Push-up': 'Pike Push-up',
+  'Handstand Push-up': 'Handstand Push-up',
+  'Machine Shoulder Press': 'Shoulder Press Macchina',
+
+  // Vertical Pull
+  'Pull-up': 'Trazioni Presa Prona',
+  'Chin-up': 'Trazioni Presa Supina',
+  'Wide Grip Pull-up': 'Trazioni Presa Larga',
+  'Close Grip Chin-up': 'Trazioni Presa Stretta',
+  'Lat Pulldown': 'Lat Machine',
+  'Lat Pulldown Wide': 'Lat Machine Presa Larga',
+  'Lat Pulldown Close': 'Lat Machine Presa Stretta',
+  'Cable Pulldown': 'Lat Machine',
+  'Assisted Pull-up': 'Trazioni Assistite',
+
+  // Core
+  'Plank': 'Plank',
+  'Side Plank': 'Side Plank',
+  'Dead Bug': 'Dead Bug',
+  'Bird Dog': 'Bird Dog',
+  'Pallof Press': 'Pallof Press',
+  'Ab Wheel Rollout': 'Ab Wheel',
+  'Ab Wheel': 'Ab Wheel',
+  'Hanging Leg Raise': 'Leg Raise alla Sbarra',
+  'Cable Crunch': 'Crunch ai Cavi',
+  'Russian Twist': 'Russian Twist',
+  'Bicycle Crunch': 'Crunch Bicicletta',
+  'Reverse Crunch': 'Crunch Inverso',
+  'Mountain Climber': 'Mountain Climber',
+
+  // Accessori
+  'Bicep Curl': 'Curl con Manubri',
+  'Dumbbell Curl': 'Curl con Manubri',
+  'Barbell Curl': 'Curl con Bilanciere',
+  'Hammer Curl': 'Hammer Curl',
+  'Tricep Extension': 'French Press',
+  'Tricep Pushdown': 'Tricep Pushdown',
+  'Skull Crusher': 'French Press',
+  'Lateral Raise': 'Alzate Laterali',
+  'Front Raise': 'Alzate Frontali',
+  'Face Pull': 'Face Pull',
+  'Calf Raise': 'Calf Raise',
+  'Seated Calf Raise': 'Calf Raise Seduto',
+  'Walking Lunge': 'Affondi Camminati',
+  'Lunge': 'Affondi',
+  'Cable Crossover': 'Croci ai Cavi',
+  'Band Pull Apart': 'Band Pull Apart',
+  'Chest Fly': 'Croci con Manubri',
+  'Reverse Fly': 'Alzate Posteriori'
+};
+
+/**
+ * Traduce il nome dell'esercizio in italiano
+ */
+function translateExerciseName(name: string): string {
+  // Cerca match esatto
+  if (EXERCISE_NAMES_IT[name]) {
+    return EXERCISE_NAMES_IT[name];
+  }
+
+  // Cerca match case-insensitive
+  const key = Object.keys(EXERCISE_NAMES_IT).find(
+    k => k.toLowerCase() === name.toLowerCase()
+  );
+  if (key) {
+    return EXERCISE_NAMES_IT[key];
+  }
+
+  // Se non trovato, ritorna il nome originale
+  return name;
+}
+
+/**
  * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
  * LOGICA: Mix intelligente + rotazione DUP per Full Body 7 esercizi
  *
@@ -38,53 +176,73 @@ import {
  *
  * Rotazione intensità per evitare CNS burnout e ottimizzare recupero
  */
+/**
+ * Determina l'intensità dell'esercizio con MIX BILANCIATO per ogni giorno
+ *
+ * Principio: ogni giorno deve avere varietà di stimoli
+ * - 1-2 esercizi HEAVY (4-6 reps per forza)
+ * - 2-3 esercizi MODERATE (8-10 reps per ipertrofia)
+ * - 1-2 esercizi VOLUME (10-15 reps per accessori/pump)
+ */
 function getIntensityForPattern(
   patternId: string,
   exerciseIndex: number,
   dayIndex: number
 ): 'heavy' | 'volume' | 'moderate' {
-  // 🎯 CORE/ACCESSORI: SEMPRE VOLUME (non cambiano)
+  // 🎯 CORE/ACCESSORI: SEMPRE VOLUME (10-15 reps)
   if (patternId === 'core' || patternId === 'corrective') {
     return 'volume';
   }
 
-  // 🔄 ROTAZIONE DUP PER COMPOUND MOVEMENTS (Full Body 7 pattern)
-  // Ogni giorno 2 esercizi HEAVY, 4 MODERATE, 1 VOLUME (core)
+  // 🔄 MIX BILANCIATO - Ogni giorno ha varietà di stimoli
+  // Pattern prioritari per HEAVY variano per giorno (rotazione)
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 1 (Monday): Lower Push (Squat) + Horizontal Push (Bench) HEAVY
+  // DAY 1: Squat HEAVY (forza), Bench MODERATE (ipertrofia), altri VOLUME/MODERATE
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 0) {
-    if (patternId === 'lower_push' || patternId === 'horizontal_push') {
-      return 'heavy'; // Squat HEAVY, Bench HEAVY
-    }
-    // Tutti gli altri: MODERATE (Deadlift, Row, Military, Pulldown)
-    return 'moderate';
+    if (patternId === 'lower_push') return 'heavy';      // Squat: 4-6 reps
+    if (patternId === 'horizontal_push') return 'moderate'; // Bench: 8-10 reps
+    if (patternId === 'vertical_pull') return 'volume';   // Pulldown: 10-15 reps
+    return 'moderate'; // Altri: 8-10 reps
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 2 (Wednesday): Lower Pull (Deadlift) + Horizontal Pull (Row) + Vertical Push (Military) HEAVY
+  // DAY 2: Deadlift HEAVY, Row MODERATE, altri mix
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 1) {
-    if (patternId === 'lower_pull' || patternId === 'horizontal_pull' || patternId === 'vertical_push') {
-      return 'heavy'; // Deadlift HEAVY, Row HEAVY, Military HEAVY
-    }
-    // Tutti gli altri: MODERATE (Squat, Bench, Pulldown)
-    return 'moderate';
+    if (patternId === 'lower_pull') return 'heavy';       // Deadlift: 4-6 reps
+    if (patternId === 'horizontal_pull') return 'moderate'; // Row: 8-10 reps
+    if (patternId === 'vertical_push') return 'volume';    // Military: 10-15 reps
+    return 'moderate'; // Altri: 8-10 reps
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // DAY 3 (Friday): Lower Push (Squat) + Vertical Pull (Pulldown) HEAVY
+  // DAY 3: Bench HEAVY (rotazione), Squat MODERATE, Pull VOLUME
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (dayIndex === 2) {
-    if (patternId === 'lower_push' || patternId === 'vertical_pull') {
-      return 'heavy'; // Squat HEAVY, Pulldown HEAVY
-    }
-    // Tutti gli altri: MODERATE (Deadlift, Bench, Row, Military)
+    if (patternId === 'horizontal_push') return 'heavy';  // Bench: 4-6 reps
+    if (patternId === 'lower_push') return 'moderate';    // Squat: 8-10 reps
+    if (patternId === 'lower_pull') return 'volume';      // Deadlift: 10-15 reps
+    return 'moderate'; // Altri: 8-10 reps
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DAY 4+ (Upper/Lower split): Military HEAVY, Pull MODERATE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (dayIndex === 3) {
+    if (patternId === 'vertical_push') return 'heavy';    // Military: 4-6 reps
+    if (patternId === 'vertical_pull') return 'moderate'; // Pulldown: 8-10 reps
+    return 'volume'; // Altri: 10-15 reps
+  }
+
+  // DAY 5+
+  if (dayIndex >= 4) {
+    if (patternId === 'lower_push' || patternId === 'lower_pull') return 'heavy';
     return 'moderate';
   }
 
-  // Default: moderate
+  // Default: moderate (8-10 reps per strength)
   return 'moderate';
 }
 
@@ -587,14 +745,12 @@ function applyMuscularFocus(
 
     const isolationExercise: Exercise = {
       pattern: 'accessory' as any,
-      name: iso.name,
+      name: translateExerciseName(iso.name), // ✅ Tradotto in italiano
       sets: iso.sets,
       reps: iso.reps,
       rest: '60s',
-      intensity: '60-70%',
-      notes: validFoci.length > 1
-        ? `🎯 Isolamento focus multiplo`
-        : `🎯 Isolamento ${validFoci[0]}`
+      intensity: '60-70%'
+      // notes rimosso: non necessario
     };
     day.exercises.push(isolationExercise);
     console.log(`   + Aggiunto: ${iso.name} (${iso.sets}x${iso.reps})`);
@@ -773,15 +929,11 @@ function generateSportSpecificSplit(options: SplitGeneratorOptions): WeeklySplit
 
     return {
       pattern: patternId as any,
-      name: dbExerciseName,
+      name: translateExerciseName(dbExerciseName), // ✅ Tradotto in italiano
       sets,
       reps,
       rest,
-      notes: painNotes
-        ? `${painNotes}`
-        : isPrevention
-        ? `⚠️ Prevenzione ${sportProfile.injuryRiskAreas[0]}`
-        : `${phase.replace('_', '-')} - ${dayType.toUpperCase()}`
+      notes: painNotes || undefined
     };
   };
 
@@ -1345,7 +1497,7 @@ function createExercise(
 
   return {
     pattern: patternId as any,
-    name: exerciseName,
+    name: translateExerciseName(exerciseName), // ✅ Tradotto in italiano
     sets: finalSets,
     reps: finalReps,
     rest: volumeCalc.rest,
@@ -1358,11 +1510,7 @@ function createExercise(
     },
     wasReplaced: wasReplaced,
     notes: [
-      volumeCalc.notes,
-      `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
-      suggestedWeight ? `💪 Carico: ${suggestedWeight} (${weightNote})` : '',
-      painNotes,
-      machineNotes
+      volumeCalc.notes
     ].filter(Boolean).join(' | ')
   };
 }
@@ -1411,7 +1559,7 @@ function createHorizontalPullExercise(
 
   return {
     pattern: 'horizontal_pull' as any, // Pattern corretto per Row
-    name: exerciseName,
+    name: translateExerciseName(exerciseName), // ✅ Tradotto in italiano
     sets: volumeCalc.sets,
     reps: volumeCalc.reps,
     rest: volumeCalc.rest,
@@ -1422,11 +1570,7 @@ function createHorizontalPullExercise(
       difficulty: verticalPullBaseline.difficulty || 5,
       maxReps: baselineReps
     } : undefined,
-    notes: [
-      'Row pattern - complementare al vertical pull',
-      suggestedWeight ? `💪 Carico: ${suggestedWeight} (${weightNote}) - stimato` : '',
-      verticalPullBaseline ? `Baseline: ${baselineReps} reps (stimato da lat pulldown)` : ''
-    ].filter(Boolean).join(' | ')
+    notes: volumeCalc.notes || undefined // ✅ Solo note essenziali
   };
 }
 
@@ -1473,12 +1617,12 @@ function createAccessoryExercise(
 
   return {
     pattern: 'core', // Usiamo core come pattern generico per accessori
-    name: exerciseName,
+    name: translateExerciseName(exerciseName), // ✅ Tradotto in italiano
     sets: sets,
     reps: reps,
     rest: '60s',
-    intensity: '70%',
-    notes: `Accessorio ${muscleGroup}`
+    intensity: '70%'
+    // notes rimosso: non necessario
   };
 }
 
@@ -1495,12 +1639,12 @@ function generateCorrectiveExercises(painAreas: NormalizedPainArea[]): Exercise[
     for (const corrective of correctives) {
       correctiveExercises.push({
         pattern: 'corrective',
-        name: corrective,
+        name: translateExerciseName(corrective), // ✅ Tradotto in italiano
         sets: 2,
         reps: '10-15',
         rest: '30s',
         intensity: 'Low',
-        notes: `Correttivo per ${painArea} - Focus sulla qualità`
+        notes: `Correttivo per ${painArea}`
       });
     }
   }

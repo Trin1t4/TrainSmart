@@ -199,18 +199,46 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
                   <Flame className="w-3 h-3 text-orange-400" />
                   <span className="text-[10px] md:text-xs text-orange-300">
                     {exercise.warmup.ramp ? (
-                      // Rampa forza: mostra schema rampa
-                      `Rampa: ${exercise.warmup.ramp.map(r => `${r.reps}@${r.intensity}`).join(' → ')}`
+                      // Rampa forza: mostra schema rampa con pesi calcolati
+                      (() => {
+                        const mainWeight = exercise.weight ? parseFloat(String(exercise.weight).replace('kg', '')) : 0;
+                        return `Rampa: ${exercise.warmup.ramp.map(r => {
+                          const warmupWeight = mainWeight > 0 ? Math.round(mainWeight * (r.percentage / 100) * 2) / 2 : 0;
+                          return warmupWeight > 0 ? `${r.reps}r@${warmupWeight}kg` : `${r.reps}r@${r.percentage}%`;
+                        }).join(' → ')}`;
+                      })()
                     ) : (
-                      // Standard warmup
-                      `Riscaldamento: ${exercise.warmup.sets}×${exercise.warmup.reps} @ ${exercise.warmup.intensity}`
+                      // Standard warmup con peso calcolato
+                      (() => {
+                        const mainWeight = exercise.weight ? parseFloat(String(exercise.weight).replace('kg', '')) : 0;
+                        const warmupWeight = mainWeight > 0 && exercise.warmup.percentage
+                          ? Math.round(mainWeight * (exercise.warmup.percentage / 100) * 2) / 2
+                          : 0;
+                        return warmupWeight > 0
+                          ? `Riscaldamento: ${exercise.warmup.sets}×${exercise.warmup.reps} @ ${warmupWeight}kg`
+                          : `Riscaldamento: ${exercise.warmup.sets}×${exercise.warmup.reps} @ ${exercise.warmup.percentage || exercise.warmup.intensity}%`;
+                      })()
                     )}
                   </span>
                 </div>
               )}
-              {exercise.notes && (
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{exercise.notes}</p>
-              )}
+              {/* Clean notes: filter out redundant info already shown elsewhere */}
+              {exercise.notes && (() => {
+                // Filter out info that's already displayed (carico, baseline, pattern)
+                const cleanNotes = exercise.notes
+                  .split(' | ')
+                  .filter(note =>
+                    !note.includes('Carico:') &&
+                    !note.includes('💪 Carico') &&
+                    !note.includes('Baseline:') &&
+                    !note.toLowerCase().includes('pattern') &&
+                    !note.includes('stimato da')
+                  )
+                  .join(' | ');
+                return cleanNotes ? (
+                  <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{cleanNotes}</p>
+                ) : null;
+              })()}
             </div>
 
             {/* Expand indicator */}
@@ -221,52 +249,50 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
             />
           </div>
 
-          {/* Volume Info - Grid on mobile, flex on desktop */}
-          <div className="grid grid-cols-4 md:flex md:items-center gap-2 md:gap-3 text-center bg-gray-800/50 rounded-lg p-2 md:p-0 md:bg-transparent">
+          {/* Volume Info - Grid on mobile */}
+          <div className="grid grid-cols-4 gap-1.5 text-center bg-gray-800/50 rounded-lg p-2">
             <div>
-              <p className="text-gray-500 text-[10px] md:text-xs">Sets</p>
-              <p className="text-white font-bold text-sm md:text-base">{exercise.sets}</p>
+              <p className="text-gray-500 text-[10px]">Sets</p>
+              <p className="text-white font-bold text-sm">{exercise.sets}</p>
             </div>
             <div>
-              <p className="text-gray-500 text-[10px] md:text-xs">Reps</p>
-              <p className="text-white font-bold text-sm md:text-base">{exercise.reps}</p>
+              <p className="text-gray-500 text-[10px]">Reps</p>
+              <p className="text-white font-bold text-sm">{exercise.reps}</p>
             </div>
             <div>
-              <p className="text-gray-500 text-[10px] md:text-xs">Rest</p>
-              <p className="text-white font-bold text-sm md:text-base">{exercise.rest}</p>
+              <p className="text-gray-500 text-[10px]">Rest</p>
+              <p className="text-white font-bold text-sm">{exercise.rest}</p>
             </div>
-            {exercise.weight ? (
-              <div>
-                <p className="text-gray-500 text-[10px] md:text-xs">Peso</p>
-                <p className="text-amber-400 font-bold text-sm md:text-base">{exercise.weight}</p>
-              </div>
-            ) : exercise.intensity ? (
-              <div>
-                <p className="text-gray-500 text-[10px] md:text-xs">Int.</p>
-                <p className="text-blue-400 font-bold text-sm md:text-base">{exercise.intensity}</p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-gray-500 text-[10px] md:text-xs">RIR</p>
-                <p className="text-green-400 font-bold text-sm md:text-base">2-3</p>
-              </div>
-            )}
+            <div>
+              <p className="text-gray-500 text-[10px]">
+                {exercise.weight ? 'Peso' : 'RIR'}
+              </p>
+              <p className={`font-bold text-sm ${exercise.weight ? 'text-amber-400' : 'text-green-400'}`}>
+                {exercise.weight || (() => {
+                  // Extract RIR from notes if present
+                  const rirMatch = exercise.notes?.match(/RIR\s*(\d)/i);
+                  return rirMatch ? rirMatch[1] : '2';
+                })()}
+              </p>
+            </div>
           </div>
 
-          {/* Desktop only: Baseline + Replaced indicator */}
-          <div className="hidden md:flex items-center gap-2">
-            {exercise.baseline && (
-              <div className="text-xs text-green-400 flex items-center gap-1">
-                <Activity className="w-3 h-3" />
-                <span>Base: {exercise.baseline.maxReps}r</span>
-              </div>
-            )}
-            {exercise.wasReplaced && (
-              <div className="bg-yellow-600 rounded px-2 py-1 text-xs font-medium text-white">
-                Sost.
-              </div>
-            )}
-          </div>
+          {/* Baseline indicator - visible on mobile too */}
+          {(exercise.baseline || exercise.wasReplaced) && (
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {exercise.baseline && (
+                <div className="text-[10px] text-green-400 flex items-center gap-1 bg-green-400/10 px-1.5 py-0.5 rounded">
+                  <Activity className="w-3 h-3" />
+                  <span>Baseline: {exercise.baseline.maxReps} reps</span>
+                </div>
+              )}
+              {exercise.wasReplaced && (
+                <div className="bg-yellow-600/20 text-yellow-400 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                  Sostituito
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -306,22 +332,12 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
                   </div>
                 )}
 
-                {/* Mobile only: Show baseline if present */}
-                {exercise.baseline && (
-                  <div className="md:hidden mt-3 pt-3 border-t border-gray-700">
-                    <div className="text-xs text-green-400 flex items-center gap-1">
-                      <Activity className="w-3 h-3" />
-                      <span>Baseline: {exercise.baseline.maxReps} reps</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Mobile only: Show replaced indicator if present */}
-                {exercise.wasReplaced && (
-                  <div className="md:hidden mt-2">
-                    <span className="bg-yellow-600 rounded px-2 py-1 text-xs font-medium text-white">
-                      Esercizio sostituito per adattamento
-                    </span>
+                {/* Additional exercise info in expanded panel */}
+                {exercise.intensity && (
+                  <div className="mt-3 pt-3 border-t border-gray-700">
+                    <p className="text-xs text-gray-500">
+                      <span className="text-blue-400">Intensità:</span> {exercise.intensity}
+                    </p>
                   </div>
                 )}
 

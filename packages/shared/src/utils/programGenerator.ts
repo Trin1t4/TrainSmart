@@ -2515,47 +2515,52 @@ export function calculateVolume(
   let intensity = '75%';
   let notes = '';
 
-  // STRENGTH
+  // STRENGTH - Mix di reps per stimoli diversi
+  // Heavy: forza massimale (4-6 reps)
+  // Moderate: forza-ipertrofia (8-10 reps) - per varietà di stimoli
+  // Volume: ipertrofia/work capacity (10-15 reps)
   if (goal === 'forza' || goal === 'strength') {
     if (location === 'gym') {
       if (dayType === 'heavy') {
         sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
-        reps = Math.max(3, Math.min(workingReps, 5));
+        reps = Math.max(4, Math.min(workingReps, 6));
         rest = '3-5min';
-        intensity = '85-90%';
-        notes = 'Heavy Day - Forza massimale';
+        intensity = '82-88%';
+        notes = 'Forza - Carico pesante';
       } else if (dayType === 'volume') {
         sets = level === 'beginner' ? 3 : 4;
         reps = Math.max(10, Math.min(workingReps, 15));
         rest = '90-120s';
         intensity = '65-70%';
-        notes = 'Volume Day - Ipertrofia + work capacity';
+        notes = 'Volume - Ipertrofia di supporto';
       } else {
+        // Moderate: range ipertrofia per complementare la forza
         sets = level === 'beginner' ? 3 : 4;
-        reps = Math.max(5, Math.min(workingReps, 6));
-        rest = '2-3min';
-        intensity = '75-80%';
-        notes = 'Moderate Day - Forza submassimale';
+        reps = Math.max(8, Math.min(workingReps, 10));
+        rest = '90-120s';
+        intensity = '72-78%';
+        notes = 'Ipertrofia - Supporto alla forza';
       }
     } else {
       if (dayType === 'heavy') {
         sets = level === 'advanced' ? 6 : 5;
-        reps = Math.max(3, Math.min(workingReps, 6));
+        reps = Math.max(4, Math.min(workingReps, 6));
         rest = '2-3min';
         intensity = '80-85%';
-        notes = 'Heavy Day - Skill strength';
+        notes = 'Forza - Skill strength';
       } else if (dayType === 'volume') {
         sets = 5;
         reps = Math.max(10, Math.min(workingReps, 15));
         rest = '90s';
         intensity = '60-70%';
-        notes = 'Volume Day - Work capacity';
+        notes = 'Volume - Work capacity';
       } else {
-        sets = 5;
-        reps = Math.max(5, Math.min(workingReps, 6));
-        rest = '90-120s';
+        // Moderate: range ipertrofia per complementare la forza
+        sets = 4;
+        reps = Math.max(8, Math.min(workingReps, 10));
+        rest = '90s';
         intensity = '70-75%';
-        notes = 'Moderate Day - Forza submassimale';
+        notes = 'Ipertrofia - Supporto alla forza';
       }
     }
   }
