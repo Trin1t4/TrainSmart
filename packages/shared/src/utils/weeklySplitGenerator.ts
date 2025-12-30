@@ -25,36 +25,64 @@ import { adaptExercisesForLocation } from './locationAdapter';
  * Mapping nomi esercizi inglese -> italiano
  */
 const EXERCISE_NAMES_IT: Record<string, string> = {
-  // Lower Push
-  'Back Squat': 'Squat con Bilanciere',
+  // Lower Push - Calisthenics
+  'Shrimp Squat': 'Shrimp Squat',
+  'Skater Squat': 'Skater Squat',
+  'Pistol Squat': 'Pistol Squat',
+  'Bulgarian Split Squat': 'Squat Bulgaro',
+  'Split Squat': 'Split Squat',
+  'Jump Squat': 'Squat con Salto',
   'Bodyweight Squat': 'Squat a Corpo Libero',
+  'Air Squat': 'Squat a Corpo Libero',
+  'Box Squat': 'Box Squat',
+
+  // Lower Push - Palestra
+  'Back Squat': 'Squat con Bilanciere',
   'Front Squat': 'Squat Frontale',
   'Goblet Squat': 'Goblet Squat',
-  'Bulgarian Split Squat': 'Squat Bulgaro',
   'Leg Press': 'Pressa',
-  'Pistol Squat': 'Pistol Squat',
   'Hack Squat': 'Hack Squat',
   'Smith Machine Squat': 'Squat al Multipower',
+  'Leg Extension': 'Leg Extension',
 
-  // Lower Pull
+  // Lower Pull - Calisthenics
+  'Nordic Curl': 'Nordic Curl',
+  'Nordic Hamstring Curl': 'Nordic Curl',
+  'Slider Leg Curl': 'Slider Leg Curl',
+  'Sliding Leg Curl': 'Slider Leg Curl',
+  'Single Leg RDL': 'Stacco Rumeno Monopodalico',
+  'Single Leg Glute Bridge': 'Ponte Glutei Monopodalico',
+  'Glute Bridge': 'Ponte Glutei',
+  'Hip Thrust': 'Hip Thrust',
+
+  // Lower Pull - Palestra
   'Conventional Deadlift': 'Stacco da Terra',
+  'Deadlift': 'Stacco da Terra',
   'Romanian Deadlift (RDL)': 'Romanian Deadlift',
   'Romanian Deadlift': 'Romanian Deadlift',
   'Sumo Deadlift': 'Stacco Sumo',
   'Trap Bar Deadlift': 'Stacco Trap Bar',
-  'Nordic Hamstring Curl': 'Nordic Curl',
   'Leg Curl (Machine)': 'Leg Curl',
   'Leg Curl': 'Leg Curl',
   'Bodyweight Hip Hinge': 'Good Morning Bodyweight',
   'Good Morning': 'Good Morning',
-  'Hip Thrust': 'Hip Thrust',
-  'Glute Bridge': 'Glute Bridge',
 
-  // Horizontal Push
-  'Standard Push-up': 'Push-up',
+  // Horizontal Push - Calisthenics
+  'Standard Push-up': 'Push-up Standard',
   'Push-up': 'Push-up',
-  'Diamond Push-up': 'Diamond Push-up',
-  'Archer Push-up': 'Archer Push-up',
+  'Diamond Push-up': 'Push-up Diamante',
+  'Archer Push-up': 'Push-up Arciere',
+  'One Arm Push-up': 'Push-up a Un Braccio',
+  'Wide Push-up': 'Push-up Larghi',
+  'Close Grip Push-up': 'Push-up Stretti',
+  'Decline Push-up': 'Push-up Declinati',
+  'Incline Push-up': 'Push-up Inclinati',
+  'Deficit Push-up': 'Push-up Deficit',
+  'Pseudo Planche Push-up': 'Pseudo Planche Push-up',
+  'Ring Push-up': 'Push-up agli Anelli',
+  'Typewriter Push-up': 'Push-up Typewriter',
+
+  // Horizontal Push - Palestra
   'Flat Barbell Bench Press': 'Panca Piana',
   'Barbell Bench Press': 'Panca Piana',
   'Bench Press': 'Panca Piana',
@@ -66,20 +94,35 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'Chest Press': 'Chest Press',
   'Cable Fly': 'Croci ai Cavi',
   'Dips': 'Dips',
+  'Chest Dips': 'Dips per Petto',
 
-  // Horizontal Pull
+  // Horizontal Pull - Calisthenics
+  'Inverted Row': 'Rematore Inverso',
+  'Inverted Row (tavolo)': 'Rematore Inverso (tavolo)',
+  'Australian Pull-up': 'Rematore Inverso',
+  'TRX Row': 'TRX Row',
+  'Ring Row': 'Row agli Anelli',
+  'Floor Pull': 'Floor Pull',
+  'Floor Pull Facilitato': 'Floor Pull Facilitato',
+
+  // Horizontal Pull - Palestra
   'Barbell Row': 'Rematore con Bilanciere',
   'Bent Over Row': 'Rematore con Bilanciere',
   'Dumbbell Row': 'Rematore con Manubrio',
   'One Arm Dumbbell Row': 'Rematore con Manubrio',
-  'Inverted Row': 'Rematore Inverso',
   'Cable Row': 'Pulley Basso',
   'Seated Cable Row': 'Pulley Basso',
   'T-Bar Row': 'Rematore T-Bar',
   'Machine Row': 'Pulley Basso',
-  'Floor Pull': 'Floor Pull',
 
-  // Vertical Push
+  // Vertical Push - Calisthenics
+  'Pike Push-up': 'Pike Push-up',
+  'Elevated Pike Push-up': 'Pike Push-up Elevato',
+  'Wall Handstand Push-up': 'HSPU al Muro',
+  'Handstand Push-up': 'Handstand Push-up',
+  'Wall Walk': 'Camminata al Muro',
+
+  // Vertical Push - Palestra
   'Overhead Press': 'Military Press',
   'Barbell Overhead Press': 'Military Press',
   'Standing Barbell Press': 'Military Press',
@@ -87,26 +130,37 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'Dumbbell Shoulder Press': 'Shoulder Press con Manubri',
   'Seated Dumbbell Press': 'Shoulder Press con Manubri',
   'Arnold Press': 'Arnold Press',
-  'Pike Push-up': 'Pike Push-up',
-  'Handstand Push-up': 'Handstand Push-up',
   'Machine Shoulder Press': 'Shoulder Press Macchina',
 
-  // Vertical Pull
-  'Pull-up': 'Trazioni Presa Prona',
-  'Chin-up': 'Trazioni Presa Supina',
+  // Vertical Pull - Calisthenics
+  'Pull-up': 'Trazioni',
+  'Chin-up': 'Chin-up',
   'Wide Grip Pull-up': 'Trazioni Presa Larga',
   'Close Grip Chin-up': 'Trazioni Presa Stretta',
+  'Neutral Grip Pull-up': 'Trazioni Presa Neutra',
+  'Assisted Pull-up': 'Trazioni Assistite',
+  'Band Assisted Pull-up': 'Trazioni con Elastico',
+  'Negative Pull-up': 'Trazioni Negative',
+  'Archer Pull-up': 'Trazioni Arciere',
+
+  // Vertical Pull - Palestra
   'Lat Pulldown': 'Lat Machine',
   'Lat Pulldown Wide': 'Lat Machine Presa Larga',
   'Lat Pulldown Close': 'Lat Machine Presa Stretta',
   'Cable Pulldown': 'Lat Machine',
-  'Assisted Pull-up': 'Trazioni Assistite',
 
-  // Core
+  // Core - Calisthenics
   'Plank': 'Plank',
-  'Side Plank': 'Side Plank',
+  'Side Plank': 'Plank Laterale',
+  'Hollow Body Hold': 'Hollow Body Hold',
+  'L-sit': 'L-sit',
+  'Tuck L-sit': 'L-sit Raccolto',
   'Dead Bug': 'Dead Bug',
   'Bird Dog': 'Bird Dog',
+  'Dragon Flag': 'Dragon Flag',
+  'Mountain Climber': 'Mountain Climber',
+
+  // Core - Palestra
   'Pallof Press': 'Pallof Press',
   'Ab Wheel Rollout': 'Ab Wheel',
   'Ab Wheel': 'Ab Wheel',
@@ -115,7 +169,6 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'Russian Twist': 'Russian Twist',
   'Bicycle Crunch': 'Crunch Bicicletta',
   'Reverse Crunch': 'Crunch Inverso',
-  'Mountain Climber': 'Mountain Climber',
 
   // Accessori
   'Bicep Curl': 'Curl con Manubri',
@@ -132,6 +185,7 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'Seated Calf Raise': 'Calf Raise Seduto',
   'Walking Lunge': 'Affondi Camminati',
   'Lunge': 'Affondi',
+  'Reverse Lunge': 'Affondi Indietro',
   'Cable Crossover': 'Croci ai Cavi',
   'Band Pull Apart': 'Band Pull Apart',
   'Chest Fly': 'Croci con Manubri',

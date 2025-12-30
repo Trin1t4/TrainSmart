@@ -19,14 +19,14 @@ const SCREENING_VIDEOS: Record<string, string> = {
   'Push-up su Ginocchia': '/videos/exercises/knee-push-up.mp4',
   'Push-up Diamante': '/videos/exercises/diamond-push-up.mp4',
   'Push-up Arciere': '/videos/exercises/archer-push-up.mp4',
-  'Pseudo Planche Push-up': '/videos/exercises/standard-push-up.mp4',
+  'Pseudo Planche Push-up': '/videos/exercises/pseudo-planche-push-up.mp4',
   'Push-up a Un Braccio': '/videos/exercises/one-arm-push-up.mp4',
   'Camminata al Muro': '/videos/exercises/wall-walk.mp4',
 
   // === SQUAT (italiano) ===
-  'Squat Assistito (con supporto)': '/videos/exercises/bodyweight-squat.mp4',
-  'Squat a Corpo Libero': '/videos/exercises/bodyweight-squat.mp4',
-  'Squat con Salto': '/videos/exercises/bodyweight-squat.mp4',
+  'Squat Assistito (con supporto)': '/videos/exercises/modified-squat.mp4',
+  'Squat a Corpo Libero': '/videos/exercises/squat-to-stand.mp4',
+  'Squat con Salto': '/videos/exercises/squat-jump.mp4',
   'Split Squat Bulgaro': '/videos/exercises/bulgarian-split-squat.mp4',
   'Pistol Squat Assistito': '/videos/exercises/pistol-squat.mp4',
   'Shrimp Squat (Squat Gambero)': '/videos/exercises/shrimp-squat.mp4',
