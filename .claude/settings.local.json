@@ -58,7 +58,10 @@
       "WebFetch(domain:exrx.net)",
       "WebFetch(domain:iconscout.com)",
       "Bash(dir /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\FitnessFlow\\\\packages\\\\web\\\\public\\\\exercises\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git pull:*)",
+      "Bash(del \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\TrainSmart\\\\test_gym_to_home.ts\")",
+      "Bash(fc /b \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\TrainSmart\\\\packages\\\\teamflow\\\\src\\\\utils\\\\sportSpecificTraining.ts\" \"C:\\\\Users\\\\dario\\\\OneDrive\\\\Desktop\\\\TrainSmart\\\\packages\\\\web\\\\src\\\\utils\\\\sportSpecificTraining.ts\")"
     ],
     "deny": [],
     "ask": []
