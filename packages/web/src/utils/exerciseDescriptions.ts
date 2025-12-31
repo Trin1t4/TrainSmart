@@ -917,6 +917,745 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Stringi le scapole',
       'Torna controllato'
     ]
+  },
+
+  // ============================================
+  // ALTERNATIVE BODYWEIGHT (da locationAdapter)
+  // ============================================
+
+  'Floor Pull (asciugamano)': {
+    description: 'Trazione a terra usando un asciugamano. Alternativa alle trazioni quando non hai sbarra.',
+    technique: [
+      'Sdraiato prono con asciugamano teso davanti',
+      'Afferra le estremità dell\'asciugamano',
+      'Tira il petto da terra tirando l\'asciugamano',
+      'Scapole retratte e depresse',
+      'Mantieni core attivo durante il movimento'
+    ]
+  },
+
+  'Floor Pull con Asciugamano': {
+    description: 'Trazione a terra usando un asciugamano. Alternativa alle trazioni quando non hai sbarra.',
+    technique: [
+      'Sdraiato prono con asciugamano teso davanti',
+      'Afferra le estremità dell\'asciugamano',
+      'Tira il petto da terra tirando l\'asciugamano',
+      'Scapole retratte e depresse',
+      'Mantieni core attivo durante il movimento'
+    ]
+  },
+
+  'Floor Pull Facilitato': {
+    description: 'Versione facilitata del floor pull con ginocchia piegate. Per principianti.',
+    technique: [
+      'Sdraiato prono con ginocchia piegate',
+      'Asciugamano teso davanti a te',
+      'Tira sollevando solo il petto',
+      'Movimento più breve e controllato',
+      'Aumenta gradualmente il ROM'
+    ]
+  },
+
+  'Floor Pull a Un Braccio': {
+    description: 'Floor pull unilaterale per massima intensità. Esercizio avanzato per dorsali.',
+    technique: [
+      'Sdraiato prono, un braccio teso con asciugamano',
+      'L\'altro braccio stabilizza',
+      'Tira con un braccio solo',
+      'Mantieni i fianchi a terra',
+      'Alterna i lati'
+    ]
+  },
+
+  'Inverted Row (tavolo)': {
+    description: 'Rematore inverso usando un tavolo robusto. Ottima alternativa casalinga alle trazioni.',
+    technique: [
+      'Sdraiato sotto un tavolo robusto',
+      'Afferra il bordo del tavolo',
+      'Tira il petto verso il tavolo',
+      'Corpo rigido come un plank',
+      'Scendi controllato'
+    ]
+  },
+
+  'Rematore Inverso (tavolo)': {
+    description: 'Rematore inverso usando un tavolo robusto. Ottima alternativa casalinga alle trazioni.',
+    technique: [
+      'Sdraiato sotto un tavolo robusto',
+      'Afferra il bordo del tavolo',
+      'Tira il petto verso il tavolo',
+      'Corpo rigido come un plank',
+      'Scendi controllato'
+    ]
+  },
+
+  'Inverted Row Facilitato': {
+    description: 'Rematore inverso con angolo più verticale. Versione più facile per principianti.',
+    technique: [
+      'Sbarra o tavolo ad altezza media',
+      'Piedi più avanti per ridurre difficoltà',
+      'Tira il petto verso la sbarra',
+      'Mantieni il corpo allineato',
+      'Progredisci abbassando la sbarra'
+    ]
+  },
+
+  'Rematore Inverso Facilitato': {
+    description: 'Rematore inverso con angolo più verticale. Versione più facile per principianti.',
+    technique: [
+      'Sbarra o tavolo ad altezza media',
+      'Piedi più avanti per ridurre difficoltà',
+      'Tira il petto verso la sbarra',
+      'Mantieni il corpo allineato',
+      'Progredisci abbassando la sbarra'
+    ]
+  },
+
+  'Inverted Row Singolo Braccio': {
+    description: 'Rematore inverso con un braccio solo. Esercizio avanzato per forza unilaterale.',
+    technique: [
+      'Sotto sbarra o tavolo',
+      'Un braccio afferra, l\'altro sul petto',
+      'Tira con un braccio solo',
+      'Ruota leggermente il busto',
+      'Alterna i lati'
+    ]
+  },
+
+  'Rematore Inverso a Un Braccio': {
+    description: 'Rematore inverso con un braccio solo. Esercizio avanzato per forza unilaterale.',
+    technique: [
+      'Sotto sbarra o tavolo',
+      'Un braccio afferra, l\'altro sul petto',
+      'Tira con un braccio solo',
+      'Ruota leggermente il busto',
+      'Alterna i lati'
+    ]
+  },
+
+  'Inverted Row Piedi Elevati': {
+    description: 'Rematore inverso con piedi su rialzo. Aumenta la difficoltà del movimento.',
+    technique: [
+      'Piedi su sedia o panca',
+      'Corpo più orizzontale',
+      'Tira il petto alla sbarra',
+      'Core sempre attivo',
+      'Scendi lentamente'
+    ]
+  },
+
+  'Rematore Inverso Piedi Elevati': {
+    description: 'Rematore inverso con piedi su rialzo. Aumenta la difficoltà del movimento.',
+    technique: [
+      'Piedi su sedia o panca',
+      'Corpo più orizzontale',
+      'Tira il petto alla sbarra',
+      'Core sempre attivo',
+      'Scendi lentamente'
+    ]
+  },
+
+  'Scapular Pull (a terra)': {
+    description: 'Retrazione scapolare a terra. Esercizio base per attivazione dorsale.',
+    technique: [
+      'Sdraiato prono, braccia tese in avanti',
+      'Solleva le braccia retraendo le scapole',
+      'Non piegare i gomiti',
+      'Stringi le scapole insieme',
+      'Tieni 2-3 secondi in cima'
+    ]
+  },
+
+  'Retrazione Scapolare a Terra': {
+    description: 'Retrazione scapolare a terra. Esercizio base per attivazione dorsale.',
+    technique: [
+      'Sdraiato prono, braccia tese in avanti',
+      'Solleva le braccia retraendo le scapole',
+      'Non piegare i gomiti',
+      'Stringi le scapole insieme',
+      'Tieni 2-3 secondi in cima'
+    ]
+  },
+
+  'Band Pull-apart': {
+    description: 'Aperture con elastico per deltoidi posteriori. Ottimo per salute spalle.',
+    technique: [
+      'Elastico teso davanti al petto',
+      'Braccia tese, palmi in giù',
+      'Apri le braccia tirando l\'elastico',
+      'Stringi le scapole insieme',
+      'Torna controllato'
+    ]
+  },
+
+  'Prone Y-raise': {
+    description: 'Alzate a Y da prono per trapezio e deltoidi posteriori.',
+    technique: [
+      'Sdraiato a pancia in giù',
+      'Braccia tese formando una Y',
+      'Solleva le braccia da terra',
+      'Pollici verso l\'alto',
+      'Tieni 2 secondi in cima'
+    ]
+  },
+
+  'Y-raise Prono': {
+    description: 'Alzate a Y da prono per trapezio e deltoidi posteriori.',
+    technique: [
+      'Sdraiato a pancia in giù',
+      'Braccia tese formando una Y',
+      'Solleva le braccia da terra',
+      'Pollici verso l\'alto',
+      'Tieni 2 secondi in cima'
+    ]
+  },
+
+  // ============================================
+  // PUSH-UP VARIANTI
+  // ============================================
+
+  'Knee Push-up': {
+    description: 'Push-up sulle ginocchia. Versione facilitata per costruire forza.',
+    technique: [
+      'Ginocchia a terra, piedi sollevati',
+      'Corpo dritto dalle ginocchia alle spalle',
+      'Mani poco più larghe delle spalle',
+      'Scendi controllato',
+      'Spingi forte tornando su'
+    ]
+  },
+
+  'Push-up sulle Ginocchia': {
+    description: 'Push-up sulle ginocchia. Versione facilitata per costruire forza.',
+    technique: [
+      'Ginocchia a terra, piedi sollevati',
+      'Corpo dritto dalle ginocchia alle spalle',
+      'Mani poco più larghe delle spalle',
+      'Scendi controllato',
+      'Spingi forte tornando su'
+    ]
+  },
+
+  'Wall Push-up': {
+    description: 'Push-up al muro. Versione più facile per principianti assoluti.',
+    technique: [
+      'Mani sul muro a larghezza spalle',
+      'Piedi arretrati di un passo',
+      'Corpo dritto',
+      'Piega i gomiti avvicinando il petto al muro',
+      'Spingi tornando alla posizione di partenza'
+    ]
+  },
+
+  'Push-up al Muro': {
+    description: 'Push-up al muro. Versione più facile per principianti assoluti.',
+    technique: [
+      'Mani sul muro a larghezza spalle',
+      'Piedi arretrati di un passo',
+      'Corpo dritto',
+      'Piega i gomiti avvicinando il petto al muro',
+      'Spingi tornando alla posizione di partenza'
+    ]
+  },
+
+  'Incline Push-up': {
+    description: 'Push-up inclinati con mani rialzate. Più facile del push-up standard.',
+    technique: [
+      'Mani su panca, sedia o scalino',
+      'Corpo dritto dai piedi alle spalle',
+      'Scendi portando il petto verso il rialzo',
+      'Spingi forte tornando su',
+      'Abbassa gradualmente l\'altezza per progredire'
+    ]
+  },
+
+  'Push-up Inclinati': {
+    description: 'Push-up inclinati con mani rialzate. Più facile del push-up standard.',
+    technique: [
+      'Mani su panca, sedia o scalino',
+      'Corpo dritto dai piedi alle spalle',
+      'Scendi portando il petto verso il rialzo',
+      'Spingi forte tornando su',
+      'Abbassa gradualmente l\'altezza per progredire'
+    ]
+  },
+
+  'Deficit Push-up': {
+    description: 'Push-up con mani su rialzi per maggiore ROM. Più difficile dello standard.',
+    technique: [
+      'Mani su blocchi o libri',
+      'Scendi più in basso del normale',
+      'Senti lo stretch nel petto',
+      'Mantieni core attivo',
+      'Spingi esplosivamente'
+    ]
+  },
+
+  'Push-up Deficit': {
+    description: 'Push-up con mani su rialzi per maggiore ROM. Più difficile dello standard.',
+    technique: [
+      'Mani su blocchi o libri',
+      'Scendi più in basso del normale',
+      'Senti lo stretch nel petto',
+      'Mantieni core attivo',
+      'Spingi esplosivamente'
+    ]
+  },
+
+  'Push-up a Un Braccio': {
+    description: 'Push-up su un braccio solo. Esercizio molto avanzato per forza e controllo.',
+    technique: [
+      'Gambe larghe per stabilità',
+      'Un braccio al centro del petto',
+      'L\'altro braccio dietro la schiena',
+      'Scendi lentamente',
+      'Spingi forte mantenendo il corpo stabile'
+    ]
+  },
+
+  'Push-up a Un Braccio (Assistito)': {
+    description: 'Push-up a un braccio con assistenza. Propedeutico al one arm push-up.',
+    technique: [
+      'Un braccio centrale, l\'altro su un rialzo',
+      'Il braccio sul rialzo assiste leggermente',
+      'Sposta gradualmente più peso sul braccio principale',
+      'Mantieni il core attivo',
+      'Progredisci riducendo l\'assistenza'
+    ]
+  },
+
+  // ============================================
+  // PIKE PUSH-UP VARIANTI
+  // ============================================
+
+  'Pike Push-up (Knee)': {
+    description: 'Pike push-up sulle ginocchia. Versione facilitata per costruire forza nelle spalle.',
+    technique: [
+      'Ginocchia a terra, anche piegate',
+      'Forma una V rovesciata',
+      'Testa verso il pavimento',
+      'Spingi verticalmente',
+      'Gomiti verso fuori'
+    ]
+  },
+
+  'Pike Push-up sulle Ginocchia': {
+    description: 'Pike push-up sulle ginocchia. Versione facilitata per costruire forza nelle spalle.',
+    technique: [
+      'Ginocchia a terra, anche piegate',
+      'Forma una V rovesciata',
+      'Testa verso il pavimento',
+      'Spingi verticalmente',
+      'Gomiti verso fuori'
+    ]
+  },
+
+  'Elevated Pike Push-up': {
+    description: 'Pike push-up con piedi rialzati. Aumenta il carico sulle spalle.',
+    technique: [
+      'Piedi su panca o sedia',
+      'Forma V rovesciata più verticale',
+      'Testa verso il pavimento tra le mani',
+      'Spingi verticalmente',
+      'Core sempre contratto'
+    ]
+  },
+
+  'Pike Push-up Elevato': {
+    description: 'Pike push-up con piedi rialzati. Aumenta il carico sulle spalle.',
+    technique: [
+      'Piedi su panca o sedia',
+      'Forma V rovesciata più verticale',
+      'Testa verso il pavimento tra le mani',
+      'Spingi verticalmente',
+      'Core sempre contratto'
+    ]
+  },
+
+  'Elevated Pike Push-up (High)': {
+    description: 'Pike push-up con piedi molto rialzati. Quasi verticale, molto impegnativo.',
+    technique: [
+      'Piedi su superficie alta (muro, scatola alta)',
+      'Corpo quasi verticale',
+      'Testa tocca il pavimento',
+      'Spingi forte verso l\'alto',
+      'Richiede ottimo controllo del core'
+    ]
+  },
+
+  'Pike Push-up Alto': {
+    description: 'Pike push-up con piedi molto rialzati. Quasi verticale, molto impegnativo.',
+    technique: [
+      'Piedi su superficie alta (muro, scatola alta)',
+      'Corpo quasi verticale',
+      'Testa tocca il pavimento',
+      'Spingi forte verso l\'alto',
+      'Richiede ottimo controllo del core'
+    ]
+  },
+
+  'Wall Shoulder Tap': {
+    description: 'Tocchi spalla in posizione verticale al muro. Costruisce stabilità per handstand.',
+    technique: [
+      'In posizione verticale con piedi al muro',
+      'Solleva una mano toccando la spalla opposta',
+      'Mantieni i fianchi stabili',
+      'Alterna le mani',
+      'Core sempre contratto'
+    ]
+  },
+
+  'Shoulder Tap al Muro': {
+    description: 'Tocchi spalla in posizione verticale al muro. Costruisce stabilità per handstand.',
+    technique: [
+      'In posizione verticale con piedi al muro',
+      'Solleva una mano toccando la spalla opposta',
+      'Mantieni i fianchi stabili',
+      'Alterna le mani',
+      'Core sempre contratto'
+    ]
+  },
+
+  'Wall Handstand Push-up (Eccentric)': {
+    description: 'Solo fase eccentrica dell\'HSPU. Per costruire forza nel movimento.',
+    technique: [
+      'In verticale al muro',
+      'Scendi lentamente (4-5 secondi)',
+      'Testa tocca il pavimento',
+      'Torna su aiutandoti con le gambe',
+      'Ripeti la discesa controllata'
+    ]
+  },
+
+  'HSPU al Muro (Solo Eccentrica)': {
+    description: 'Solo fase eccentrica dell\'HSPU. Per costruire forza nel movimento.',
+    technique: [
+      'In verticale al muro',
+      'Scendi lentamente (4-5 secondi)',
+      'Testa tocca il pavimento',
+      'Torna su aiutandoti con le gambe',
+      'Ripeti la discesa controllata'
+    ]
+  },
+
+  'Freestanding Handstand Push-up': {
+    description: 'Handstand push-up senza muro. Livello elite di forza e controllo.',
+    technique: [
+      'Verticale libera senza supporto',
+      'Scendi controllato',
+      'Spingi tornando su mantenendo l\'equilibrio',
+      'Richiede anni di pratica',
+      'Core e spalle fortissimi'
+    ]
+  },
+
+  'Verticale Push-up Libero': {
+    description: 'Handstand push-up senza muro. Livello elite di forza e controllo.',
+    technique: [
+      'Verticale libera senza supporto',
+      'Scendi controllato',
+      'Spingi tornando su mantenendo l\'equilibrio',
+      'Richiede anni di pratica',
+      'Core e spalle fortissimi'
+    ]
+  },
+
+  // ============================================
+  // SQUAT VARIANTI AGGIUNTIVE
+  // ============================================
+
+  'Squat Gamberetto': {
+    description: 'Squat su una gamba con gamba posteriore piegata. Esercizio avanzato per forza unilaterale.',
+    technique: [
+      'Afferra la caviglia dietro con la mano',
+      'Scendi lentamente sulla gamba d\'appoggio',
+      'Ginocchio posteriore tocca terra',
+      'Mantieni il busto il più verticale possibile'
+    ]
+  },
+
+  'Squat del Pattinatore': {
+    description: 'Squat unilaterale con gamba libera dietro. Ottimo per equilibrio e forza monopodalica.',
+    technique: [
+      'Gamba libera leggermente piegata dietro',
+      'Scendi controllato sulla gamba d\'appoggio',
+      'Braccia avanti per equilibrio',
+      'Non appoggiare la gamba libera a terra'
+    ]
+  },
+
+  'Squat a Pistola': {
+    description: 'Squat su una gamba sola. Richiede forza, equilibrio e mobilità eccezionali.',
+    technique: [
+      'Gamba libera tesa davanti',
+      'Braccia avanti per bilanciare',
+      'Peso su tripode del piede',
+      'Scendi lentamente e controllato'
+    ]
+  },
+
+  'Squat a Pistola (Assistito)': {
+    description: 'Pistol squat con supporto. Per costruire forza verso il pistol completo.',
+    technique: [
+      'Tieniti a un supporto (porta, TRX, sedia)',
+      'Gamba libera tesa davanti',
+      'Scendi usando l\'assistenza per bilanciare',
+      'Riduci gradualmente l\'aiuto',
+      'Spingi tornando su'
+    ]
+  },
+
+  'Affondi Statici': {
+    description: 'Affondo senza spostamento. Ottimo per forza e stabilità delle gambe.',
+    technique: [
+      'Piedi sfalsati, uno avanti uno dietro',
+      'Scendi verticalmente',
+      'Entrambe le ginocchia a 90°',
+      'Peso distribuito su entrambi i piedi',
+      'Spingi tornando su'
+    ]
+  },
+
+  'Squat Bulgaro': {
+    description: 'Squat unilaterale con piede posteriore elevato. Eccellente per forza e equilibrio.',
+    technique: [
+      'Piede posteriore su panca dietro',
+      'Peso su tripode del piede anteriore',
+      'Busto leggermente inclinato avanti',
+      'Scendi verticalmente'
+    ]
+  },
+
+  // ============================================
+  // LOWER PULL VARIANTI
+  // ============================================
+
+  'Leg Curl Scorrevole': {
+    description: 'Curl femorali a corpo libero con slider. Ottimo per femorali senza attrezzi.',
+    technique: [
+      'Supino con talloni su slider o asciugamano',
+      'Solleva il bacino (ponte)',
+      'Trascina i talloni verso i glutei',
+      'Mantieni i fianchi alti',
+      'Torna lentamente controllando'
+    ]
+  },
+
+  'Leg Curl Scorrevole Singolo': {
+    description: 'Slider leg curl su una gamba. Versione avanzata per massima intensità.',
+    technique: [
+      'Un piede su slider, l\'altro in aria',
+      'Solleva il bacino',
+      'Trascina il tallone verso il gluteo',
+      'L\'altra gamba rimane tesa',
+      'Controlla il ritorno'
+    ]
+  },
+
+  'Hip Thrust Monopodalico': {
+    description: 'Hip thrust su una gamba. Massima attivazione glutea unilaterale.',
+    technique: [
+      'Scapole su panca, un piede a terra',
+      'L\'altra gamba piegata in aria',
+      'Spingi col tallone',
+      'Stringi il gluteo in cima',
+      'Scendi controllato'
+    ]
+  },
+
+  'Hip Thrust Elevato': {
+    description: 'Hip thrust con piedi rialzati. Aumenta il ROM e l\'intensità.',
+    technique: [
+      'Scapole su panca, piedi su rialzo',
+      'Maggiore escursione del movimento',
+      'Spingi forte coi talloni',
+      'Stringi i glutei in cima',
+      'Scendi lentamente'
+    ]
+  },
+
+  'Stacco Rumeno Monopodalico': {
+    description: 'RDL su una gamba per equilibrio e forza posteriore. Ottimo per glutei e femorali.',
+    technique: [
+      'In piedi su una gamba',
+      'Piega dalle anche, gamba libera va indietro',
+      'Schiena neutra durante tutto il movimento',
+      'Senti lo stretch nei femorali',
+      'Torna su contraendo glutei'
+    ]
+  },
+
+  'Ponte Glutei Monopodalico': {
+    description: 'Ponte a terra su una gamba. Progressione verso hip thrust unilaterale.',
+    technique: [
+      'Supino, un piede a terra, l\'altro in aria',
+      'Spingi col tallone sollevando il bacino',
+      'Stringi il gluteo in cima',
+      'Non ruotare i fianchi',
+      'Scendi controllato'
+    ]
+  },
+
+  'Nordic Curl (Solo Eccentrica)': {
+    description: 'Solo fase negativa del Nordic curl. Per costruire forza per il movimento completo.',
+    technique: [
+      'Caviglie bloccate',
+      'Corpo dritto come una tavola',
+      'Scendi il più lentamente possibile',
+      'Usa le mani per tornare su',
+      'Aumenta gradualmente il tempo di discesa'
+    ]
+  },
+
+  // ============================================
+  // TRAZIONI VARIANTI
+  // ============================================
+
+  'Trazioni Negative': {
+    description: 'Solo fase eccentrica delle trazioni. Per costruire forza verso le trazioni complete.',
+    technique: [
+      'Sali con un salto o uno step',
+      'Scendi lentamente (5-10 secondi)',
+      'Controlla tutto il movimento',
+      'Ripeti più volte',
+      'Progressione verso trazioni complete'
+    ]
+  },
+
+  'Trazioni con Elastico': {
+    description: 'Trazioni assistite con elastico. Per costruire forza gradualmente.',
+    technique: [
+      'Elastico ancorato alla sbarra',
+      'Piede o ginocchio nell\'elastico',
+      'L\'elastico assiste la salita',
+      'Stessa tecnica delle trazioni normali',
+      'Usa elastici sempre più leggeri'
+    ]
+  },
+
+  'Trazioni Presa Larga': {
+    description: 'Trazioni con presa molto larga. Maggiore enfasi sulla larghezza dorsale.',
+    technique: [
+      'Presa 1.5x larghezza spalle',
+      'Gomiti verso l\'esterno',
+      'Tira il petto verso la sbarra',
+      'Scapole depresse e retratte',
+      'Scendi controllato'
+    ]
+  },
+
+  'Trazioni Presa Neutra': {
+    description: 'Trazioni con presa parallela. Più facile per le spalle, buon coinvolgimento bicipiti.',
+    technique: [
+      'Usa maniglie parallele',
+      'Palmi uno di fronte all\'altro',
+      'Gomiti vicini al corpo',
+      'Tira fino al petto',
+      'Ottimo compromesso tra pull-up e chin-up'
+    ]
+  },
+
+  'Trazioni Assistite': {
+    description: 'Trazioni alla macchina assistita. Per costruire forza verso le trazioni libere.',
+    technique: [
+      'Ginocchia sulla piattaforma',
+      'Imposta il peso di assistenza',
+      'Stessa tecnica delle trazioni normali',
+      'Riduci l\'assistenza progressivamente',
+      'Obiettivo: trazioni a corpo libero'
+    ]
+  },
+
+  // ============================================
+  // ALIAS NOMI ITALIANI TRADOTTI
+  // ============================================
+
+  'Lat Machine': {
+    description: 'Lat pulldown per sviluppo dorsali. Movimento verticale per schiena larga.',
+    technique: [
+      'Presa poco oltre larghezza spalle',
+      'Scapole depresse, petto in fuori',
+      'Tira verso lo sterno',
+      'Gomiti verso il basso e indietro',
+      'Contrai dorsali per 1 secondo'
+    ]
+  },
+
+  'Panca Inclinata': {
+    description: 'Distensioni su panca inclinata. Enfatizza il petto alto.',
+    technique: [
+      'Panca a 30-45°',
+      'Scapole retratte',
+      'Bilanciere tocca la clavicola',
+      'Spingi verso l\'alto',
+      'Gomiti leggermente più aperti'
+    ]
+  },
+
+  'Panca Declinata': {
+    description: 'Distensioni su panca declinata. Minor stress sulle spalle, focus petto basso.',
+    technique: [
+      'Panca declinata 15-30°',
+      'Gambe bloccate',
+      'Scapole retratte',
+      'Bilanciere tocca il petto basso',
+      'Spingi controllato'
+    ]
+  },
+
+  'Squat con Bilanciere': {
+    description: 'Back squat con bilanciere. Re degli esercizi per le gambe.',
+    technique: [
+      'Bilanciere sui trapezi',
+      'Piedi larghezza spalle',
+      'Peso su tripode del piede',
+      'Scendi sotto il parallelo',
+      'Spingi esplosivamente'
+    ]
+  },
+
+  'Squat Frontale': {
+    description: 'Front squat con bilanciere sulle clavicole. Enfatizza i quadricipiti.',
+    technique: [
+      'Bilanciere sulle clavicole',
+      'Gomiti alti e paralleli al pavimento',
+      'Busto il più verticale possibile',
+      'Core contratto',
+      'Richiede buona mobilità'
+    ]
+  },
+
+  'Stacco da Terra': {
+    description: 'Deadlift convenzionale. Esercizio fondamentale per forza totale.',
+    technique: [
+      'Bilanciere sopra la metà del piede',
+      'Schiena neutra',
+      'Spingi il pavimento coi piedi',
+      'Blocca glutei e core in alto',
+      'Non iperestendere la schiena'
+    ]
+  },
+
+  'Alzate Gambe a Terra': {
+    description: 'Alzate gambe da supino per addominali bassi. Alternativa al leg raise alla sbarra.',
+    technique: [
+      'Supino con mani sotto i glutei',
+      'Gambe tese',
+      'Solleva le gambe fino a 90°',
+      'Premi la schiena bassa a terra',
+      'Scendi controllato senza toccare'
+    ]
+  },
+
+  'Dips': {
+    description: 'Parallele per petto e tricipiti. Esercizio compound molto efficace.',
+    technique: [
+      'Presa salda sulle parallele',
+      'Inclinati avanti per petto, dritto per tricipiti',
+      'Scendi fino a 90° di flessione gomito',
+      'Spingi tornando su',
+      'Non bloccare completamente i gomiti'
+    ]
   }
 };
 

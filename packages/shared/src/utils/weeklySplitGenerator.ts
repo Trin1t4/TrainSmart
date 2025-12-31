@@ -26,15 +26,16 @@ import { adaptExercisesForLocation } from './locationAdapter';
  */
 const EXERCISE_NAMES_IT: Record<string, string> = {
   // Lower Push - Calisthenics
-  'Shrimp Squat': 'Shrimp Squat',
-  'Skater Squat': 'Skater Squat',
-  'Pistol Squat': 'Pistol Squat',
+  'Shrimp Squat': 'Squat Gamberetto',
+  'Skater Squat': 'Squat del Pattinatore',
+  'Pistol Squat': 'Squat a Pistola',
+  'Pistol Squat (Assisted)': 'Squat a Pistola (Assistito)',
   'Bulgarian Split Squat': 'Squat Bulgaro',
-  'Split Squat': 'Split Squat',
+  'Split Squat': 'Affondi Statici',
   'Jump Squat': 'Squat con Salto',
   'Bodyweight Squat': 'Squat a Corpo Libero',
   'Air Squat': 'Squat a Corpo Libero',
-  'Box Squat': 'Box Squat',
+  'Box Squat': 'Squat al Box',
 
   // Lower Push - Palestra
   'Back Squat': 'Squat con Bilanciere',
@@ -48,12 +49,17 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   // Lower Pull - Calisthenics
   'Nordic Curl': 'Nordic Curl',
   'Nordic Hamstring Curl': 'Nordic Curl',
-  'Slider Leg Curl': 'Slider Leg Curl',
-  'Sliding Leg Curl': 'Slider Leg Curl',
+  'Nordic Curl (Eccentric Only)': 'Nordic Curl (Solo Eccentrica)',
+  'Slider Leg Curl': 'Leg Curl Scorrevole',
+  'Slider Leg Curl (Single Leg)': 'Leg Curl Scorrevole Singolo',
+  'Sliding Leg Curl': 'Leg Curl Scorrevole',
   'Single Leg RDL': 'Stacco Rumeno Monopodalico',
+  'Single Leg RDL (Bodyweight)': 'Stacco Rumeno Monopodalico',
   'Single Leg Glute Bridge': 'Ponte Glutei Monopodalico',
   'Glute Bridge': 'Ponte Glutei',
   'Hip Thrust': 'Hip Thrust',
+  'Hip Thrust (Single Leg)': 'Hip Thrust Monopodalico',
+  'Hip Thrust (Elevated)': 'Hip Thrust Elevato',
 
   // Lower Pull - Palestra
   'Conventional Deadlift': 'Stacco da Terra',
@@ -283,7 +289,37 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'Curl a Martello': 'Curl a Martello',
   'Dip Tricipiti': 'Dip Tricipiti',
   'Pushdown ai Cavi': 'Pushdown ai Cavi',
-  'Calf Raise in Piedi': 'Calf Raise in Piedi'
+  'Calf Raise in Piedi': 'Calf Raise in Piedi',
+
+  // ============================================
+  // Esercizi da locationAdapter.ts (forza relativa)
+  // ============================================
+
+  // Horizontal Push - Progressioni
+  'One-Arm Push-up': 'Push-up a Un Braccio',
+  'One-Arm Push-up (Assisted)': 'Push-up a Un Braccio (Assistito)',
+  'Knee Push-up': 'Push-up sulle Ginocchia',
+
+  // Vertical Push - Progressioni
+  'Freestanding Handstand Push-up': 'Verticale Push-up Libero',
+  'Wall Handstand Push-up (Eccentric)': 'HSPU al Muro (Solo Eccentrica)',
+  'Elevated Pike Push-up (High)': 'Pike Push-up Alto',
+  'Pike Push-up (Knee)': 'Pike Push-up sulle Ginocchia',
+  'Wall Shoulder Tap': 'Shoulder Tap al Muro',
+
+  // Vertical Pull - Alternative senza sbarra
+  'Floor Pull Singolo Braccio': 'Floor Pull a Un Braccio',
+  'Floor Pull (asciugamano)': 'Floor Pull con Asciugamano',
+  'Inverted Row Facilitato': 'Rematore Inverso Facilitato',
+  'Scapular Pull (a terra)': 'Retrazione Scapolare a Terra',
+
+  // Horizontal Pull - Alternative
+  'Inverted Row Singolo Braccio': 'Rematore Inverso a Un Braccio',
+  'Inverted Row Piedi Elevati': 'Rematore Inverso Piedi Elevati',
+
+  // Altri esercizi body weight
+  'Prone Y-raise': 'Y-raise Prono',
+  'Alzate Gambe a Terra': 'Alzate Gambe a Terra'
 };
 
 /**
@@ -1375,14 +1411,14 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
   ];
 
   // DAY C: FULL BODY (tutti i 7 pattern, altra rotazione)
-  // Squat HEAVY, Deadlift MOD, Bench MOD, Row MOD, Military MOD, Pulldown HEAVY, Core VOL
+  // Usa variantIndex=2 per TUTTI gli esercizi per garantire varianti diverse da Day A (0) e Day B (1)
   days[2].exercises = [
-    createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 2)), // Back to baseline
-    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 2)),
-    createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2)), // Altra variante
-    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2), baselines.vertical_pull), // Altra variante
-    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 2)),
-    createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2)), // Altra variante
+    createExercise('lower_push', baselines.lower_push, 2, options, getIntensityForPattern('lower_push', 0, 2)), // Variante 2
+    createExercise('lower_pull', baselines.lower_pull, 2, options, getIntensityForPattern('lower_pull', 1, 2)), // Variante 2
+    createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2)), // Variante 2
+    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2), baselines.vertical_pull), // Variante 2
+    createExercise('vertical_push', baselines.vertical_push, 2, options, getIntensityForPattern('vertical_push', 4, 2)), // Variante 2
+    createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2)), // Variante 2
     createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2))
   ];
 
@@ -2181,6 +2217,13 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
           console.log(`  📝 ${originalExercises[i]} → ${ex.name}`);
         }
       });
+
+      // IMPORTANTE: Applica traduzione DOPO adaptExercisesForLocation
+      // perché locationAdapter usa nomi inglesi internamente
+      day.exercises = day.exercises.map(ex => ({
+        ...ex,
+        name: translateExerciseName(ex.name)
+      }));
     });
   }
 

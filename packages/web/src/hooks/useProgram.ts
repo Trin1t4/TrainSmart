@@ -48,11 +48,17 @@ export function useCurrentProgram() {
         .select('*')
         .eq('user_id', currentUserId)
         .eq('is_active', true)
-        .single();
+        .maybeSingle(); // Use maybeSingle to handle no results gracefully
 
       if (error) {
         console.error('[useCurrentProgram] Error fetching program:', error);
         throw error;
+      }
+
+      // No program found is valid - user just hasn't created one yet
+      if (!data) {
+        console.log('[useCurrentProgram] No active program found for user');
+        return null;
       }
 
       console.log('[useCurrentProgram] Program fetched:', {
@@ -167,7 +173,7 @@ export function usePrefetchCurrentProgram() {
           .select('*')
           .eq('user_id', userId)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         return data;

@@ -63,6 +63,48 @@ const PATTERN_VARIANTS: Record<string, ExerciseVariant[]> = {
 };
 
 /**
+ * Verifica se un esercizio è già una variante bodyweight valida
+ * Questo evita di sostituire esercizi già corretti per casa
+ */
+function isAlreadyBodyweightExercise(exerciseName: string, pattern: string): boolean {
+  const variants = PATTERN_VARIANTS[pattern];
+  if (!variants) return false;
+
+  const lowerName = exerciseName.toLowerCase();
+
+  // Cerca tra le varianti del pattern
+  const isInVariants = variants.some(v =>
+    (v.equipment === 'bodyweight' || v.equipment === 'both') &&
+    v.name.toLowerCase() === lowerName
+  );
+
+  if (isInVariants) return true;
+
+  // Controlla anche esercizi comuni bodyweight non in variants
+  const commonBodyweight = [
+    'squat a corpo libero', 'squat', 'air squat', 'bodyweight squat',
+    'split squat', 'affondi', 'affondi statici', 'affondi indietro',
+    'squat bulgaro', 'bulgarian split squat', 'pistol squat', 'squat a pistola',
+    'shrimp squat', 'squat gamberetto', 'skater squat', 'squat del pattinatore',
+    'push-up', 'piegamenti', 'push-up standard', 'standard push-up',
+    'push-up diamante', 'diamond push-up', 'push-up arciere', 'archer push-up',
+    'push-up deficit', 'deficit push-up', 'push-up inclinati', 'incline push-up',
+    'push-up al muro', 'wall push-up', 'push-up sulle ginocchia', 'knee push-up',
+    'pike push-up', 'pike push-up elevato', 'elevated pike push-up',
+    'trazioni', 'pull-up', 'chin-up', 'trazioni presa neutra', 'neutral grip pull-up',
+    'trazioni negative', 'negative pull-up', 'trazioni con elastico',
+    'rematore inverso', 'inverted row', 'australian pull-up',
+    'floor pull', 'floor pull con asciugamano',
+    'plank', 'plank laterale', 'side plank', 'hollow body hold',
+    'dead bug', 'bird dog', 'l-sit', 'dragon flag',
+    'ponte glutei', 'glute bridge', 'hip thrust', 'nordic curl',
+    'slider leg curl', 'leg curl scorrevole'
+  ];
+
+  return commonBodyweight.some(bw => lowerName.includes(bw) || bw.includes(lowerName));
+}
+
+/**
  * Mappa inversa: macchina -> bodyweight
  * Include alias italiani per supporto i18n
  */
@@ -505,9 +547,18 @@ function adaptExercise(
   } else if (location === 'home') {
     // Casa: dipende da homeType e equipment
     if (homeType === 'bodyweight' || !equipment) {
-      // Solo corpo libero - USA PESO CORPOREO + CARICO REALE + DATA TEST per matching accurato
-      newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
-      wasReplaced = newName !== exercise.name;
+      // Solo corpo libero
+      // IMPORTANTE: Se l'esercizio è GIÀ bodyweight, NON sostituirlo!
+      // Questo preserva le varianti diverse selezionate per ogni giorno
+      if (isAlreadyBodyweightExercise(exercise.name, exercise.pattern)) {
+        console.log(`✅ ${exercise.name} è già bodyweight, mantenuto`);
+        // Mantieni l'esercizio originale, nessuna sostituzione
+      } else {
+        // Esercizio gym/macchina - trova alternativa bodyweight
+        console.log(`🔄 ${exercise.name} richiede conversione a bodyweight`);
+        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
+        wasReplaced = newName !== exercise.name;
+      }
     } else {
       // Casa con attrezzatura - verifica cosa e' disponibile
       const required = requiresEquipment(exercise.name);
