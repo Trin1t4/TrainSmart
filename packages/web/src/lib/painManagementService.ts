@@ -120,13 +120,9 @@ class PainManagementService {
         .select('*')
         .eq('user_id', userId)
         .eq('exercise_name', exerciseName)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows found - normale per primo utilizzo
-          return null;
-        }
         console.error('Error fetching pain threshold:', error);
         return null;
       }

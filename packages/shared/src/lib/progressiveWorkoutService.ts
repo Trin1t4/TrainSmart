@@ -97,7 +97,7 @@ export async function startWorkout(input: StartWorkoutInput): Promise<{ workoutI
     .eq('user_id', input.userId)
     .eq('status', 'in_progress')
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     console.log('[ProgressiveWorkout] Found existing in_progress workout:', existing.id);
@@ -270,7 +270,7 @@ export async function getInProgressWorkout(userId: string): Promise<WorkoutSessi
     .eq('status', 'in_progress')
     .order('workout_date', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     return null;
