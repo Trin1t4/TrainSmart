@@ -883,6 +883,7 @@ export function getVariantForPattern(
     lower_push: LOWER_PUSH_VARIANTS,
     lower_pull: LOWER_PULL_VARIANTS,
     horizontal_push: HORIZONTAL_PUSH_VARIANTS,
+    horizontal_pull: HORIZONTAL_PULL_VARIANTS,
     vertical_push: VERTICAL_PUSH_VARIANTS,
     vertical_pull: VERTICAL_PULL_VARIANTS,
     core: CORE_VARIANTS
@@ -915,6 +916,7 @@ export function getEasierVariant(
     lower_push: LOWER_PUSH_VARIANTS,
     lower_pull: LOWER_PULL_VARIANTS,
     horizontal_push: HORIZONTAL_PUSH_VARIANTS,
+    horizontal_pull: HORIZONTAL_PULL_VARIANTS,
     vertical_push: VERTICAL_PUSH_VARIANTS,
     vertical_pull: VERTICAL_PULL_VARIANTS,
     core: CORE_VARIANTS
