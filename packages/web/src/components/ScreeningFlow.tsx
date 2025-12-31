@@ -45,19 +45,36 @@ const SCREENING_VIDEOS: Record<string, string> = {
 
   // === HINGE/CORE (italiano) ===
   'Ponte Glutei': '/videos/exercises/glute-bridge.mp4',
-  'Ponte Glutei a Una Gamba': '/videos/exercises/glute-bridge.mp4',
+  'Ponte Glutei a Una Gamba': '/videos/exercises/single-leg-glute-bridge.mp4',
   'Hip Thrust': '/videos/exercises/hip-thrust.mp4',
-  'Stacco Rumeno a Una Gamba (corpo libero)': '/videos/exercises/romanian-deadlift.mp4',
+  'Stacco Rumeno a Una Gamba (corpo libero)': '/videos/exercises/single-leg-rdl.mp4',
   'Nordic Curl (solo eccentrica)': '/videos/exercises/nordic-hamstring-curl.mp4',
   'Nordic Curl (completo)': '/videos/exercises/nordic-hamstring-curl.mp4',
-  'Leg Curl Scivolato': '/videos/exercises/standing-leg-curl.mp4',
+  'Leg Curl Scivolato': '/videos/exercises/slider-leg-curl.mp4',
+  'Slider Leg Curl': '/videos/exercises/slider-leg-curl.mp4',
   'Plank': '/videos/exercises/plank.mp4',
-  'Plank Laterale': '/videos/exercises/side-plank-modified.mp4',
+  'Plank Laterale': '/videos/exercises/side-plank.mp4',
+  'Copenhagen Plank': '/videos/exercises/copenhagen-plank.mp4',
   'Hollow Body Hold': '/videos/exercises/hollow-body-hold.mp4',
   'L-sit Raccolto': '/videos/exercises/l-sit.mp4',
   'L-sit a Una Gamba': '/videos/exercises/l-sit.mp4',
   'L-sit Completo': '/videos/exercises/l-sit.mp4',
+  'L-sit': '/videos/exercises/l-sit.mp4',
   'Dragon Flag': '/videos/exercises/dragon-flag.mp4',
+  'Lying Leg Raise': '/videos/exercises/lying-leg-raise.mp4',
+  'Alzate Gambe Sdraiato': '/videos/exercises/lying-leg-raise.mp4',
+
+  // === POWER/SALTI ===
+  'Box Jump': '/videos/exercises/box-jump.mp4',
+  'Broad Jump': '/videos/exercises/broad-jump.mp4',
+  'Drop Jump': '/videos/exercises/drop-jump.mp4',
+  'Counter Movement Jump': '/videos/exercises/counter-movement-jump.mp4',
+  'Med Ball Chest Pass': '/videos/exercises/med-ball-chest-pass.mp4',
+  'Med Ball Overhead Throw': '/videos/exercises/med-ball-overhead-throw.mp4',
+
+  // === ROWS ===
+  'Band Rows': '/videos/exercises/band-rows.mp4',
+  'Rematore con Elastico': '/videos/exercises/band-rows.mp4',
 
   // === PALESTRA (italiano) ===
   'Squat con Bilanciere': '/videos/exercises/back-squat.mp4',
