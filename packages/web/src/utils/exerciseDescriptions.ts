@@ -776,6 +776,61 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
     ]
   },
 
+  'Rematore Inverso Facilitato': {
+    description: 'Versione facilitata del rematore inverso con ginocchia piegate. Ideale per principianti.',
+    technique: [
+      'Posizionati sotto un tavolo o sbarra bassa',
+      'Piega le ginocchia per ridurre la difficoltà',
+      'Mantieni il corpo in linea dai ginocchi alle spalle',
+      'Tira il petto verso la sbarra retraendo le scapole',
+      'Scendi controllato senza perdere la tensione'
+    ]
+  },
+
+  'Rematore Inverso Presa Larga': {
+    description: 'Variante del rematore inverso con presa più larga delle spalle. Enfatizza i dorsali e deltoidi posteriori.',
+    technique: [
+      'Impugna la sbarra più larga delle spalle',
+      'Corpo rigido dalla testa ai talloni',
+      'Tira i gomiti verso l\'esterno',
+      'Spremi le scapole insieme in cima',
+      'Scendi in modo controllato'
+    ]
+  },
+
+  'Rematore Inverso Piedi Elevati': {
+    description: 'Versione avanzata del rematore inverso con piedi su rialzo. Aumenta il carico sui dorsali.',
+    technique: [
+      'Posiziona i piedi su una sedia o rialzo',
+      'Mantieni il corpo perfettamente rigido',
+      'Tira il petto fino alla sbarra',
+      'Scapole retratte e depresse',
+      'Controlla la discesa lentamente'
+    ]
+  },
+
+  'Superman Row': {
+    description: 'Esercizio a terra per dorsali senza attrezzatura. Simula il movimento del rematore da prono.',
+    technique: [
+      'Distenditi a pancia in giù',
+      'Braccia tese davanti alla testa',
+      'Solleva petto e braccia da terra',
+      'Porta i gomiti indietro come in una remata',
+      'Torna alla posizione di partenza controllato'
+    ]
+  },
+
+  'Prone Y Raise': {
+    description: 'Esercizio a terra per dorsali e deltoidi posteriori. Braccia formano una Y.',
+    technique: [
+      'Distenditi prono a terra',
+      'Braccia tese formando una Y davanti',
+      'Pollici verso l\'alto',
+      'Solleva le braccia contraendo la schiena',
+      'Mantieni 2-3 secondi in cima'
+    ]
+  },
+
   'Dead Bug': {
     description: 'Esercizio anti-estensione per core. Braccia e gambe si muovono in modo opposto.',
     technique: [

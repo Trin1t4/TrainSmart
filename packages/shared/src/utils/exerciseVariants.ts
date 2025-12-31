@@ -454,6 +454,23 @@ export const VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
  * Utilizzato per split avanzati (Pull day in PPL)
  */
 export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
+  // === BODYWEIGHT VARIANTS ===
+  {
+    id: 'row_inverted_easy',
+    name: 'Rematore Inverso Facilitato',
+    difficulty: 3,
+    equipment: 'bodyweight',
+    primary: ['mid_back', 'biceps'],
+    secondary: ['rear_delts', 'core']
+  },
+  {
+    id: 'superman_row',
+    name: 'Superman Row',
+    difficulty: 4,
+    equipment: 'bodyweight',
+    primary: ['mid_back', 'rear_delts'],
+    secondary: ['erectors', 'glutes']
+  },
   {
     id: 'row_inverted',
     name: 'Rematore Inverso',
@@ -462,6 +479,31 @@ export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
     primary: ['mid_back', 'biceps'],
     secondary: ['rear_delts', 'core']
   },
+  {
+    id: 'row_inverted_wide',
+    name: 'Rematore Inverso Presa Larga',
+    difficulty: 5,
+    equipment: 'bodyweight',
+    primary: ['mid_back', 'rear_delts'],
+    secondary: ['biceps', 'core']
+  },
+  {
+    id: 'prone_y_raise',
+    name: 'Prone Y Raise',
+    difficulty: 3,
+    equipment: 'bodyweight',
+    primary: ['mid_back', 'rear_delts'],
+    secondary: ['traps', 'rotator_cuff']
+  },
+  {
+    id: 'row_inverted_feet_elevated',
+    name: 'Rematore Inverso Piedi Elevati',
+    difficulty: 7,
+    equipment: 'bodyweight',
+    primary: ['mid_back', 'lats'],
+    secondary: ['biceps', 'rear_delts', 'core']
+  },
+  // === GYM VARIANTS ===
   {
     id: 'row_barbell',
     name: 'Rematore con Bilanciere',

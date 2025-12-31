@@ -94,6 +94,8 @@ function isAlreadyBodyweightExercise(exerciseName: string, pattern: string): boo
     'trazioni', 'pull-up', 'chin-up', 'trazioni presa neutra', 'neutral grip pull-up',
     'trazioni negative', 'negative pull-up', 'trazioni con elastico',
     'rematore inverso', 'inverted row', 'australian pull-up',
+    'rematore inverso facilitato', 'rematore inverso presa larga', 'rematore inverso piedi elevati',
+    'superman row', 'prone y raise',
     'floor pull', 'floor pull con asciugamano',
     'plank', 'plank laterale', 'side plank', 'hollow body hold',
     'dead bug', 'bird dog', 'l-sit', 'dragon flag',
@@ -312,15 +314,15 @@ const RELATIVE_STRENGTH_ALTERNATIVES: Record<string, { minRatio: number; exercis
     { minRatio: 0, exercise: 'Band Pull-apart', notes: 'Principiante - con elastico leggero' }
   ],
   // HORIZONTAL PULL (row come riferimento - bent over row/cable row)
-  // SENZA ATTREZZATURA: Inverted Row e Floor Pull sono esercizi ALLENANTI
+  // SENZA ATTREZZATURA: Inverted Row, Superman Row e Floor Pull sono esercizi ALLENANTI
   'horizontal_pull': [
     { minRatio: 1.2, exercise: 'Inverted Row Singolo Braccio', notes: 'Elite - unilaterale sotto tavolo' },
-    { minRatio: 1.0, exercise: 'Floor Pull (asciugamano)', notes: 'Avanzato - trazioni scivolate orizzontali' },
-    { minRatio: 0.85, exercise: 'Inverted Row (tavolo)', notes: 'Avanzato - gambe tese' },
-    { minRatio: 0.7, exercise: 'Inverted Row Piedi Elevati', notes: 'Intermedio-avanzato - piedi su sedia' },
-    { minRatio: 0.5, exercise: 'Inverted Row (tavolo)', notes: 'Intermedio - ginocchia piegate' },
-    { minRatio: 0.3, exercise: 'Floor Pull Facilitato', notes: 'Base - ginocchia piegate' },
-    { minRatio: 0, exercise: 'Scapular Pull (a terra)', notes: 'Principiante - retrazione scapolare' }
+    { minRatio: 1.0, exercise: 'Rematore Inverso Piedi Elevati', notes: 'Avanzato - piedi elevati su sedia' },
+    { minRatio: 0.85, exercise: 'Rematore Inverso', notes: 'Avanzato - gambe tese sotto tavolo' },
+    { minRatio: 0.7, exercise: 'Rematore Inverso Presa Larga', notes: 'Intermedio-avanzato - enfasi dorsali' },
+    { minRatio: 0.5, exercise: 'Superman Row', notes: 'Intermedio - a terra senza attrezzi' },
+    { minRatio: 0.3, exercise: 'Rematore Inverso Facilitato', notes: 'Base - ginocchia piegate' },
+    { minRatio: 0, exercise: 'Prone Y Raise', notes: 'Principiante - a terra prono' }
   ]
 };
 
