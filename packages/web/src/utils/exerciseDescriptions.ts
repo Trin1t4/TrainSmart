@@ -1711,6 +1711,1627 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Spingi tornando su',
       'Non bloccare completamente i gomiti'
     ]
+  },
+
+  // ============================================
+  // ESERCIZI AGGIUNTIVI - LOWER BODY
+  // ============================================
+
+  'Ab Wheel (in ginocchio)': {
+    description: 'Rollout con ruota addominale partendo dalle ginocchia. Variante più accessibile del full rollout.',
+    technique: [
+      'Ginocchia su tappetino',
+      'Core contratto durante tutto il movimento',
+      'Rotola avanti lentamente',
+      'Evita di inarcare la schiena',
+      'Torna indietro con controllo'
+    ]
+  },
+
+  'Affondi Indietro': {
+    description: 'Affondi con passo indietro. Più sicuro per le ginocchia rispetto agli affondi avanti.',
+    technique: [
+      'Fai un passo indietro',
+      'Ginocchio posteriore verso il pavimento',
+      'Busto eretto',
+      'Peso sul tallone anteriore',
+      'Spingi per tornare in posizione'
+    ]
+  },
+
+  'Alzate Gambe alla Sbarra': {
+    description: 'Hanging leg raise. Esercizio avanzato per addominali e flessori dell\'anca.',
+    technique: [
+      'Appeso alla sbarra, presa salda',
+      'Gambe tese o leggermente piegate',
+      'Solleva le gambe usando gli addominali',
+      'Evita oscillazioni',
+      'Scendi controllato'
+    ]
+  },
+
+  'Assisted Pistol': {
+    description: 'Pistol squat assistito con supporto. Propedeutico per il pistol completo.',
+    technique: [
+      'Tieni un supporto per equilibrio',
+      'Una gamba tesa davanti',
+      'Scendi controllato',
+      'Usa il supporto solo per bilanciare',
+      'Progressivamente riduci l\'assistenza'
+    ]
+  },
+
+  'Band Pull-up': {
+    description: 'Trazioni assistite con elastico. Ottimo per costruire forza verso le trazioni complete.',
+    technique: [
+      'Elastico fissato alla sbarra',
+      'Piede o ginocchio nell\'elastico',
+      'Tira portando il petto alla sbarra',
+      'Scendi controllato',
+      'Usa elastici sempre meno resistenti'
+    ]
+  },
+
+  'Band Row': {
+    description: 'Rematore con elastico. Versione home del cable row.',
+    technique: [
+      'Elastico fissato davanti',
+      'Tira verso l\'addome',
+      'Stringi le scapole',
+      'Controlla il ritorno',
+      'Mantieni il busto stabile'
+    ]
+  },
+
+  'Barbell Rollout': {
+    description: 'Rollout con bilanciere. Versione del rollout usando un bilanciere con dischi.',
+    technique: [
+      'Ginocchia a terra, mani sul bilanciere',
+      'Rotola avanti lentamente',
+      'Core sempre contratto',
+      'Non inarcare la schiena',
+      'Torna indietro con controllo'
+    ]
+  },
+
+  'Bear Hold': {
+    description: 'Tenuta in posizione quadrupede sollevata. Ottimo per core e stabilità.',
+    technique: [
+      'Mani sotto le spalle',
+      'Ginocchia sollevate di pochi cm',
+      'Schiena piatta',
+      'Core contratto',
+      'Mantieni la posizione'
+    ]
+  },
+
+  'Bench Press (leggero)': {
+    description: 'Panca piana con carico leggero. Focus su tecnica e riscaldamento.',
+    technique: [
+      'Setup corretto sulla panca',
+      'Bilanciere sul petto',
+      'Spinta controllata',
+      'Focus sulla connessione mente-muscolo',
+      'Movimento fluido'
+    ]
+  },
+
+  'Bird Dog (Modified)': {
+    description: 'Bird dog modificato per principianti. Movimento solo braccia o solo gambe.',
+    technique: [
+      'Posizione quadrupede',
+      'Estendi un braccio O una gamba',
+      'Mantieni la schiena stabile',
+      'Alterna i lati',
+      'Progressa verso la versione completa'
+    ]
+  },
+
+  'Box Squat': {
+    description: 'Squat con seduta su box. Ottimo per imparare la profondità corretta.',
+    technique: [
+      'Box dietro di te',
+      'Scendi controllato fino al box',
+      'Tocca senza rilassarti',
+      'Spingi per risalire',
+      'Mantieni tensione sui muscoli'
+    ]
+  },
+
+  'Bridge with Ball Squeeze': {
+    description: 'Ponte glutei con palla tra le ginocchia. Attiva anche gli adduttori.',
+    technique: [
+      'Supino, piedi a terra',
+      'Palla tra le ginocchia',
+      'Stringi la palla e solleva i fianchi',
+      'Contrai glutei in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Bulgarian Split Squat profondo': {
+    description: 'Split squat bulgaro con ROM completo. Versione avanzata per massima attivazione.',
+    technique: [
+      'Piede posteriore su rialzo',
+      'Scendi profondo',
+      'Ginocchio anteriore oltre la punta',
+      'Busto leggermente inclinato',
+      'Spingi con forza'
+    ]
+  },
+
+  'Cable Curl + Pulldown': {
+    description: 'Superset bicipiti e dorsali ai cavi. Efficiente per allenamento upper body.',
+    technique: [
+      'Curl ai cavi bassi',
+      'Pulldown ai cavi alti',
+      'Alternare senza pausa',
+      'Movimento controllato',
+      'Focus sulla contrazione'
+    ]
+  },
+
+  'Cable Lateral Raise': {
+    description: 'Alzate laterali ai cavi. Tensione costante per deltoidi laterali.',
+    technique: [
+      'Cavo basso di lato',
+      'Solleva lateralmente',
+      'Gomito leggermente piegato',
+      'Non superare l\'altezza spalle',
+      'Scendi controllato'
+    ]
+  },
+
+  'Cable Pull Through': {
+    description: 'Pull through ai cavi. Ottimo per glutei e posterior chain.',
+    technique: [
+      'Cavo basso tra le gambe',
+      'Hip hinge indietro',
+      'Tira in avanti con i fianchi',
+      'Contrai i glutei in alto',
+      'Movimento fluido'
+    ]
+  },
+
+  'Cable Pullover': {
+    description: 'Pullover ai cavi. Isola i dorsali con tensione costante.',
+    technique: [
+      'Cavo alto, presa alla corda',
+      'Braccia quasi tese',
+      'Tira verso il basso in arco',
+      'Senti l\'allungamento dei dorsali',
+      'Contrai in basso'
+    ]
+  },
+
+  'Cable Rotation': {
+    description: 'Rotazione ai cavi per core. Lavora gli obliqui e la stabilità rotatoria.',
+    technique: [
+      'Cavo all\'altezza del petto',
+      'Ruota il busto lontano dal cavo',
+      'Braccia tese ma non rigide',
+      'Movimento dal core, non dalle braccia',
+      'Controlla il ritorno'
+    ]
+  },
+
+  'Calf Raise in Piedi': {
+    description: 'Alzate sui talloni in piedi. Esercizio base per i polpacci.',
+    technique: [
+      'In piedi su un rialzo',
+      'Talloni che sporgono',
+      'Sali sulla punta dei piedi',
+      'Pausa in alto',
+      'Scendi sotto il parallelo'
+    ]
+  },
+
+  'Calf Raise Seduto': {
+    description: 'Alzate polpacci da seduto. Lavora principalmente il soleo.',
+    technique: [
+      'Seduto, peso sulle ginocchia',
+      'Piedi sulla pedana',
+      'Solleva i talloni',
+      'Pausa in contrazione',
+      'Scendi lentamente'
+    ]
+  },
+
+  'Captain Chair Leg Raise': {
+    description: 'Alzate gambe alla captain chair. Esercizio per addominali bassi.',
+    technique: [
+      'Avambracci sugli appoggi',
+      'Schiena contro lo schienale',
+      'Solleva le ginocchia al petto',
+      'Abbassa controllato',
+      'Evita oscillazioni'
+    ]
+  },
+
+  'Cat-Cow': {
+    description: 'Gatto-mucca. Mobilità della colonna vertebrale.',
+    technique: [
+      'Posizione quadrupede',
+      'Inspira: schiena concava (mucca)',
+      'Espira: schiena convessa (gatto)',
+      'Movimento fluido',
+      'Coinvolgi tutta la colonna'
+    ]
+  },
+
+  'Chest Press (Macchina)': {
+    description: 'Chest press alla macchina. Movimento guidato per pettorali.',
+    technique: [
+      'Regola l\'altezza del sedile',
+      'Impugnature all\'altezza del petto',
+      'Spingi in avanti',
+      'Non bloccare i gomiti',
+      'Torna controllato'
+    ]
+  },
+
+  'Chest Supported Row': {
+    description: 'Rematore con supporto petto. Elimina il cheating per isolare i dorsali.',
+    technique: [
+      'Petto appoggiato sulla panca inclinata',
+      'Tira i manubri verso i fianchi',
+      'Stringi le scapole',
+      'Abbassa controllato',
+      'Mantieni il petto appoggiato'
+    ]
+  },
+
+  'Chin-up (Supinato)': {
+    description: 'Trazioni con presa supina. Maggiore coinvolgimento dei bicipiti.',
+    technique: [
+      'Presa supina (palmi verso di te)',
+      'Tira portando il mento sopra la sbarra',
+      'Gomiti vicini al corpo',
+      'Scendi controllato',
+      'Estensione completa in basso'
+    ]
+  },
+
+  'Clamshells': {
+    description: 'Apertura a conchiglia. Attivazione del gluteo medio.',
+    technique: [
+      'Sdraiato sul fianco',
+      'Ginocchia piegate',
+      'Piedi uniti',
+      'Apri il ginocchio superiore',
+      'Tieni il bacino fermo'
+    ]
+  },
+
+  'Close Grip Bench Press': {
+    description: 'Panca presa stretta. Focus sui tricipiti.',
+    technique: [
+      'Presa più stretta delle spalle',
+      'Gomiti vicini al corpo',
+      'Bilanciere sul petto basso',
+      'Spingi verticalmente',
+      'Focus sui tricipiti'
+    ]
+  },
+
+  'Connection Breath': {
+    description: 'Respiro connettivo per attivazione del core profondo.',
+    technique: [
+      'Supino con ginocchia piegate',
+      'Inspira gonfiando l\'addome',
+      'Espira attivando il pavimento pelvico',
+      'Mantieni la contrazione',
+      'Respiro naturale'
+    ]
+  },
+
+  'Curl a Martello': {
+    description: 'Hammer curl. Lavora bicipiti e brachioradiale.',
+    technique: [
+      'Manubri con presa neutra',
+      'Gomiti fermi ai fianchi',
+      'Fletti gli avambracci',
+      'Contrai in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Curl con Bilanciere': {
+    description: 'Curl bilanciere classico. Esercizio base per i bicipiti.',
+    technique: [
+      'Presa supina sul bilanciere',
+      'Gomiti fermi ai fianchi',
+      'Fletti portando il bilanciere alle spalle',
+      'Contrai in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Dead Bug Heel Slides': {
+    description: 'Dead bug con scivolamento talloni. Variante per principianti.',
+    technique: [
+      'Supino, braccia al soffitto',
+      'Fai scivolare un tallone sul pavimento',
+      'Mantieni la schiena a terra',
+      'Alterna le gambe',
+      'Movimento lento e controllato'
+    ]
+  },
+
+  'Dead Bug Progression': {
+    description: 'Dead bug progressivo. Costruisci verso la versione completa.',
+    technique: [
+      'Inizia con movimenti singoli',
+      'Aggiungi braccia e gambe',
+      'Mantieni la zona lombare a terra',
+      'Respira normalmente',
+      'Aumenta la difficoltà gradualmente'
+    ]
+  },
+
+  'Decline Dumbbell Press': {
+    description: 'Panca declinata con manubri. Focus sul petto basso.',
+    technique: [
+      'Panca inclinata verso il basso',
+      'Manubri sopra il petto',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Contrai il petto in alto'
+    ]
+  },
+
+  'Deep Squat Hold': {
+    description: 'Tenuta in squat profondo. Mobilità anche e caviglie.',
+    technique: [
+      'Scendi in squat profondo',
+      'Piedi piatti a terra',
+      'Gomiti dentro le ginocchia',
+      'Mantieni la posizione',
+      'Respira normalmente'
+    ]
+  },
+
+  'Diaphragmatic Breathing': {
+    description: 'Respirazione diaframmatica. Base per attivazione del core.',
+    technique: [
+      'Mano sul petto, mano sull\'addome',
+      'Inspira gonfiando l\'addome',
+      'Il petto resta fermo',
+      'Espira lentamente',
+      'Movimento rilassato'
+    ]
+  },
+
+  'Dip alle Parallele': {
+    description: 'Dip classiche alle parallele. Petto e tricipiti.',
+    technique: [
+      'Presa sulle parallele',
+      'Corpo inclinato avanti',
+      'Scendi a 90° o più',
+      'Spingi per risalire',
+      'Controlla il movimento'
+    ]
+  },
+
+  'Dip Tricipiti': {
+    description: 'Dip con focus tricipiti. Corpo più verticale.',
+    technique: [
+      'Corpo verticale',
+      'Gomiti stretti',
+      'Scendi controllato',
+      'Spingi usando i tricipiti',
+      'Non bloccare completamente'
+    ]
+  },
+
+  'Dumbbell Deadlift': {
+    description: 'Stacco con manubri. Alternativa allo stacco con bilanciere.',
+    technique: [
+      'Manubri ai lati delle gambe',
+      'Hip hinge mantenendo la schiena neutra',
+      'Spingi il pavimento con i piedi',
+      'Contrai i glutei in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Dumbbell Fly': {
+    description: 'Croci con manubri. Isolamento per il petto.',
+    technique: [
+      'Supino, manubri sopra il petto',
+      'Braccia leggermente piegate',
+      'Apri le braccia lateralmente',
+      'Senti l\'allungamento del petto',
+      'Chiudi in alto'
+    ]
+  },
+
+  'Dumbbell Front Squat': {
+    description: 'Front squat con manubri. Quadricipiti e core.',
+    technique: [
+      'Manubri sulle spalle',
+      'Gomiti alti',
+      'Scendi mantenendo il busto eretto',
+      'Ginocchia in fuori',
+      'Spingi per risalire'
+    ]
+  },
+
+  'Dumbbell Push Press': {
+    description: 'Push press con manubri. Spinta overhead esplosiva.',
+    technique: [
+      'Manubri alle spalle',
+      'Piegamento leggero delle ginocchia',
+      'Spingi con le gambe e le spalle',
+      'Blocca sopra la testa',
+      'Scendi controllato'
+    ]
+  },
+
+  'Dumbbell RDL': {
+    description: 'Romanian deadlift con manubri. Focus su glutei e femorali.',
+    technique: [
+      'Manubri davanti alle cosce',
+      'Hip hinge indietro',
+      'Schiena neutra',
+      'Senti l\'allungamento dei femorali',
+      'Contrai i glutei risalendo'
+    ]
+  },
+
+  'Dumbbell Shoulder Press (pesante)': {
+    description: 'Shoulder press con manubri pesanti. Forza delle spalle.',
+    technique: [
+      'Manubri alle spalle',
+      'Core contratto',
+      'Spingi verticalmente',
+      'Blocca in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Dumbbell Squat': {
+    description: 'Squat con manubri ai lati. Variante accessibile dello squat.',
+    technique: [
+      'Manubri lungo i fianchi',
+      'Scendi come in uno squat normale',
+      'Peso sui talloni',
+      'Ginocchia in linea con i piedi',
+      'Spingi per risalire'
+    ]
+  },
+
+  'Dumbbell Sumo Deadlift': {
+    description: 'Stacco sumo con manubri. Coinvolge maggiormente adduttori e glutei.',
+    technique: [
+      'Stance larga, punte in fuori',
+      'Manubrio/i tra le gambe',
+      'Schiena neutra',
+      'Spingi il pavimento con i piedi',
+      'Contrai i glutei in alto'
+    ]
+  },
+
+  'Floor Press': {
+    description: 'Panca a terra. Limita il ROM per focus sui tricipiti.',
+    technique: [
+      'Supino a terra',
+      'Bilanciere sopra il petto',
+      'Scendi fino a toccare terra coi gomiti',
+      'Spingi verso l\'alto',
+      'Movimento controllato'
+    ]
+  },
+
+  'Floor Press con Manubri': {
+    description: 'Floor press con manubri. Versione con maggiore libertà di movimento.',
+    technique: [
+      'Supino a terra, manubri sopra',
+      'Scendi fino a toccare i gomiti',
+      'Pausa in basso',
+      'Spingi verso l\'alto',
+      'Contrai il petto'
+    ]
+  },
+
+  'French Press': {
+    description: 'Estensioni tricipiti sopra la testa. Isolamento tricipiti.',
+    technique: [
+      'Seduto o in piedi',
+      'Peso sopra la testa',
+      'Fletti i gomiti portando il peso dietro',
+      'Estendi tornando su',
+      'Gomiti fermi'
+    ]
+  },
+
+  'GHD Raise': {
+    description: 'Glute-ham raise alla GHD. Esercizio avanzato per posterior chain.',
+    technique: [
+      'Piedi bloccati nella GHD',
+      'Corpo orizzontale',
+      'Scendi controllato',
+      'Risali usando glutei e femorali',
+      'Mantieni il corpo allineato'
+    ]
+  },
+
+  'Goblet Squat (leggero)': {
+    description: 'Goblet squat con peso leggero. Focus su tecnica e mobilità.',
+    technique: [
+      'Peso leggero al petto',
+      'Focus sulla tecnica',
+      'Scendi profondo',
+      'Usa i gomiti per aprire le anche',
+      'Movimento fluido'
+    ]
+  },
+
+  'Good Morning': {
+    description: 'Good morning con bilanciere. Rinforza posterior chain e schiena.',
+    technique: [
+      'Bilanciere sui trapezi',
+      'Hip hinge in avanti',
+      'Schiena neutra',
+      'Senti l\'allungamento dei femorali',
+      'Risali contraendo i glutei'
+    ]
+  },
+
+  'Hack Squat': {
+    description: 'Hack squat alla macchina. Focus sui quadricipiti.',
+    technique: [
+      'Schiena contro lo schienale',
+      'Piedi sulla pedana',
+      'Scendi controllato',
+      'Spingi senza bloccare le ginocchia',
+      'Movimento fluido'
+    ]
+  },
+
+  'Half Kneeling Chop': {
+    description: 'Chop in ginocchio. Stabilità del core e anti-rotazione.',
+    technique: [
+      'Un ginocchio a terra',
+      'Cavo o elastico in alto diagonale',
+      'Tira verso il basso diagonalmente',
+      'Core stabile',
+      'Controlla il ritorno'
+    ]
+  },
+
+  'Handstand Hold': {
+    description: 'Tenuta in verticale. Forza spalle e stabilità.',
+    technique: [
+      'Verticale contro il muro o libera',
+      'Braccia tese',
+      'Core contratto',
+      'Guarda tra le mani',
+      'Respira normalmente'
+    ]
+  },
+
+  'Hanging Knee Raise': {
+    description: 'Sollevamento ginocchia appeso. Versione più accessibile del leg raise.',
+    technique: [
+      'Appeso alla sbarra',
+      'Porta le ginocchia al petto',
+      'Usa gli addominali',
+      'Scendi controllato',
+      'Evita oscillazioni'
+    ]
+  },
+
+  'Happy Baby Stretch': {
+    description: 'Stretching posizione happy baby. Mobilità anche e schiena.',
+    technique: [
+      'Supino',
+      'Afferra le piante dei piedi',
+      'Ginocchia verso le ascelle',
+      'Schiena rilassata a terra',
+      'Dondola leggermente'
+    ]
+  },
+
+  'High Cable Fly': {
+    description: 'Croci ai cavi alti. Focus sul petto basso.',
+    technique: [
+      'Cavi posizionati in alto',
+      'Un passo avanti',
+      'Tira le mani verso il basso e insieme',
+      'Contrai il petto',
+      'Torna controllato'
+    ]
+  },
+
+  'Hip Hinge a Corpo Libero': {
+    description: 'Hip hinge senza peso. Impara il movimento dello stacco.',
+    technique: [
+      'Mani sui fianchi o dietro la testa',
+      'Spingi i fianchi indietro',
+      'Schiena neutra',
+      'Senti i femorali che tirano',
+      'Contrai i glutei tornando su'
+    ]
+  },
+
+  'Hip Thrust Rialzato': {
+    description: 'Hip thrust con piedi rialzati. Maggior range of motion.',
+    technique: [
+      'Schiena sulla panca, piedi su rialzo',
+      'Peso sul bacino',
+      'Spingi i fianchi verso l\'alto',
+      'Contrai i glutei in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Incline Chest Press (Macchina)': {
+    description: 'Chest press inclinata alla macchina. Petto alto guidato.',
+    technique: [
+      'Regola il sedile per il petto alto',
+      'Impugnature all\'altezza delle spalle',
+      'Spingi in avanti e su',
+      'Torna controllato',
+      'Non bloccare i gomiti'
+    ]
+  },
+
+  'Incline Dumbbell Press': {
+    description: 'Panca inclinata con manubri. Focus sul petto alto.',
+    technique: [
+      'Panca a 30-45 gradi',
+      'Manubri sopra le spalle',
+      'Scendi controllato ai lati del petto',
+      'Spingi verso l\'alto',
+      'Contrai il petto in alto'
+    ]
+  },
+
+  'Landmine Press': {
+    description: 'Press con bilanciere alla landmine. Movimento più naturale per le spalle.',
+    technique: [
+      'Bilanciere in un angolo o landmine',
+      'Spingi verso l\'alto e avanti',
+      'Una mano o due',
+      'Core stabile',
+      'Movimento controllato'
+    ]
+  },
+
+  'Landmine Row': {
+    description: 'Rematore alla landmine. Alternativa al rematore con bilanciere.',
+    technique: [
+      'Bilanciere nell\'angolo',
+      'Hip hinge, afferra l\'estremità',
+      'Tira verso il fianco',
+      'Stringi la scapola',
+      'Scendi controllato'
+    ]
+  },
+
+  'Lateral Raise + Press': {
+    description: 'Combo alzate laterali e press. Lavoro completo delle spalle.',
+    technique: [
+      'Alzata laterale',
+      'Ruota i manubri sopra la testa',
+      'Press verticale',
+      'Scendi e ripeti',
+      'Movimento fluido'
+    ]
+  },
+
+  'Leg Curl': {
+    description: 'Leg curl alla macchina. Isolamento dei femorali.',
+    technique: [
+      'Prono sulla macchina',
+      'Rullo sopra i talloni',
+      'Fletti le ginocchia',
+      'Contrai i femorali',
+      'Scendi controllato'
+    ]
+  },
+
+  'Leg Press (piedi alti)': {
+    description: 'Leg press con piedi alti. Maggiore enfasi su glutei e femorali.',
+    technique: [
+      'Piedi alti sulla pedana',
+      'Scendi profondo',
+      'Spingi coi talloni',
+      'Non bloccare le ginocchia',
+      'Senti glutei e femorali'
+    ]
+  },
+
+  'Lento Avanti': {
+    description: 'Military press con bilanciere. Esercizio classico per le spalle.',
+    technique: [
+      'Bilanciere davanti alle spalle',
+      'Core contratto',
+      'Spingi verticalmente',
+      'Bilanciere sopra la testa',
+      'Scendi controllato'
+    ]
+  },
+
+  'Low Cable Fly': {
+    description: 'Croci ai cavi bassi. Focus sul petto alto.',
+    technique: [
+      'Cavi posizionati in basso',
+      'Tira le mani verso l\'alto e insieme',
+      'Incrocia leggermente',
+      'Contrai il petto alto',
+      'Torna controllato'
+    ]
+  },
+
+  'Lunges': {
+    description: 'Affondi classici. Esercizio unilaterale per gambe.',
+    technique: [
+      'Passo avanti',
+      'Ginocchio posteriore verso terra',
+      'Busto eretto',
+      'Spingi per tornare',
+      'Alterna le gambe'
+    ]
+  },
+
+  'Lying Leg Raise': {
+    description: 'Alzate gambe da supino. Addominali bassi.',
+    technique: [
+      'Supino, mani sotto i glutei',
+      'Gambe tese',
+      'Solleva le gambe a 90°',
+      'Pressa la schiena a terra',
+      'Scendi senza toccare'
+    ]
+  },
+
+  'Machine Chest Press': {
+    description: 'Chest press alla macchina. Movimento guidato per pettorali.',
+    technique: [
+      'Siediti con la schiena appoggiata',
+      'Impugnature all\'altezza del petto',
+      'Spingi in avanti',
+      'Torna controllato',
+      'Non bloccare i gomiti'
+    ]
+  },
+
+  'Machine Crunch': {
+    description: 'Crunch alla macchina. Addominali con resistenza aggiunta.',
+    technique: [
+      'Siediti nella macchina',
+      'Afferra le maniglie',
+      'Fletti il busto verso il basso',
+      'Contrai gli addominali',
+      'Torna controllato'
+    ]
+  },
+
+  'Machine Row': {
+    description: 'Rematore alla macchina. Dorsali con movimento guidato.',
+    technique: [
+      'Petto contro l\'appoggio',
+      'Afferra le impugnature',
+      'Tira verso di te',
+      'Stringi le scapole',
+      'Torna controllato'
+    ]
+  },
+
+  'Machine Shoulder Press': {
+    description: 'Shoulder press alla macchina. Spalle con movimento guidato.',
+    technique: [
+      'Siediti con la schiena appoggiata',
+      'Impugnature all\'altezza delle spalle',
+      'Spingi verso l\'alto',
+      'Non bloccare i gomiti',
+      'Scendi controllato'
+    ]
+  },
+
+  'Modified Squat': {
+    description: 'Squat modificato per principianti. ROM ridotto o assistito.',
+    technique: [
+      'Usa un supporto se necessario',
+      'Scendi solo fino dove riesci',
+      'Mantieni la schiena neutra',
+      'Progressa nel ROM',
+      'Focus sulla tecnica'
+    ]
+  },
+
+  'Narrow Push-up': {
+    description: 'Push-up con mani strette. Maggiore enfasi sui tricipiti.',
+    technique: [
+      'Mani vicine, sotto il petto',
+      'Gomiti vicini al corpo',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Core attivo'
+    ]
+  },
+
+  'Negative Pull-up': {
+    description: 'Trazioni negative. Costruisci forza per le trazioni complete.',
+    technique: [
+      'Salta o usa supporto per iniziare in alto',
+      'Scendi lentamente (5-10 secondi)',
+      'Braccia completamente estese in basso',
+      'Ripeti',
+      'Aumenta il tempo di discesa'
+    ]
+  },
+
+  'Neutral Grip Lat Pulldown': {
+    description: 'Lat pulldown con presa neutra. Confortevole per le spalle.',
+    technique: [
+      'Maniglia a presa neutra',
+      'Tira verso il petto',
+      'Gomiti verso i fianchi',
+      'Stringi i dorsali',
+      'Torna controllato'
+    ]
+  },
+
+  'Nordic Curl': {
+    description: 'Nordic curl per femorali. Esercizio avanzato eccentrico.',
+    technique: [
+      'Ginocchia a terra, piedi bloccati',
+      'Scendi in avanti lentamente',
+      'Usa i femorali per frenare',
+      'Atterra con le mani se necessario',
+      'Torna su con spinta o assistenza'
+    ]
+  },
+
+  'Nordic Curl (eccentrico)': {
+    description: 'Nordic curl solo fase negativa. Focus sul controllo eccentrico.',
+    technique: [
+      'Ginocchia a terra, piedi bloccati',
+      'Scendi lentamente (5-10 secondi)',
+      'Controlla tutto il movimento',
+      'Atterra con le mani',
+      'Torna su con assistenza'
+    ]
+  },
+
+  'One Arm Push-up': {
+    description: 'Push-up a un braccio. Esercizio avanzato per petto e core.',
+    technique: [
+      'Una mano a terra, piedi larghi',
+      'Corpo in linea',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Core super attivo'
+    ]
+  },
+
+  'Pallof Press (Kneeling)': {
+    description: 'Pallof press in ginocchio. Anti-rotazione per il core.',
+    technique: [
+      'Un ginocchio a terra',
+      'Cavo o elastico di lato',
+      'Spingi le mani in avanti',
+      'Resisti alla rotazione',
+      'Torna al petto'
+    ]
+  },
+
+  'Panca con Manubri': {
+    description: 'Panca piana con manubri. Maggiore range of motion.',
+    technique: [
+      'Supino, manubri sopra il petto',
+      'Scendi ai lati del petto',
+      'Gomiti a 45-75 gradi',
+      'Spingi verso l\'alto',
+      'Contrai il petto'
+    ]
+  },
+
+  'Panca Inclinata con Manubri': {
+    description: 'Panca inclinata con manubri. Focus sul petto alto.',
+    technique: [
+      'Panca a 30-45 gradi',
+      'Manubri sopra le spalle',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Contrai il petto alto'
+    ]
+  },
+
+  'Panca Piana con Bilanciere': {
+    description: 'Bench press classica. Re degli esercizi per il petto.',
+    technique: [
+      'Schiena arcuata, scapole retratte',
+      'Presa poco più larga delle spalle',
+      'Scendi al petto',
+      'Spingi verticalmente',
+      'Non rimbalzare'
+    ]
+  },
+
+  'Pelvic Floor Activation': {
+    description: 'Attivazione del pavimento pelvico. Base per la stabilità del core.',
+    technique: [
+      'Supino, ginocchia piegate',
+      'Inspira rilassando',
+      'Espira attivando il pavimento pelvico',
+      'Immagina di trattenere',
+      'Mantieni respirando'
+    ]
+  },
+
+  'Pelvic Tilts': {
+    description: 'Inclinazioni pelviche. Mobilità lombare e attivazione core.',
+    technique: [
+      'Supino, ginocchia piegate',
+      'Appiattisci la schiena (tilt posteriore)',
+      'Inarca la schiena (tilt anteriore)',
+      'Movimento lento e controllato',
+      'Respira normalmente'
+    ]
+  },
+
+  'Piegamenti': {
+    description: 'Push-up classici. Esercizio fondamentale per upper body.',
+    technique: [
+      'Mani sotto le spalle',
+      'Corpo in linea dalla testa ai piedi',
+      'Scendi controllato',
+      'Petto quasi a terra',
+      'Spingi verso l\'alto'
+    ]
+  },
+
+  'Piegamenti Diamante': {
+    description: 'Push-up con mani a diamante. Maggiore enfasi sui tricipiti.',
+    technique: [
+      'Mani unite a formare un diamante',
+      'Corpo in linea',
+      'Scendi con gomiti stretti',
+      'Spingi verso l\'alto',
+      'Focus sui tricipiti'
+    ]
+  },
+
+  'Pike Push-up (elevato)': {
+    description: 'Pike push-up con piedi rialzati. Progressione verso l\'HSPU.',
+    technique: [
+      'Piedi su rialzo, corpo a V',
+      'Testa verso il pavimento',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Core attivo'
+    ]
+  },
+
+  'Plank Laterale': {
+    description: 'Side plank. Stabilità laterale del core.',
+    technique: [
+      'Appoggio su gomito e piede',
+      'Corpo in linea',
+      'Fianchi sollevati',
+      'Core contratto',
+      'Mantieni la posizione'
+    ]
+  },
+
+  'Ponte Glutei a Una Gamba': {
+    description: 'Single leg glute bridge. Lavoro unilaterale per i glutei.',
+    technique: [
+      'Supino, una gamba tesa in aria',
+      'Spingi col piede a terra',
+      'Solleva i fianchi',
+      'Contrai il gluteo in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Pressa': {
+    description: 'Leg press. Movimento guidato per le gambe.',
+    technique: [
+      'Schiena appoggiata',
+      'Piedi sulla pedana',
+      'Scendi controllato',
+      'Spingi senza bloccare',
+      'Respira correttamente'
+    ]
+  },
+
+  'Pushdown ai Cavi': {
+    description: 'Tricep pushdown ai cavi. Isolamento tricipiti.',
+    technique: [
+      'Cavo alto, presa sulla barra o corda',
+      'Gomiti fermi ai fianchi',
+      'Spingi verso il basso',
+      'Estendi completamente',
+      'Torna controllato'
+    ]
+  },
+
+  'Push-up': {
+    description: 'Piegamenti classici. Base del training upper body.',
+    technique: [
+      'Mani sotto le spalle',
+      'Core attivo, corpo in linea',
+      'Scendi col petto verso terra',
+      'Spingi tornando su',
+      'Respira correttamente'
+    ]
+  },
+
+  'Push-up (piedi rialzati)': {
+    description: 'Push-up con piedi su rialzo. Maggiore difficoltà.',
+    technique: [
+      'Piedi su panca o gradino',
+      'Mani a terra',
+      'Corpo in linea',
+      'Scendi controllato',
+      'Spingi verso l\'alto'
+    ]
+  },
+
+  'Push-up (weighted)': {
+    description: 'Push-up con peso aggiunto. Per chi padroneggia i push-up base.',
+    technique: [
+      'Peso sulla schiena (zaino, disco)',
+      'Setup come push-up normale',
+      'Scendi controllato',
+      'Spingi con forza',
+      'Mantieni l\'allineamento'
+    ]
+  },
+
+  'Push-up su Ginocchia': {
+    description: 'Push-up sulle ginocchia. Versione più accessibile.',
+    technique: [
+      'Ginocchia a terra',
+      'Corpo in linea dalle ginocchia alla testa',
+      'Scendi controllato',
+      'Spingi verso l\'alto',
+      'Progredisci verso i push-up completi'
+    ]
+  },
+
+  'Ring Push-up': {
+    description: 'Push-up agli anelli. Instabilità per maggiore attivazione.',
+    technique: [
+      'Anelli all\'altezza desiderata',
+      'Corpo in linea',
+      'Scendi controllato',
+      'Stabilizza durante tutto il movimento',
+      'Spingi verso l\'alto'
+    ]
+  },
+
+  'Romanian Deadlift': {
+    description: 'Stacco rumeno. Focus su glutei e femorali.',
+    technique: [
+      'Bilanciere o manubri davanti',
+      'Hip hinge mantenendo le gambe quasi tese',
+      'Schiena neutra',
+      'Senti l\'allungamento dei femorali',
+      'Contrai i glutei risalendo'
+    ]
+  },
+
+  'Seated Cable Row (presa alta)': {
+    description: 'Seated row con presa alta. Maggiore enfasi sui trapezi.',
+    technique: [
+      'Impugnatura larga e alta',
+      'Tira verso il petto alto',
+      'Stringi le scapole',
+      'Gomiti alti',
+      'Torna controllato'
+    ]
+  },
+
+  'Seated Knee Lifts': {
+    description: 'Alzate ginocchia da seduto. Attivazione core e flessori anca.',
+    technique: [
+      'Seduto sul bordo della sedia',
+      'Mani ai lati',
+      'Solleva le ginocchia',
+      'Core attivo',
+      'Scendi controllato'
+    ]
+  },
+
+  'Seated Row (Band)': {
+    description: 'Rematore seduto con elastico. Versione home del cable row.',
+    technique: [
+      'Seduto, elastico intorno ai piedi',
+      'Tira verso l\'addome',
+      'Stringi le scapole',
+      'Controlla il ritorno',
+      'Mantieni il busto eretto'
+    ]
+  },
+
+  'Shoulder Blade Squeeze': {
+    description: 'Retrazione scapolare. Attivazione dei muscoli posturali.',
+    technique: [
+      'In piedi o seduto',
+      'Stringi le scapole insieme',
+      'Mantieni 2-3 secondi',
+      'Rilascia controllato',
+      'Ripeti'
+    ]
+  },
+
+  'Shoulder Press (Macchina)': {
+    description: 'Shoulder press alla macchina. Movimento guidato per le spalle.',
+    technique: [
+      'Siediti con la schiena appoggiata',
+      'Impugnature all\'altezza delle spalle',
+      'Spingi verso l\'alto',
+      'Non bloccare i gomiti',
+      'Scendi controllato'
+    ]
+  },
+
+  'Shoulder Press con Manubri': {
+    description: 'Press spalle con manubri. Libertà di movimento per le spalle.',
+    technique: [
+      'Manubri alle spalle',
+      'Core contratto',
+      'Spingi verticalmente',
+      'Blocca sopra la testa',
+      'Scendi controllato'
+    ]
+  },
+
+  'Side Lying Leg Lift': {
+    description: 'Alzate laterali gamba. Gluteo medio e abduttori.',
+    technique: [
+      'Sdraiato sul fianco',
+      'Gamba inferiore piegata per stabilità',
+      'Solleva la gamba superiore',
+      'Non ruotare il bacino',
+      'Scendi controllato'
+    ]
+  },
+
+  'Side Plank (Modified)': {
+    description: 'Side plank modificato. Versione con ginocchia piegate.',
+    technique: [
+      'Appoggio su gomito e ginocchia',
+      'Fianchi sollevati',
+      'Core contratto',
+      'Progressa verso la versione completa',
+      'Mantieni l\'allineamento'
+    ]
+  },
+
+  'Single Arm Dumbbell Press': {
+    description: 'Press con un manubrio. Maggiore attivazione del core.',
+    technique: [
+      'Un manubrio alla spalla',
+      'Core super contratto per stabilità',
+      'Spingi verso l\'alto',
+      'Evita rotazioni del busto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Single Leg Press': {
+    description: 'Leg press unilaterale. Corregge squilibri tra le gambe.',
+    technique: [
+      'Un piede sulla pedana',
+      'L\'altro piede appoggiato',
+      'Scendi controllato',
+      'Spingi senza bloccare',
+      'Alterna le gambe'
+    ]
+  },
+
+  'Single Leg RDL': {
+    description: 'Stacco rumeno a una gamba. Equilibrio e forza unilaterale.',
+    technique: [
+      'In piedi su una gamba',
+      'Gamba libera va indietro',
+      'Hip hinge mantenendo l\'equilibrio',
+      'Schiena neutra',
+      'Contrai il gluteo risalendo'
+    ]
+  },
+
+  'Smith Machine Squat': {
+    description: 'Squat al multipower. Movimento guidato più sicuro.',
+    technique: [
+      'Bilanciere sui trapezi',
+      'Piedi leggermente avanti',
+      'Scendi controllato',
+      'Spingi senza bloccare',
+      'Mantieni la schiena neutra'
+    ]
+  },
+
+  'Split Squat': {
+    description: 'Squat in posizione divisa. Base per esercizi unilaterali.',
+    technique: [
+      'Un piede avanti, uno dietro',
+      'Scendi verticalmente',
+      'Ginocchio posteriore verso terra',
+      'Peso sul piede anteriore',
+      'Spingi per risalire'
+    ]
+  },
+
+  'Squat con Pausa': {
+    description: 'Squat con pausa in basso. Elimina il rimbalzo, costruisce forza.',
+    technique: [
+      'Scendi in squat normale',
+      'Pausa di 2-3 secondi in basso',
+      'Mantieni la tensione',
+      'Spingi per risalire',
+      'Non rilassarti in basso'
+    ]
+  },
+
+  'Squat Jump': {
+    description: 'Squat con salto. Potenza esplosiva per le gambe.',
+    technique: [
+      'Scendi in squat',
+      'Esplodi verso l\'alto',
+      'Braccia aiutano lo slancio',
+      'Atterra morbido',
+      'Ammortizza con le ginocchia'
+    ]
+  },
+
+  'Squat to Stand': {
+    description: 'Squat to stand. Mobilità dinamica per anche e caviglie.',
+    technique: [
+      'Piegati in avanti, tocca le punte',
+      'Scendi in squat profondo',
+      'Gomiti dentro le ginocchia',
+      'Risali estendendo le gambe',
+      'Movimento fluido'
+    ]
+  },
+
+  'Stability Ball Rollout': {
+    description: 'Rollout con palla svizzera. Core con superficie instabile.',
+    technique: [
+      'Ginocchia a terra, mani sulla palla',
+      'Rotola avanti lentamente',
+      'Core contratto',
+      'Non inarcare la schiena',
+      'Torna indietro'
+    ]
+  },
+
+  'Stacco con Manubri': {
+    description: 'Deadlift con manubri. Alternativa accessibile allo stacco.',
+    technique: [
+      'Manubri ai lati',
+      'Hip hinge, schiena neutra',
+      'Spingi il pavimento',
+      'Contrai i glutei in alto',
+      'Scendi controllato'
+    ]
+  },
+
+  'Stacco con Trap Bar': {
+    description: 'Stacco con trap bar. Più facile da imparare, meno stress lombare.',
+    technique: [
+      'In piedi dentro la trap bar',
+      'Afferra le maniglie laterali',
+      'Schiena neutra, petto in fuori',
+      'Spingi il pavimento',
+      'Blocca in alto'
+    ]
+  },
+
+  'Stacco in Deficit': {
+    description: 'Stacco da deficit. Maggiore ROM per più lavoro delle gambe.',
+    technique: [
+      'In piedi su rialzo (2.5-10 cm)',
+      'Stacco normale ma più profondo',
+      'Schiena neutra',
+      'Spingi forte le gambe',
+      'Blocca in alto'
+    ]
+  },
+
+  'Stacco Rumeno': {
+    description: 'Romanian deadlift. Focus su femorali e glutei.',
+    technique: [
+      'Bilanciere davanti',
+      'Hip hinge indietro',
+      'Ginocchia leggermente piegate',
+      'Senti l\'allungamento',
+      'Contrai risalendo'
+    ]
+  },
+
+  'Stacco Rumeno a Una Gamba': {
+    description: 'Single leg RDL. Equilibrio e forza unilaterale.',
+    technique: [
+      'Su una gamba',
+      'Gamba libera va indietro',
+      'Hip hinge in avanti',
+      'Schiena neutra',
+      'Contrai il gluteo risalendo'
+    ]
+  },
+
+  'Stacco Rumeno con Manubri': {
+    description: 'RDL con manubri. Versione con manubri del rumeno.',
+    technique: [
+      'Manubri davanti alle cosce',
+      'Hip hinge indietro',
+      'Schiena neutra',
+      'Allungamento femorali',
+      'Contrai glutei risalendo'
+    ]
+  },
+
+  'Stacco Sumo': {
+    description: 'Stacco stance larga. Più coinvolgimento di glutei e adduttori.',
+    technique: [
+      'Piedi larghi, punte in fuori',
+      'Bilanciere vicino alle tibie',
+      'Petto in fuori, schiena neutra',
+      'Spingi il pavimento',
+      'Blocca contraendo i glutei'
+    ]
+  },
+
+  'Standing Hip Circles': {
+    description: 'Cerchi d\'anca in piedi. Mobilità dell\'articolazione dell\'anca.',
+    technique: [
+      'In piedi su una gamba',
+      'Ginocchio alto',
+      'Fai cerchi ampi con il ginocchio',
+      'Movimento fluido',
+      'Cambia direzione e gamba'
+    ]
+  },
+
+  'Standing Leg Curl': {
+    description: 'Leg curl in piedi. Isolamento femorali stazione eretta.',
+    technique: [
+      'In piedi alla macchina',
+      'Rullo dietro la caviglia',
+      'Fletti il ginocchio',
+      'Contrai il femorale',
+      'Scendi controllato'
+    ]
+  },
+
+  'Standing March': {
+    description: 'Marcia sul posto. Attivazione core e flessori anca.',
+    technique: [
+      'In piedi, postura eretta',
+      'Solleva un ginocchio alto',
+      'Core attivo',
+      'Alterna le gambe',
+      'Movimento controllato'
+    ]
+  },
+
+  'Step-up': {
+    description: 'Salita su gradino. Esercizio funzionale per le gambe.',
+    technique: [
+      'Piede intero sul gradino',
+      'Spingi col tallone',
+      'Porta l\'altro piede su',
+      'Scendi controllato',
+      'Alterna le gambe'
+    ]
+  },
+
+  'Straight Arm Pulldown': {
+    description: 'Pulldown a braccia tese. Isolamento dorsali.',
+    technique: [
+      'Cavo alto, braccia quasi tese',
+      'Tira verso i fianchi',
+      'Senti i dorsali lavorare',
+      'Core stabile',
+      'Torna controllato'
+    ]
+  },
+
+  'Suitcase Carry': {
+    description: 'Trasporto laterale. Core anti-flessione laterale.',
+    technique: [
+      'Peso in una mano',
+      'Cammina mantenendo il busto dritto',
+      'Non inclinarti verso il peso',
+      'Core super attivo',
+      'Cambia mano'
+    ]
+  },
+
+  'Sumo Squat': {
+    description: 'Squat stance larga. Maggiore enfasi su adduttori e glutei.',
+    technique: [
+      'Piedi molto larghi, punte in fuori',
+      'Scendi tra le gambe',
+      'Ginocchia in fuori',
+      'Busto eretto',
+      'Spingi per risalire'
+    ]
+  },
+
+  'Supinated Lat Pulldown': {
+    description: 'Lat pulldown presa supina. Maggiore coinvolgimento bicipiti.',
+    technique: [
+      'Presa supina (palmi verso di te)',
+      'Tira verso il petto',
+      'Gomiti verso i fianchi',
+      'Stringi i dorsali',
+      'Torna controllato'
+    ]
+  },
+
+  'Supine Marching': {
+    description: 'Marcia da supino. Attivazione core e flessori anca.',
+    technique: [
+      'Supino, ginocchia piegate',
+      'Solleva un piede mantenendo 90°',
+      'Mantieni la schiena a terra',
+      'Alterna le gambe',
+      'Core attivo'
+    ]
+  },
+
+  'Swiss Ball Leg Curl': {
+    description: 'Leg curl con palla svizzera. Femorali e stabilità.',
+    technique: [
+      'Supino, talloni sulla palla',
+      'Solleva i fianchi',
+      'Rotola la palla verso di te',
+      'Contrai i femorali',
+      'Estendi e ripeti'
+    ]
+  },
+
+  'Thruster': {
+    description: 'Squat + press combinato. Movimento total body esplosivo.',
+    technique: [
+      'Peso alle spalle',
+      'Scendi in squat',
+      'Esplodi verso l\'alto',
+      'Spingi il peso sopra la testa',
+      'Movimento fluido'
+    ]
+  },
+
+  'Toe Taps': {
+    description: 'Tocco punte da supino. Attivazione core controllata.',
+    technique: [
+      'Supino, gambe a 90°',
+      'Abbassa un piede a toccare',
+      'Mantieni l\'altra gamba ferma',
+      'Core attivo',
+      'Alterna le gambe'
+    ]
+  },
+
+  'Trazioni alla Sbarra': {
+    description: 'Pull-up classiche. Esercizio fondamentale per i dorsali.',
+    technique: [
+      'Presa prona, poco più larga delle spalle',
+      'Tira portando il mento sopra',
+      'Gomiti verso i fianchi',
+      'Scendi controllato',
+      'Estensione completa in basso'
+    ]
+  },
+
+  'TRX Fallout': {
+    description: 'Fallout al TRX. Rollout verticale per il core.',
+    technique: [
+      'Maniglie TRX, corpo inclinato',
+      'Braccia in avanti sopra la testa',
+      'Core contratto per non inarcare',
+      'Torna alla posizione iniziale',
+      'Movimento controllato'
+    ]
+  },
+
+  'TRX Row': {
+    description: 'Rematore al TRX. Dorsali con instabilità.',
+    technique: [
+      'Maniglie TRX, corpo inclinato',
+      'Tira il petto alle mani',
+      'Stringi le scapole',
+      'Scendi controllato',
+      'Regola l\'inclinazione per difficoltà'
+    ]
+  },
+
+  'Typewriter Push-up': {
+    description: 'Push-up con spostamento laterale. Avanzato per petto e spalle.',
+    technique: [
+      'Mani molto larghe',
+      'Scendi verso una mano',
+      'Scorri lateralmente in basso',
+      'Spingi e sposta verso l\'altra',
+      'Movimento fluido'
+    ]
+  },
+
+  'Verticale al Muro Push-up': {
+    description: 'Handstand push-up al muro. Forza massima per le spalle.',
+    technique: [
+      'Verticale con piedi al muro',
+      'Scendi controllato',
+      'Testa verso il pavimento',
+      'Spingi verso l\'alto',
+      'Mantieni il core attivo'
+    ]
+  },
+
+  'Wall Sit': {
+    description: 'Seduta al muro. Resistenza isometrica per le gambe.',
+    technique: [
+      'Schiena al muro',
+      'Scendi a 90° di flessione',
+      'Cosce parallele al pavimento',
+      'Mantieni la posizione',
+      'Respira normalmente'
+    ]
+  },
+
+  'Wall Sit with Breathing': {
+    description: 'Wall sit con focus respiratorio. Resistenza e controllo.',
+    technique: [
+      'Posizione wall sit standard',
+      'Respira lentamente e profondamente',
+      'Mantieni la posizione',
+      'Focus sul respiro diaframmatico',
+      'Controlla la fatica'
+    ]
+  },
+
+  'Weighted Crunch': {
+    description: 'Crunch con peso. Addominali con resistenza aggiunta.',
+    technique: [
+      'Supino, peso sul petto',
+      'Solleva le spalle da terra',
+      'Contrai gli addominali',
+      'Non tirare il collo',
+      'Scendi controllato'
+    ]
+  },
+
+  'Wide Grip Lat Pulldown': {
+    description: 'Lat pulldown presa larga. Enfasi sulla larghezza dei dorsali.',
+    technique: [
+      'Presa molto larga',
+      'Tira verso il petto alto',
+      'Gomiti verso fuori e giù',
+      'Stringi i dorsali',
+      'Torna controllato'
+    ]
+  },
+
+  'Wide Stance Leg Press': {
+    description: 'Leg press stance larga. Più adduttori e glutei.',
+    technique: [
+      'Piedi larghi e alti sulla pedana',
+      'Punte in fuori',
+      'Scendi profondo',
+      'Spingi coi talloni',
+      'Non bloccare le ginocchia'
+    ]
+  },
+
+  'Zercher Squat': {
+    description: 'Squat con bilanciere nella piega dei gomiti. Core intenso.',
+    technique: [
+      'Bilanciere nella piega dei gomiti',
+      'Mani unite davanti',
+      'Scendi mantenendo il busto eretto',
+      'Core super attivo',
+      'Spingi per risalire'
+    ]
   }
 };
 

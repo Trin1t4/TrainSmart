@@ -339,56 +339,134 @@ function translateExerciseName(name: string): string {
 }
 
 /**
- * Determina l'intensità dell'esercizio con ROTAZIONE tra giorni
- * LOGICA: Mix intelligente + rotazione DUP per Full Body 7 esercizi
+ * ============================================================================
+ * DUP INTRA-GIORNATA (Daily Undulating Periodization)
+ * ============================================================================
  *
- * FULL BODY 3x - 7 esercizi/giorno:
- * 1. Squat, 2. Deadlift, 3. Bench, 4. Row, 5. Military, 6. Pulldown, 7. Core
+ * FILOSOFIA: Ogni giorno contiene MIX di stimoli (heavy/moderate/volume)
+ * distribuiti su pattern DIVERSI con ROTAZIONE tra giorni.
  *
- * Rotazione intensità per evitare CNS burnout e ottimizzare recupero
+ * - Ordine per sforzo: prima HEAVY, poi MODERATE, poi VOLUME
+ * - Rotazione: ogni pattern cambia tipo tra un giorno e l'altro
+ * - Adattamento per obiettivo: più heavy per forza, più volume per ipertrofia
+ * - Adattamento per frequenza: 2gg meno varietà, 4+gg più varietà
+ */
+
+// Matrice di rotazione DUP per 3 giorni (base)
+// Ogni pattern ha una sequenza di tipi che ruota
+const DUP_ROTATION_MATRIX: Record<string, ('heavy' | 'moderate' | 'volume')[]> = {
+  // Lower body: alternanza antagonista
+  lower_push:      ['heavy', 'moderate', 'volume'],    // Squat: H -> M -> V
+  lower_pull:      ['moderate', 'heavy', 'moderate'],  // Stacco: M -> H -> M
+
+  // Upper push: bench e military si alternano
+  horizontal_push: ['heavy', 'moderate', 'volume'],    // Panca: H -> M -> V
+  vertical_push:   ['moderate', 'heavy', 'moderate'],  // Military: M -> H -> M
+
+  // Upper pull: lat e row si alternano
+  vertical_pull:   ['moderate', 'volume', 'heavy'],    // Lat: M -> V -> H
+  horizontal_pull: ['volume', 'moderate', 'heavy'],    // Row: V -> M -> H
+
+  // Core: sempre volume/moderato (non richiede heavy)
+  core:            ['volume', 'volume', 'volume'],
+  corrective:      ['volume', 'volume', 'volume'],
+};
+
+// Bias per obiettivo: modifica la distribuzione dei tipi
+const GOAL_BIAS: Record<string, { heavy: number; moderate: number; volume: number }> = {
+  // FORZA: più heavy, moderate ok, meno volume
+  forza:     { heavy: 0.4, moderate: 0.35, volume: 0.25 },
+  strength:  { heavy: 0.4, moderate: 0.35, volume: 0.25 },
+
+  // IPERTROFIA: bilanciato con focus moderate
+  massa:         { heavy: 0.3, moderate: 0.4, volume: 0.3 },
+  muscle_gain:   { heavy: 0.3, moderate: 0.4, volume: 0.3 },
+  ipertrofia:    { heavy: 0.3, moderate: 0.4, volume: 0.3 },
+
+  // FAT LOSS: più volume per dispendio calorico
+  fat_loss:      { heavy: 0.25, moderate: 0.35, volume: 0.4 },
+  tonificazione: { heavy: 0.25, moderate: 0.35, volume: 0.4 },
+  dimagrimento:  { heavy: 0.25, moderate: 0.35, volume: 0.4 },
+
+  // ENDURANCE: molto volume
+  endurance:  { heavy: 0.2, moderate: 0.3, volume: 0.5 },
+  resistenza: { heavy: 0.2, moderate: 0.3, volume: 0.5 },
+};
+
+/**
+ * Determina l'intensità dell'esercizio con DUP INTRA-GIORNATA
+ *
+ * @param patternId - Pattern dell'esercizio
+ * @param dayIndex - Indice del giorno (0, 1, 2, ...)
+ * @param goal - Obiettivo (forza, massa, fat_loss, etc.)
+ * @param frequency - Frequenza settimanale (2, 3, 4, etc.)
  */
 function getIntensityForPattern(
   patternId: string,
   exerciseIndex: number,
-  dayIndex: number
+  dayIndex: number,
+  goal: string = 'forza',
+  frequency: number = 3
 ): 'heavy' | 'volume' | 'moderate' {
-  // CORE/ACCESSORI: SEMPRE VOLUME (non cambiano)
+  // CORE/ACCESSORI: sempre volume
   if (patternId === 'core' || patternId === 'corrective') {
     return 'volume';
   }
 
-  // ROTAZIONE DUP PER COMPOUND MOVEMENTS (Full Body 7 pattern)
-  // Ogni giorno 2 esercizi HEAVY, 4 MODERATE, 1 VOLUME (core)
+  // Ottieni la rotazione base per questo pattern
+  const rotation = DUP_ROTATION_MATRIX[patternId] || ['moderate', 'moderate', 'moderate'];
 
-  // DAY 1 (Monday): Lower Push (Squat) + Horizontal Push (Bench) HEAVY
-  if (dayIndex === 0) {
-    if (patternId === 'lower_push' || patternId === 'horizontal_push') {
-      return 'heavy'; // Squat HEAVY, Bench HEAVY
+  // Calcola l'indice nella rotazione (ciclico)
+  const rotationIndex = dayIndex % rotation.length;
+  let baseType = rotation[rotationIndex];
+
+  // Per frequenza 2: focus più stretto sull'obiettivo
+  if (frequency === 2) {
+    const goalLower = goal.toLowerCase();
+    if (['forza', 'strength'].includes(goalLower)) {
+      // 2 giorni forza: più heavy, meno volume
+      if (baseType === 'volume') baseType = 'moderate';
+    } else if (['fat_loss', 'tonificazione', 'dimagrimento'].includes(goalLower)) {
+      // 2 giorni fat loss: più volume
+      if (baseType === 'heavy') baseType = 'moderate';
     }
-    // Tutti gli altri: MODERATE (Deadlift, Row, Military, Pulldown)
-    return 'moderate';
   }
 
-  // DAY 2 (Wednesday): Lower Pull (Deadlift) + Horizontal Pull (Row) + Vertical Push (Military) HEAVY
-  if (dayIndex === 1) {
-    if (patternId === 'lower_pull' || patternId === 'horizontal_pull' || patternId === 'vertical_push') {
-      return 'heavy'; // Deadlift HEAVY, Row HEAVY, Military HEAVY
-    }
-    // Tutti gli altri: MODERATE (Squat, Bench, Pulldown)
-    return 'moderate';
+  // Per frequenza 4+: più varietà, manteniamo la rotazione estesa
+  if (frequency >= 4) {
+    // Con 4+ giorni, estendiamo la rotazione per coprire tutti i tipi
+    const extendedRotation = [...rotation, 'moderate'] as ('heavy' | 'moderate' | 'volume')[];
+    baseType = extendedRotation[dayIndex % extendedRotation.length];
   }
 
-  // DAY 3 (Friday): Lower Push (Squat) + Vertical Pull (Pulldown) HEAVY
-  if (dayIndex === 2) {
-    if (patternId === 'lower_push' || patternId === 'vertical_pull') {
-      return 'heavy'; // Squat HEAVY, Pulldown HEAVY
-    }
-    // Tutti gli altri: MODERATE (Deadlift, Bench, Row, Military)
-    return 'moderate';
-  }
+  return baseType;
+}
 
-  // Default: moderate
-  return 'moderate';
+/**
+ * Ordina gli esercizi per sforzo: HEAVY → MODERATE → VOLUME
+ * Gli esercizi pesanti vanno fatti all'inizio quando si è freschi
+ * Usa il campo dayType per determinare l'intensità (più affidabile delle notes)
+ */
+function sortExercisesByIntensity(exercises: Exercise[]): Exercise[] {
+  const intensityOrder: Record<string, number> = { 'heavy': 0, 'moderate': 1, 'volume': 2 };
+
+  return [...exercises].sort((a, b) => {
+    // Prima per intensità usando dayType (heavy prima)
+    const aIntensity = a.dayType || 'moderate';
+    const bIntensity = b.dayType || 'moderate';
+
+    const orderDiff = (intensityOrder[aIntensity] ?? 1) - (intensityOrder[bIntensity] ?? 1);
+    if (orderDiff !== 0) return orderDiff;
+
+    // A parità di intensità, compound prima di isolation
+    const compoundPatterns = ['lower_push', 'lower_pull', 'horizontal_push', 'vertical_push'];
+    const aIsCompound = compoundPatterns.includes(a.pattern as string);
+    const bIsCompound = compoundPatterns.includes(b.pattern as string);
+    if (aIsCompound && !bIsCompound) return -1;
+    if (!aIsCompound && bIsCompound) return 1;
+
+    return 0;
+  });
 }
 
 export interface DayWorkout {
@@ -1387,40 +1465,41 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
   ];
 
   // DAY A: FULL BODY (tutti i 7 pattern)
-  // Squat HEAVY, Deadlift MOD, Bench HEAVY, Row MOD, Military MOD, Pulldown MOD, Core VOL
-  days[0].exercises = [
-    createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 0)),
-    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 0)),
-    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 0)),
-    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0), baselines.vertical_pull),
-    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 0)),
-    createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 5, 0)),
-    createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 6, 0))
-  ];
+  // DUP intra-giornata: ogni pattern ha il suo tipo (heavy/moderate/volume)
+  // che ruota nei giorni secondo DUP_ROTATION_MATRIX
+  days[0].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 0, goal, 3)),
+    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 0, goal, 3)),
+    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 0, goal, 3)),
+    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0, goal, 3), baselines.vertical_pull),
+    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 0, goal, 3)),
+    createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 5, 0, goal, 3)),
+    createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 6, 0, goal, 3))
+  ]);
 
   // DAY B: FULL BODY (tutti i 7 pattern, rotazione intensità)
-  // Squat MOD, Deadlift HEAVY, Bench MOD, Row HEAVY, Military HEAVY, Pulldown MOD, Core VOL
-  days[1].exercises = [
-    createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 1)), // Variante
-    createExercise('lower_pull', baselines.lower_pull, 1, options, getIntensityForPattern('lower_pull', 1, 1)), // Variante
-    createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1)), // Variante
-    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1), baselines.vertical_pull), // Variante
-    createExercise('vertical_push', baselines.vertical_push, 1, options, getIntensityForPattern('vertical_push', 4, 1)), // Variante
-    createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1)), // Variante
-    createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1))
-  ];
+  // DUP intra-giornata: intensità ruotate rispetto a Day A
+  days[1].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 1, goal, 3)),
+    createExercise('lower_pull', baselines.lower_pull, 1, options, getIntensityForPattern('lower_pull', 1, 1, goal, 3)),
+    createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1, goal, 3)),
+    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1, goal, 3), baselines.vertical_pull),
+    createExercise('vertical_push', baselines.vertical_push, 1, options, getIntensityForPattern('vertical_push', 4, 1, goal, 3)),
+    createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1, goal, 3)),
+    createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1, goal, 3))
+  ]);
 
   // DAY C: FULL BODY (tutti i 7 pattern, altra rotazione)
-  // Usa variantIndex=2 per TUTTI gli esercizi per garantire varianti diverse da Day A (0) e Day B (1)
-  days[2].exercises = [
-    createExercise('lower_push', baselines.lower_push, 2, options, getIntensityForPattern('lower_push', 0, 2)), // Variante 2
-    createExercise('lower_pull', baselines.lower_pull, 2, options, getIntensityForPattern('lower_pull', 1, 2)), // Variante 2
-    createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2)), // Variante 2
-    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2), baselines.vertical_pull), // Variante 2
-    createExercise('vertical_push', baselines.vertical_push, 2, options, getIntensityForPattern('vertical_push', 4, 2)), // Variante 2
-    createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2)), // Variante 2
-    createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2))
-  ];
+  // DUP intra-giornata: intensità ruotate rispetto a Day A e Day B
+  days[2].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 2, options, getIntensityForPattern('lower_push', 0, 2, goal, 3)),
+    createExercise('lower_pull', baselines.lower_pull, 2, options, getIntensityForPattern('lower_pull', 1, 2, goal, 3)),
+    createExercise('horizontal_push', baselines.horizontal_push, 2, options, getIntensityForPattern('horizontal_push', 2, 2, goal, 3)),
+    createHorizontalPullExercise(2, options, getIntensityForPattern('horizontal_pull', 3, 2, goal, 3), baselines.vertical_pull),
+    createExercise('vertical_push', baselines.vertical_push, 2, options, getIntensityForPattern('vertical_push', 4, 2, goal, 3)),
+    createExercise('vertical_pull', baselines.vertical_pull, 2, options, getIntensityForPattern('vertical_pull', 5, 2, goal, 3)),
+    createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2, goal, 3))
+  ]);
 
   // Aggiungi correttivi a tutti i giorni se necessario
   const correctives = generateCorrectiveExercises(painAreas);
@@ -1480,35 +1559,39 @@ function generate4DayUpperLower(options: SplitGeneratorOptions): WeeklySplit {
     }
   ];
 
-  // UPPER A: HEAVY DAY (Horizontal Push focus)
-  days[0].exercises = [
+  // UPPER A: DUP intra-giornata - mix heavy/moderate/volume
+  // Horizontal Push HEAVY (compound principale), Vertical Pull MODERATE, Vertical Push VOLUME
+  days[0].exercises = sortExercisesByIntensity([
     createExercise('horizontal_push', baselines.horizontal_push, 0, options, 'heavy'),
-    createExercise('vertical_pull', baselines.vertical_pull, 0, options, 'heavy'),
-    createExercise('vertical_push', baselines.vertical_push, 0, options, 'heavy'),
-    createExercise('core', baselines.core, 0, options, 'heavy')
-  ];
+    createExercise('vertical_pull', baselines.vertical_pull, 0, options, 'moderate'),
+    createExercise('vertical_push', baselines.vertical_push, 0, options, 'volume'),
+    createExercise('core', baselines.core, 0, options, 'volume')
+  ]);
 
-  // LOWER A: VOLUME DAY (Squat focus)
-  days[1].exercises = [
-    createExercise('lower_push', baselines.lower_push, 0, options, 'volume'),
-    createExercise('lower_pull', baselines.lower_pull, 0, options, 'volume'),
+  // LOWER A: DUP intra-giornata
+  // Lower Push HEAVY, Lower Pull MODERATE
+  days[1].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 0, options, 'heavy'),
+    createExercise('lower_pull', baselines.lower_pull, 0, options, 'moderate'),
     createExercise('core', baselines.core, 1, options, 'volume')
-  ];
+  ]);
 
-  // UPPER B: MODERATE DAY (Vertical Push focus + varianti)
-  days[2].exercises = [
-    createExercise('vertical_push', baselines.vertical_push, 1, options, 'moderate'),
-    createExercise('horizontal_push', baselines.horizontal_push, 1, options, 'moderate'), // Variante
-    createExercise('vertical_pull', baselines.vertical_pull, 1, options, 'moderate'), // Variante
-    createExercise('core', baselines.core, 2, options, 'moderate')
-  ];
+  // UPPER B: DUP intra-giornata (rotazione rispetto a Upper A)
+  // Vertical Push HEAVY, Horizontal Push MODERATE, Vertical Pull VOLUME
+  days[2].exercises = sortExercisesByIntensity([
+    createExercise('vertical_push', baselines.vertical_push, 1, options, 'heavy'),
+    createExercise('horizontal_push', baselines.horizontal_push, 1, options, 'moderate'),
+    createExercise('vertical_pull', baselines.vertical_pull, 1, options, 'volume'),
+    createExercise('core', baselines.core, 2, options, 'volume')
+  ]);
 
-  // LOWER B: MODERATE DAY (Deadlift focus + varianti)
-  days[3].exercises = [
-    createExercise('lower_pull', baselines.lower_pull, 1, options, 'moderate'), // Variante
-    createExercise('lower_push', baselines.lower_push, 1, options, 'moderate'), // Variante
-    createExercise('core', baselines.core, 3, options, 'moderate')
-  ];
+  // LOWER B: DUP intra-giornata (rotazione rispetto a Lower A)
+  // Lower Pull HEAVY, Lower Push MODERATE
+  days[3].exercises = sortExercisesByIntensity([
+    createExercise('lower_pull', baselines.lower_pull, 1, options, 'heavy'),
+    createExercise('lower_push', baselines.lower_push, 1, options, 'moderate'),
+    createExercise('core', baselines.core, 3, options, 'volume')
+  ]);
 
   // Aggiungi correttivi
   const correctives = generateCorrectiveExercises(painAreas);
@@ -1580,50 +1663,56 @@ function generate6DayPPL(options: SplitGeneratorOptions): WeeklySplit {
     }
   ];
 
-  // PUSH A: HEAVY DAY
-  days[0].exercises = [
+  // PUSH A: DUP intra-giornata
+  // Horizontal Push HEAVY, Vertical Push MODERATE, accessori VOLUME
+  days[0].exercises = sortExercisesByIntensity([
     createExercise('horizontal_push', baselines.horizontal_push, 0, options, 'heavy'),
-    createExercise('vertical_push', baselines.vertical_push, 0, options, 'heavy'),
-    createAccessoryExercise('triceps', 0, options, 'heavy'),
-    createExercise('core', baselines.core, 0, options, 'heavy')
-  ];
+    createExercise('vertical_push', baselines.vertical_push, 0, options, 'moderate'),
+    createAccessoryExercise('triceps', 0, options, 'volume'),
+    createExercise('core', baselines.core, 0, options, 'volume')
+  ]);
 
-  // PULL A: VOLUME DAY - Include Horizontal Pull (Row)
-  days[1].exercises = [
-    createExercise('vertical_pull', baselines.vertical_pull, 0, options, 'volume'),
-    createHorizontalPullExercise(0, options, 'volume', baselines.vertical_pull), // Row pattern
+  // PULL A: DUP intra-giornata
+  // Vertical Pull HEAVY, Horizontal Pull MODERATE, accessori VOLUME
+  days[1].exercises = sortExercisesByIntensity([
+    createExercise('vertical_pull', baselines.vertical_pull, 0, options, 'heavy'),
+    createHorizontalPullExercise(0, options, 'moderate', baselines.vertical_pull),
     createAccessoryExercise('biceps', 0, options, 'volume'),
     createExercise('core', baselines.core, 1, options, 'volume')
-  ];
+  ]);
 
-  // LEGS A: MODERATE DAY
-  days[2].exercises = [
-    createExercise('lower_push', baselines.lower_push, 0, options, 'moderate'),
+  // LEGS A: DUP intra-giornata
+  // Lower Push HEAVY, Lower Pull MODERATE, accessori VOLUME
+  days[2].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 0, options, 'heavy'),
     createExercise('lower_pull', baselines.lower_pull, 0, options, 'moderate'),
-    createAccessoryExercise('calves', 0, options, 'moderate'),
-    createExercise('core', baselines.core, 2, options, 'moderate')
-  ];
+    createAccessoryExercise('calves', 0, options, 'volume'),
+    createExercise('core', baselines.core, 2, options, 'volume')
+  ]);
 
-  // PUSH B: VOLUME DAY (varianti)
-  days[3].exercises = [
-    createExercise('vertical_push', baselines.vertical_push, 1, options, 'volume'),
-    createExercise('horizontal_push', baselines.horizontal_push, 1, options, 'volume'),
+  // PUSH B: DUP intra-giornata (rotazione rispetto a Push A)
+  // Vertical Push HEAVY, Horizontal Push MODERATE, accessori VOLUME
+  days[3].exercises = sortExercisesByIntensity([
+    createExercise('vertical_push', baselines.vertical_push, 1, options, 'heavy'),
+    createExercise('horizontal_push', baselines.horizontal_push, 1, options, 'moderate'),
     createAccessoryExercise('triceps', 1, options, 'volume')
-  ];
+  ]);
 
-  // PULL B: MODERATE DAY (varianti)
-  days[4].exercises = [
-    createHorizontalPullExercise(1, options, 'moderate', baselines.vertical_pull), // Row variante
+  // PULL B: DUP intra-giornata (rotazione rispetto a Pull A)
+  // Horizontal Pull HEAVY, Vertical Pull MODERATE, accessori VOLUME
+  days[4].exercises = sortExercisesByIntensity([
+    createHorizontalPullExercise(1, options, 'heavy', baselines.vertical_pull),
     createExercise('vertical_pull', baselines.vertical_pull, 1, options, 'moderate'),
-    createAccessoryExercise('biceps', 1, options, 'moderate')
-  ];
+    createAccessoryExercise('biceps', 1, options, 'volume')
+  ]);
 
-  // LEGS B: HEAVY DAY (varianti)
-  days[5].exercises = [
+  // LEGS B: DUP intra-giornata (rotazione rispetto a Legs A)
+  // Lower Pull HEAVY, Lower Push MODERATE, accessori VOLUME
+  days[5].exercises = sortExercisesByIntensity([
     createExercise('lower_pull', baselines.lower_pull, 1, options, 'heavy'),
-    createExercise('lower_push', baselines.lower_push, 1, options, 'heavy'),
-    createAccessoryExercise('calves', 1, options, 'heavy')
-  ];
+    createExercise('lower_push', baselines.lower_push, 1, options, 'moderate'),
+    createAccessoryExercise('calves', 1, options, 'volume')
+  ]);
 
   // Aggiungi correttivi
   const correctives = generateCorrectiveExercises(painAreas);
@@ -1668,6 +1757,7 @@ function createExercise(
       reps: 10,
       rest: '90s',
       intensity: '70%',
+      dayType: dayType, // DUP intra-giornata anche per fallback
       notes: 'Esercizio non testato nello screening'
     };
   }
@@ -1778,6 +1868,7 @@ function createExercise(
     reps: finalReps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
+    dayType: dayType, // DUP intra-giornata: heavy/moderate/volume
     weight: suggestedWeight || undefined, // Peso calcolato dal sistema
     baseline: {
       variantId: baseline.variantId,
@@ -1844,6 +1935,7 @@ function createHorizontalPullExercise(
     reps: volumeCalc.reps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
+    dayType: dayType, // DUP intra-giornata: heavy/moderate/volume
     weight: suggestedWeight || undefined,
     baseline: verticalPullBaseline ? {
       variantId: 'estimated_from_vertical_pull',
@@ -1883,6 +1975,7 @@ function createAccessoryExercise(
       reps: 12,
       rest: '60s',
       intensity: '70%',
+      dayType: dayType, // DUP intra-giornata
       notes: `Accessorio ${muscleGroup}`
     };
   }
@@ -1906,6 +1999,7 @@ function createAccessoryExercise(
     reps: reps,
     rest: '60s',
     intensity: '70%',
+    dayType: dayType, // DUP intra-giornata
     notes: `Accessorio ${muscleGroup}`
   };
 }

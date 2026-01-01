@@ -13,9 +13,20 @@ import type { PatternBaselines, PatternBaseline, Level } from '../types';
  * Basati su rapporti di forza tipici in soggetti allenati
  */
 const PATTERN_CORRELATIONS: Record<string, { source: string; ratio: number }> = {
+  // vertical_pull inferito da horizontal_push (Bench Press → Lat Pulldown/Pull-up)
+  // In media il lat pulldown è circa 80% della panca piana
+  // Per trazioni bodyweight: consideriamo che chi fa 80kg panca può fare lat 64kg
+  // che corrisponde circa al peso corporeo medio → trazioni a corpo libero
+  vertical_pull: { source: 'horizontal_push', ratio: 0.80 },
+
   // horizontal_pull inferito da vertical_pull (Lat Pulldown → Row)
   // Il rematore è circa 85% del lat pulldown per la maggior parte delle persone
   horizontal_pull: { source: 'vertical_pull', ratio: 0.85 },
+
+  // Se vertical_pull non disponibile, horizontal_pull può essere inferito da horizontal_push
+  // Row è circa 70% della panca (ratio indiretto: 0.80 × 0.85 ≈ 0.68, arrotondiamo a 0.70)
+  // Questo viene usato come fallback
+  horizontal_pull_fallback: { source: 'horizontal_push', ratio: 0.70 },
 
   // vertical_push inferito da horizontal_push (Bench → Military Press)
   // Il military press è circa 65% della panca in media
@@ -30,7 +41,9 @@ const PATTERN_CORRELATIONS: Record<string, { source: string; ratio: number }> = 
  * Nomi degli esercizi di default per i pattern stimati
  */
 const DEFAULT_VARIANT_NAMES: Record<string, string> = {
+  vertical_pull: 'Lat Pulldown',    // Stimato da panca piana
   horizontal_pull: 'Barbell Row',
+  horizontal_pull_fallback: 'Barbell Row', // Fallback da panca
   vertical_push: 'Military Press',
   lower_pull: 'Romanian Deadlift', // RDL più sicuro per iniziare
 };
@@ -100,10 +113,13 @@ export function inferMissingBaselines(
 
   // Per ogni pattern mancante, prova a stimarlo dal pattern correlato
   for (const [targetPattern, correlation] of Object.entries(PATTERN_CORRELATIONS)) {
-    const targetKey = targetPattern as keyof PatternBaselines;
+    // Gestione pattern fallback (es. horizontal_pull_fallback → horizontal_pull)
+    const actualTargetPattern = targetPattern.replace('_fallback', '');
+    const targetKey = actualTargetPattern as keyof PatternBaselines;
     const sourceKey = correlation.source as keyof PatternBaselines;
+    const isFallback = targetPattern.includes('_fallback');
 
-    // Salta se il pattern target esiste già (testato)
+    // Salta se il pattern target esiste già (testato o già stimato)
     if (result[targetKey] && result[targetKey]?.weight10RM) {
       continue;
     }
@@ -111,7 +127,9 @@ export function inferMissingBaselines(
     // Salta se il pattern sorgente non esiste
     const sourceBaseline = result[sourceKey];
     if (!sourceBaseline || !sourceBaseline.weight10RM) {
-      console.log(`[BaselineInference] Cannot infer ${targetPattern}: missing ${correlation.source}`);
+      if (!isFallback) {
+        console.log(`[BaselineInference] Cannot infer ${actualTargetPattern}: missing ${correlation.source}`);
+      }
       continue;
     }
 
@@ -120,20 +138,20 @@ export function inferMissingBaselines(
 
     // Crea il baseline stimato
     const estimatedBaseline: PatternBaseline = {
-      variantId: targetPattern,
-      variantName: DEFAULT_VARIANT_NAMES[targetPattern] || targetPattern,
+      variantId: actualTargetPattern,
+      variantName: DEFAULT_VARIANT_NAMES[targetPattern] || actualTargetPattern,
       difficulty: sourceBaseline.difficulty || 5,
       reps: 10, // Default 10RM
       weight10RM: estimatedWeight,
       testDate: new Date().toISOString(),
       isEstimated: true,
-      estimatedFrom: correlation.source,
+      estimatedFrom: correlation.source + (isFallback ? ' (fallback)' : ''),
     };
 
     result[targetKey] = estimatedBaseline;
 
     console.log(
-      `[BaselineInference] ${targetPattern}: ${estimatedWeight}kg (${correlation.ratio * 100}% of ${correlation.source} ${sourceBaseline.weight10RM}kg) - STIMATO`
+      `[BaselineInference] ${actualTargetPattern}: ${estimatedWeight}kg (${correlation.ratio * 100}% of ${correlation.source} ${sourceBaseline.weight10RM}kg) - STIMATO${isFallback ? ' (FALLBACK)' : ''}`
     );
   }
 

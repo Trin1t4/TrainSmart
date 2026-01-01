@@ -355,6 +355,80 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Alzate Gambe Laterali': 'side-lying-leg-lift.mp4',
   'Cerchi dell\'Anca': 'standing-hip-circles.mp4',
   'Attivazione Scapolare': 'shoulder-blade-squeeze.mp4',
+
+  // =============================================
+  // FMS (Functional Movement Screening)
+  // =============================================
+  'FMS Deep Squat': 'fms-deep-squat.mp4',
+  'FMS Hurdle Step': '39 FMS Hurdle Step.mp4',
+  'FMS Inline Lunge': '40 FMS Inline Lunge.mp4',
+  'FMS Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
+  'FMS Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
+  'FMS Rotary Stability': '43 FMS Rotary Stability.mp4',
+  'Hurdle Step': '39 FMS Hurdle Step.mp4',
+  'Inline Lunge': '40 FMS Inline Lunge.mp4',
+  'Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
+  'Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
+  'Rotary Stability': '43 FMS Rotary Stability.mp4',
+
+  // =============================================
+  // NECK (Esercizi per il collo)
+  // =============================================
+  'Neck Flexion': '44 Neck Flexion.mp4',
+  'Neck Extension': '45 Neck Extension.mp4',
+  'Neck Lateral Flexion': '46 Neck Lateral Flexion.mp4',
+  'Flessione Collo': '44 Neck Flexion.mp4',
+  'Estensione Collo': '45 Neck Extension.mp4',
+  'Flessione Laterale Collo': '46 Neck Lateral Flexion.mp4',
+
+  // =============================================
+  // PLYOMETRICS / JUMP TRAINING
+  // =============================================
+  'Box Jump': 'box-jump.mp4',
+  'Salto al Box': 'box-jump.mp4',
+  'Broad Jump': 'broad-jump.mp4',
+  'Salto in Lungo': 'broad-jump.mp4',
+  'Counter Movement Jump': 'counter-movement-jump.mp4',
+  'CMJ': 'counter-movement-jump.mp4',
+  'Salto Contromovimento': 'counter-movement-jump.mp4',
+  'Drop Jump': 'drop-jump.mp4',
+  'Salto di Caduta': 'drop-jump.mp4',
+  'Squat Jump Test': 'squat-jump-test.mp4',
+
+  // =============================================
+  // MED BALL / POWER
+  // =============================================
+  'Med Ball Chest Pass': 'med-ball-chest-pass.mp4',
+  'Lancio Petto Palla Medica': 'med-ball-chest-pass.mp4',
+  'Med Ball Overhead Throw': 'med-ball-overhead-throw.mp4',
+  'Lancio Sopra Testa Palla Medica': 'med-ball-overhead-throw.mp4',
+
+  // =============================================
+  // CALISTHENICS AVANZATO
+  // =============================================
+  'Clap Push-up': 'clap-push-up.mp4',
+  'Push-up con Battito': 'clap-push-up.mp4',
+  'Push-up Esplosivi': 'clap-push-up.mp4',
+  'Copenhagen Plank': 'copenhagen-plank.mp4',
+  'Plank Copenhagen': 'copenhagen-plank.mp4',
+  'Dragon Flag': 'dragon-flag.mp4',
+  'Bandiera del Drago': 'dragon-flag.mp4',
+  'Hollow Body Hold': 'hollow-body-hold.mp4',
+  'Hollow Hold': 'hollow-body-hold.mp4',
+  'Tenuta Corpo Cavo': 'hollow-body-hold.mp4',
+  'L-Sit': 'l-sit.mp4',
+  'L Sit': 'l-sit.mp4',
+  'Handstand Hold': 'handstand-hold.mp4',
+  'Tenuta in Verticale': 'handstand-hold.mp4',
+  'Pseudo Planche Push-up': 'pseudo-planche-push-up.mp4',
+  'Push-up Pseudo Planche': 'pseudo-planche-push-up.mp4',
+  'Knee Push-up': 'knee-push-up.mp4',
+  'Push-up sulle Ginocchia': 'knee-push-up.mp4',
+  'Lying Leg Raise': 'lying-leg-raise.mp4',
+  'Alzate Gambe Supino': 'lying-leg-raise.mp4',
+  'Side Plank': 'side-plank.mp4',
+  'Plank Laterale Completo': 'side-plank.mp4',
+  'Pistol Squat V2': 'pistol-squat-v2.mp4',
 };
 
 /**
@@ -462,6 +536,41 @@ export const EXERCISE_VIDEO_LIST = [
   // === POLPACCI ===
   'Standing Calf Raise',
   'Seated Calf Raise',
+
+  // === FMS SCREENING ===
+  'FMS Deep Squat',
+  'FMS Hurdle Step',
+  'FMS Inline Lunge',
+  'FMS Active Straight Leg Raise',
+  'FMS Trunk Stability Push-up',
+  'FMS Rotary Stability',
+
+  // === NECK ===
+  'Neck Flexion',
+  'Neck Extension',
+  'Neck Lateral Flexion',
+
+  // === PLYOMETRICS ===
+  'Box Jump',
+  'Broad Jump',
+  'Counter Movement Jump',
+  'Drop Jump',
+  'Squat Jump',
+
+  // === MED BALL ===
+  'Med Ball Chest Pass',
+  'Med Ball Overhead Throw',
+
+  // === CALISTHENICS AVANZATO ===
+  'Clap Push-up',
+  'Copenhagen Plank',
+  'Dragon Flag',
+  'Hollow Body Hold',
+  'L-Sit',
+  'Handstand Hold',
+  'Pseudo Planche Push-up',
+  'Knee Push-up',
+  'Lying Leg Raise',
 ];
 
 /**

@@ -82,6 +82,7 @@ export interface Exercise {
   reps: number | string; // può essere "10-15" per range
   rest: string; // "90s", "2-3min", etc.
   intensity?: string; // "65%", "75%", etc.
+  dayType?: 'heavy' | 'moderate' | 'volume'; // DUP intra-giornata: tipo intensità
   notes?: string;
   baseline?: {
     variantId: string;

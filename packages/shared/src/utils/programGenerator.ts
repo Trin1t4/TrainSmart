@@ -2494,20 +2494,11 @@ export function calculateVolume(
   location: 'gym' | 'home' | 'home_gym' = 'gym',
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
 ): VolumeResult {
-  // BEGINNER: Scheda di ADATTAMENTO ANATOMICO fissa
-  if (level === 'beginner') {
-    const workingReps = Math.max(8, Math.min(Math.floor(baselineMaxReps * 0.65), 10));
+  // Nota: Il livello beginner usa comunque il DUP con parametri più conservativi
+  // I baseline del test pratico determinano la difficoltà appropriata per ogni pattern
+  // Un "beginner" che fa shrimp squat avrà parametri diversi da uno che fa squat base
 
-    return {
-      sets: 3,
-      reps: workingReps,
-      rest: '90s',
-      intensity: '65%',
-      notes: 'Adattamento Anatomico - Focus sulla tecnica'
-    };
-  }
-
-  // INTERMEDIATE/ADVANCED: Sistema DUP
+  // Sistema DUP per tutti i livelli
   const workingReps = Math.max(4, Math.floor(baselineMaxReps * 0.75));
   let sets = 4;
   let reps = workingReps;
@@ -2515,52 +2506,55 @@ export function calculateVolume(
   let intensity = '75%';
   let notes = '';
 
-  // STRENGTH - Mix di reps per stimoli diversi
-  // Heavy: forza massimale (4-6 reps)
-  // Moderate: forza-ipertrofia (8-10 reps) - per varietà di stimoli
-  // Volume: ipertrofia/work capacity (10-15 reps)
+  // STRENGTH - Mix di stimoli con FOCUS FORZA
+  // Heavy: forza massimale (3-5 reps, 85-90%)
+  // Moderate: forza dinamica (5-8 reps, 78-82%) - velocità e tecnica
+  // Volume: forza-resistenza (6-10 reps, 75-80%) - capacità di lavoro MA carichi significativi
   if (goal === 'forza' || goal === 'strength') {
     if (location === 'gym') {
       if (dayType === 'heavy') {
-        sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
-        reps = Math.max(4, Math.min(workingReps, 6));
+        sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
+        reps = Math.max(3, Math.min(workingReps, 5));
         rest = '3-5min';
-        intensity = '82-88%';
-        notes = 'Forza - Carico pesante';
+        intensity = '85-90%';
+        notes = 'Forza Massimale - Carico pesante, recupero completo';
       } else if (dayType === 'volume') {
-        sets = level === 'beginner' ? 3 : 4;
-        reps = Math.max(10, Math.min(workingReps, 15));
-        rest = '90-120s';
-        intensity = '65-70%';
-        notes = 'Volume - Ipertrofia di supporto';
+        // VOLUME per FORZA = più serie a carichi ANCORA significativi (non bassi!)
+        sets = level === 'beginner' ? 4 : 5;
+        reps = Math.max(6, Math.min(workingReps, 10));
+        rest = '2-3min';
+        intensity = '75-80%';
+        notes = 'Forza-Resistenza - Accumulo volume a carichi medi-alti';
       } else {
-        // Moderate: range ipertrofia per complementare la forza
-        sets = level === 'beginner' ? 3 : 4;
-        reps = Math.max(8, Math.min(workingReps, 10));
-        rest = '90-120s';
-        intensity = '72-78%';
-        notes = 'Ipertrofia - Supporto alla forza';
+        // Moderate: forza dinamica con focus tecnico
+        sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 5;
+        reps = Math.max(5, Math.min(workingReps, 8));
+        rest = '2-3min';
+        intensity = '78-82%';
+        notes = 'Forza Dinamica - Velocità e tecnica';
       }
     } else {
+      // BODYWEIGHT: focus su progressioni difficili
       if (dayType === 'heavy') {
         sets = level === 'advanced' ? 6 : 5;
-        reps = Math.max(4, Math.min(workingReps, 6));
-        rest = '2-3min';
-        intensity = '80-85%';
-        notes = 'Forza - Abilità di forza';
+        reps = Math.max(3, Math.min(workingReps, 5));
+        rest = '3-4min';
+        intensity = '85-90%';
+        notes = 'Forza Massimale - Progressione difficile';
       } else if (dayType === 'volume') {
+        // Volume per forza BW = più serie della progressione attuale
         sets = 5;
-        reps = Math.max(10, Math.min(workingReps, 15));
-        rest = '90s';
-        intensity = '60-70%';
-        notes = 'Volume - Capacità di lavoro';
+        reps = Math.max(6, Math.min(workingReps, 10));
+        rest = '2min';
+        intensity = '75-80%';
+        notes = 'Forza-Resistenza - Accumulo volume';
       } else {
-        // Moderate: range ipertrofia per complementare la forza
-        sets = 4;
-        reps = Math.max(8, Math.min(workingReps, 10));
-        rest = '90s';
-        intensity = '70-75%';
-        notes = 'Ipertrofia - Supporto alla forza';
+        // Moderate: tecnica e velocità
+        sets = level === 'advanced' ? 5 : 4;
+        reps = Math.max(5, Math.min(workingReps, 8));
+        rest = '2min';
+        intensity = '78-82%';
+        notes = 'Forza Dinamica - Velocità esecuzione';
       }
     }
   }
