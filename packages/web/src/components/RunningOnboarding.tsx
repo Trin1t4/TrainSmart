@@ -27,11 +27,23 @@ import type {
 } from '@trainsmart/shared';
 import { estimateHRMax, getZone2Range } from '@trainsmart/shared';
 
+/**
+ * Preset per sport che richiedono corsa obbligatoria
+ * Permette di saltare goal/integration/frequency e fare solo screening capacità
+ */
+interface SportRunningPreset {
+  goal: RunningGoal;
+  integration: RunningIntegration;
+  sessionsPerWeek: number;
+  sportName: string;
+}
+
 interface RunningOnboardingProps {
   age: number;
   onComplete: (preferences: RunningPreferences) => void;
   onBack: () => void;
   includesWeights?: boolean; // true se l'utente vuole anche pesi
+  sportPreset?: SportRunningPreset; // preset per sport che richiedono corsa
 }
 
 type Step = 'capacity' | 'goal' | 'integration' | 'frequency' | 'hrTest' | 'summary';
@@ -161,6 +173,7 @@ export default function RunningOnboarding({
   onComplete,
   onBack,
   includesWeights = true,
+  sportPreset,
 }: RunningOnboardingProps) {
   const [step, setStep] = useState<Step>('capacity');
   const [capacity, setCapacity] = useState<RunningCapacity>({
@@ -169,13 +182,59 @@ export default function RunningOnboarding({
     canRun20Min: false,
     canRun30Min: false,
   });
-  const [goal, setGoal] = useState<RunningGoal>('base_aerobica');
-  const [integration, setIntegration] = useState<RunningIntegration>('separate_days');
-  const [sessionsPerWeek, setSessionsPerWeek] = useState(3);
+  // Se c'è un preset, usa quei valori, altrimenti default
+  const [goal, setGoal] = useState<RunningGoal>(sportPreset?.goal || 'base_aerobica');
+  const [integration, setIntegration] = useState<RunningIntegration>(sportPreset?.integration || 'separate_days');
+  const [sessionsPerWeek, setSessionsPerWeek] = useState(sportPreset?.sessionsPerWeek || 3);
   const [restingHR, setRestingHR] = useState<number | undefined>();
 
   const hrMax = estimateHRMax(age);
   const zone2Range = getZone2Range(hrMax);
+
+  // Step flow: con preset salta goal/integration/frequency
+  // Normal: capacity → goal → integration → frequency → hrTest → summary
+  // Sport preset: capacity → hrTest → summary
+  const getNextStep = (current: Step): Step | null => {
+    if (sportPreset) {
+      // Flusso abbreviato per sport
+      switch (current) {
+        case 'capacity': return 'hrTest';
+        case 'hrTest': return 'summary';
+        case 'summary': return null;
+        default: return 'hrTest';
+      }
+    } else {
+      // Flusso normale
+      switch (current) {
+        case 'capacity': return 'goal';
+        case 'goal': return includesWeights ? 'integration' : 'frequency';
+        case 'integration': return 'frequency';
+        case 'frequency': return 'hrTest';
+        case 'hrTest': return 'summary';
+        case 'summary': return null;
+        default: return 'goal';
+      }
+    }
+  };
+
+  const getPrevStep = (current: Step): Step | null => {
+    if (sportPreset) {
+      switch (current) {
+        case 'hrTest': return 'capacity';
+        case 'summary': return 'hrTest';
+        default: return null;
+      }
+    } else {
+      switch (current) {
+        case 'goal': return 'capacity';
+        case 'integration': return 'goal';
+        case 'frequency': return includesWeights ? 'integration' : 'goal';
+        case 'hrTest': return 'frequency';
+        case 'summary': return 'hrTest';
+        default: return null;
+      }
+    }
+  };
 
   // Determina livello running
   const getRunningLevel = (): 'sedentary' | 'beginner' | 'intermediate' | 'advanced' => {
@@ -245,9 +304,15 @@ export default function RunningOnboarding({
     onComplete(preferences);
   };
 
-  const steps: Step[] = includesWeights
-    ? ['capacity', 'goal', 'integration', 'frequency', 'hrTest', 'summary']
-    : ['capacity', 'goal', 'frequency', 'hrTest', 'summary'];
+  // Determina gli step in base al contesto
+  // Sport preset: solo capacity → hrTest → summary (goal/integration/frequency pre-configurati)
+  // Con pesi: capacity → goal → integration → frequency → hrTest → summary
+  // Solo running: capacity → goal → frequency → hrTest → summary
+  const steps: Step[] = sportPreset
+    ? ['capacity', 'hrTest', 'summary']
+    : includesWeights
+      ? ['capacity', 'goal', 'integration', 'frequency', 'hrTest', 'summary']
+      : ['capacity', 'goal', 'frequency', 'hrTest', 'summary'];
 
   const currentStepIndex = steps.indexOf(step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
@@ -297,6 +362,23 @@ export default function RunningOnboarding({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
+              {/* Banner sport preset */}
+              {sportPreset && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">
+                        Corsa per {sportPreset.sportName}
+                      </p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        {sessionsPerWeek} sessioni/settimana • {integration === 'hybrid_alternate' ? 'Giorni alternati' : integration === 'separate_days' ? 'Giorni separati' : 'Post allenamento'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Timer className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -305,7 +387,9 @@ export default function RunningOnboarding({
                   Test Capacità Running
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Quanto riesci a correre senza fermarti?
+                  {sportPreset
+                    ? 'Valutiamo il tuo livello attuale per calibrare il programma'
+                    : 'Quanto riesci a correre senza fermarti?'}
                 </p>
               </div>
 

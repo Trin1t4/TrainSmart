@@ -35,6 +35,12 @@ export default function Onboarding() {
   const [isSaving, setIsSaving] = useState(false);
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus | null>(null);
   const [showRunningOnboarding, setShowRunningOnboarding] = useState(false);
+  const [sportRunningPreset, setSportRunningPreset] = useState<{
+    goal: 'complemento_sport';
+    integration: 'separate_days' | 'post_workout' | 'hybrid_alternate';
+    sessionsPerWeek: number;
+    sportName: string;
+  } | null>(null);
 
   // Check if user already accepted disclaimer
   useEffect(() => {
@@ -202,37 +208,44 @@ export default function Onboarding() {
           return;
         }
 
-        // ═══ AUTO-INSERIMENTO CORSA PER SPORT ═══
-        // Se l'utente ha scelto uno sport che richiede corsa, auto-popola running
-        let dataToSave = finalData;
+        // ═══ CONTROLLO CORSA PER SPORT ═══
+        // Se l'utente ha scelto uno sport che richiede corsa, MOSTRA lo screening running
         const selectedSport = finalData.sport as SportType | undefined;
         const isSportGoal = finalData.goals?.includes('prestazioni_sportive') ||
                            finalData.goal === 'prestazioni_sportive';
 
         if (isSportGoal && selectedSport && sportRequiresRunning(selectedSport)) {
           const sportRunningConfig = getSportRunningConfig(selectedSport);
-          console.log(`[ONBOARDING] 🏃 Sport "${selectedSport}" requires running → auto-inserting config`);
+          console.log(`[ONBOARDING] 🏃 Sport "${selectedSport}" requires running → showing RunningOnboarding for screening`);
           console.log('[ONBOARDING] 🏃 Sport running config:', sportRunningConfig);
 
-          // Auto-popola i parametri running basati sullo sport
-          const autoRunningPrefs: RunningPreferences = {
-            enabled: true,
+          // Salva i dati pesi in localStorage temporaneamente
+          setData(finalData);
+
+          // Prepara il preset per RunningOnboarding
+          const sportLabels: Record<string, string> = {
+            calcio: 'Calcio',
+            basket: 'Basket',
+            rugby: 'Rugby',
+            boxe: 'Boxe',
+            tennis: 'Tennis',
+            corsa: 'Corsa',
+          };
+
+          setSportRunningPreset({
             goal: 'complemento_sport',
             integration: sportRunningConfig.integration,
             sessionsPerWeek: sportRunningConfig.sessionsPerWeek,
-            capacity: {
-              // Assumiamo capacità base - verrà affinata con il test
-              canRun5Min: true,
-              canRun10Min: true,
-              canRun20Min: false,
-              canRun30Min: false
-            }
-          };
+            sportName: sportLabels[selectedSport] || selectedSport,
+          });
 
-          dataToSave = { ...finalData, running: autoRunningPrefs };
-          console.log('[ONBOARDING] 🏃 Auto-inserted running preferences:', autoRunningPrefs);
+          // Mostra RunningOnboarding per fare lo screening di capacità
+          setIsSaving(false);
+          setShowRunningOnboarding(true);
+          return;
         }
 
+        const dataToSave = finalData;
         console.log('[ONBOARDING] 🎯 ========== END DEBUG ==========');
 
         // 1. Salva in localStorage
@@ -371,8 +384,12 @@ export default function Onboarding() {
       <RunningOnboarding
         age={data.personalInfo?.age || 30}
         onComplete={handleRunningOnboardingComplete}
-        onBack={() => setShowRunningOnboarding(false)}
-        includesWeights={trainingFocus === 'both'}
+        onBack={() => {
+          setShowRunningOnboarding(false);
+          setSportRunningPreset(null);
+        }}
+        includesWeights={trainingFocus === 'both' || sportRunningPreset !== null}
+        sportPreset={sportRunningPreset || undefined}
       />
     );
   }
