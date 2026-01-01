@@ -11,6 +11,11 @@ import LocationStep from '../components/onboarding/LocationStep';
 import GoalStep from '../components/onboarding/GoalStep';
 import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
 import RunningOnboarding from '../components/RunningOnboarding';
+import {
+  sportRequiresRunning,
+  getSportRunningConfig,
+  SportType
+} from '../utils/sportSpecificTraining';
 
 // Onboarding - 6+ step (dipende dalla scelta)
 // 0. Training Type Choice (pesi/corsa/entrambi) - NEW
@@ -177,7 +182,7 @@ export default function Onboarding() {
       console.log(`[ONBOARDING] ➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
       setCurrentStep(currentStep + 1);
     } else if (trainingFocus === 'weights') {
-      // ✅ STEP FINALE SOLO PESI - Salva e naviga
+      // ✅ STEP FINALE SOLO PESI - Ma controlla se lo sport richiede corsa
       setIsSaving(true);
       try {
         // 🔍 DEBUG CRITICO - Stampa TUTTO prima di salvare
@@ -187,7 +192,6 @@ export default function Onboarding() {
         console.log('[ONBOARDING] 🏠 trainingLocation value:', finalData.trainingLocation);
         console.log('[ONBOARDING] 🎯 goal value:', finalData.goal);
         console.log('[ONBOARDING] 🎯 goals array:', finalData.goals);
-        console.log('[ONBOARDING] 🎯 ========== END DEBUG ==========');
 
         // Se location è undefined, c'è un bug in LocationStep!
         if (!finalData.trainingLocation) {
@@ -198,22 +202,55 @@ export default function Onboarding() {
           return;
         }
 
+        // ═══ AUTO-INSERIMENTO CORSA PER SPORT ═══
+        // Se l'utente ha scelto uno sport che richiede corsa, auto-popola running
+        let dataToSave = finalData;
+        const selectedSport = finalData.sport as SportType | undefined;
+        const isSportGoal = finalData.goals?.includes('prestazioni_sportive') ||
+                           finalData.goal === 'prestazioni_sportive';
+
+        if (isSportGoal && selectedSport && sportRequiresRunning(selectedSport)) {
+          const sportRunningConfig = getSportRunningConfig(selectedSport);
+          console.log(`[ONBOARDING] 🏃 Sport "${selectedSport}" requires running → auto-inserting config`);
+          console.log('[ONBOARDING] 🏃 Sport running config:', sportRunningConfig);
+
+          // Auto-popola i parametri running basati sullo sport
+          const autoRunningPrefs: RunningPreferences = {
+            enabled: true,
+            goal: 'complemento_sport',
+            integration: sportRunningConfig.integration,
+            sessionsPerWeek: sportRunningConfig.sessionsPerWeek,
+            capacity: {
+              // Assumiamo capacità base - verrà affinata con il test
+              canRun5Min: true,
+              canRun10Min: true,
+              canRun20Min: false,
+              canRun30Min: false
+            }
+          };
+
+          dataToSave = { ...finalData, running: autoRunningPrefs };
+          console.log('[ONBOARDING] 🏃 Auto-inserted running preferences:', autoRunningPrefs);
+        }
+
+        console.log('[ONBOARDING] 🎯 ========== END DEBUG ==========');
+
         // 1. Salva in localStorage
         console.log('[ONBOARDING] 💾 Saving to localStorage...');
-        localStorage.setItem('onboarding_data', JSON.stringify(finalData));
+        localStorage.setItem('onboarding_data', JSON.stringify(dataToSave));
         console.log('[ONBOARDING] ✅ Saved to localStorage');
 
         // 2. Salva in Supabase
         console.log('[ONBOARDING] 🔄 Saving to Supabase...');
-        await saveOnboardingToDatabase(finalData);
+        await saveOnboardingToDatabase(dataToSave);
 
         // 3. ✅ BRANCH CONDIZIONALE: Recupero Motorio vs Screening Type
-        if (finalData.goal === 'motor_recovery') {
+        if (dataToSave.goal === 'motor_recovery') {
           console.log('[ONBOARDING] 🏥 Motor recovery goal detected → navigating to /recovery-screening');
           navigate('/recovery-screening');
         } else {
           // Controlla il tipo di screening scelto
-          const screeningType = finalData.screeningType;
+          const screeningType = dataToSave.screeningType;
           if (screeningType === 'thorough') {
             console.log('[ONBOARDING] 📊 Thorough screening → navigating to /quiz-full');
             navigate('/quiz-full');

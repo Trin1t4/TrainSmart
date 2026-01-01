@@ -76,6 +76,175 @@ export interface PhaseConfig {
 }
 
 // ============================================
+// SPORT RUNNING CONFIGURATION
+// ============================================
+
+/**
+ * Configurazione corsa obbligatoria per sport
+ * La corsa è componente integrale della preparazione atletica
+ */
+export interface SportRunningConfig {
+  required: boolean;                    // Se la corsa è obbligatoria per lo sport
+  sessionsPerWeek: number;              // Sessioni settimanali minime
+  integration: 'separate_days' | 'post_workout' | 'hybrid_alternate';
+  phaseAdjustments: {
+    off_season: { sessions: number; focus: string };
+    pre_season: { sessions: number; focus: string };
+    in_season: { sessions: number; focus: string };
+  };
+  notes: string;
+}
+
+/**
+ * Configurazione running per ogni sport
+ * Sport con endurance >= 3 richiedono corsa come componente obbligatoria
+ */
+export const SPORT_RUNNING_CONFIG: Record<SportType, SportRunningConfig> = {
+
+  calcio: {
+    required: true,
+    sessionsPerWeek: 2,
+    integration: 'separate_days',
+    phaseAdjustments: {
+      off_season: { sessions: 3, focus: 'Base aerobica Zone 2 + interval training' },
+      pre_season: { sessions: 2, focus: 'Interval training sport-specifico (sprint ripetuti)' },
+      in_season: { sessions: 1, focus: 'Mantenimento + recupero attivo' }
+    },
+    notes: '90 min di gioco intermittente. Focus su repeated sprint ability.'
+  },
+
+  basket: {
+    required: true,
+    sessionsPerWeek: 2,
+    integration: 'separate_days',
+    phaseAdjustments: {
+      off_season: { sessions: 3, focus: 'Base aerobica + court sprints' },
+      pre_season: { sessions: 2, focus: 'Interval training (sprint-recovery pattern del gioco)' },
+      in_season: { sessions: 1, focus: 'Recupero attivo' }
+    },
+    notes: 'Sprint ripetuti con brevi recuperi. Capacità di recupero tra azioni.'
+  },
+
+  rugby: {
+    required: true,
+    sessionsPerWeek: 3,
+    integration: 'hybrid_alternate',
+    phaseAdjustments: {
+      off_season: { sessions: 3, focus: 'Base aerobica robusta + interval' },
+      pre_season: { sessions: 3, focus: 'Conditioning sport-specifico ad alta intensità' },
+      in_season: { sessions: 2, focus: 'Mantenimento + recupero' }
+    },
+    notes: '80 min ad alta intensità. Resistenza + capacità di recupero tra fasi.'
+  },
+
+  boxe: {
+    required: true,
+    sessionsPerWeek: 3,
+    integration: 'hybrid_alternate',
+    phaseAdjustments: {
+      off_season: { sessions: 3, focus: 'Base aerobica solida per round lunghi' },
+      pre_season: { sessions: 3, focus: 'Interval 3min work / 1min rest (simula round)' },
+      in_season: { sessions: 2, focus: 'Mantenimento + recupero tra round' }
+    },
+    notes: 'Round da 3 min, match fino a 12 round. Capacità aerobica = resistenza ai round.'
+  },
+
+  tennis: {
+    required: true,
+    sessionsPerWeek: 2,
+    integration: 'separate_days',
+    phaseAdjustments: {
+      off_season: { sessions: 3, focus: 'Base aerobica + lateral movement drills' },
+      pre_season: { sessions: 2, focus: 'Interval training (simula scambi)' },
+      in_season: { sessions: 1, focus: 'Recupero attivo tra tornei' }
+    },
+    notes: 'Match possono durare ore. Resistenza aerobica + recupero tra punti.'
+  },
+
+  pallavolo: {
+    required: false,  // Sport esplosivo, poca componente aerobica continua
+    sessionsPerWeek: 1,
+    integration: 'post_workout',
+    phaseAdjustments: {
+      off_season: { sessions: 2, focus: 'Conditioning generale' },
+      pre_season: { sessions: 1, focus: 'Recupero attivo' },
+      in_season: { sessions: 1, focus: 'Recupero' }
+    },
+    notes: 'Sport esplosivo. Corsa per conditioning generale, non prioritaria.'
+  },
+
+  corsa: {
+    required: true,  // È lo sport stesso!
+    sessionsPerWeek: 4,
+    integration: 'hybrid_alternate',
+    phaseAdjustments: {
+      off_season: { sessions: 4, focus: 'Volume base + long run' },
+      pre_season: { sessions: 4, focus: 'Qualità: tempo run, interval, fartlek' },
+      in_season: { sessions: 3, focus: 'Tapering + gare' }
+    },
+    notes: 'Running è lo sport principale. Pesi come supporto.'
+  },
+
+  nuoto: {
+    required: false,  // Già sport aerobico in acqua
+    sessionsPerWeek: 1,
+    integration: 'post_workout',
+    phaseAdjustments: {
+      off_season: { sessions: 1, focus: 'Cross-training leggero' },
+      pre_season: { sessions: 1, focus: 'Recupero attivo' },
+      in_season: { sessions: 0, focus: 'Focus su nuoto' }
+    },
+    notes: 'Aerobico in acqua. Corsa solo come cross-training opzionale.'
+  },
+
+  ciclismo: {
+    required: false,  // Già sport aerobico
+    sessionsPerWeek: 1,
+    integration: 'post_workout',
+    phaseAdjustments: {
+      off_season: { sessions: 1, focus: 'Cross-training varietà' },
+      pre_season: { sessions: 1, focus: 'Recupero attivo' },
+      in_season: { sessions: 0, focus: 'Focus su bici' }
+    },
+    notes: 'Aerobico su bici. Corsa solo come varietà opzionale.'
+  },
+
+  altro: {
+    required: false,
+    sessionsPerWeek: 2,
+    integration: 'separate_days',
+    phaseAdjustments: {
+      off_season: { sessions: 2, focus: 'Conditioning generale' },
+      pre_season: { sessions: 2, focus: 'Preparazione atletica' },
+      in_season: { sessions: 1, focus: 'Mantenimento' }
+    },
+    notes: 'Configurazione generica. Adattare in base allo sport specifico.'
+  }
+};
+
+/**
+ * Ottiene la configurazione running per uno sport
+ */
+export function getSportRunningConfig(sport: SportType): SportRunningConfig {
+  return SPORT_RUNNING_CONFIG[sport] || SPORT_RUNNING_CONFIG.altro;
+}
+
+/**
+ * Verifica se uno sport richiede corsa obbligatoria
+ */
+export function sportRequiresRunning(sport: SportType): boolean {
+  return SPORT_RUNNING_CONFIG[sport]?.required ?? false;
+}
+
+/**
+ * Ottiene le sessioni running per fase stagionale
+ */
+export function getRunningSessionsForPhase(sport: SportType, phase: SeasonPhase): number {
+  const config = getSportRunningConfig(sport);
+  return config.phaseAdjustments[phase]?.sessions ?? config.sessionsPerWeek;
+}
+
+// ============================================
 // DATABASE SPORT PROFILES
 // ============================================
 
