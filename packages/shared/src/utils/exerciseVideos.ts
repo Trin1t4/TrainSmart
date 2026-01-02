@@ -55,7 +55,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Pike Push-up': 'pike-push-up.mp4',
   'Pike Push Up': 'pike-push-up.mp4',
   'Pike Push-up Facile': 'pike-push-up.mp4',
-  'Pike Push-up Elevato': 'pike-push-up.mp4',
   'Plank to Pike': 'pike-push-up.mp4',
 
   // === NORDIC CURL varianti ===
@@ -153,7 +152,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Front Raises': 'front-raise.mp4',
 
   // === CORE ===
-  'Side Plank': 'side-plank-modified.mp4',
   'Side Plank (Modified)': 'side-plank-modified.mp4',
   'Pallof Press': 'pallof-press.mp4',
   'Pallof Press (Kneeling)': 'pallof-press-kneeling.mp4',
@@ -256,7 +254,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Nordic Curl (Solo Eccentrica)': 'nordic-hamstring-curl.mp4',
 
   // === PUSH-UP PATTERN ===
-  'Push-up Standard': 'standard-push-up.mp4',
   'Push-up Diamante': 'diamond-push-up.mp4',
   'Push-up Arciere': 'archer-push-up.mp4',
   'Push-up a Un Braccio': 'one-arm-push-up.mp4',
@@ -264,12 +261,10 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Push-up Declinati': 'decline-push-up.mp4',
   'Push-up Inclinati': 'incline-push-up.mp4',
   'Push-up Deficit': 'decline-push-up.mp4',
-  'Push-up sulle Ginocchia': 'standard-push-up.mp4',
   'Push-up al Muro': 'wall-push-up.mp4',
   'Push-up Typewriter': 'typewriter-push-up.mp4',
   'Push-up agli Anelli': 'ring-push-up.mp4',
   'Piegamenti': 'standard-push-up.mp4',
-  'Panca Piana': 'flat-barbell-bench-press.mp4',
   'Panca con Manubri': 'dumbbell-bench-press.mp4',
   'Panca Inclinata': 'incline-bench-press.mp4',
   'Panca Inclinata Manubri': 'incline-dumbbell-press.mp4',
@@ -283,7 +278,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Verticale Push-up Libero': 'wall-handstand-push-up.mp4',
   'Verticale al Muro Push-up': 'wall-handstand-push-up.mp4',
   'Shoulder Tap al Muro': 'wall-handstand-push-up.mp4',
-  'Military Press': 'military-press.mp4',
   'Shoulder Press con Manubri': 'dumbbell-shoulder-press.mp4',
 
   // === VERTICAL PULL (Trazioni) ===
@@ -295,7 +289,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Trazioni con Elastico': 'assisted-pull-up.mp4',
   'Trazioni Arciere': 'archer-pull-up.mp4',
   'Chin-up (Supinato)': 'chin-up.mp4',
-  'Lat Machine': 'lat-pulldown.mp4',
   'Lat Machine Presa Larga': 'lat-pulldown.mp4',
   'Lat Machine Presa Stretta': 'lat-pulldown.mp4',
   'Floor Pull con Asciugamano': 'band-rows.mp4',

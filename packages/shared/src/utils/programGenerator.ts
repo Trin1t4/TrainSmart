@@ -26,6 +26,8 @@ import {
 import { convertToMachineVariant } from './exerciseMapping';
 import type { NormalizedPainArea } from './validators';
 import { generateWeeklySplit } from './weeklySplitGenerator';
+import { integrateRunningIntoSplit } from './runningProgramGenerator';
+import type { RunningPreferences } from '../types/onboarding.types';
 import {
   validateProgramInput,
   applyCorrections,
@@ -69,6 +71,9 @@ export interface ProgramGeneratorOptions {
   // Legs goal type for females (PHA, rebalance, or standard toning)
   legsGoalType?: 'toning' | 'slimming' | 'rebalance';
   gender?: 'M' | 'F';
+  // Running/Cardio preferences
+  runningPrefs?: RunningPreferences;
+  userAge?: number;
 }
 
 export interface ScreeningResult {
@@ -3279,6 +3284,26 @@ export function generateProgramWithSplit(
   console.log(`Giorni di allenamento: ${weeklySplit.days.length}`);
 
   // ============================================
+  // STEP 4b: INTEGRAZIONE RUNNING (se abilitato)
+  // ============================================
+  let finalSplit = weeklySplit;
+  if (correctedOptions.runningPrefs?.enabled) {
+    console.log('[RUNNING] Integrazione sessioni running nel programma');
+    console.log(`[RUNNING] Integrazione: ${correctedOptions.runningPrefs.integration}`);
+    console.log(`[RUNNING] Sessioni/settimana: ${correctedOptions.runningPrefs.sessionsPerWeek}`);
+
+    finalSplit = integrateRunningIntoSplit(
+      weeklySplit,
+      correctedOptions.runningPrefs,
+      1, // weekNumber - sempre 1 per la generazione iniziale
+      correctedOptions.userAge
+    );
+
+    const runningDays = finalSplit.days.filter((d: any) => d.type === 'running' || d.runningSession).length;
+    console.log(`[RUNNING] Giorni con running: ${runningDays}`);
+  }
+
+  // ============================================
   // STEP 5: APPLICA RUNTIME MULTIPLIERS
   // ============================================
   if (runtimeAdaptation) {
@@ -3287,21 +3312,23 @@ export function generateProgramWithSplit(
     if (volumeMultiplier < 1 || intensityMultiplier < 1) {
       console.log(`[RUNTIME] Applying multipliers: volume=${volumeMultiplier}, intensity=${intensityMultiplier}`);
 
-      weeklySplit.days.forEach((day: any) => {
-        day.exercises.forEach((exercise: any) => {
-          // Riduci sets
-          if (volumeMultiplier < 1 && typeof exercise.sets === 'number') {
-            exercise.sets = Math.max(2, Math.round(exercise.sets * volumeMultiplier));
-          }
+      finalSplit.days.forEach((day: any) => {
+        if (day.exercises) {
+          day.exercises.forEach((exercise: any) => {
+            // Riduci sets
+            if (volumeMultiplier < 1 && typeof exercise.sets === 'number') {
+              exercise.sets = Math.max(2, Math.round(exercise.sets * volumeMultiplier));
+            }
 
-          // Aggiungi nota intensità ridotta
-          if (intensityMultiplier < 1) {
-            const reduction = Math.round((1 - intensityMultiplier) * 100);
-            exercise.notes = exercise.notes
-              ? `${exercise.notes} | ⚠️ Intensità -${reduction}%`
-              : `⚠️ Intensità ridotta del ${reduction}%`;
-          }
-        });
+            // Aggiungi nota intensità ridotta
+            if (intensityMultiplier < 1) {
+              const reduction = Math.round((1 - intensityMultiplier) * 100);
+              exercise.notes = exercise.notes
+                ? `${exercise.notes} | ⚠️ Intensità -${reduction}%`
+                : `⚠️ Intensità ridotta del ${reduction}%`;
+            }
+          });
+        }
       });
     }
   }
@@ -3317,7 +3344,10 @@ export function generateProgramWithSplit(
       // PHA (Peripheral Heart Action) - Drenaggio e circolazione
       console.log('[LEGS] Applying PHA protocol for leg slimming');
 
-      weeklySplit.days.forEach((day: any) => {
+      finalSplit.days.forEach((day: any) => {
+        // Skip running days (no exercises)
+        if (!day.exercises || day.type === 'running') return;
+
         // Riordina esercizi per alternare upper/lower (PHA style)
         const upperExercises = day.exercises.filter((ex: any) =>
           ['horizontal_push', 'horizontal_pull', 'vertical_push', 'vertical_pull'].includes(ex.pattern)
@@ -3357,7 +3387,10 @@ export function generateProgramWithSplit(
       // Riproporzione - Focus upper body, mantenimento lower
       console.log('[LEGS] Applying rebalance protocol for body proportions');
 
-      weeklySplit.days.forEach((day: any) => {
+      finalSplit.days.forEach((day: any) => {
+        // Skip running days
+        if (!day.exercises || day.type === 'running') return;
+
         day.exercises.forEach((ex: any) => {
           // Aumenta volume upper body
           if (['horizontal_push', 'horizontal_pull', 'vertical_push', 'vertical_pull'].includes(ex.pattern)) {
@@ -3393,8 +3426,10 @@ export function generateProgramWithSplit(
   }
 
   const allExercises: Exercise[] = [];
-  weeklySplit.days.forEach((day: any) => {
-    allExercises.push(...day.exercises);
+  finalSplit.days.forEach((day: any) => {
+    if (day.exercises) {
+      allExercises.push(...day.exercises);
+    }
   });
 
   // ============================================
@@ -3402,13 +3437,13 @@ export function generateProgramWithSplit(
   // ============================================
   const result: any = {
     name: `Programma ${correctedOptions.level.toUpperCase()} - ${correctedOptions.goal}`,
-    split: weeklySplit.splitName,
+    split: finalSplit.splitName,
     exercises: allExercises,
     level: correctedOptions.level,
     goal: correctedOptions.goal,
     frequency: correctedOptions.frequency,
-    notes: `${weeklySplit.description}\n\nProgramma personalizzato basato sulle TUE baseline. Ogni giorno ha esercizi diversi per stimoli ottimali.`,
-    weeklySplit: weeklySplit
+    notes: `${finalSplit.description}\n\nProgramma personalizzato basato sulle TUE baseline. Ogni giorno ha esercizi diversi per stimoli ottimali.`,
+    weeklySplit: finalSplit
   };
 
   // Aggiungi info validazione se presenti warning
