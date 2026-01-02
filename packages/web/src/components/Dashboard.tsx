@@ -773,6 +773,27 @@ export default function Dashboard() {
     const legsGoalType = onboarding?.legsGoalType || undefined;
     const gender = onboarding?.personalInfo?.gender || 'M';
 
+    // ✅ RUNNING: Converti runningInterest in runningPrefs
+    const runningInterest = onboarding?.runningInterest;
+    let runningPrefs = undefined;
+    if (runningInterest?.enabled) {
+      // Mappa il livello alla capacità
+      const levelToCapacity: Record<string, any> = {
+        'beginner': { experience: 'none', currentPace: undefined, restingHeartRate: undefined },
+        'intermediate': { experience: 'some', currentPace: '6:00/km', restingHeartRate: 65 },
+        'advanced': { experience: 'regular', currentPace: '5:00/km', restingHeartRate: 55 }
+      };
+
+      runningPrefs = {
+        enabled: true,
+        goal: finalGoal === 'dimagrimento' ? 'weight_loss' : 'improve_endurance',
+        integration: 'separate', // Default: sessioni separate
+        sessionsPerWeek: 2, // Default: 2 sessioni/settimana
+        capacity: levelToCapacity[runningInterest.level || 'beginner'] || levelToCapacity['beginner']
+      };
+      console.log('🏃 Running preferences configured:', runningPrefs);
+    }
+
     // ⚠️ VALIDAZIONE: Avvisa se location mancante
     if (!onboarding?.trainingLocation && !betaOverrides.location) {
       console.warn('⚠️ trainingLocation missing in onboarding, defaulting to gym');
@@ -814,7 +835,8 @@ export default function Dashboard() {
       sport,
       sportRole,
       legsGoalType,
-      gender
+      gender,
+      runningPrefs // ✅ Passa le preferenze running
     });
 
     // Aggiungi campi richiesti dal formato esistente
