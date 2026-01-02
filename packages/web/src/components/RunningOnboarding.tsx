@@ -44,6 +44,7 @@ interface RunningOnboardingProps {
   onBack: () => void;
   includesWeights?: boolean; // true se l'utente vuole anche pesi
   sportPreset?: SportRunningPreset; // preset per sport che richiedono corsa
+  strengthFrequency?: number; // frequenza allenamenti pesi (per calcolo giorni alternati)
 }
 
 type Step = 'capacity' | 'goal' | 'integration' | 'frequency' | 'hrTest' | 'summary';
@@ -174,6 +175,7 @@ export default function RunningOnboarding({
   onBack,
   includesWeights = true,
   sportPreset,
+  strengthFrequency: propStrengthFrequency,
 }: RunningOnboardingProps) {
   const [step, setStep] = useState<Step>('capacity');
   const [capacity, setCapacity] = useState<RunningCapacity>({
@@ -188,8 +190,25 @@ export default function RunningOnboarding({
   const [sessionsPerWeek, setSessionsPerWeek] = useState(sportPreset?.sessionsPerWeek || 3);
   const [restingHR, setRestingHR] = useState<number | undefined>();
 
+  // Frequenza pesi (per calcolo giorni alternati)
+  const [strengthFrequency, setStrengthFrequency] = useState(propStrengthFrequency || 3);
+
   const hrMax = estimateHRMax(age);
   const zone2Range = getZone2Range(hrMax);
+
+  // Calcola sessioni running disponibili per giorni alternati
+  const getAvailableRunningDays = (strengthDays: number): { min: number; max: number; recommended: number } => {
+    // Con N giorni pesi, abbiamo 7-N giorni disponibili per running
+    // Ma vogliamo almeno 1 giorno di riposo totale
+    const availableDays = 7 - strengthDays;
+    const maxRunning = Math.min(availableDays - 1, 4); // Max 4, lascia almeno 1 giorno libero
+    const minRunning = Math.max(2, Math.min(maxRunning, 2)); // Min 2 sessioni
+    const recommended = Math.min(strengthDays, maxRunning); // Idealmente stesso numero dei pesi
+    return { min: minRunning, max: maxRunning, recommended };
+  };
+
+  // Sessioni disponibili per hybrid_alternate
+  const alternateRunningSessions = getAvailableRunningDays(strengthFrequency);
 
   // Step flow: con preset salta goal/integration/frequency
   // Normal: capacity → goal → integration → frequency → hrTest → summary
@@ -334,15 +353,15 @@ export default function RunningOnboarding({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       <div className="max-w-lg mx-auto">
         {/* Progress Bar */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
             <span>Configurazione Running</span>
             <span>{currentStepIndex + 1}/{steps.length}</span>
           </div>
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-green-500"
               initial={{ width: 0 }}
@@ -364,14 +383,14 @@ export default function RunningOnboarding({
             >
               {/* Banner sport preset */}
               {sportPreset && (
-                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                <div className="bg-blue-900/30 border border-blue-800 rounded-xl p-4">
                   <div className="flex items-start gap-3">
-                    <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Zap className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-blue-900 dark:text-blue-100">
+                      <p className="font-medium text-blue-100">
                         Corsa per {sportPreset.sportName}
                       </p>
-                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                      <p className="text-sm text-blue-300 mt-1">
                         {sessionsPerWeek} sessioni/settimana • {integration === 'hybrid_alternate' ? 'Giorni alternati' : integration === 'separate_days' ? 'Giorni separati' : 'Post allenamento'}
                       </p>
                     </div>
@@ -380,13 +399,13 @@ export default function RunningOnboarding({
               )}
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Timer className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Timer className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Test Capacità Running
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-400">
                   {sportPreset
                     ? 'Valutiamo il tuo livello attuale per calibrare il programma'
                     : 'Quanto riesci a correre senza fermarti?'}
@@ -442,15 +461,15 @@ export default function RunningOnboarding({
                     }}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left flex items-center justify-between ${
                       capacity[item.key as keyof RunningCapacity]
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
+                        ? 'border-green-500 bg-green-900/30'
+                        : 'border-gray-700 hover:border-green-300'
                     }`}
                   >
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                      <div className="font-semibold text-white">
                         {item.label}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-gray-400">
                         {item.sublabel}
                       </div>
                     </div>
@@ -461,16 +480,16 @@ export default function RunningOnboarding({
                 ))}
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+              <div className="bg-blue-900/30 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <Activity className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <Activity className="w-5 h-5 text-blue-400 mt-0.5" />
                   <div>
-                    <p className="font-medium text-blue-900 dark:text-blue-100">
+                    <p className="font-medium text-blue-100">
                       Livello: {getRunningLevel() === 'sedentary' ? 'Sedentario' :
                                getRunningLevel() === 'beginner' ? 'Principiante' :
                                getRunningLevel() === 'intermediate' ? 'Intermedio' : 'Avanzato'}
                     </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="text-sm text-blue-300">
                       {getRunningLevel() === 'sedentary'
                         ? 'Partirai con camminata/corsa alternata'
                         : getRunningLevel() === 'beginner'
@@ -495,13 +514,13 @@ export default function RunningOnboarding({
               className="space-y-6"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Obiettivo Running
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-400">
                   Cosa vuoi ottenere con la corsa?
                 </p>
               </div>
@@ -518,35 +537,35 @@ export default function RunningOnboarding({
                       disabled={isDisabled}
                       className={`p-4 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
                         isDisabled
-                          ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+                          ? 'border-gray-700 opacity-50 cursor-not-allowed'
                           : goal === g.id
-                            ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
+                            ? 'border-green-500 bg-green-900/30'
+                            : 'border-gray-700 hover:border-green-300'
                       }`}
                     >
                       <div className={`p-2 rounded-lg ${
                         isDisabled
-                          ? 'bg-gray-200 dark:bg-gray-700 text-gray-400'
+                          ? 'bg-gray-700 text-gray-400'
                           : goal === g.id
                             ? 'bg-green-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                            : 'bg-gray-800 text-gray-400'
                       }`}>
                         {g.icon}
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <div className="font-semibold text-white flex items-center gap-2">
                           {g.label}
                           {isDisabled && (
-                            <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded">
+                            <span className="text-xs px-2 py-0.5 bg-yellow-900 text-yellow-300 rounded">
                               Livello richiesto: {status.requirements.minLevel}
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-400">
                           {g.description}
                         </div>
                         {status.requirements.minSessions > 2 && !isDisabled && (
-                          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          <div className="text-xs text-blue-400 mt-1">
                             Richiede almeno {status.requirements.minSessions} sessioni/settimana
                           </div>
                         )}
@@ -559,14 +578,14 @@ export default function RunningOnboarding({
 
               {/* Warning se obiettivo ha requisiti */}
               {GOAL_REQUIREMENTS[goal].warning && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 text-xl">⚠️</span>
                     <div>
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                      <p className="font-medium text-yellow-200">
                         Nota importante
                       </p>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      <p className="text-sm text-yellow-300">
                         {GOAL_REQUIREMENTS[goal].warning}
                       </p>
                     </div>
@@ -586,13 +605,13 @@ export default function RunningOnboarding({
               className="space-y-6"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Come Integrare
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-400">
                   Come vuoi combinare running e pesi?
                 </p>
               </div>
@@ -601,19 +620,26 @@ export default function RunningOnboarding({
                 {INTEGRATION_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
-                    onClick={() => setIntegration(opt.id)}
+                    onClick={() => {
+                      setIntegration(opt.id);
+                      // Se giorni alternati, imposta sessioni running al valore raccomandato
+                      if (opt.id === 'hybrid_alternate') {
+                        const available = getAvailableRunningDays(strengthFrequency);
+                        setSessionsPerWeek(available.recommended);
+                      }
+                    }}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                       integration === opt.id
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
+                        ? 'border-green-500 bg-green-900/30'
+                        : 'border-gray-700 hover:border-green-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
+                        <div className="font-semibold text-white">
                           {opt.label}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-400">
                           {opt.description}
                         </div>
                       </div>
@@ -622,6 +648,57 @@ export default function RunningOnboarding({
                   </button>
                 ))}
               </div>
+
+              {/* Selezione frequenza pesi per giorni alternati */}
+              {integration === 'hybrid_alternate' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-teal-900/30 border border-teal-700 rounded-xl p-4 space-y-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-teal-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-teal-100">Quanti giorni alleni coi pesi?</p>
+                      <p className="text-sm text-teal-300 mt-1">
+                        Serve per calcolare i giorni disponibili per la corsa
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center gap-3">
+                    {[2, 3, 4, 5].map((num) => {
+                      const available = getAvailableRunningDays(num);
+                      return (
+                        <button
+                          key={num}
+                          onClick={() => {
+                            setStrengthFrequency(num);
+                            setSessionsPerWeek(available.recommended);
+                          }}
+                          className={`w-14 h-14 rounded-xl border-2 font-bold text-lg transition-all ${
+                            strengthFrequency === num
+                              ? 'border-teal-500 bg-teal-900/50 text-teal-300'
+                              : 'border-gray-600 text-gray-400 hover:border-teal-400'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-black/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-teal-200">
+                      Con <strong>{strengthFrequency} giorni pesi</strong> hai{' '}
+                      <strong>{alternateRunningSessions.max} giorni</strong> disponibili per la corsa
+                    </p>
+                    <p className="text-xs text-teal-300/70 mt-1">
+                      Consigliato: {alternateRunningSessions.recommended} sessioni running
+                    </p>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -635,67 +712,125 @@ export default function RunningOnboarding({
               className="space-y-6"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Frequenza Running
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Quante sessioni di running a settimana?
+                <p className="text-gray-400">
+                  {integration === 'hybrid_alternate'
+                    ? `Con ${strengthFrequency} giorni pesi, hai ${alternateRunningSessions.max} giorni disponibili`
+                    : 'Quante sessioni di running a settimana?'}
                 </p>
               </div>
 
-              <div className="flex justify-center gap-4">
-                {[2, 3, 4].map((num) => {
-                  const minRequired = GOAL_REQUIREMENTS[goal].minSessions;
-                  const isBelowMin = num < minRequired;
+              {/* Giorni alternati: opzioni limitate */}
+              {integration === 'hybrid_alternate' ? (
+                <>
+                  <div className="flex justify-center gap-4">
+                    {Array.from(
+                      { length: alternateRunningSessions.max - alternateRunningSessions.min + 1 },
+                      (_, i) => alternateRunningSessions.min + i
+                    ).map((num) => {
+                      const minRequired = GOAL_REQUIREMENTS[goal].minSessions;
+                      const isBelowMin = num < minRequired;
+                      const isRecommended = num === alternateRunningSessions.recommended;
 
-                  return (
-                    <button
-                      key={num}
-                      onClick={() => setSessionsPerWeek(num)}
-                      className={`w-20 h-20 rounded-2xl border-2 font-bold text-2xl transition-all relative ${
-                        sessionsPerWeek === num
-                          ? isBelowMin
-                            ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600'
-                            : 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-600'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-green-300'
-                      }`}
-                    >
-                      {num}
-                      {isBelowMin && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center">
-                          !
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                      return (
+                        <button
+                          key={num}
+                          onClick={() => setSessionsPerWeek(num)}
+                          className={`w-20 h-20 rounded-2xl border-2 font-bold text-2xl transition-all relative ${
+                            sessionsPerWeek === num
+                              ? isBelowMin
+                                ? 'border-yellow-500 bg-yellow-900/30 text-yellow-400'
+                                : 'border-green-500 bg-green-900/30 text-green-400'
+                              : 'border-gray-700 text-gray-400 hover:border-green-300'
+                          }`}
+                        >
+                          {num}
+                          {isRecommended && sessionsPerWeek !== num && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-teal-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                              ★
+                            </span>
+                          )}
+                          {isBelowMin && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center">
+                              !
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-teal-900/30 border border-teal-700 rounded-lg p-4">
+                    <p className="text-sm text-teal-200 text-center">
+                      <strong>Giorni alternati:</strong> {strengthFrequency} pesi + {sessionsPerWeek} running = {strengthFrequency + sessionsPerWeek} giorni totali
+                    </p>
+                    <p className="text-xs text-teal-300/70 text-center mt-1">
+                      {7 - strengthFrequency - sessionsPerWeek > 0
+                        ? `Hai ancora ${7 - strengthFrequency - sessionsPerWeek} giorno/i di riposo completo`
+                        : 'Attenzione: nessun giorno di riposo completo'}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* Altre modalità: opzioni standard */
+                <div className="flex justify-center gap-4">
+                  {[2, 3, 4].map((num) => {
+                    const minRequired = GOAL_REQUIREMENTS[goal].minSessions;
+                    const isBelowMin = num < minRequired;
+
+                    return (
+                      <button
+                        key={num}
+                        onClick={() => setSessionsPerWeek(num)}
+                        className={`w-20 h-20 rounded-2xl border-2 font-bold text-2xl transition-all relative ${
+                          sessionsPerWeek === num
+                            ? isBelowMin
+                              ? 'border-yellow-500 bg-yellow-900/30 text-yellow-400'
+                              : 'border-green-500 bg-green-900/30 text-green-400'
+                            : 'border-gray-700 text-gray-400 hover:border-green-300'
+                        }`}
+                      >
+                        {num}
+                        {isBelowMin && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center">
+                            !
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Validazione frequenza vs obiettivo */}
               {sessionsPerWeek < GOAL_REQUIREMENTS[goal].minSessions ? (
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 text-xl">⚠️</span>
                     <div>
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                      <p className="font-medium text-yellow-200">
                         Frequenza insufficiente per "{RUNNING_GOALS.find(g => g.id === goal)?.label}"
                       </p>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      <p className="text-sm text-yellow-300">
                         Questo obiettivo richiede almeno {GOAL_REQUIREMENTS[goal].minSessions} sessioni/settimana.
-                        Con {sessionsPerWeek} sessioni, considera obiettivo "Base Aerobica" o "Recupero Attivo".
+                        {integration === 'hybrid_alternate'
+                          ? ` Con ${strengthFrequency} giorni pesi, considera di ridurre i pesi o cambiare obiettivo.`
+                          : ' Considera obiettivo "Base Aerobica" o "Recupero Attivo".'}
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 text-center">
-                  <p className="text-sm text-green-700 dark:text-green-300">
+                <div className="bg-green-900/30 rounded-lg p-4 text-center">
+                  <p className="text-sm text-green-300">
                     ✓ {sessionsPerWeek} sessioni sono adeguate per "{RUNNING_GOALS.find(g => g.id === goal)?.label}"
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     {sessionsPerWeek === 2 && 'Ideale per iniziare o come complemento'}
                     {sessionsPerWeek === 3 && 'Frequenza ottimale per costruire base aerobica'}
                     {sessionsPerWeek === 4 && 'Per runner più esperti o focus endurance'}
@@ -715,20 +850,20 @@ export default function RunningOnboarding({
               className="space-y-6"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-red-600 dark:text-red-400" />
+                <div className="w-16 h-16 bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-red-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   FC a Riposo
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-400">
                   Misurala al mattino appena sveglio (opzionale)
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Frequenza Cardiaca a Riposo (bpm)
                   </label>
                   <input
@@ -738,26 +873,26 @@ export default function RunningOnboarding({
                     value={restingHR || ''}
                     onChange={(e) => setRestingHR(e.target.value ? parseInt(e.target.value) : undefined)}
                     placeholder="es. 65"
-                    className="w-full p-4 text-xl text-center border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-green-500 focus:ring-green-500 dark:bg-gray-800"
+                    className="w-full p-4 text-xl text-center border-2 border-gray-700 rounded-xl focus:border-green-500 focus:ring-green-500 bg-gray-800 text-white"
                   />
                 </div>
 
-                <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                <div className="bg-blue-900/30 rounded-lg p-4">
+                  <p className="text-sm text-blue-300">
                     <strong>Come misurarla:</strong> Appena sveglio, prima di alzarti, conta i battiti per 60 secondi.
                     Oppure usa uno smartwatch o cardiofrequenzimetro.
                   </p>
                 </div>
 
-                <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4">
-                  <p className="font-medium text-green-900 dark:text-green-100 mb-2">
+                <div className="bg-green-900/30 rounded-lg p-4">
+                  <p className="font-medium text-green-100 mb-2">
                     Zone HR basate sulla tua età ({age} anni):
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="text-green-700 dark:text-green-300">
+                    <div className="text-green-300">
                       FC Max stimata: <strong>{hrMax} bpm</strong>
                     </div>
-                    <div className="text-green-700 dark:text-green-300">
+                    <div className="text-green-300">
                       Zona 2 target: <strong>{zone2Range.min}-{zone2Range.max} bpm</strong>
                     </div>
                   </div>
@@ -765,7 +900,7 @@ export default function RunningOnboarding({
 
                 <button
                   onClick={goNext}
-                  className="w-full text-center text-gray-500 dark:text-gray-400 py-2"
+                  className="w-full text-center text-gray-400 py-2"
                 >
                   Salta per ora →
                 </button>
@@ -783,61 +918,61 @@ export default function RunningOnboarding({
               className="space-y-6"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Riepilogo Running
                 </h2>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm space-y-4">
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-                  <span className="text-gray-600 dark:text-gray-400">Livello</span>
-                  <span className="font-semibold text-gray-900 dark:text-white capitalize">
+              <div className="bg-gray-800 rounded-xl p-4 shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+                  <span className="text-gray-400">Livello</span>
+                  <span className="font-semibold text-white capitalize">
                     {getRunningLevel() === 'sedentary' ? 'Sedentario' :
                      getRunningLevel() === 'beginner' ? 'Principiante' :
                      getRunningLevel() === 'intermediate' ? 'Intermedio' : 'Avanzato'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-                  <span className="text-gray-600 dark:text-gray-400">Obiettivo</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+                  <span className="text-gray-400">Obiettivo</span>
+                  <span className="font-semibold text-white">
                     {RUNNING_GOALS.find(g => g.id === goal)?.label}
                   </span>
                 </div>
                 {includesWeights && (
-                  <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-                    <span className="text-gray-600 dark:text-gray-400">Integrazione</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                  <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+                    <span className="text-gray-400">Integrazione</span>
+                    <span className="font-semibold text-white">
                       {INTEGRATION_OPTIONS.find(i => i.id === integration)?.label}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-                  <span className="text-gray-600 dark:text-gray-400">Sessioni/Settimana</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+                  <span className="text-gray-400">Sessioni/Settimana</span>
+                  <span className="font-semibold text-white">
                     {sessionsPerWeek}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-                  <span className="text-gray-600 dark:text-gray-400">Zona 2 Target</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
+                <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+                  <span className="text-gray-400">Zona 2 Target</span>
+                  <span className="font-semibold text-green-400">
                     {zone2Range.min}-{zone2Range.max} bpm
                   </span>
                 </div>
                 {restingHR && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">FC Riposo</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="text-gray-400">FC Riposo</span>
+                    <span className="font-semibold text-white">
                       {restingHR} bpm
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 rounded-lg p-4">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+              <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-lg p-4">
+                <p className="text-sm text-gray-300">
                   Il tuo programma di 8 settimane ti porterà da{' '}
                   <strong>
                     {getRunningLevel() === 'sedentary' ? '0 a 20 minuti' :
@@ -855,7 +990,7 @@ export default function RunningOnboarding({
         <div className="flex gap-4 mt-8">
           <button
             onClick={goBack}
-            className="flex-1 py-3 px-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3 px-4 border-2 border-gray-700 rounded-xl font-medium text-gray-300 hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
           >
             <ChevronLeft className="w-5 h-5" />
             Indietro

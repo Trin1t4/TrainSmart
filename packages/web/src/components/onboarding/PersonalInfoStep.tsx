@@ -6,6 +6,7 @@ import { calculateBodyComposition, validateMeasurements } from '@trainsmart/shar
 interface PersonalInfoStepProps {
   data: Partial<OnboardingData>;
   onNext: (data: Partial<OnboardingData>) => void;
+  onBack?: () => void;
 }
 
 // Calcola età dalla data di nascita
@@ -20,7 +21,7 @@ function calculateAgeFromBirthDate(birthDate: string): number {
   return age;
 }
 
-export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps) {
+export default function PersonalInfoStep({ data, onNext, onBack }: PersonalInfoStepProps) {
   const { t } = useTranslation();
   const [gender, setGender] = useState(data.personalInfo?.gender || 'M');
 
@@ -248,13 +249,24 @@ export default function PersonalInfoStep({ data, onNext }: PersonalInfoStepProps
         </div>
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={!isValid}
-        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {t('common.continue')}
-      </button>
+      {/* Bottoni navigazione */}
+      <div className="flex gap-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex-1 bg-slate-700 text-white py-4 rounded-lg font-semibold text-lg hover:bg-slate-600 transition"
+          >
+            ← {t('common.back')}
+          </button>
+        )}
+        <button
+          onClick={handleSubmit}
+          disabled={!isValid}
+          className={`${onBack ? 'flex-1' : 'w-full'} bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {t('common.continue')}
+        </button>
+      </div>
     </div>
   );
 }

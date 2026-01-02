@@ -6,8 +6,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeeklySplit, DayWorkout, Exercise } from '../types';
+import { RunningSession, RunningInterval } from '@trainsmart/shared';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Target, Zap, Activity, Info, ChevronDown, ImageIcon, Flame } from 'lucide-react';
+import { Target, Zap, Activity, Info, ChevronDown, ImageIcon, Flame, Timer, Heart, Footprints, Moon, Dumbbell } from 'lucide-react';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
 import { getExerciseImageWithFallback, isStaticExercise } from '@trainsmart/shared';
 
@@ -48,14 +49,51 @@ interface DayCardProps {
   showDetails: boolean;
 }
 
+// Color schemes per tipo giornata
+const dayTypeStyles = {
+  strength: {
+    badge: 'bg-blue-600',
+    border: 'hover:border-blue-500',
+    icon: Dumbbell,
+    label: 'Forza',
+  },
+  running: {
+    badge: 'bg-green-600',
+    border: 'hover:border-green-500',
+    icon: Footprints,
+    label: 'Corsa',
+  },
+  mixed: {
+    badge: 'bg-teal-600',
+    border: 'hover:border-teal-500',
+    icon: Zap,
+    label: 'Misto',
+  },
+  rest: {
+    badge: 'bg-gray-600',
+    border: 'hover:border-gray-500',
+    icon: Moon,
+    label: 'Riposo',
+  },
+};
+
 // ✅ React.memo: Prevent re-render of individual day cards
 const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCardProps) {
   const [isExpanded, setIsExpanded] = React.useState(showDetails);
 
+  // Determina tipo giornata
+  const dayType = day.type || 'strength';
+  const style = dayTypeStyles[dayType];
+  const DayIcon = style.icon;
+
   // Filtra esercizi validi e separa principali da correttivi
-  const validExercises = day.exercises.filter(ex => ex && ex.name && ex.pattern);
+  const validExercises = day.exercises?.filter(ex => ex && ex.name && ex.pattern) || [];
   const mainExercises = validExercises.filter(ex => ex.pattern !== 'corrective');
   const correctiveExercises = validExercises.filter(ex => ex.pattern === 'corrective');
+
+  // Calcola info riassuntiva
+  const hasStrength = mainExercises.length > 0;
+  const hasRunning = !!day.runningSession;
 
   return (
     <motion.div
@@ -63,18 +101,25 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="bg-gray-800 border-gray-700 hover:border-blue-500 transition-all">
+      <Card className={`bg-gray-800 border-gray-700 ${style.border} transition-all`}>
         <CardHeader
           className="cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-600 rounded-full w-10 h-10 flex items-center justify-center">
+              <div className={`${style.badge} rounded-full w-10 h-10 flex items-center justify-center`}>
                 <span className="text-white font-bold">{day.dayNumber}</span>
               </div>
               <div>
-                <CardTitle className="text-white text-lg">{day.dayName}</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-lg">{day.dayName}</CardTitle>
+                  {dayType !== 'strength' && (
+                    <span className={`${style.badge} text-white text-[10px] px-1.5 py-0.5 rounded uppercase font-medium`}>
+                      {style.label}
+                    </span>
+                  )}
+                </div>
                 <CardDescription className="text-gray-400 text-sm">
                   <Target className="inline w-4 h-4 mr-1" />
                   {day.focus}
@@ -82,8 +127,14 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
               </div>
             </div>
             <div className="flex items-center gap-3 text-gray-400">
-              <span className="text-sm">{mainExercises.length} esercizi</span>
-              <Zap className="w-5 h-5" />
+              {hasStrength && <span className="text-sm">{mainExercises.length} esercizi</span>}
+              {hasRunning && (
+                <span className="text-sm text-green-400">
+                  <Footprints className="inline w-4 h-4 mr-1" />
+                  {day.runningSession!.totalDuration} min
+                </span>
+              )}
+              <DayIcon className="w-5 h-5" />
               <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
             </div>
           </div>
@@ -92,6 +143,20 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
         {isExpanded && (
           <CardContent className="pt-0">
             <div className="space-y-3">
+              {/* Sessione Running (se presente) */}
+              {day.runningSession && (
+                <RunningSessionRow session={day.runningSession} />
+              )}
+
+              {/* Separatore se ci sono sia running che esercizi */}
+              {hasRunning && hasStrength && (
+                <div className="flex items-center gap-2 py-2">
+                  <div className="flex-1 border-t border-gray-700"></div>
+                  <span className="text-xs text-gray-500 uppercase">Forza</span>
+                  <div className="flex-1 border-t border-gray-700"></div>
+                </div>
+              )}
+
               {/* Esercizi principali */}
               {mainExercises.map((exercise, exIndex) => (
                 <ExerciseRow key={exIndex} exercise={exercise} index={exIndex} />
@@ -111,6 +176,15 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
                       isCorrective
                     />
                   ))}
+                </div>
+              )}
+
+              {/* Messaggio riposo */}
+              {dayType === 'rest' && !hasStrength && !hasRunning && (
+                <div className="text-center py-6 text-gray-400">
+                  <Moon className="w-8 h-8 mx-auto mb-2 text-gray-500" />
+                  <p className="text-sm">Giornata di riposo</p>
+                  <p className="text-xs text-gray-500 mt-1">Recupero attivo consigliato</p>
                 </div>
               )}
             </div>
@@ -370,25 +444,217 @@ function ExerciseRow({ exercise, index, isCorrective = false }: ExerciseRowProps
 }
 
 /**
+ * Running Session Row - visualizza dettagli sessione running
+ */
+interface RunningSessionRowProps {
+  session: RunningSession;
+}
+
+function RunningSessionRow({ session }: RunningSessionRowProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Traduzioni tipo sessione
+  const sessionTypeLabels: Record<string, string> = {
+    continuous: 'Continuo',
+    intervals: 'Intervalli',
+    fartlek: 'Fartlek',
+    tempo: 'Tempo Run',
+    long_run: 'Lungo',
+  };
+
+  // Traduzioni intensità
+  const intensityLabels: Record<string, string> = {
+    walk: 'Camminata',
+    easy: 'Facile',
+    zone2: 'Zona 2',
+    tempo: 'Tempo',
+    interval: 'Intervallo',
+  };
+
+  // Colori per intensità
+  const intensityColors: Record<string, string> = {
+    walk: 'bg-gray-600 text-gray-200',
+    easy: 'bg-green-600/80 text-green-100',
+    zone2: 'bg-green-600 text-white',
+    tempo: 'bg-yellow-600 text-yellow-100',
+    interval: 'bg-red-600 text-white',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-green-900/30 rounded-lg border border-green-700/50"
+    >
+      {/* Header */}
+      <div
+        className="p-3 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-green-600 rounded-lg p-2">
+              <Footprints className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{session.name}</p>
+              <p className="text-green-300 text-xs">
+                {sessionTypeLabels[session.type] || session.type} • RPE {session.rpe}/10
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-green-400 font-bold">{session.totalDuration} min</p>
+              <p className="text-green-300 text-xs flex items-center gap-1">
+                <Heart className="w-3 h-3" />
+                {session.targetHRZone.replace('zone', 'Z')}
+              </p>
+            </div>
+            <ChevronDown className={`w-5 h-5 text-green-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+          </div>
+        </div>
+      </div>
+
+      {/* Dettagli espansi */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 pb-3 border-t border-green-700/50">
+              {/* Timeline degli intervalli */}
+              <div className="mt-3 space-y-2">
+                {/* Warmup */}
+                {session.warmup && (
+                  <IntervalPill interval={session.warmup} label="Riscaldamento" />
+                )}
+
+                {/* Main Set */}
+                <div className="space-y-1.5">
+                  {session.mainSet.map((interval, idx) => (
+                    <IntervalPill key={idx} interval={interval} />
+                  ))}
+                </div>
+
+                {/* Cooldown */}
+                {session.cooldown && (
+                  <IntervalPill interval={session.cooldown} label="Defaticamento" />
+                )}
+              </div>
+
+              {/* Note */}
+              {session.notes && (
+                <div className="mt-3 pt-3 border-t border-green-700/30">
+                  <p className="text-xs text-green-300/80">{session.notes}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/**
+ * Pill per singolo intervallo running
+ */
+function IntervalPill({ interval, label }: { interval: RunningInterval; label?: string }) {
+  const intensityLabels: Record<string, string> = {
+    walk: 'Camminata',
+    easy: 'Facile',
+    zone2: 'Zona 2',
+    tempo: 'Tempo',
+    interval: 'Intervallo',
+  };
+
+  const intensityColors: Record<string, string> = {
+    walk: 'bg-gray-600/50 border-gray-500',
+    easy: 'bg-green-600/30 border-green-500/50',
+    zone2: 'bg-green-600/50 border-green-500',
+    tempo: 'bg-yellow-600/30 border-yellow-500/50',
+    interval: 'bg-red-600/30 border-red-500/50',
+  };
+
+  const bgColor = intensityColors[interval.type] || 'bg-gray-600/50 border-gray-500';
+
+  return (
+    <div className={`flex items-center justify-between ${bgColor} border rounded-lg px-3 py-2`}>
+      <div className="flex items-center gap-2">
+        <Timer className="w-4 h-4 text-green-300" />
+        <span className="text-white text-sm font-medium">
+          {label || intensityLabels[interval.type] || interval.type}
+        </span>
+        {interval.pace && (
+          <span className="text-green-300 text-xs">@ {interval.pace}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-green-400 font-bold text-sm">{interval.duration} min</span>
+        {interval.hrZone && (
+          <span className="text-xs text-green-300/80 bg-green-800/50 px-1.5 py-0.5 rounded">
+            {interval.hrZone.replace('zone', 'Z')}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Compact version - mostra solo nomi giorni + numero esercizi
  */
 export function WeeklySplitCompact({ weeklySplit }: { weeklySplit: WeeklySplit }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
       {weeklySplit.days.map((day, index) => {
-        const validExercises = day.exercises.filter(ex => ex && ex.name && ex.pattern);
+        const validExercises = day.exercises?.filter(ex => ex && ex.name && ex.pattern) || [];
         const mainExercises = validExercises.filter(ex => ex.pattern !== 'corrective');
+        const dayType = day.type || 'strength';
+        const style = dayTypeStyles[dayType];
+        const hasRunning = !!day.runningSession;
+
         return (
           <div
             key={index}
-            className="bg-gray-700 rounded-lg p-3 border border-gray-600"
+            className={`bg-gray-700 rounded-lg p-3 border ${
+              dayType === 'running' ? 'border-green-600/50' :
+              dayType === 'mixed' ? 'border-teal-600/50' :
+              dayType === 'rest' ? 'border-gray-500' :
+              'border-gray-600'
+            }`}
           >
-            <p className="text-white font-medium text-sm mb-1">
-              Giorno {day.dayNumber}
-            </p>
-            <p className="text-gray-400 text-xs">
-              {mainExercises.length} esercizi
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-white font-medium text-sm">
+                Giorno {day.dayNumber}
+              </p>
+              {dayType !== 'strength' && (
+                <span className={`${style.badge} text-white text-[8px] px-1 py-0.5 rounded uppercase`}>
+                  {style.label}
+                </span>
+              )}
+            </div>
+            <div className="text-xs space-y-0.5">
+              {mainExercises.length > 0 && (
+                <p className="text-gray-400">
+                  {mainExercises.length} esercizi
+                </p>
+              )}
+              {hasRunning && (
+                <p className="text-green-400">
+                  <Footprints className="inline w-3 h-3 mr-1" />
+                  {day.runningSession!.totalDuration} min
+                </p>
+              )}
+              {dayType === 'rest' && mainExercises.length === 0 && !hasRunning && (
+                <p className="text-gray-500">Riposo</p>
+              )}
+            </div>
           </div>
         );
       })}

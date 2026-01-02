@@ -5,11 +5,12 @@ import { OnboardingData } from '../../types/onboarding.types';
 interface ScreeningTypeStepProps {
   data: Partial<OnboardingData>;
   onNext: (data: Partial<OnboardingData>) => void;
+  onBack?: () => void;
 }
 
 type ScreeningType = 'thorough' | 'light';
 
-export default function ScreeningTypeStep({ data, onNext }: ScreeningTypeStepProps) {
+export default function ScreeningTypeStep({ data, onNext, onBack }: ScreeningTypeStepProps) {
   const [selectedType, setSelectedType] = React.useState<ScreeningType | null>(
     (data as any).screeningType || null
   );
@@ -150,14 +151,24 @@ export default function ScreeningTypeStep({ data, onNext }: ScreeningTypeStepPro
         </p>
       </div>
 
-      {/* Submit button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!selectedType}
-        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition"
-      >
-        Continua
-      </button>
+      {/* Bottoni navigazione */}
+      <div className="flex gap-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex-1 bg-slate-700 text-white py-4 rounded-xl font-semibold hover:bg-slate-600 transition"
+          >
+            ← Indietro
+          </button>
+        )}
+        <button
+          onClick={handleSubmit}
+          disabled={!selectedType}
+          className={`${onBack ? 'flex-1' : 'w-full'} bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition`}
+        >
+          Continua
+        </button>
+      </div>
     </div>
   );
 }

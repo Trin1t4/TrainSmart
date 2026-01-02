@@ -943,28 +943,15 @@ export default function ScreeningFlowFull({ onComplete, userData, userId }) {
               </>
             )}
 
-            <div className="flex gap-3">
-              {/* Bottone Indietro */}
-              {currentPattern > 0 && (
-                <button
-                  onClick={handleBack}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t('common.back')}
-                </button>
-              )}
-
-              {/* Bottone Avanti */}
-              <button
-                onClick={handleNext}
-                disabled={isGymMode ? !weight : (!selectedVariant || !reps)}
-                className={`${currentPattern > 0 ? 'flex-1' : 'w-full'} bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2`}
-              >
-                {currentPattern < MOVEMENT_PATTERNS.length - 1 ? 'Prossimo Pattern' : 'Completa Assessment'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            {/* Bottone Avanti - NO freccia indietro nei test */}
+            <button
+              onClick={handleNext}
+              disabled={isGymMode ? !weight : (!selectedVariant || !reps)}
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-emerald-600 hover:to-emerald-700 transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+            >
+              {currentPattern < MOVEMENT_PATTERNS.length - 1 ? 'Prossimo Pattern' : 'Completa Assessment'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </CardContent>
         </Card>
 
