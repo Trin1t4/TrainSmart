@@ -18,6 +18,7 @@ const getGoalOptions = (t: (key: string) => string) => [
   { value: 'resistenza', label: t('onboarding.goal.endurance'), desc: t('onboarding.goal.enduranceDesc'), category: 'fitness' },
   // SPORT & WELLNESS
   { value: 'prestazioni_sportive', label: t('onboarding.goal.sport'), desc: t('onboarding.goal.sportsDesc'), category: 'sport' },
+  { value: 'corsa', label: t('onboarding.goal.running'), desc: t('onboarding.goal.runningDesc'), category: 'sport' },
   { value: 'benessere', label: t('onboarding.goal.wellness'), desc: t('onboarding.goal.wellnessDesc'), category: 'wellness' },
   // SPECIAL NEEDS
   { value: 'motor_recovery', label: t('onboarding.goal.motorRecovery'), desc: t('onboarding.goal.motorRecoveryDesc'), category: 'health', disclaimer: 'recovery' },

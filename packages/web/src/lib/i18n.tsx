@@ -183,6 +183,8 @@ const translations: Translations = {
   "onboarding.goal.enduranceDesc": { it: "Migliora la resistenza cardiovascolare e muscolare", en: "Improve cardiovascular and muscular endurance", fr: "Améliorer l'endurance cardiovasculaire et musculaire", es: "Mejora la resistencia cardiovascular y muscular" },
   "onboarding.goal.sport": { it: "Prestazioni Sportive", en: "Sport Performance", fr: "Performance sportive", es: "Rendimiento deportivo" },
   "onboarding.goal.sportsDesc": { it: "Migliora le prestazioni nel tuo sport specifico", en: "Improve performance in your specific sport", fr: "Améliorer les performances dans votre sport spécifique", es: "Mejora el rendimiento en tu deporte específico" },
+  "onboarding.goal.running": { it: "Corsa", en: "Running", fr: "Course à pied", es: "Carrera" },
+  "onboarding.goal.runningDesc": { it: "Migliora resistenza aerobica e capacità di corsa", en: "Improve aerobic endurance and running capacity", fr: "Améliorer l'endurance aérobie et la capacité de course", es: "Mejora la resistencia aeróbica y capacidad de carrera" },
   "onboarding.goal.wellness": { it: "Benessere", en: "Wellness", fr: "Bien-être", es: "Bienestar" },
   "onboarding.goal.wellnessDesc": { it: "Mantieni la salute e il benessere generale", en: "Maintain overall health and wellness", fr: "Maintenir la santé et le bien-être général", es: "Mantén la salud y el bienestar general" },
   "onboarding.goal.recovery": { it: "Recupero Motorio", en: "Motor Recovery", fr: "Récupération motrice", es: "Recuperación motora" },

@@ -27,6 +27,9 @@ export interface HomeEquipment {
   bands: boolean;
   pullupBar: boolean;
   bench: boolean;
+  sturdyTable?: boolean;
+  loopBands?: boolean;
+  noEquipment?: boolean;
 }
 
 export interface LocationAdaptationOptions {
@@ -236,6 +239,50 @@ const NO_PULLUP_BAR_ALTERNATIVES: Record<string, string> = {
 };
 
 /**
+ * Esercizi che richiedono tavolo robusto (per Inverted Row e simili)
+ */
+const STURDY_TABLE_EXERCISES = [
+  'inverted row',
+  'inverted row (tavolo)',
+  'inverted row alta',
+  'inverted row 45°',
+  'inverted row 30°',
+  'inverted row orizzontale',
+  'inverted row singolo braccio',
+  'inverted row facilitato',
+  'rematore inverso',
+  'rematore inverso (tavolo)',
+  'rematore inverso facilitato',
+  'rematore inverso presa larga',
+  'rematore inverso piedi elevati',
+  'australian pull-up',
+  'australian pull-up (tavolo)',
+  'bodyweight row (tavolo)'
+];
+
+/**
+ * Alternative senza tavolo per esercizi di tirata
+ */
+const NO_TABLE_ALTERNATIVES: Record<string, string> = {
+  'inverted row': 'Floor Pull (asciugamano)',
+  'inverted row (tavolo)': 'Floor Pull (asciugamano)',
+  'inverted row alta': 'Floor Pull (asciugamano)',
+  'inverted row 45°': 'Floor Pull Facilitato',
+  'inverted row 30°': 'Floor Pull Facilitato',
+  'inverted row orizzontale': 'Floor Pull (asciugamano)',
+  'inverted row singolo braccio': 'Floor Pull Singolo Braccio',
+  'inverted row facilitato': 'Floor Pull Facilitato',
+  'rematore inverso': 'Floor Pull (asciugamano)',
+  'rematore inverso (tavolo)': 'Floor Pull (asciugamano)',
+  'rematore inverso facilitato': 'Floor Pull Facilitato',
+  'rematore inverso presa larga': 'Floor Pull (asciugamano)',
+  'rematore inverso piedi elevati': 'Floor Pull (asciugamano)',
+  'australian pull-up': 'Floor Pull (asciugamano)',
+  'australian pull-up (tavolo)': 'Floor Pull (asciugamano)',
+  'bodyweight row (tavolo)': 'Superman Row'
+};
+
+/**
  * RELATIVE STRENGTH-BASED BODYWEIGHT EQUIVALENTS
  *
  * La logica: usa il RAPPORTO carico/peso_corporeo per determinare l'equivalente.
@@ -392,13 +439,15 @@ function convert10RMTo1RM(weight10RM: number): number {
  * @param userBodyweight - Peso corporeo utente in kg (default 75 se non specificato)
  * @param realLoad10RM - Carico REALE 10RM da test di screening (ha priorità sulla stima)
  * @param testDate - Data ISO dell'ultimo test per questo pattern
+ * @param equipment - Attrezzatura disponibile (opzionale)
  */
 function findBodyweightAlternative(
   exerciseName: string,
   pattern: string,
   userBodyweight: number = 75,
   realLoad10RM?: number,
-  testDate?: string
+  testDate?: string,
+  equipment?: { pullupBar?: boolean; sturdyTable?: boolean; loopBands?: boolean; noEquipment?: boolean }
 ): string {
   const lowerName = exerciseName.toLowerCase();
 
@@ -424,20 +473,64 @@ function findBodyweightAlternative(
 
   console.log(`🏋️ "${exerciseName}": ${loadSource} / ${userBodyweight}kg BW = ${strengthRatio.toFixed(2)}x BW`);
 
+  // Helper per verificare se un esercizio è disponibile con l'equipment dell'utente
+  const isExerciseAvailable = (exerciseName: string): boolean => {
+    // Se non ci sono restrizioni equipment, tutto è disponibile
+    if (!equipment) return true;
+
+    const exLower = exerciseName.toLowerCase();
+
+    // Se l'utente ha scelto "nessun attrezzo", esclude tutto ciò che richiede tavolo, barra o elastici
+    const hasNoEquipment = equipment.noEquipment === true;
+    const hasPullupBar = equipment.pullupBar === true;
+    const hasTable = equipment.sturdyTable === true;
+    const hasBands = equipment.loopBands === true;
+
+    // Verifica se richiede tavolo
+    const needsTable = STURDY_TABLE_EXERCISES.some(ex => exLower.includes(ex) || ex.includes(exLower));
+    if (needsTable && !hasTable && (hasNoEquipment || !hasTable)) {
+      console.log(`🚫 ${exerciseName} richiede tavolo ma non disponibile`);
+      return false;
+    }
+
+    // Verifica se richiede sbarra
+    const needsPullupBar = PULLUP_BAR_EXERCISES.some(ex => exLower.includes(ex) || ex.includes(exLower));
+    if (needsPullupBar && !hasPullupBar) {
+      console.log(`🚫 ${exerciseName} richiede sbarra ma non disponibile`);
+      return false;
+    }
+
+    // Verifica se richiede elastici
+    if ((exLower.includes('band') || exLower.includes('elastico')) && !hasBands && hasNoEquipment) {
+      console.log(`🚫 ${exerciseName} richiede elastici ma non disponibili`);
+      return false;
+    }
+
+    return true;
+  };
+
   // Trova la migliore alternativa bodyweight basata sul RAPPORTO
   const alternatives = RELATIVE_STRENGTH_ALTERNATIVES[pattern];
 
   if (alternatives && alternatives.length > 0) {
     // Trova l'esercizio bodyweight appropriato per questo rapporto
+    // FILTRA in base all'equipment disponibile
     for (const alt of alternatives) {
-      if (strengthRatio >= alt.minRatio) {
+      if (strengthRatio >= alt.minRatio && isExerciseAvailable(alt.exercise)) {
         console.log(`🎯 Relative strength match: ${strengthRatio.toFixed(2)}x BW → ${alt.exercise} (${alt.notes})`);
         return alt.exercise;
       }
     }
-    // Fallback all'ultimo (più facile)
+    // Fallback all'ultimo DISPONIBILE (più facile)
+    for (let i = alternatives.length - 1; i >= 0; i--) {
+      if (isExerciseAvailable(alternatives[i].exercise)) {
+        console.log(`🎯 Fallback to easiest available: ${alternatives[i].exercise}`);
+        return alternatives[i].exercise;
+      }
+    }
+    // Se nulla è disponibile, usa l'ultimo comunque (meglio di niente)
     const easiest = alternatives[alternatives.length - 1];
-    console.log(`🎯 Fallback to easiest: ${easiest.exercise}`);
+    console.log(`🎯 Fallback to easiest (no filter): ${easiest.exercise}`);
     return easiest.exercise;
   }
 
@@ -552,11 +645,33 @@ function adaptExercise(
       // Solo corpo libero
       const lowerName = exercise.name.toLowerCase();
 
+      // Costruisci equipment info per il filtro
+      const equipmentInfo = {
+        pullupBar: (equipment as any)?.pullupBar === true,
+        sturdyTable: (equipment as any)?.sturdyTable === true,
+        loopBands: (equipment as any)?.bands === true || (equipment as any)?.loopBands === true,
+        noEquipment: (equipment as any)?.noEquipment === true
+      };
+
       // PRIMA controlla se richiede sbarra e se l'utente non ce l'ha
       const needsPullupBar = PULLUP_BAR_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
       const hasPullupBar = equipment?.pullupBar === true;
 
-      if (needsPullupBar && !hasPullupBar) {
+      // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
+      const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
+      const hasTable = (equipment as any)?.sturdyTable === true;
+
+      if (needsTable && !hasTable) {
+        // Esercizio richiede tavolo ma non c'è → sostituisci
+        console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
+        if (NO_TABLE_ALTERNATIVES[lowerName]) {
+          newName = NO_TABLE_ALTERNATIVES[lowerName];
+          wasReplaced = true;
+        } else {
+          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+          wasReplaced = newName !== exercise.name;
+        }
+      } else if (needsPullupBar && !hasPullupBar) {
         // Esercizio richiede sbarra ma non c'è → sostituisci
         console.log(`🚫 ${exercise.name} richiede sbarra ma non disponibile → sostituzione`);
         if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
@@ -564,7 +679,7 @@ function adaptExercise(
           wasReplaced = true;
         } else {
           // Fallback: usa alternative per vertical_pull o horizontal_pull
-          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
+          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
           wasReplaced = newName !== exercise.name;
         }
       } else if (isAlreadyBodyweightExercise(exercise.name, exercise.pattern)) {
@@ -574,16 +689,37 @@ function adaptExercise(
       } else {
         // Esercizio gym/macchina - trova alternativa bodyweight
         console.log(`🔄 ${exercise.name} richiede conversione a bodyweight`);
-        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
+        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
         wasReplaced = newName !== exercise.name;
       }
     } else {
       // Casa con attrezzatura - verifica cosa e' disponibile
       const required = requiresEquipment(exercise.name);
+      const lowerName = exercise.name.toLowerCase();
+
+      // Costruisci equipment info per il filtro
+      const equipmentInfo = {
+        pullupBar: equipment.pullupBar === true,
+        sturdyTable: (equipment as any)?.sturdyTable === true,
+        loopBands: equipment.bands === true || (equipment as any)?.loopBands === true,
+        noEquipment: (equipment as any)?.noEquipment === true
+      };
+
+      // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
+      const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
+      if (needsTable && !equipmentInfo.sturdyTable) {
+        console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
+        if (NO_TABLE_ALTERNATIVES[lowerName]) {
+          newName = NO_TABLE_ALTERNATIVES[lowerName];
+          wasReplaced = true;
+        } else {
+          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+          wasReplaced = newName !== exercise.name;
+        }
+      }
 
       // Se richiede sbarra ma non ce l'ha
       if (required.pullupBar && !equipment.pullupBar) {
-        const lowerName = exercise.name.toLowerCase();
         if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
           newName = NO_PULLUP_BAR_ALTERNATIVES[lowerName];
           wasReplaced = true;
@@ -597,14 +733,14 @@ function adaptExercise(
           newName = exercise.name.replace(/barbell/i, 'Dumbbell');
         } else {
           // Altrimenti bodyweight - USA PESO CORPOREO + CARICO REALE + DATA TEST
-          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
+          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
         }
         wasReplaced = newName !== exercise.name;
       }
 
       // Se richiede panca ma non ce l'ha
       if (required.bench && !equipment.bench) {
-        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate);
+        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
         wasReplaced = newName !== exercise.name;
       }
     }

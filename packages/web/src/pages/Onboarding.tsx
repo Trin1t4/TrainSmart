@@ -153,6 +153,11 @@ export default function Onboarding() {
 
   // Determina se lo sport richiede corsa obbligatoria
   const checkSportRequiresRunning = (goalData: Partial<OnboardingData>): boolean => {
+    // Se l'obiettivo è corsa, la corsa è ovviamente obbligatoria
+    if (goalData.goals?.includes('corsa') || goalData.goal === 'corsa') {
+      return true;
+    }
+
     const isSportGoal = goalData.goals?.includes('prestazioni_sportive') ||
                         goalData.goal === 'prestazioni_sportive';
     const selectedSport = goalData.sport as SportType | undefined;
