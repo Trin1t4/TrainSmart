@@ -772,8 +772,8 @@ export default function LocationStep({ data, onNext, onBack }: LocationStepProps
         <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-emerald-400" />
           <div>
-            <h3 className="font-semibold text-white">{t('onboarding.location.frequency') || 'Quante volte a settimana?'}</h3>
-            <p className="text-xs text-slate-400">{t('onboarding.location.frequencyDesc') || 'Includi sia pesi che corsa se li fai'}</p>
+            <h3 className="font-semibold text-white">{t('onboarding.location.frequency')}</h3>
+            <p className="text-xs text-slate-400">{t('onboarding.location.frequencyDesc')}</p>
           </div>
         </div>
 

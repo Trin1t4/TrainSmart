@@ -134,6 +134,8 @@ const translations: Translations = {
   "onboarding.location.machinesEquipment": { it: "Macchine guidate, manubri leggeri (30kg), panca, sbarra", en: "Guided machines, light dumbbells (30kg), bench, pull-up bar", fr: "Machines guidées, haltères légers (30kg), banc, barre de traction", es: "Máquinas guiadas, mancuernas ligeras (30kg), banco, barra de dominadas" },
   "onboarding.location.homeEquipment": { it: "Attrezzatura casalinga disponibile", en: "Available home equipment", fr: "Équipement domestique disponible", es: "Equipamiento casero disponible" },
   "onboarding.location.selectAvailable": { it: "Seleziona cosa hai a disposizione", en: "Select what you have available", fr: "Sélectionnez ce que vous avez disponible", es: "Selecciona lo que tienes disponible" },
+  "onboarding.location.frequency": { it: "Quante volte a settimana?", en: "How many times per week?", fr: "Combien de fois par semaine?", es: "¿Cuántas veces por semana?" },
+  "onboarding.location.frequencyDesc": { it: "Includi sia allenamenti con i pesi che corsa", en: "Include both weight training and running", fr: "Inclure musculation et course", es: "Incluye entrenamiento con pesas y carrera" },
 
   // Equipment names
   "equipment.dumbbells": { it: "Manubri", en: "Dumbbells", fr: "Haltères", es: "Mancuernas" },
