@@ -16,6 +16,7 @@ import {
 import { convertToMachineVariant } from './exerciseMapping';
 import {
   getVariantForPattern,
+  getProgressedBodyweightVariant,
   HORIZONTAL_PULL_VARIANTS,
   ACCESSORY_VARIANTS
 } from './exerciseVariants';
@@ -1785,12 +1786,18 @@ function createExercise(
   // Traduci il nome dal baseline (potrebbe essere inglese da screening vecchio)
   const translatedBaselineName = translateExerciseName(baseline.variantName);
 
-  // Per bodyweight: SEMPRE usa varianti bodyweight appropriate (non dal baseline palestra)
+  // Per bodyweight: usa progressione basata su difficoltà + reps (15 shrimp → pistol)
   // Per gym: usa baseline per index 0, varianti per altri indici
   let exerciseName: string;
   if (equipment === 'bodyweight') {
-    // Sempre prendi variante bodyweight appropriata per l'indice
-    exerciseName = getVariantForPattern(patternId, translatedBaselineName, variantIndex, equipment);
+    // Usa la nuova logica di progressione bodyweight che considera le reps
+    const progressedVariant = getProgressedBodyweightVariant(
+      patternId,
+      baseline.difficulty,
+      baselineReps,
+      variantIndex
+    );
+    exerciseName = progressedVariant || translatedBaselineName;
   } else {
     // Gym: usa baseline per variantIndex 0
     exerciseName = variantIndex === 0

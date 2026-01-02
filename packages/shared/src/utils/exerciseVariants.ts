@@ -853,7 +853,8 @@ export function getVariantForPattern(
   patternId: string,
   baselineVariantId: string,
   variantIndex: number,
-  equipment: 'bodyweight' | 'gym'
+  equipment: 'bodyweight' | 'gym',
+  baselineDifficulty?: number // Difficoltà dal test di screening (1-10)
 ): string {
   const variantMap: Record<string, ExerciseVariant[]> = {
     lower_push: LOWER_PUSH_VARIANTS,
@@ -869,15 +870,127 @@ export function getVariantForPattern(
   if (!variants) return baselineVariantId; // Fallback
 
   // Filtra per equipment
-  const validVariants = variants.filter(
+  let validVariants = variants.filter(
     v => v.equipment === equipment || v.equipment === 'both'
   );
 
   if (validVariants.length === 0) return baselineVariantId;
 
-  // Prendi la variante all'indice richiesto (ciclico)
+  // BILANCIAMENTO BODYWEIGHT: filtra per difficoltà simile al test
+  // Se l'utente ha fatto Shrimp Squat (diff 7), non proporgli Squat semplice (diff 3)
+  if (equipment === 'bodyweight' && baselineDifficulty !== undefined && baselineDifficulty > 0) {
+    // Tolleranza: ±1 per varietà, ma mai più di 2 livelli sotto
+    const minDifficulty = Math.max(baselineDifficulty - 1, baselineDifficulty - 2);
+    const maxDifficulty = baselineDifficulty + 1;
+
+    const difficultyFilteredVariants = validVariants.filter(
+      v => v.difficulty >= minDifficulty && v.difficulty <= maxDifficulty
+    );
+
+    // Se abbiamo varianti nella fascia giusta, usale
+    if (difficultyFilteredVariants.length > 0) {
+      console.log(`🎯 Bodyweight balance: diff ${baselineDifficulty} → filtrando ${difficultyFilteredVariants.length} varianti (range ${minDifficulty}-${maxDifficulty})`);
+      validVariants = difficultyFilteredVariants;
+    } else {
+      // Fallback: prendi le varianti più vicine alla difficoltà target
+      validVariants = validVariants
+        .sort((a, b) => Math.abs(a.difficulty - baselineDifficulty) - Math.abs(b.difficulty - baselineDifficulty))
+        .slice(0, 3); // Prendi le 3 più vicine
+      console.log(`⚠️ Bodyweight balance: nessuna variante in range, usando le ${validVariants.length} più vicine`);
+    }
+  }
+
+  // Prendi la variante all'indice richiesto (ciclico tra quelle appropriate)
   const selectedVariant = validVariants[variantIndex % validVariants.length];
   return selectedVariant.name;
+}
+
+/**
+ * BODYWEIGHT PROGRESSION LOGIC
+ * Calcola la difficoltà effettiva basata sulle reps del test
+ *
+ * Regola: se fai 12+ reps di un esercizio, sei pronto per il prossimo livello
+ * - 1-5 reps: esercizio troppo difficile, difficulty -1
+ * - 6-8 reps: giusto, mantieni difficoltà
+ * - 9-11 reps: pronto per progressione, difficulty +0.5
+ * - 12-15 reps: pronto per next level, difficulty +1
+ * - 15+ reps: decisamente pronto, difficulty +1.5
+ */
+export function getEffectiveBodyweightDifficulty(
+  testedDifficulty: number,
+  repsAchieved: number
+): number {
+  if (repsAchieved <= 5) {
+    // Troppo difficile, scala indietro
+    return Math.max(1, testedDifficulty - 1);
+  } else if (repsAchieved <= 8) {
+    // Giusto livello
+    return testedDifficulty;
+  } else if (repsAchieved <= 11) {
+    // Quasi pronto per progressione
+    return testedDifficulty + 0.5;
+  } else if (repsAchieved <= 15) {
+    // Pronto per next level (es: 15 shrimp → pistol)
+    return testedDifficulty + 1;
+  } else {
+    // Decisamente troppo facile
+    return Math.min(10, testedDifficulty + 1.5);
+  }
+}
+
+/**
+ * Trova la variante bodyweight appropriata basata su difficoltà effettiva
+ * Considera sia la variante testata che le reps raggiunte
+ */
+export function getProgressedBodyweightVariant(
+  patternId: string,
+  testedDifficulty: number,
+  repsAchieved: number,
+  variantIndex: number = 0
+): string {
+  const variantMap: Record<string, ExerciseVariant[]> = {
+    lower_push: LOWER_PUSH_VARIANTS,
+    lower_pull: LOWER_PULL_VARIANTS,
+    horizontal_push: HORIZONTAL_PUSH_VARIANTS,
+    horizontal_pull: HORIZONTAL_PULL_VARIANTS,
+    vertical_push: VERTICAL_PUSH_VARIANTS,
+    vertical_pull: VERTICAL_PULL_VARIANTS,
+    core: CORE_VARIANTS
+  };
+
+  const variants = variantMap[patternId];
+  if (!variants) return '';
+
+  // Calcola difficoltà effettiva
+  const effectiveDifficulty = getEffectiveBodyweightDifficulty(testedDifficulty, repsAchieved);
+
+  console.log(`📊 Bodyweight progression: tested diff ${testedDifficulty} @ ${repsAchieved} reps → effective diff ${effectiveDifficulty.toFixed(1)}`);
+
+  // Filtra varianti bodyweight
+  const bodyweightVariants = variants.filter(
+    v => v.equipment === 'bodyweight' || v.equipment === 'both'
+  ).sort((a, b) => a.difficulty - b.difficulty);
+
+  if (bodyweightVariants.length === 0) return '';
+
+  // Trova varianti nella fascia di difficoltà effettiva (±0.5)
+  const appropriateVariants = bodyweightVariants.filter(
+    v => v.difficulty >= effectiveDifficulty - 0.5 && v.difficulty <= effectiveDifficulty + 0.5
+  );
+
+  if (appropriateVariants.length > 0) {
+    const selected = appropriateVariants[variantIndex % appropriateVariants.length];
+    console.log(`  ✅ Selezionato: ${selected.name} (diff ${selected.difficulty})`);
+    return selected.name;
+  }
+
+  // Fallback: trova la variante più vicina
+  const closest = bodyweightVariants.reduce((prev, curr) =>
+    Math.abs(curr.difficulty - effectiveDifficulty) < Math.abs(prev.difficulty - effectiveDifficulty) ? curr : prev
+  );
+
+  console.log(`  ⚠️ Fallback: ${closest.name} (diff ${closest.difficulty})`);
+  return closest.name;
 }
 
 /**
