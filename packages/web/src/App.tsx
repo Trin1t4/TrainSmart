@@ -44,6 +44,7 @@ const Workout = lazy(() => import('./pages/Workout'));
 const WorkoutSession = lazy(() => import('./pages/WorkoutSession'));
 const RecoveryScreening = lazy(() => import('./pages/RecoveryScreening'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminFeatures = lazy(() => import('./pages/AdminFeatures'));
 const VideoFeedback = lazy(() => import('./pages/VideoFeedback'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const Stats = lazy(() => import('./pages/Stats'));
@@ -104,6 +105,7 @@ function App() {
 
               {/* ADMIN DASHBOARD - Protected + Role Check in component */}
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/features" element={<ProtectedRoute><AdminFeatures /></ProtectedRoute>} />
 
               {/* VIDEO FEEDBACK - Protected */}
               <Route path="/video-feedback/:correctionId" element={<ProtectedRoute><VideoFeedback /></ProtectedRoute>} />
