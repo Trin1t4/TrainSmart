@@ -355,30 +355,30 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   // FMS (Functional Movement Screening)
   // =============================================
   'FMS Deep Squat': 'fms-deep-squat.mp4',
-  'FMS Hurdle Step': '39 FMS Hurdle Step.mp4',
-  'FMS Inline Lunge': '40 FMS Inline Lunge.mp4',
-  'FMS Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
-  'FMS Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
-  'FMS Rotary Stability': '43 FMS Rotary Stability.mp4',
-  'Hurdle Step': '39 FMS Hurdle Step.mp4',
-  'Inline Lunge': '40 FMS Inline Lunge.mp4',
-  'Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
-  'Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
-  'Rotary Stability': '43 FMS Rotary Stability.mp4',
+  'FMS Hurdle Step': 'fms-hurdle-step.mp4',
+  'FMS Inline Lunge': 'fms-inline-lunge.mp4',
+  'FMS Active Straight Leg Raise': 'fms-active-straight-leg-raise.mp4',
+  'FMS Trunk Stability Push-up': 'fms-trunk-stability-push-up.mp4',
+  'FMS Rotary Stability': 'fms-rotary-stability.mp4',
+  'Hurdle Step': 'fms-hurdle-step.mp4',
+  'Inline Lunge': 'fms-inline-lunge.mp4',
+  'Active Straight Leg Raise': 'fms-active-straight-leg-raise.mp4',
+  'Trunk Stability Push-up': 'fms-trunk-stability-push-up.mp4',
+  'Rotary Stability': 'fms-rotary-stability.mp4',
 
   // =============================================
   // NECK (Esercizi per il collo)
   // =============================================
-  'Neck Flexion': '44 Neck Flexion.mp4',
-  'Neck Extension': '45 Neck Extension.mp4',
-  'Neck Lateral Flexion': '46 Neck Lateral Flexion.mp4',
-  'Neck Rotation': '47 Neck Rotation.mp4',
-  'Neck Harness Exercise': '48 Neck Harness Exercise.mp4',
-  'Flessione Collo': '44 Neck Flexion.mp4',
-  'Estensione Collo': '45 Neck Extension.mp4',
-  'Flessione Laterale Collo': '46 Neck Lateral Flexion.mp4',
-  'Rotazione Collo': '47 Neck Rotation.mp4',
-  'Esercizio con Imbracatura Collo': '48 Neck Harness Exercise.mp4',
+  'Neck Flexion': 'neck-flexion.mp4',
+  'Neck Extension': 'neck-extension.mp4',
+  'Neck Lateral Flexion': 'neck-lateral-flexion.mp4',
+  'Neck Rotation': 'neck-rotation.mp4',
+  'Neck Harness Exercise': 'neck-harness-exercise.mp4',
+  'Flessione Collo': 'neck-flexion.mp4',
+  'Estensione Collo': 'neck-extension.mp4',
+  'Flessione Laterale Collo': 'neck-lateral-flexion.mp4',
+  'Rotazione Collo': 'neck-rotation.mp4',
+  'Esercizio con Imbracatura Collo': 'neck-harness-exercise.mp4',
 
   // =============================================
   // PLYOMETRICS / JUMP TRAINING
@@ -428,51 +428,51 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Side Plank': 'side-plank.mp4',
   'Plank Laterale Completo': 'side-plank.mp4',
   'Pistol Squat V2': 'pistol-squat-v2.mp4',
-  'V-Up': '55 V-Up.mp4',
-  'V Up': '55 V-Up.mp4',
-  'Hollow Body Rock': '54 Hollow Body Rock.mp4',
-  'Oscillazione Corpo Cavo': '54 Hollow Body Rock.mp4',
+  'V-Up': 'v-up.mp4',
+  'V Up': 'v-up.mp4',
+  'Hollow Body Rock': 'hollow-body-rock.mp4',
+  'Oscillazione Corpo Cavo': 'hollow-body-rock.mp4',
 
   // =============================================
   // BACK EXTENSION / HYPEREXTENSION
   // =============================================
-  'Back Extension': '50 Back Extension Roman Chair.mp4',
-  'Back Extension Roman Chair': '50 Back Extension Roman Chair.mp4',
-  'Back Extension 45°': '50 Back Extension Roman Chair.mp4',
-  'Back Extension 45 Gradi': '50 Back Extension Roman Chair.mp4',
-  '45 Degree Back Extension': '50 Back Extension Roman Chair.mp4',
-  'Estensioni Schiena': '50 Back Extension Roman Chair.mp4',
-  'Estensioni Schiena 45°': '50 Back Extension Roman Chair.mp4',
-  'Iperestensioni': '50 Back Extension Roman Chair.mp4',
-  'Iperestensioni 45°': '50 Back Extension Roman Chair.mp4',
-  'Hyperextension': '50 Back Extension Roman Chair.mp4',
-  'Hyperextension 45°': '50 Back Extension Roman Chair.mp4',
-  'Reverse Hyperextension': '51 Reverse Hyperextension.mp4',
-  'Iperestensioni Inverse': '51 Reverse Hyperextension.mp4',
-  'Reverse Nordic Curl': '53 Reverse Nordic Curl.mp4',
-  'Nordic Curl Inverso': '53 Reverse Nordic Curl.mp4',
+  'Back Extension': 'back-extension-roman-chair.mp4',
+  'Back Extension Roman Chair': 'back-extension-roman-chair.mp4',
+  'Back Extension 45°': 'back-extension-roman-chair.mp4',
+  'Back Extension 45 Gradi': 'back-extension-roman-chair.mp4',
+  '45 Degree Back Extension': 'back-extension-roman-chair.mp4',
+  'Estensioni Schiena': 'back-extension-roman-chair.mp4',
+  'Estensioni Schiena 45°': 'back-extension-roman-chair.mp4',
+  'Iperestensioni': 'back-extension-roman-chair.mp4',
+  'Iperestensioni 45°': 'back-extension-roman-chair.mp4',
+  'Hyperextension': 'back-extension-roman-chair.mp4',
+  'Hyperextension 45°': 'back-extension-roman-chair.mp4',
+  'Reverse Hyperextension': 'reverse-hyperextension.mp4',
+  'Iperestensioni Inverse': 'reverse-hyperextension.mp4',
+  'Reverse Nordic Curl': 'reverse-nordic-curl.mp4',
+  'Nordic Curl Inverso': 'reverse-nordic-curl.mp4',
 
   // =============================================
   // BENCH PRESS VARIANTI
   // =============================================
-  'Incline Barbell Bench Press': '57 Incline Barbell Bench Press.mp4',
-  'Panca Inclinata Bilanciere': '57 Incline Barbell Bench Press.mp4',
-  'Incline Dumbbell Bench Press': '58 Incline Dumbbell Bench Press.mp4',
-  'Panca Inclinata con Manubri': '58 Incline Dumbbell Bench Press.mp4',
-  'Decline Bench Press': '59 Decline Bench Press.mp4',
-  'Panca Declinata': '59 Decline Bench Press.mp4',
+  'Incline Barbell Bench Press': 'incline-barbell-bench-press.mp4',
+  'Panca Inclinata Bilanciere': 'incline-barbell-bench-press.mp4',
+  'Incline Dumbbell Bench Press': 'incline-dumbbell-bench-press.mp4',
+  'Panca Inclinata con Manubri': 'incline-dumbbell-bench-press.mp4',
+  'Decline Bench Press': 'decline-bench-press.mp4',
+  'Panca Declinata': 'decline-bench-press.mp4',
 
   // =============================================
   // CABLE EXERCISES
   // =============================================
-  'Cable Fly High to Low': '60 Cable Fly High to Low.mp4',
-  'Croci ai Cavi Alto-Basso': '60 Cable Fly High to Low.mp4',
+  'Cable Fly High to Low': 'cable-fly-high-to-low.mp4',
+  'Croci ai Cavi Alto-Basso': 'cable-fly-high-to-low.mp4',
 
   // =============================================
   // HANGING EXERCISES
   // =============================================
-  'Hanging Knee Raise': '56 Hanging Knee Raise.mp4',
-  'Ginocchia al Petto Sospeso': '56 Hanging Knee Raise.mp4',
+  'Hanging Knee Raise': 'hanging-knee-raise.mp4',
+  'Ginocchia al Petto Sospeso': 'hanging-knee-raise.mp4',
 
   // =============================================
   // TRX / SUSPENSION
