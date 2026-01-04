@@ -168,6 +168,21 @@ export interface PainEntry {
   severity: PainSeverity;
 }
 
+/**
+ * Injury History Record - Storico infortuni permanenti
+ * Usato per controindicazioni PERMANENTI (es. ricostruzione LCA)
+ */
+export interface InjuryRecord {
+  id: string;
+  label: string;
+  area: string;
+  isRecent: boolean; // Se < 12 mesi, applica anche cautions come hard blocks
+  contraindications: string[]; // Esercizi sempre vietati
+  cautions: string[]; // Esercizi con warning (hard block se recente)
+  notes?: string;
+  dateOfInjury?: string;
+}
+
 export interface OnboardingData {
   // Step 1: Personal Info (include Navy Method measurements)
   personalInfo?: PersonalInfo;
@@ -191,7 +206,10 @@ export interface OnboardingData {
   // Step 5: Pain/Injury
   painAreas?: PainEntry[];
 
-  // Step 6: Running/Aerobic (optional)
+  // Step 6: Injury History (storico infortuni permanenti)
+  injuryHistory?: InjuryRecord[];
+
+  // Step 7: Running/Aerobic (optional)
   running?: RunningPreferences;
 }
 

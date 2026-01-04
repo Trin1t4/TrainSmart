@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { UserPlus, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, Shield } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import VideoMosaicBackground from '../components/VideoMosaicBackground';
+import { saveConsents } from '@trainsmart/shared';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -98,6 +99,22 @@ export default function Register() {
       if (data?.user) {
         // Profile is created automatically by database trigger (on_auth_user_created_profile)
         // No manual INSERT needed here - the trigger handles it with SECURITY DEFINER
+
+        // Salva consensi nella tabella user_consents (GDPR compliant)
+        try {
+          await saveConsents(data.user.id, {
+            privacy_policy: consents.privacy,
+            terms_of_service: consents.terms,
+            data_processing: consents.dataProcessing,
+            health_data_processing: consents.dataProcessing, // Same as dataProcessing for health data
+            marketing_emails: consents.marketing,
+          }, {
+            user_agent: navigator.userAgent
+          });
+        } catch (consentError) {
+          console.error('Error saving consents to user_consents table:', consentError);
+          // Non bloccare la registrazione per errore nei consensi
+        }
 
         // Successo!
         setSuccess(true);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom"; // ✅ Aggiunto Link
-import supabase from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react"; // ✅ Icone
 import { useTranslation } from '../lib/i18n';
 import { usePrefetchCurrentProgram } from '../hooks/useProgram'; // ✅ Prefetch hook

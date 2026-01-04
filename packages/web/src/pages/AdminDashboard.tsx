@@ -27,8 +27,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import * as adminService from '../lib/adminService';
-import type { AdminDashboardData } from '../lib/adminService';
+import { isAdmin as checkIsAdmin, getAdminDashboardData, type AdminDashboardData } from '@trainsmart/shared';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -47,7 +46,7 @@ export default function AdminDashboard() {
       setError(null);
 
       // Check if user is admin
-      const { data: adminStatus, error: adminError } = await adminService.isAdmin();
+      const { data: adminStatus, error: adminError } = await checkIsAdmin();
 
       if (adminError) {
         throw new Error('Errore verifica admin: ' + adminError.message);
@@ -63,7 +62,7 @@ export default function AdminDashboard() {
       setIsAdmin(true);
 
       // Load dashboard data
-      const { data, error: dataError } = await adminService.getAdminDashboardData();
+      const { data, error: dataError } = await getAdminDashboardData();
 
       if (dataError) {
         throw new Error('Errore caricamento dati: ' + dataError.message);

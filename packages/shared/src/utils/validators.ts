@@ -52,7 +52,23 @@ export function validateAndNormalizePainAreas(painAreas: any[]): NormalizedPainA
     return [];
   }
 
-  const validAreas: PainArea[] = ['knee', 'shoulder', 'lower_back', 'wrist', 'ankle', 'elbow', 'hip'];
+  // All valid pain areas - includes base areas and specific variants
+  const validAreas: PainArea[] = [
+    // Base areas
+    'wrist', 'neck',
+    // Elbow variants
+    'elbow', 'elbow_pull', 'elbow_push',
+    // Shoulder variants
+    'shoulder', 'shoulder_overhead', 'shoulder_push', 'shoulder_rotation',
+    // Knee variants
+    'knee', 'knee_flexion', 'knee_extension', 'knee_load',
+    // Hip variants
+    'hip', 'hip_flexion', 'hip_extension', 'hip_abduction', 'hip_rotation',
+    // Lower back variants
+    'lower_back', 'lower_back_flexion', 'lower_back_extension', 'lower_back_load', 'lower_back_rotation',
+    // Ankle variants
+    'ankle', 'ankle_dorsiflexion', 'ankle_plantarflexion', 'ankle_stability'
+  ];
   const validSeverities: PainSeverity[] = ['mild', 'moderate', 'severe'];
 
   const normalized = painAreas

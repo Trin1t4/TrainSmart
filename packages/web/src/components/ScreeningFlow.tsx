@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check, Timer, RotateCw, X, ZoomIn, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
-import { getExerciseImageWithFallback, calculateLevelFromScreening } from '@trainsmart/shared';
+import { getExerciseImageWithFallback, calculateLevelFromScreening, detectScreeningDiscrepancy } from '@trainsmart/shared';
 
 // Video disponibili per i test iniziali
 // Chiavi in italiano per match con i nomi tradotti
@@ -594,7 +594,14 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
       console.log('[SCREENING] ⚠️ User chose only machines → may suggest free weights later');
     }
 
-    // 6. Salva dati completi con BASELINE per ogni pattern
+    // ✅ SAFETY: Rileva discrepanza tra teoria e pratica
+    const discrepancy = detectScreeningDiscrepancy(quizScore, parseFloat(practicalScore));
+    if (discrepancy.hasDiscrepancy) {
+      console.log(`[SCREENING] ⚠️ Discrepancy detected: ${discrepancy.type}`);
+      console.log(`   ${discrepancy.feedback}`);
+    }
+
+    // 6. Salva dati completi con BASELINE per ogni pattern + DISCREPANCY
     const screeningData = {
       level: level,
       finalScore: finalScore,
@@ -603,6 +610,10 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
       physicalScore: physicalScore,
       patternBaselines: practicalResults, // ← BASELINE per programma
       usedOnlyMachines: usedOnlyMachines, // ← Flag per proposta squat settimanale
+      // ✅ SAFETY: Discrepancy per intensity caps in program generation
+      discrepancy: discrepancy.hasDiscrepancy ? discrepancy.type : null,
+      discrepancyGap: discrepancy.gap,
+      discrepancyFeedback: discrepancy.feedback,
       completed: true,
       timestamp: new Date().toISOString()
     };

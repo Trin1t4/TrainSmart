@@ -263,3 +263,43 @@ export {
   completeRehabSession as completeAdaptationSessionRehab,
   getRehabilitationDashboard as getAdaptationDashboardRehab,
 } from './exerciseAdaptationService';
+
+// GDPR Compliance Service
+export {
+  initGDPRService,
+  hasRequiredConsents,
+  hasHealthDataConsent,
+  saveConsents,
+  getConsents,
+  revokeConsent,
+  calculateAge,
+  isOldEnough,
+  saveAgeVerification,
+  runDataRetentionCleanup,
+  requestDataExport,
+  generateDataExport,
+  requestAccountDeletion,
+  confirmAccountDeletion,
+  cancelAccountDeletion,
+  processScheduledDeletions,
+  requiresHealthConsent,
+  getHealthConsentText,
+  MINIMUM_AGE_BY_COUNTRY,
+  DATA_RETENTION_POLICIES,
+  LEGAL_DOCUMENT_VERSIONS,
+  HEALTH_DATA_FIELDS,
+  type ConsentTypes,
+  type ConsentRecord,
+  type UserConsentProfile,
+  type RetentionPolicy,
+  type UserDataExport,
+  type DeletionRequest,
+} from './gdprComplianceService';
+
+// Centralized Service Initialization
+export {
+  initAllServices,
+  areServicesInitialized,
+  resetServicesForTesting,
+  type InitServicesOptions,
+} from './initAllServices';

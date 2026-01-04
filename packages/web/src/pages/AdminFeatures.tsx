@@ -22,7 +22,7 @@ import {
   FlaskConical,
   RefreshCw
 } from 'lucide-react';
-import { isAdmin } from '../lib/adminService';
+import { isAdmin } from '@trainsmart/shared';
 import {
   adminListFeatures,
   adminToggleFeature,

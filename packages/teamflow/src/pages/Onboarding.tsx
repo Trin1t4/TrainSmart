@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../hooks/useAuth';
 import { OnboardingData } from '../types/onboarding.types';
 import type { UserMode } from '@/types';
 import { useTranslation } from '../lib/i18n';
@@ -20,6 +21,7 @@ interface ExtendedOnboardingData extends Partial<OnboardingData> {
 export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth(); // User già verificato da ProtectedRoute
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<ExtendedOnboardingData>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -45,38 +47,13 @@ export default function Onboarding() {
   // ✅ Salva onboarding in Supabase
   const saveOnboardingToDatabase = async (onboardingData: Partial<OnboardingData>) => {
     try {
-      // ✅ FIX: Retry mechanism per gestire session loading ritardata
-      // (es: dopo email confirmation, sessione potrebbe non essere pronta subito)
-      let user = null;
-      let attempts = 0;
-      const maxAttempts = 3;
-
-      while (!user && attempts < maxAttempts) {
-        attempts++;
-        console.log(`[ONBOARDING] 🔄 Attempt ${attempts}/${maxAttempts} to get user session...`);
-
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-
-        if (currentUser) {
-          user = currentUser;
-          console.log('[ONBOARDING] ✅ User session found:', user.email);
-          break;
-        }
-
-        if (attempts < maxAttempts) {
-          console.log('[ONBOARDING] ⏳ Session not ready, waiting 1 second...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } else {
-          console.error('[ONBOARDING] ❌ User not authenticated after', maxAttempts, 'attempts:', userError);
-          throw new Error('User not authenticated. Prova a fare logout e login di nuovo.');
-        }
-      }
-
+      // User già disponibile da useAuth (verificato da ProtectedRoute)
       if (!user) {
-        throw new Error('User not authenticated');
+        console.error('[ONBOARDING] ❌ User not available from auth hook');
+        throw new Error('User not authenticated. Prova a fare logout e login di nuovo.');
       }
 
-      // 🔍 DEBUG - Stampa PRIMA di salvare
+      console.log('[ONBOARDING] ✅ Using authenticated user:', user.email);
       console.log('[ONBOARDING] 📤 Saving to Supabase:', JSON.stringify(onboardingData, null, 2));
       console.log('[ONBOARDING] 🏠 Final location value:', onboardingData.trainingLocation);
 

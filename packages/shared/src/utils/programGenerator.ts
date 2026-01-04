@@ -24,6 +24,12 @@ import {
   getCorrectiveExercises
 } from './painManagement';
 import { convertToMachineVariant } from './exerciseMapping';
+import {
+  findSafeSubstitutions,
+  generatePainAdaptedProgram,
+  type SubstitutionResult
+} from './exerciseSubstitutionEngine';
+import { isExerciseContraindicated, getExerciseProfile } from './exerciseAnatomicalClassification';
 import type { NormalizedPainArea } from './validators';
 import { generateWeeklySplit } from './weeklySplitGenerator';
 import { integrateRunningIntoSplit } from './runningProgramGenerator';
@@ -74,6 +80,10 @@ export interface ProgramGeneratorOptions {
   // Running/Cardio preferences
   runningPrefs?: RunningPreferences;
   userAge?: number;
+  // Screening granular data for safety checks
+  quizScore?: number;           // Score quiz teorico (0-100)
+  practicalScore?: number;      // Score test pratici (0-100)
+  discrepancyType?: 'intuitive_mover' | 'theory_practice_gap' | null;
 }
 
 export interface ScreeningResult {
@@ -2325,17 +2335,119 @@ function convertHomeExerciseToGym(exercise: any, assessments: any[]): any {
   };
 }
 
+/**
+ * Mappa aree di dolore → movimenti anatomici dolorosi
+ * Usata per integrare l'exerciseSubstitutionEngine
+ */
+const PAIN_AREA_TO_MOVEMENTS: Record<string, string[]> = {
+  'neck': ['cervical_flexion', 'cervical_extension', 'cervical_rotation', 'cervical_lateral_flexion'],
+  'shoulder': ['shoulder_flexion', 'shoulder_extension', 'shoulder_abduction', 'shoulder_internal_rotation', 'shoulder_external_rotation', 'glenohumeral_compression'],
+  'lower_back': ['spinal_flexion', 'spinal_extension', 'spinal_rotation', 'spinal_axial_compression', 'lumbar_loading'],
+  'upper_back': ['thoracic_extension', 'thoracic_rotation', 'scapular_retraction'],
+  'hip': ['hip_flexion', 'hip_extension', 'hip_abduction', 'hip_adduction', 'hip_internal_rotation', 'hip_external_rotation'],
+  'knee': ['knee_flexion', 'knee_extension', 'patellofemoral_compression', 'knee_valgus', 'knee_varus'],
+  'ankle': ['ankle_dorsiflexion', 'ankle_plantarflexion', 'ankle_inversion', 'ankle_eversion'],
+  'wrist': ['wrist_flexion', 'wrist_extension', 'wrist_deviation', 'grip_loading'],
+  'elbow': ['elbow_flexion', 'elbow_extension', 'forearm_supination', 'forearm_pronation']
+};
+
 function adaptToPain(plannedSession: any, painAreas: NormalizedPainArea[]): any {
   const areaNames = painAreas.map(p => p.area);
-  console.log('[ADAPT] Adapting to pain:', areaNames);
+  console.log('[ADAPT] Adapting to pain using anatomical engine:', areaNames);
 
+  // Converti aree di dolore in movimenti dolorosi
+  const painfulMovements: string[] = [];
+  for (const area of areaNames) {
+    const movements = PAIN_AREA_TO_MOVEMENTS[area] || [];
+    painfulMovements.push(...movements);
+  }
+
+  if (painfulMovements.length === 0) {
+    console.log('[ADAPT] No movements mapped for pain areas, using fallback');
+    // Fallback a keyword matching semplificato se area non mappata
+    return adaptToPainFallback(plannedSession, areaNames);
+  }
+
+  console.log('[ADAPT] Painful movements:', painfulMovements);
+
+  // Usa il sistema sofisticato di substitution
+  const exerciseNames = plannedSession.exercises.map((ex: any) => ex.name);
+  const painAdaptedResult = generatePainAdaptedProgram(exerciseNames, painfulMovements);
+
+  console.log('[ADAPT] Pain adaptation result:', painAdaptedResult.summary);
+
+  // Ricostruisci la lista esercizi con le sostituzioni
+  const adaptedExercises = plannedSession.exercises
+    .map((exercise: any, index: number) => {
+      const adaptation = painAdaptedResult.modified_exercises[index];
+
+      if (!adaptation) return exercise;
+
+      switch (adaptation.action) {
+        case 'keep':
+          // Mantieni l'esercizio ma riduci leggermente intensità per sicurezza
+          return {
+            ...exercise,
+            notes: exercise.notes
+              ? `${exercise.notes} | Safe for current pain areas`
+              : 'Safe for current pain areas'
+          };
+
+        case 'modify':
+          // Applica modifiche suggerite
+          const modNotes = adaptation.modifications
+            ?.map(m => m.description)
+            .join('; ') || '';
+          return {
+            ...exercise,
+            weight: exercise.weight ? Math.round(exercise.weight * 0.8 / 2.5) * 2.5 : undefined,
+            sets: Math.max(exercise.sets - 1, 2),
+            notes: `Modified: ${modNotes}`,
+            wasModified: true
+          };
+
+        case 'replace':
+          if (adaptation.replacement) {
+            console.log(`[ADAPT] Replacing ${exercise.name} → ${adaptation.replacement}`);
+            return {
+              ...exercise,
+              name: adaptation.replacement,
+              notes: `Replaced from ${exercise.name}: ${adaptation.rationale}`,
+              wasReplaced: true,
+              originalExercise: exercise.name
+            };
+          } else {
+            // Nessuna sostituzione trovata - rimuovi esercizio
+            console.log(`[ADAPT] Removing ${exercise.name} - no safe replacement`);
+            return null;
+          }
+
+        default:
+          return exercise;
+      }
+    })
+    .filter((ex: any) => ex !== null);
+
+  return {
+    ...plannedSession,
+    exercises: adaptedExercises,
+    isAdapted: true,
+    adaptationMethod: 'anatomical_engine',
+    notes: `Adapted for: ${areaNames.join(', ')} | ${painAdaptedResult.summary}`
+  };
+}
+
+/**
+ * Fallback per aree non mappate - usa keyword matching semplice
+ */
+function adaptToPainFallback(plannedSession: any, areaNames: string[]): any {
   const painContraindications: Record<string, string[]> = {
-    'neck': ['neck', 'heavy rows', 'shrugs'],
-    'shoulder': ['panca', 'press', 'lateral raise', 'dips', 'push-up', 'pull-up'],
-    'lower_back': ['stacco', 'deadlift', 'good morning', 'back squat', 'heavy rows'],
+    'neck': ['neck', 'shrugs', 'upright row'],
+    'shoulder': ['press', 'lateral raise', 'dips', 'push-up', 'pull-up', 'bench'],
+    'lower_back': ['deadlift', 'good morning', 'back squat', 'bent over'],
     'knee': ['squat', 'leg press', 'leg curl', 'leg extension', 'lunge', 'jump'],
-    'ankle': ['calf raises', 'jump', 'single leg'],
-    'wrist': ['curl', 'tricep', 'close grip', 'push-up'],
+    'ankle': ['calf', 'jump', 'single leg'],
+    'wrist': ['curl', 'push-up', 'plank'],
     'elbow': ['curl', 'tricep', 'close grip']
   };
 
@@ -2346,16 +2458,16 @@ function adaptToPain(plannedSession: any, painAreas: NormalizedPainArea[]): any 
       for (const painArea of areaNames) {
         const contraindications = painContraindications[painArea] || [];
         if (contraindications.some(keyword => name.includes(keyword))) {
-          console.log(`[ADAPT] Removing ${exercise.name} due to ${painArea} pain`);
+          console.log(`[ADAPT-FALLBACK] Removing ${exercise.name} due to ${painArea} pain`);
           return null;
         }
       }
 
       return {
         ...exercise,
-        weight: exercise.weight ? exercise.weight * 0.7 : null,
+        weight: exercise.weight ? Math.round(exercise.weight * 0.7 / 2.5) * 2.5 : undefined,
         sets: Math.max(exercise.sets - 1, 1),
-        notes: `Pain-adapted: reduced intensity`
+        notes: 'Pain-adapted: reduced intensity (fallback method)'
       };
     })
     .filter((ex: any) => ex !== null);
@@ -2364,6 +2476,7 @@ function adaptToPain(plannedSession: any, painAreas: NormalizedPainArea[]): any 
     ...plannedSession,
     exercises: adaptedExercises,
     isAdapted: true,
+    adaptationMethod: 'keyword_fallback',
     notes: `Adapted for: ${areaNames.join(', ')}`
   };
 }
@@ -2766,6 +2879,25 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
       }
     }
 
+    // Calcola peso di lavoro da weight10RM se disponibile
+    let workingWeight: string | undefined;
+    let weightNotes = '';
+    if (baseline.weight10RM && baseline.weight10RM > 0) {
+      // Estrai percentuale dall'intensity (es. "70%" → 0.70)
+      const intensityMatch = volumeCalc.intensity.match(/(\d+)/);
+      const intensityPercent = intensityMatch ? parseInt(intensityMatch[1]) / 100 : 0.70;
+
+      // Calcola peso di lavoro e arrotonda a 2.5kg
+      const calculatedWeight = Math.round((baseline.weight10RM * intensityPercent) / 2.5) * 2.5;
+      workingWeight = `${calculatedWeight}kg`;
+      weightNotes = `Peso calcolato da 10RM (${baseline.weight10RM}kg)`;
+
+      // Se peso è stimato, aggiungi nota
+      if (baseline.isEstimated) {
+        weightNotes += ` [STIMATO da ${baseline.estimatedFrom || 'altro pattern'}]`;
+      }
+    }
+
     exercises.push({
       pattern: patternId as any,
       name: exerciseName,
@@ -2773,6 +2905,7 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
       reps: finalReps,
       rest: volumeCalc.rest,
       intensity: volumeCalc.intensity,
+      weight: workingWeight,
       baseline: {
         variantId: baseline.variantId,
         difficulty: baseline.difficulty,
@@ -2782,6 +2915,7 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
       notes: [
         volumeCalc.notes,
         `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
+        weightNotes,
         painNotes,
         machineNotes
       ].filter(Boolean).join(' | ')
@@ -3274,6 +3408,13 @@ export function generateProgramWithSplit(
   // ============================================
   // STEP 4: GENERAZIONE SPLIT
   // ============================================
+
+  // Log screening safety data if present
+  if (correctedOptions.discrepancyType) {
+    console.log(`[SCREENING] Discrepancy: ${correctedOptions.discrepancyType}`);
+    console.log(`   Quiz: ${correctedOptions.quizScore}% | Practical: ${correctedOptions.practicalScore}%`);
+  }
+
   const weeklySplit = generateWeeklySplit({
     level: correctedOptions.level,
     goal: correctedOptions.goal,
@@ -3285,7 +3426,11 @@ export function generateProgramWithSplit(
     painAreas: correctedOptions.painAreas,
     muscularFocus: correctedOptions.muscularFocus as string | undefined,
     sessionDuration: correctedOptions.sessionDuration,
-    userBodyweight: correctedOptions.userBodyweight
+    userBodyweight: correctedOptions.userBodyweight,
+    // Pass screening granular data for safety checks
+    quizScore: correctedOptions.quizScore,
+    practicalScore: correctedOptions.practicalScore,
+    discrepancyType: correctedOptions.discrepancyType
   });
 
   console.log(`Split generato: ${weeklySplit.splitName}`);

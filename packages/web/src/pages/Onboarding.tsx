@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../hooks/useAuth';
 import { OnboardingData } from '../types/onboarding.types';
 import { useTranslation } from '../lib/i18n';
 import AnagraficaStep from '../components/onboarding/AnagraficaStep';
@@ -37,6 +38,7 @@ const GOALS_WITHOUT_RUNNING = [
 export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth(); // User già verificato da ProtectedRoute
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<Partial<OnboardingData>>({});
@@ -85,34 +87,13 @@ export default function Onboarding() {
 
   const saveOnboardingToDatabase = async (onboardingData: Partial<OnboardingData>) => {
     try {
-      let user = null;
-      let attempts = 0;
-      const maxAttempts = 3;
-
-      while (!user && attempts < maxAttempts) {
-        attempts++;
-        console.log(`[ONBOARDING] 🔄 Attempt ${attempts}/${maxAttempts} to get user session...`);
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-
-        if (currentUser) {
-          user = currentUser;
-          console.log('[ONBOARDING] ✅ User session found:', user.email);
-          break;
-        }
-
-        if (attempts < maxAttempts) {
-          console.log('[ONBOARDING] ⏳ Session not ready, waiting 1 second...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } else {
-          console.error('[ONBOARDING] ❌ User not authenticated after', maxAttempts, 'attempts:', userError);
-          throw new Error('User not authenticated. Prova a fare logout e login di nuovo.');
-        }
-      }
-
+      // User già disponibile da useAuth (verificato da ProtectedRoute)
       if (!user) {
-        throw new Error('User not authenticated');
+        console.error('[ONBOARDING] ❌ User not available from auth hook');
+        throw new Error('User not authenticated. Prova a fare logout e login di nuovo.');
       }
 
+      console.log('[ONBOARDING] ✅ Using authenticated user:', user.email);
       console.log('[ONBOARDING] 📤 Saving to Supabase:', JSON.stringify(onboardingData, null, 2));
 
       const { error } = await supabase
@@ -331,13 +312,62 @@ export default function Onboarding() {
             data={data}
             onNext={(stepData) => {
               console.log('[ONBOARDING] 🏃 Running interest:', stepData);
-              updateData(stepData as Partial<OnboardingData>);
 
               if (stepData.runningInterest?.enabled) {
-                // L'utente VUOLE running → mostra RunningOnboarding completo
-                setShowRunningOnboarding(true);
+                // L'utente VUOLE running → converti i dati in RunningPreferences
+                // e vai direttamente a Location (senza passare per RunningOnboarding)
+                const ri = stepData.runningInterest;
+
+                // Mappa il livello calcolato alla capacità nel formato RunningCapacity
+                const levelToCapacity: Record<string, { canRun5Min: boolean; canRun10Min: boolean; canRun20Min: boolean; canRun30Min: boolean }> = {
+                  'sedentary': { canRun5Min: false, canRun10Min: false, canRun20Min: false, canRun30Min: false },
+                  'beginner': { canRun5Min: true, canRun10Min: true, canRun20Min: false, canRun30Min: false },
+                  'intermediate': { canRun5Min: true, canRun10Min: true, canRun20Min: true, canRun30Min: false },
+                  'advanced': { canRun5Min: true, canRun10Min: true, canRun20Min: true, canRun30Min: true }
+                };
+
+                // Mappa il goal di RunningInterestStep al formato RunningGoal
+                const goalMapping: Record<string, string> = {
+                  'build_base': 'base_aerobica',
+                  'weight_loss': 'dimagrimento_cardio',
+                  'health': 'base_aerobica',
+                  'run_5k': 'preparazione_5k',
+                  'improve_endurance': 'resistenza_generale',
+                  'run_5k_time': 'preparazione_5k',
+                  'run_10k': 'preparazione_10k',
+                  'run_10k_time': 'preparazione_10k',
+                  'half_marathon': 'preparazione_10k',
+                  'speed_work': 'resistenza_generale'
+                };
+
+                // Costruisci RunningPreferences complete
+                const runningPrefs: RunningPreferences = {
+                  enabled: true,
+                  goal: (goalMapping[ri.goal || ''] || 'base_aerobica') as RunningPreferences['goal'],
+                  integration: ri.integration === 'post_workout' ? 'post_workout' : 'separate_days',
+                  sessionsPerWeek: ri.integration === 'post_workout' ? 2 : 3,
+                  capacity: {
+                    ...levelToCapacity[ri.level || 'sedentary'],
+                    currentPace: ri.currentPace,
+                    restingHeartRate: ri.restingHR,
+                  },
+                };
+
+                console.log('[ONBOARDING] 🏃 Converted to RunningPreferences:', runningPrefs);
+
+                // Salva sia runningInterest (per backward compat) che running (nuovo formato)
+                const updatedData = {
+                  ...data,
+                  runningInterest: stepData.runningInterest,
+                  running: runningPrefs
+                };
+                setData(updatedData);
+
+                // Vai direttamente a Location (step 4)
+                setCurrentStep(4);
               } else {
-                // L'utente NON vuole running → vai direttamente a Location
+                // L'utente NON vuole running → salva e vai a Location
+                updateData(stepData as Partial<OnboardingData>);
                 setCurrentStep(4);
               }
             }}

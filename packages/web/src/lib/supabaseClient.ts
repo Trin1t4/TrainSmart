@@ -16,4 +16,4 @@ if (!url || !anonKey) {
 
 export const supabase: SupabaseClient = createClient(url, anonKey);
 
-export default supabase;
+// NOTA: Usare sempre named import: import { supabase } from './supabaseClient'

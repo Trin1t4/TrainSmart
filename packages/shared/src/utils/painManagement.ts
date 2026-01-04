@@ -1382,8 +1382,10 @@ Tutti gli esercizi che stressano la caviglia saranno adattati.`;
 /**
  * Se l'utente non sa quale movimento fa male, usa il tipo generico
  * che applica deload su TUTTI i movimenti di quel distretto
+ *
+ * @returns PainArea if mapped, null if body part is not recognized
  */
-export function getGenericPainType(bodyPart: string): PainArea {
+export function getGenericPainType(bodyPart: string): PainArea | null {
   const mapping: Record<string, PainArea> = {
     'ginocchio': 'knee',
     'knee': 'knee',
@@ -1402,10 +1404,25 @@ export function getGenericPainType(bodyPart: string): PainArea {
     'polso': 'wrist',
     'wrist': 'wrist',
     'collo': 'neck',
-    'neck': 'neck'
+    'neck': 'neck',
+    // Extended areas
+    'upper_back': 'lower_back', // Map to closest supported area
+    'toracica': 'lower_back',
+    'cervicale': 'neck',
+    'cervical': 'neck',
+    'forearm': 'wrist',
+    'avambraccio': 'wrist',
+    'polpaccio': 'ankle',
+    'calf': 'ankle',
+    'petto': 'shoulder',
+    'chest': 'shoulder'
   };
 
-  return mapping[bodyPart.toLowerCase()] || 'lower_back';
+  const result = mapping[bodyPart.toLowerCase()];
+  if (!result) {
+    console.warn(`[PainManagement] Unknown body part: ${bodyPart}, returning null`);
+  }
+  return result || null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

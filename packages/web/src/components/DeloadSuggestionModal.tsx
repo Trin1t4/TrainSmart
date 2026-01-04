@@ -14,7 +14,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, TrendingDown, TrendingUp, Check, X, Clock, Settings } from 'lucide-react';
-import { ProgramAdjustment, ExerciseAdjustment } from '../lib/autoRegulationService';
+import { type ProgramAdjustment, type ExerciseAdjustment } from '@trainsmart/shared';
 import { useTranslation } from '../lib/i18n';
 
 interface DeloadSuggestionModalProps {

@@ -28,16 +28,17 @@ import {
   getAllPrograms,
   migrateLocalStorageToSupabase,
   syncProgramsFromCloud,
-  TrainingProgram
-} from '../lib/programService';
-import autoRegulationService, {
-  ProgramAdjustment,
+  setActiveProgram,
+  type TrainingProgram,
+  autoRegulationService,
+  type ProgramAdjustment,
   getPendingAdjustments,
   rejectAdjustment,
   postponeAdjustment,
-  acceptAndApplyAdjustment
-} from '../lib/autoRegulationService';
-import * as adminService from '../lib/adminService';
+  acceptAndApplyAdjustment,
+  isAdmin,
+  getAdminDashboardData
+} from '@trainsmart/shared';
 import { toast } from 'sonner';
 // ✅ React Query hooks
 import { useCurrentProgram, useUserPrograms, useCreateProgram, programKeys } from '../hooks/useProgram';
@@ -347,7 +348,7 @@ export default function Dashboard() {
 
   async function checkAdminStatus() {
     try {
-      const { data: isUserAdmin } = await adminService.isAdmin();
+      const { data: isUserAdmin } = await isAdmin();
       if (isUserAdmin) {
         setIsAdmin(true);
         console.log('🛡️ User is admin - showing Admin Panel button');
@@ -1055,7 +1056,18 @@ export default function Dashboard() {
       console.log(`⏱️ Session duration: ${finalSessionDuration} minutes`);
     }
 
-    // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal + sport
+    // ✅ SAFETY: Recupera dati screening granulari per safety checks
+    const quizScore = dataStatus.screening?.quizScore;
+    const practicalScore = dataStatus.screening?.practicalScore;
+    const discrepancyType = dataStatus.screening?.discrepancy as 'intuitive_mover' | 'theory_practice_gap' | null | undefined;
+
+    // Log per debug safety
+    if (discrepancyType) {
+      console.log(`🔍 [SCREENING SAFETY] Discrepancy: ${discrepancyType}`);
+      console.log(`   Quiz: ${quizScore}% | Practical: ${practicalScore}%`);
+    }
+
+    // Usa la NUOVA funzione con split intelligente + muscular focus + multi-goal + sport + SAFETY
     const program = generateProgramWithSplit({
       level: finalLevel as any,
       goal: finalGoal as any,
@@ -1073,7 +1085,11 @@ export default function Dashboard() {
       legsGoalType,
       gender,
       runningPrefs, // ✅ Passa le preferenze running
-      userAge: onboarding?.personalInfo?.age || 30 // ✅ Passa età per zone HR accurate
+      userAge: onboarding?.personalInfo?.age || 30, // ✅ Passa età per zone HR accurate
+      // ✅ SAFETY: Passa dati screening granulari per intensity caps
+      quizScore,
+      practicalScore,
+      discrepancyType
     });
 
     // Aggiungi campi richiesti dal formato esistente
@@ -2380,7 +2396,7 @@ export default function Dashboard() {
                           whileTap={{ scale: 0.98 }}
                           onClick={async () => {
                             if (confirm(`Vuoi impostare "${prog.name}" come programma attivo?`)) {
-                              const result = await import('../lib/programService').then(m => m.setActiveProgram(prog.id!));
+                              const result = await setActiveProgram(prog.id!);
                               if (result.success) {
                                 // ✅ React Query: Invalidate to refetch all programs
                                 await queryClient.invalidateQueries({ queryKey: programKeys.all });

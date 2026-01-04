@@ -72,7 +72,7 @@ export {
   calculate1RMFromNRM,
   calculateNRMFrom1RM,
   calculateWeightFromRIR,
-  getTargetRIR,
+  // getTargetRIR moved to fix-03-dup-for-beginners (improved version with DUP safety)
   calculateSuggestedWeight,
   formatWeight,
   getProgressionMultiplier,
@@ -214,12 +214,13 @@ export {
 } from './exerciseProgression';
 
 // Level Calculation (centralized)
-export type { Level as UserLevel, LevelThresholds } from './levelCalculation';
+export type { Level as UserLevel, LevelThresholds, DiscrepancyType, ScreeningDiscrepancy } from './levelCalculation';
 export {
   calculateLevelFromScore,
   calculateLevelFromScreening,
   calculateLevelFromBaselines,
   getLevelInfo,
+  detectScreeningDiscrepancy,
   DEFAULT_THRESHOLDS
 } from './levelCalculation';
 
@@ -465,3 +466,121 @@ export {
   generateRunningProgram,
   assessAerobicCapacity
 } from './runningProgramGenerator';
+
+// Logger - Environment-aware logging
+export {
+  logger,
+  configureLogger,
+  resetLogger,
+  type LogLevel,
+  type LoggerConfig
+} from './logger';
+
+// ============================================================
+// PROGRAM GENERATION FIXES
+// ============================================================
+
+// FIX 1: No Baseline Handling
+export {
+  createExerciseWithFallback,
+  shouldAutoCalibrateExercise,
+  calculateCalibratedWeight,
+  type ExerciseWithCalibration,
+} from './fix-01-no-baseline-handling';
+
+// FIX 2: Correctives Distribution
+export {
+  distributeCorrectivesIntelligently,
+  addCorrectivesToDaysIntelligently,
+} from './fix-02-correctives-distribution';
+
+// FIX 3: DUP for Beginners
+export {
+  getTargetRIR,
+  getDayTypeForLevel,
+  getDayTypeLabel,
+  getVolumeParamsForDayType,
+  MIN_RIR_BY_LEVEL,
+  RIR_MATRIX,
+} from './fix-03-dup-for-beginners';
+
+// FIX 4: Multi-Goal Distribution
+export {
+  calculateMultiGoalDistribution,
+  applyMultiGoalToExercise,
+  generateMultiGoalExplanation,
+  type MultiGoalDistribution,
+} from './fix-04-multi-goal-distribution';
+
+// FIX 5: Accessory Volume by Goal
+export {
+  createAccessoryExerciseAdapted,
+  ACCESSORY_PARAMS_BY_GOAL,
+  ACCESSORY_NAMES_IT,
+} from './fix-05-accessory-volume';
+
+// FIX 6: Horizontal Pull Inference
+export {
+  createHorizontalPullExerciseImproved,
+  checkAndAutoCalibrateInferred,
+  inferHorizontalPullWeight,
+  HORIZONTAL_PULL_CORRELATIONS,
+  INFERRED_CALIBRATION_CONFIG,
+  type InferredExercise,
+  type CalibrationResult,
+} from './fix-06-horizontal-pull-inference';
+
+// FIX 7: Home Training - No Pull Equipment
+export {
+  checkHorizontalPullCapability,
+  selectHorizontalPullExercise,
+  trackPullDebt,
+  generatePullDebtWarning,
+  HORIZONTAL_PULL_EQUIPMENT,
+  PULL_ALTERNATIVES_NO_EQUIPMENT,
+  MAKESHIFT_ROW_EXERCISES,
+  HOME_EQUIPMENT_QUESTIONS,
+  type EquipmentCheckResult,
+  type PullDebt,
+} from './fix-07-home-no-pull-equipment';
+
+// FIX 8: RPE/RIR Feedback System Improved
+export {
+  calculateReadinessScore,
+  calculateFeelerSetWeight,
+  analyzeFeelerSet,
+  isInLearningPeriod,
+  handleLearningPeriodFeedback,
+  updateUserCalibration,
+  analyzeSetFeedback,
+  analyzeSessionFeedback,
+  getExerciseCategory,
+  getRPEDescription,
+  getRIRDisplay,
+  CALIBRATION_CONFIG,
+  RPE_TO_RIR,
+  RIR_TO_RPE,
+  type SetFeedback,
+  type ReadinessCheck,
+  type UserCalibration,
+  type AdjustmentSuggestion,
+  type ExerciseCategory,
+} from './fix-08-rpe-rir-feedback-system';
+
+// FIX 9: Auto-Regulation Improvements
+export {
+  checkLearningPeriod,
+  getSessionCountWithExercise,
+  calculateWeightedRIR,
+  calculateDampedAdjustment,
+  calculateNormalizedSessionFatigue,
+  analyzeExerciseForAdjustment,
+  LEVEL_CONFIG,
+  FATIGUE_MULTIPLIERS,
+  SET_WEIGHTS,
+  type SetData,
+  type ExerciseSessionData,
+  type AdjustmentResult,
+  type LearningPeriodStatus,
+  type WeightedRIRResult,
+} from './fix-09-auto-regulation-improvements';

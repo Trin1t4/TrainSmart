@@ -128,6 +128,78 @@ export function calculateLevelFromBaselines(
 /**
  * Get level metadata
  */
+// ============================================================
+// SCREENING DISCREPANCY DETECTION
+// ============================================================
+
+export type DiscrepancyType = 'theory_practice_gap' | 'intuitive_mover' | 'balanced' | null;
+
+export interface ScreeningDiscrepancy {
+  hasDiscrepancy: boolean;
+  type: DiscrepancyType;
+  quizScore: number;
+  practicalScore: number;
+  gap: number;
+  feedback: string;
+}
+
+/**
+ * Rileva discrepanza tra conoscenza teorica (quiz) e capacità pratica (test)
+ *
+ * SAFETY IMPLICATIONS:
+ * - theory_practice_gap: Conosce la teoria ma non riesce a metterla in pratica
+ *   → OK per heavy days (capisce RPE/RIR)
+ * - intuitive_mover: Si muove bene istintivamente ma non conosce la teoria
+ *   → PERICOLOSO con carichi pesanti (non capisce quando fermarsi)
+ * - balanced: Buon equilibrio tra teoria e pratica
+ *   → OK per programmazione standard
+ *
+ * @param quizScore - Score dal quiz teorico (0-100)
+ * @param practicalScore - Score dai test pratici (0-100)
+ */
+export function detectScreeningDiscrepancy(
+  quizScore: number,
+  practicalScore: number
+): ScreeningDiscrepancy {
+  const gap = Math.abs(quizScore - practicalScore);
+  const threshold = 25; // 25% di discrepanza = significativo
+
+  if (gap < threshold) {
+    return {
+      hasDiscrepancy: false,
+      type: 'balanced',
+      quizScore,
+      practicalScore,
+      gap,
+      feedback: 'Buon bilanciamento tra conoscenza teorica e capacità pratica.'
+    };
+  }
+
+  if (quizScore > practicalScore) {
+    return {
+      hasDiscrepancy: true,
+      type: 'theory_practice_gap',
+      quizScore,
+      practicalScore,
+      gap,
+      feedback: `Conosci bene la teoria (${quizScore}%) ma la pratica è indietro (${Math.round(practicalScore)}%). Focus: più pratica, meno studio. Il corpo impara facendo!`
+    };
+  }
+
+  return {
+    hasDiscrepancy: true,
+    type: 'intuitive_mover',
+    quizScore,
+    practicalScore,
+    gap,
+    feedback: `Ti muovi bene istintivamente (${Math.round(practicalScore)}%) ma la teoria è debole (${quizScore}%). Focus: impara i principi base per evitare errori tecnici.`
+  };
+}
+
+// ============================================================
+// LEVEL INFO
+// ============================================================
+
 export function getLevelInfo(level: Level): {
   name: string;
   description: string;
@@ -163,5 +235,6 @@ export default {
   calculateLevelFromScreening,
   calculateLevelFromBaselines,
   getLevelInfo,
+  detectScreeningDiscrepancy,
   DEFAULT_THRESHOLDS
 };

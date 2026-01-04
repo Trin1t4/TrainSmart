@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, TrendingUp, TrendingDown, Video } from 'lucide-react';
-import autoRegulationService, { ExerciseLog } from '../lib/autoRegulationService';
+import { autoRegulationService, type ExerciseLog } from '@trainsmart/shared';
 import { toast } from 'sonner';
 import { useTranslation } from '../lib/i18n';
 import VideoUploadModal from './VideoUploadModal';

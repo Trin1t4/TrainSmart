@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X, Info, ThumbsDown } from 'lucide-react';
 import { toast } from 'sonner';
-import autoRegulationService from '../lib/autoRegulationService';
+import { autoRegulationService } from '@trainsmart/shared';
 import { supabase } from '../lib/supabaseClient';
 import { useTranslation } from '../lib/i18n';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
@@ -1442,7 +1442,11 @@ export default function LiveWorkoutSession({
 
   // Complete entire workout
   const handleWorkoutComplete = async () => {
-    if (!workoutStartTime) return;
+    // Se workoutStartTime è null, chiudi comunque il modale
+    if (!workoutStartTime) {
+      onClose();
+      return;
+    }
 
     const duration = Math.round((new Date().getTime() - workoutStartTime.getTime()) / 1000 / 60);
     const avgRPE = calculateAverageRPE();

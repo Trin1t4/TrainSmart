@@ -5,6 +5,8 @@ import { LanguageProvider } from './lib/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
+// Note: All services are initialized centrally in main.tsx via initAllServices
+
 // React Query configuration
 const queryClient = new QueryClient({
   defaultOptions: {

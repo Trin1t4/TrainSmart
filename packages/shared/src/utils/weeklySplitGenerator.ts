@@ -340,6 +340,101 @@ function translateExerciseName(name: string): string {
 }
 
 /**
+ * Mapping pattern → esercizi tipici (per matching peso)
+ */
+const PATTERN_EXERCISE_KEYWORDS: Record<string, string[]> = {
+  lower_push: ['squat', 'leg press', 'pressa', 'affondi', 'lunge', 'hack', 'extension'],
+  lower_pull: ['deadlift', 'stacco', 'rdl', 'romanian', 'leg curl', 'nordic', 'glute', 'hip thrust', 'ponte'],
+  horizontal_push: ['bench', 'panca', 'push-up', 'piegamenti', 'dip', 'floor press'],
+  vertical_push: ['overhead', 'military', 'shoulder', 'pike', 'handstand', 'lento avanti'],
+  horizontal_pull: ['row', 'rematore', 'seated row', 'cable row', 'bent over', 'trx row'],
+  vertical_pull: ['pull-up', 'chin-up', 'lat', 'pulldown', 'trazioni'],
+  core: ['plank', 'crunch', 'leg raise', 'hollow', 'ab', 'dead bug', 'pallof']
+};
+
+/**
+ * Trova il pattern corrispondente a un esercizio basandosi sul nome
+ */
+function findPatternForExercise(exerciseName: string): string | null {
+  const nameLower = exerciseName.toLowerCase();
+  for (const [pattern, keywords] of Object.entries(PATTERN_EXERCISE_KEYWORDS)) {
+    if (keywords.some(kw => nameLower.includes(kw))) {
+      return pattern;
+    }
+  }
+  return null;
+}
+
+/**
+ * Arricchisce gli esercizi con i pesi calcolati dai patternBaselines
+ *
+ * Logica:
+ * 1. Per ogni esercizio, trova il pattern corrispondente
+ * 2. Se esiste un baseline con weight10RM per quel pattern, calcola il peso
+ * 3. Formula: peso_lavoro = weight10RM × (intensity% / 100), arrotondato a 2.5kg
+ */
+function enrichExercisesWithWeights(
+  exercises: Exercise[],
+  baselines: PatternBaselines
+): Exercise[] {
+  return exercises.map(exercise => {
+    // Se già ha un peso, non modificare
+    if (exercise.weight) {
+      return exercise;
+    }
+
+    // Prova a trovare il pattern dall'esercizio
+    let pattern = exercise.pattern as string | undefined;
+    if (!pattern || pattern === 'corrective') {
+      pattern = findPatternForExercise(exercise.name) || undefined;
+    }
+
+    if (!pattern) {
+      return exercise;
+    }
+
+    // Cerca il baseline per questo pattern
+    const baseline = baselines[pattern as keyof PatternBaselines];
+    if (!baseline?.weight10RM || baseline.weight10RM <= 0) {
+      return exercise;
+    }
+
+    // Estrai l'intensità dall'esercizio (es. "70%", "75-80%")
+    let intensityPercent = 0.70; // Default
+    if (exercise.intensity) {
+      const match = exercise.intensity.match(/(\d+)/);
+      if (match) {
+        intensityPercent = parseInt(match[1]) / 100;
+      }
+    }
+
+    // Calcola peso di lavoro
+    const calculatedWeight = Math.round((baseline.weight10RM * intensityPercent) / 2.5) * 2.5;
+
+    // Non assegnare pesi < 5kg (probabilmente esercizi a corpo libero)
+    if (calculatedWeight < 5) {
+      return exercise;
+    }
+
+    // Costruisci nota sul peso
+    let weightNote = `Peso: ${calculatedWeight}kg (da 10RM: ${baseline.weight10RM}kg)`;
+    if (baseline.isEstimated) {
+      weightNote += ` [STIMATO da ${baseline.estimatedFrom || 'altro pattern'}]`;
+    }
+
+    console.log(`  💪 ${exercise.name}: ${calculatedWeight}kg (${pattern} 10RM: ${baseline.weight10RM}kg @ ${Math.round(intensityPercent * 100)}%)`);
+
+    return {
+      ...exercise,
+      weight: `${calculatedWeight}kg`,
+      notes: exercise.notes
+        ? `${exercise.notes} | ${weightNote}`
+        : weightNote
+    };
+  });
+}
+
+/**
  * ============================================================================
  * DUP INTRA-GIORNATA (Daily Undulating Periodization)
  * ============================================================================
@@ -946,7 +1041,84 @@ interface SplitGeneratorOptions {
     sturdyTable?: boolean;
     noEquipment?: boolean;
   };
+  // Screening granular data for safety checks
+  quizScore?: number;           // Score quiz teorico (0-100)
+  practicalScore?: number;      // Score test pratici (0-100)
+  discrepancyType?: 'intuitive_mover' | 'theory_practice_gap' | null;
 }
+
+// ============================================================
+// SAFETY CHECKS - Screening-based intensity limits
+// ============================================================
+
+/**
+ * SAFETY CHECK: Determina se è sicuro assegnare giorni heavy
+ *
+ * Principio scientifico:
+ * - RPE/RIR richiede comprensione teorica (Zourdos et al., 2016)
+ * - Carichi submassimali (>85% 1RM) richiedono competenza tecnica consolidata
+ * - "Intuitive movers" (alta pratica, bassa teoria) possono farsi male con carichi pesanti
+ *
+ * @returns 'heavy' | 'moderate' | 'volume' - il dayType massimo consentito
+ */
+function getMaxAllowedIntensity(
+  goal: Goal,
+  level: Level,
+  quizScore?: number,
+  discrepancyType?: string | null
+): 'heavy' | 'moderate' | 'volume' {
+
+  // Se non abbiamo dati granulari, usa logica legacy
+  if (quizScore === undefined) {
+    return 'heavy'; // Backward compatible
+  }
+
+  const isStrengthGoal = goal === 'forza' || goal === 'strength';
+
+  // SAFETY: Intuitive mover + goal forza = PERICOLOSO
+  // Non capisce RPE/RIR ma vuole carichi pesanti
+  if (discrepancyType === 'intuitive_mover' && isStrengthGoal) {
+    console.warn('[SAFETY] Intuitive mover con goal forza → limitato a MODERATE');
+    return 'moderate';
+  }
+
+  // SAFETY: Quiz score molto basso + goal forza
+  if (quizScore < 40 && isStrengthGoal) {
+    console.warn('[SAFETY] Quiz score basso con goal forza → limitato a MODERATE');
+    return 'moderate';
+  }
+
+  // SAFETY: Beginner + goal forza (indipendentemente dal quiz)
+  // Già gestito da fix-03, ma doppio controllo non fa male
+  if (level === 'beginner' && isStrengthGoal) {
+    console.warn('[SAFETY] Beginner con goal forza → limitato a MODERATE');
+    return 'moderate';
+  }
+
+  // Tutto ok, può fare heavy
+  return 'heavy';
+}
+
+/**
+ * Applica safety cap al dayType richiesto
+ */
+function applySafetyCap(
+  requestedDayType: 'heavy' | 'moderate' | 'volume',
+  maxAllowed: 'heavy' | 'moderate' | 'volume'
+): 'heavy' | 'moderate' | 'volume' {
+  const intensityOrder = { 'volume': 0, 'moderate': 1, 'heavy': 2 };
+
+  if (intensityOrder[requestedDayType] > intensityOrder[maxAllowed]) {
+    console.log(`   → DayType capped: ${requestedDayType} → ${maxAllowed}`);
+    return maxAllowed;
+  }
+
+  return requestedDayType;
+}
+
+// ============================================================
+// VOLUME DISTRIBUTION
+// ============================================================
 
 /**
  * MULTI-GOAL VOLUME DISTRIBUTION
@@ -1761,7 +1933,11 @@ function createExercise(
   options: SplitGeneratorOptions,
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
 ): Exercise {
-  const { level, goal, location, trainingType, painAreas } = options;
+  const { level, goal, location, trainingType, painAreas, quizScore, discrepancyType } = options;
+
+  // SAFETY CHECK: Apply intensity cap based on screening data
+  const maxAllowed = getMaxAllowedIntensity(goal, level, quizScore, discrepancyType);
+  const safeDayType = applySafetyCap(dayType, maxAllowed);
 
   if (!baseline) {
     // Fallback se baseline non presente
@@ -1772,14 +1948,14 @@ function createExercise(
       reps: 10,
       rest: '90s',
       intensity: '70%',
-      dayType: dayType, // DUP intra-giornata anche per fallback
+      dayType: safeDayType, // DUP intra-giornata anche per fallback (safety capped)
       notes: 'Esercizio non testato nello screening'
     };
   }
 
-  // Calcola volume basato su baseline + dayType (DUP)
+  // Calcola volume basato su baseline + safeDayType (DUP with safety cap)
   const baselineReps = baseline.reps;
-  const volumeCalc = calculateVolume(baselineReps, goal, level, location, dayType);
+  const volumeCalc = calculateVolume(baselineReps, goal, level, location, safeDayType);
 
   // Determina quale variante usare
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
@@ -1866,8 +2042,8 @@ function createExercise(
   let suggestedWeight = '';
   let weightNote = '';
   if (baseline.weight10RM && baseline.weight10RM > 0 && location === 'gym') {
-    // Usa metodo RIR-based (più preciso) con level
-    const targetRIR = getTargetRIR(dayType, goal, level);
+    // Usa metodo RIR-based (più preciso) con level - uses safeDayType for safety
+    const targetRIR = getTargetRIR(safeDayType, goal, level);
     const targetReps = typeof finalReps === 'number' ? finalReps : 8;
     const effectiveReps = targetReps + targetRIR;
 
@@ -1889,7 +2065,7 @@ function createExercise(
     reps: finalReps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
-    dayType: dayType, // DUP intra-giornata: heavy/moderate/volume
+    dayType: safeDayType, // DUP intra-giornata: heavy/moderate/volume (safety capped)
     weight: suggestedWeight || undefined, // Peso calcolato dal sistema
     baseline: {
       variantId: baseline.variantId,
@@ -1917,7 +2093,11 @@ function createHorizontalPullExercise(
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate',
   verticalPullBaseline?: any
 ): Exercise {
-  const { level, goal, location, trainingType } = options;
+  const { level, goal, location, trainingType, quizScore, discrepancyType } = options;
+
+  // SAFETY CHECK: Apply intensity cap based on screening data
+  const maxAllowed = getMaxAllowedIntensity(goal, level, quizScore, discrepancyType);
+  const safeDayType = applySafetyCap(dayType, maxAllowed);
 
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
   const variants = HORIZONTAL_PULL_VARIANTS.filter(
@@ -1929,7 +2109,7 @@ function createHorizontalPullExercise(
 
   // Usa baseline del vertical_pull se disponibile, altrimenti assume 12 reps
   const baselineReps = verticalPullBaseline?.reps || 12;
-  const volumeCalc = calculateVolume(baselineReps, goal, level, location, dayType);
+  const volumeCalc = calculateVolume(baselineReps, goal, level, location, safeDayType);
 
   // Conversione a macchine
   if (location === 'gym' && trainingType === 'machines') {
@@ -1940,7 +2120,7 @@ function createHorizontalPullExercise(
   let suggestedWeight = '';
   let weightNote = '';
   if (verticalPullBaseline?.weight10RM && verticalPullBaseline.weight10RM > 0 && location === 'gym') {
-    const targetRIR = getTargetRIR(dayType, goal, level);
+    const targetRIR = getTargetRIR(safeDayType, goal, level);
     const targetReps = typeof volumeCalc.reps === 'number' ? volumeCalc.reps : 8;
     const weight = calculateWeightFromRIR(verticalPullBaseline.weight10RM, targetReps, targetRIR);
     suggestedWeight = formatWeight(weight);
@@ -1956,7 +2136,7 @@ function createHorizontalPullExercise(
     reps: volumeCalc.reps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
-    dayType: dayType, // DUP intra-giornata: heavy/moderate/volume
+    dayType: safeDayType, // DUP intra-giornata: heavy/moderate/volume (safety capped)
     weight: suggestedWeight || undefined,
     baseline: verticalPullBaseline ? {
       variantId: 'estimated_from_vertical_pull',
@@ -1980,7 +2160,11 @@ function createAccessoryExercise(
   options: SplitGeneratorOptions,
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
 ): Exercise {
-  const { level, goal, location, trainingType } = options;
+  const { level, goal, location, trainingType, quizScore, discrepancyType } = options;
+
+  // SAFETY CHECK: Apply intensity cap based on screening data
+  const maxAllowed = getMaxAllowedIntensity(goal, level, quizScore, discrepancyType);
+  const safeDayType = applySafetyCap(dayType, maxAllowed);
 
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
   const variants = ACCESSORY_VARIANTS[muscleGroup].filter(
@@ -1996,7 +2180,7 @@ function createAccessoryExercise(
       reps: 12,
       rest: '60s',
       intensity: '70%',
-      dayType: dayType, // DUP intra-giornata
+      dayType: safeDayType, // DUP intra-giornata (safety capped)
       notes: `Accessorio ${muscleGroup}`
     };
   }
@@ -2020,7 +2204,7 @@ function createAccessoryExercise(
     reps: reps,
     rest: '60s',
     intensity: '70%',
-    dayType: dayType, // DUP intra-giornata
+    dayType: safeDayType, // DUP intra-giornata (safety capped)
     notes: `Accessorio ${muscleGroup}`
   };
 }
@@ -2415,6 +2599,16 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   );
   split.averageDuration = avgDuration;
   console.log(`Average workout duration: ~${avgDuration} min`);
+
+  // ============================================
+  // ARRICCHIMENTO PESI DA BASELINES
+  // ============================================
+  if (baselines) {
+    console.log('\n💪 Calcolo pesi da patternBaselines...');
+    split.days.forEach(day => {
+      day.exercises = enrichExercisesWithWeights(day.exercises, baselines);
+    });
+  }
 
   return split;
 }
