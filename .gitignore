@@ -12,3 +12,7 @@ test-goal.js
 # Backup files
 *.BACKUP.js
 nul
+
+# Video files (stored on Supabase Storage)
+packages/web/public/videos/exercises/*.mp4
+packages/teamflow/public/videos/exercises/*.mp4
