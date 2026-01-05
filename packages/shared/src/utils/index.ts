@@ -36,6 +36,7 @@ export {
 export type { VolumeResult, ProgramGeneratorOptions } from './programGenerator';
 export {
   calculateVolume,
+  shouldSuggestVariantUpgrade,
   generateProgram,
   generateProgramWithSplit,
   isBodyweightExercise

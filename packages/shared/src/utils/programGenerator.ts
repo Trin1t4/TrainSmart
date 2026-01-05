@@ -2598,12 +2598,19 @@ export function recalibrateProgram(assessments: any[], detrainingFactor: number)
 }
 
 // ============================================================================
-// CALCULATE VOLUME (DUP System)
+// CALCULATE VOLUME (DUP System) - REFACTORED
+// ============================================================================
+// FIX: GYM mantiene logica esistente (meno reps = più carico)
+//      HOME BODYWEIGHT: NON riduce reps, mantiene baseline e suggerisce variante più difficile
 // ============================================================================
 
 /**
  * Calcola volume (sets/reps/rest) basato su baseline, goal e dayType
  * Sistema DUP (Daily Undulating Periodization) per variare stimoli
+ *
+ * DIFFERENZIA:
+ * - location === 'gym' | 'home_gym' -> logica weighted (meno reps = più kg)
+ * - location === 'home' -> logica bodyweight (stesse reps, progressione = variante più difficile)
  */
 export function calculateVolume(
   baselineMaxReps: number,
@@ -2612,71 +2619,61 @@ export function calculateVolume(
   location: 'gym' | 'home' | 'home_gym' = 'gym',
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
 ): VolumeResult {
-  // Nota: Il livello beginner usa comunque il DUP con parametri più conservativi
-  // I baseline del test pratico determinano la difficoltà appropriata per ogni pattern
-  // Un "beginner" che fa shrimp squat avrà parametri diversi da uno che fa squat base
 
-  // Sistema DUP per tutti i livelli
+  // Determina modalità: WEIGHTED vs BODYWEIGHT
+  const isWeightedTraining = location === 'gym' || location === 'home_gym';
+
+  if (isWeightedTraining) {
+    return calculateVolumeWeighted(baselineMaxReps, goal, level, dayType);
+  } else {
+    return calculateVolumeBodyweight(baselineMaxReps, goal, level, dayType);
+  }
+}
+
+// ============================================================================
+// WEIGHTED TRAINING (Gym / Home Gym)
+// Logica classica: modula carico e reps
+// ============================================================================
+
+function calculateVolumeWeighted(
+  baselineMaxReps: number,
+  goal: string,
+  level: string,
+  dayType: 'heavy' | 'volume' | 'moderate'
+): VolumeResult {
+
+  // Working reps: 75% del baseline (logica esistente, funziona per i pesi)
   const workingReps = Math.max(4, Math.floor(baselineMaxReps * 0.75));
+
   let sets = 4;
   let reps = workingReps;
   let rest = '90s';
   let intensity = '75%';
   let notes = '';
 
-  // STRENGTH - Mix di stimoli con FOCUS FORZA
-  // Heavy: forza massimale (3-5 reps, 85-90%)
-  // Moderate: forza dinamica (5-8 reps, 78-82%) - velocità e tecnica
-  // Volume: forza-resistenza (6-10 reps, 75-80%) - capacità di lavoro MA carichi significativi
+  // FORZA (weighted) - Meno reps, più carico
   if (goal === 'forza' || goal === 'strength') {
-    if (location === 'gym') {
-      if (dayType === 'heavy') {
-        sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
-        reps = Math.max(3, Math.min(workingReps, 5));
-        rest = '3-5min';
-        intensity = '85-90%';
-        notes = 'Forza Massimale - Carico pesante, recupero completo';
-      } else if (dayType === 'volume') {
-        // VOLUME per FORZA = più serie a carichi ANCORA significativi (non bassi!)
-        sets = level === 'beginner' ? 4 : 5;
-        reps = Math.max(6, Math.min(workingReps, 10));
-        rest = '2-3min';
-        intensity = '75-80%';
-        notes = 'Forza-Resistenza - Accumulo volume a carichi medi-alti';
-      } else {
-        // Moderate: forza dinamica con focus tecnico
-        sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 5;
-        reps = Math.max(5, Math.min(workingReps, 8));
-        rest = '2-3min';
-        intensity = '78-82%';
-        notes = 'Forza Dinamica - Velocità e tecnica';
-      }
+    if (dayType === 'heavy') {
+      sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
+      reps = Math.max(3, Math.min(workingReps, 5));
+      rest = '3-5min';
+      intensity = '85-90%';
+      notes = 'Forza Massimale - Carico pesante, recupero completo';
+    } else if (dayType === 'volume') {
+      sets = level === 'beginner' ? 4 : 5;
+      reps = Math.max(6, Math.min(workingReps, 10));
+      rest = '2-3min';
+      intensity = '75-80%';
+      notes = 'Forza-Resistenza - Accumulo volume a carichi medi-alti';
     } else {
-      // BODYWEIGHT: focus su progressioni difficili
-      if (dayType === 'heavy') {
-        sets = level === 'advanced' ? 6 : 5;
-        reps = Math.max(3, Math.min(workingReps, 5));
-        rest = '3-4min';
-        intensity = '85-90%';
-        notes = 'Forza Massimale - Progressione difficile';
-      } else if (dayType === 'volume') {
-        // Volume per forza BW = più serie della progressione attuale
-        sets = 5;
-        reps = Math.max(6, Math.min(workingReps, 10));
-        rest = '2min';
-        intensity = '75-80%';
-        notes = 'Forza-Resistenza - Accumulo volume';
-      } else {
-        // Moderate: tecnica e velocità
-        sets = level === 'advanced' ? 5 : 4;
-        reps = Math.max(5, Math.min(workingReps, 8));
-        rest = '2min';
-        intensity = '78-82%';
-        notes = 'Forza Dinamica - Velocità esecuzione';
-      }
+      sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 5;
+      reps = Math.max(5, Math.min(workingReps, 8));
+      rest = '2-3min';
+      intensity = '78-82%';
+      notes = 'Forza Dinamica - Velocità e tecnica';
     }
   }
-  // HYPERTROPHY
+  // IPERTROFIA (weighted)
   else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain' || goal === 'ipertrofia') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
@@ -2698,7 +2695,7 @@ export function calculateVolume(
       notes = 'Moderato - Ipertrofia classica';
     }
   }
-  // FAT LOSS
+  // DIMAGRIMENTO / TONIFICAZIONE (weighted)
   else if (goal === 'fat_loss' || goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'definizione') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
@@ -2720,7 +2717,7 @@ export function calculateVolume(
       notes = 'Moderato - Definizione';
     }
   }
-  // ENDURANCE
+  // RESISTENZA (weighted)
   else if (goal === 'endurance' || goal === 'resistenza') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
@@ -2742,7 +2739,7 @@ export function calculateVolume(
       notes = 'Moderato - Endurance muscolare';
     }
   }
-  // GENERAL FITNESS
+  // BENESSERE / GENERAL FITNESS (weighted)
   else if (goal === 'general_fitness' || goal === 'benessere') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
@@ -2764,33 +2761,51 @@ export function calculateVolume(
       notes = 'Moderato - Bilanciato';
     }
   }
-  // SPECIAL GOALS
+  // SPORT PERFORMANCE (weighted)
   else if (goal === 'sport_performance' || goal === 'prestazioni_sportive') {
-    sets = 4;
-    reps = Math.max(6, Math.min(workingReps, 10));
-    rest = '90-120s';
-    intensity = '70-80%';
-    notes = 'Allenamento sport-specifico';
-  } else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
+    if (dayType === 'heavy') {
+      sets = 4;
+      reps = Math.max(4, Math.min(workingReps, 6));
+      rest = '2-3min';
+      intensity = '82-88%';
+      notes = 'Potenza - Esplosività';
+    } else if (dayType === 'volume') {
+      sets = 4;
+      reps = Math.max(8, Math.min(workingReps, 12));
+      rest = '60-90s';
+      intensity = '65-75%';
+      notes = 'Capacità di lavoro';
+    } else {
+      sets = 4;
+      reps = Math.max(6, Math.min(workingReps, 10));
+      rest = '90-120s';
+      intensity = '70-80%';
+      notes = 'Allenamento sport-specifico';
+    }
+  }
+  // GOAL SPECIALI (weighted)
+  else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
     sets = 3;
     reps = Math.max(8, Math.min(workingReps, 12));
     rest = '90-120s';
     intensity = '60-70%';
     notes = 'Recupero motorio - Focus tecnica';
-  } else if (goal === 'pregnancy' || goal === 'gravidanza') {
+  }
+  else if (goal === 'pregnancy' || goal === 'gravidanza') {
     sets = 3;
     reps = Math.max(10, Math.min(workingReps, 15));
     rest = '90-120s';
     intensity = '50-65%';
     notes = 'Gravidanza - Intensità controllata';
-  } else if (goal === 'disability' || goal === 'disabilita') {
+  }
+  else if (goal === 'disability' || goal === 'disabilita') {
     sets = 3;
     reps = Math.max(8, Math.min(workingReps, 12));
     rest = '120s';
     intensity = '60-70%';
     notes = 'Adattamenti specifici';
   }
-  // DEFAULT
+  // DEFAULT (weighted)
   else {
     sets = 4;
     reps = Math.max(8, Math.min(workingReps, 12));
@@ -2800,6 +2815,264 @@ export function calculateVolume(
   }
 
   return { sets, reps, rest, intensity, notes };
+}
+
+// ============================================================================
+// BODYWEIGHT TRAINING (Calisthenics - Home senza attrezzatura con pesi)
+// ============================================================================
+// PRINCIPIO CHIAVE: La forza nel calisthenics NON viene da "meno reps"
+// ma da VARIANTI PIÙ DIFFICILI.
+// Progressione: Squat -> Bulgarian -> Pistol -> Shrimp
+//               Push-up -> Diamond -> Archer -> One-Arm
+// NON APPLICHIAMO workingReps = baseline * 0.75 perché non ha senso!
+// ============================================================================
+
+function calculateVolumeBodyweight(
+  baselineMaxReps: number,
+  goal: string,
+  level: string,
+  dayType: 'heavy' | 'volume' | 'moderate'
+): VolumeResult {
+
+  // Base sets per livello
+  const baseSets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
+
+  // Soglia per suggerire upgrade variante
+  const UPGRADE_THRESHOLD = 15;
+  const readyForUpgrade = baselineMaxReps >= UPGRADE_THRESHOLD;
+
+  let sets = baseSets;
+  let reps = baselineMaxReps; // MANTIENI LE REPS BASELINE!
+  let rest = '90s';
+  let intensity = 'RPE 7';
+  let notes = '';
+
+  // FORZA (bodyweight) - NON ridurre reps!
+  if (goal === 'forza' || goal === 'strength') {
+    const targetReps = Math.max(5, Math.min(baselineMaxReps, 12));
+
+    if (dayType === 'heavy') {
+      sets = level === 'advanced' ? 6 : 5;
+      reps = targetReps;
+      rest = '2-3min';
+      intensity = 'RPE 9';
+      notes = readyForUpgrade
+        ? 'Pronto per variante più difficile!'
+        : 'Focus: controllo e tempo sotto tensione';
+    } else if (dayType === 'volume') {
+      sets = baseSets + 1;
+      reps = Math.min(baselineMaxReps + 2, 15);
+      rest = '90s';
+      intensity = 'RPE 7';
+      notes = 'Consolida la variante - Accumulo volume';
+    } else {
+      sets = baseSets;
+      reps = targetReps;
+      rest = '90s';
+      intensity = 'RPE 8';
+      notes = 'Forza dinamica - Qualità esecuzione';
+    }
+  }
+  // IPERTROFIA (bodyweight) - Volume è il driver
+  else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain' || goal === 'ipertrofia') {
+    const targetReps = Math.min(baselineMaxReps + 3, 20);
+
+    if (dayType === 'heavy') {
+      sets = baseSets;
+      reps = Math.max(8, baselineMaxReps);
+      rest = '90s';
+      intensity = 'RPE 8-9 (TUT)';
+      notes = 'Tempo 3-1-2 per massima tensione';
+    } else if (dayType === 'volume') {
+      sets = baseSets + 2;
+      reps = targetReps;
+      rest = '60s';
+      intensity = 'RPE 8';
+      notes = 'Volume alto - Cedimento controllato';
+    } else {
+      sets = baseSets + 1;
+      reps = targetReps;
+      rest = '75s';
+      intensity = 'RPE 7-8';
+      notes = 'Ipertrofia - Range ottimale';
+    }
+  }
+  // DIMAGRIMENTO / TONIFICAZIONE (bodyweight) - Alta densità
+  else if (goal === 'fat_loss' || goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'definizione') {
+    const targetReps = Math.min(baselineMaxReps + 5, 25);
+
+    if (dayType === 'heavy') {
+      sets = baseSets;
+      reps = Math.max(10, baselineMaxReps);
+      rest = '60s';
+      intensity = 'RPE 8';
+      notes = 'Preserva forza - Ritmo sostenuto';
+    } else if (dayType === 'volume') {
+      sets = baseSets + 1;
+      reps = targetReps;
+      rest = '30-45s';
+      intensity = 'RPE 7 (Circuit)';
+      notes = 'Max densità - Poco rest';
+    } else {
+      sets = baseSets;
+      reps = Math.min(baselineMaxReps + 3, 20);
+      rest = '45-60s';
+      intensity = 'RPE 7-8';
+      notes = 'Definizione - Ritmo costante';
+    }
+  }
+  // RESISTENZA (bodyweight) - Max reps
+  else if (goal === 'endurance' || goal === 'resistenza') {
+    const targetReps = Math.min(baselineMaxReps + 10, 30);
+
+    if (dayType === 'heavy') {
+      sets = baseSets;
+      reps = Math.min(baselineMaxReps + 5, 20);
+      rest = '45s';
+      intensity = 'RPE 8';
+      notes = 'Forza resistente';
+    } else if (dayType === 'volume') {
+      sets = baseSets;
+      reps = targetReps;
+      rest = '30s';
+      intensity = 'RPE 7';
+      notes = 'Max reps - Forma corretta';
+    } else {
+      sets = baseSets;
+      reps = Math.min(baselineMaxReps + 8, 25);
+      rest = '30-45s';
+      intensity = 'RPE 6-7';
+      notes = 'Capacità di lavoro';
+    }
+  }
+  // BENESSERE (bodyweight)
+  else if (goal === 'general_fitness' || goal === 'benessere') {
+    const targetReps = Math.min(baselineMaxReps + 2, 15);
+
+    if (dayType === 'heavy') {
+      sets = baseSets;
+      reps = baselineMaxReps;
+      rest = '90s';
+      intensity = 'RPE 7-8';
+      notes = 'Forza generale';
+    } else if (dayType === 'volume') {
+      sets = baseSets;
+      reps = targetReps;
+      rest = '60s';
+      intensity = 'RPE 6-7';
+      notes = 'Fitness generale';
+    } else {
+      sets = baseSets;
+      reps = targetReps;
+      rest = '75s';
+      intensity = 'RPE 6';
+      notes = 'Bilanciato';
+    }
+  }
+  // SPORT PERFORMANCE (bodyweight) - Potenza esplosiva
+  else if (goal === 'sport_performance' || goal === 'prestazioni_sportive') {
+    if (dayType === 'heavy') {
+      sets = baseSets;
+      reps = Math.max(5, Math.floor(baselineMaxReps * 0.7)); // Qui OK ridurre per esplosività
+      rest = '2min';
+      intensity = 'RPE 9 (Explosive)';
+      notes = 'Max velocità esecuzione';
+    } else if (dayType === 'volume') {
+      sets = baseSets + 1;
+      reps = baselineMaxReps + 3;
+      rest = '60s';
+      intensity = 'RPE 7';
+      notes = 'Capacità di lavoro';
+    } else {
+      sets = baseSets;
+      reps = baselineMaxReps;
+      rest = '90s';
+      intensity = 'RPE 8';
+      notes = 'Potenza controllata';
+    }
+  }
+  // GOAL SPECIALI (bodyweight)
+  else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
+    sets = 3;
+    reps = Math.min(baselineMaxReps, 12);
+    rest = '90-120s';
+    intensity = 'RPE 5-6';
+    notes = 'Recupero - Focus tecnica e mobilità';
+  }
+  else if (goal === 'pregnancy' || goal === 'gravidanza') {
+    sets = 3;
+    reps = Math.min(baselineMaxReps, 12);
+    rest = '90-120s';
+    intensity = 'RPE 5-6';
+    notes = 'Gravidanza - Intensità controllata, evita Valsalva';
+  }
+  else if (goal === 'disability' || goal === 'disabilita') {
+    sets = 3;
+    reps = Math.min(baselineMaxReps, 10);
+    rest = '120s';
+    intensity = 'RPE 5-7';
+    notes = 'Adattamenti specifici alla condizione';
+  }
+  // DEFAULT (bodyweight)
+  else {
+    sets = 3;
+    reps = Math.min(baselineMaxReps + 2, 15);
+    rest = '60s';
+    intensity = 'RPE 7';
+    notes = 'Programma generale bodyweight';
+  }
+
+  return { sets, reps, rest, intensity, notes };
+}
+
+/**
+ * Determina se l'utente è pronto per una variante più difficile
+ * Può essere usato nella UI per mostrare suggerimenti
+ */
+export function shouldSuggestVariantUpgrade(
+  currentReps: number,
+  goal: string,
+  location: string
+): { shouldUpgrade: boolean; reason: string } {
+
+  // Solo per bodyweight
+  if (location === 'gym' || location === 'home_gym') {
+    return { shouldUpgrade: false, reason: 'N/A per allenamento con pesi' };
+  }
+
+  // Soglie per goal
+  const thresholds: Record<string, number> = {
+    'forza': 12,
+    'strength': 12,
+    'ipertrofia': 15,
+    'massa': 15,
+    'massa muscolare': 15,
+    'muscle_gain': 15,
+    'dimagrimento': 20,
+    'tonificazione': 20,
+    'fat_loss': 20,
+    'definizione': 20,
+    'resistenza': 25,
+    'endurance': 25,
+    'prestazioni_sportive': 15,
+    'sport_performance': 15,
+    'benessere': 15,
+    'general_fitness': 15
+  };
+
+  const threshold = thresholds[goal] || 15;
+
+  if (currentReps >= threshold) {
+    return {
+      shouldUpgrade: true,
+      reason: `Superate ${threshold} reps - pronto per variante più difficile`
+    };
+  }
+
+  return {
+    shouldUpgrade: false,
+    reason: `Ancora ${threshold - currentReps} reps per passare a variante più difficile`
+  };
 }
 
 // ============================================================================
