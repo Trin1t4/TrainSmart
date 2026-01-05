@@ -21,6 +21,7 @@ import {
   ACCESSORY_VARIANTS
 } from './exerciseVariants';
 import { adaptExercisesForLocation } from './locationAdapter';
+import { getUpgradedExercise } from './exerciseProgression';
 
 /**
  * Mapping nomi esercizi inglese -> italiano
@@ -1953,36 +1954,78 @@ function createExercise(
     };
   }
 
-  // Calcola volume basato su baseline + safeDayType (DUP with safety cap)
+  // Calcola baseline reps
   const baselineReps = baseline.reps;
-  const volumeCalc = calculateVolume(baselineReps, goal, level, location, safeDayType);
 
   // Determina quale variante usare
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
   // Traduci il nome dal baseline (potrebbe essere inglese da screening vecchio)
   const translatedBaselineName = translateExerciseName(baseline.variantName);
 
-  // Per bodyweight: usa progressione basata su difficoltà + reps (15 shrimp → pistol)
-  // Per gym: usa baseline per index 0, varianti per altri indici
+  // ════════════════════════════════════════════════════════════════════════
+  // DETERMINAZIONE VARIANTE - DUP REALE PER BODYWEIGHT
+  // ════════════════════════════════════════════════════════════════════════
   let exerciseName: string;
+  let dupVariantAdjustment = '';
+  let wasUpgraded = false; // Flag per ridurre reps se variante upgraded
+
   if (equipment === 'bodyweight') {
-    // Usa la nuova logica di progressione bodyweight che considera le reps
-    const progressedVariant = getProgressedBodyweightVariant(
+    // Variante base dalla progressione
+    const baseVariantName = getProgressedBodyweightVariant(
       patternId,
       baseline.difficulty,
       baselineReps,
       variantIndex
-    );
-    exerciseName = progressedVariant || translatedBaselineName;
+    ) || translatedBaselineName;
+
+    if (safeDayType === 'heavy') {
+      // HEAVY DAY: Prova variante più difficile
+      const upgraded = getUpgradedExercise(baseVariantName, patternId, 'home');
+
+      if (upgraded) {
+        exerciseName = upgraded.name;
+        wasUpgraded = true;
+        dupVariantAdjustment = `DUP Heavy: ${baseVariantName} → ${upgraded.name}`;
+        console.log(`⬆️ DUP Bodyweight Heavy: ${baseVariantName} → ${upgraded.name}`);
+      } else {
+        // Già al massimo della progressione - usa base con max effort
+        exerciseName = baseVariantName;
+        dupVariantAdjustment = 'DUP Heavy: Variante max - Focus intensità';
+        console.log(`⚠️ DUP Bodyweight Heavy: ${baseVariantName} già al max`);
+      }
+    }
+    else if (safeDayType === 'volume') {
+      // VOLUME DAY: Usa variante base per accumulare volume
+      exerciseName = baseVariantName;
+      dupVariantAdjustment = 'DUP Volume: Accumulo sulla variante base';
+      console.log(`📊 DUP Bodyweight Volume: ${baseVariantName} (base)`);
+    }
+    else {
+      // MODERATE DAY: Variante base, focus tecnica
+      exerciseName = baseVariantName;
+      dupVariantAdjustment = 'DUP Moderate: Consolidamento tecnico';
+      console.log(`⚖️ DUP Bodyweight Moderate: ${baseVariantName} (base)`);
+    }
   } else {
-    // Gym: usa baseline per variantIndex 0
+    // GYM: Logica invariata - varia carico, non variante
     exerciseName = variantIndex === 0
       ? translatedBaselineName
       : getVariantForPattern(patternId, translatedBaselineName, variantIndex, equipment);
   }
 
+  // ════════════════════════════════════════════════════════════════════════
+  // CALCOLO VOLUME con aggiustamento reps per variante upgraded
+  // ════════════════════════════════════════════════════════════════════════
+  const volumeCalc = calculateVolume(baselineReps, goal, level, location, safeDayType);
+
   let finalSets = volumeCalc.sets;
-  let finalReps = volumeCalc.reps;
+  let finalReps: number | string = volumeCalc.reps;
+
+  // Se variante upgraded (heavy bodyweight), riduci reps del 40%
+  if (wasUpgraded && typeof finalReps === 'number') {
+    finalReps = Math.max(5, Math.round(finalReps * 0.6));
+    console.log(`📉 Reps ridotte per upgrade: ${volumeCalc.reps} → ${finalReps}`);
+  }
   let painNotes = '';
   let wasReplaced = false;
 
@@ -2075,6 +2118,7 @@ function createExercise(
     wasReplaced: wasReplaced,
     notes: [
       volumeCalc.notes,
+      dupVariantAdjustment, // DUP bodyweight: mostra variante upgrade/base
       `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
       suggestedWeight ? `Carico: ${suggestedWeight} (${weightNote})` : '',
       painNotes,
