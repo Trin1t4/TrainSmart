@@ -303,3 +303,16 @@ export {
   resetServicesForTesting,
   type InitServicesOptions,
 } from './initAllServices';
+
+// Exercise Modification Service
+export {
+  saveModification,
+  updateModification,
+  removeModification,
+  getActiveModifications,
+  getModificationForExercise,
+  resetModificationsForProgram,
+  countActiveModifications,
+  type ExerciseModification,
+  type SaveModificationInput,
+} from './exerciseModificationService';

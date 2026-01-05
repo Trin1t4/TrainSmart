@@ -18,7 +18,24 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X, Info, ThumbsDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { autoRegulationService } from '@trainsmart/shared';
+import {
+  autoRegulationService,
+  isBodyweightExercise,
+  // RIR Adjustment Logic (TUT = aggravante)
+  calculateDowngrade,
+  calculateUpgrade,
+  getEducationalMessage,
+  getTempoById,
+  formatTempoDisplay,
+  isStandardTempo,
+  type TempoModifier,
+  type DowngradeInput,
+  type UpgradeInput,
+  // Exercise Modification Service
+  saveModification,
+  getActiveModifications,
+  type ExerciseModification,
+} from '@trainsmart/shared';
 import { supabase } from '../lib/supabaseClient';
 import { useTranslation } from '../lib/i18n';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
@@ -212,13 +229,19 @@ export default function LiveWorkoutSession({
 
   // Current set state
   const [showRPEInput, setShowRPEInput] = useState(false);
+  const [showRIRConfirm, setShowRIRConfirm] = useState(false); // Conferma RIR post-set
+  const [activeTempo, setActiveTempo] = useState<Record<string, string>>({}); // TUT attivi per esercizio {exerciseName: tempoId}
   const [currentRPE, setCurrentRPE] = useState(7);
   const [currentRIR, setCurrentRIR] = useState(2); // RIR percepito (0-5)
+  const [currentDifficulty, setCurrentDifficulty] = useState(5); // Difficoltà esercizio 1-10 (per bodyweight)
   const [currentReps, setCurrentReps] = useState(0);
   const [currentWeight, setCurrentWeight] = useState(0);
   const [restTimerActive, setRestTimerActive] = useState(false);
   const [restTimeRemaining, setRestTimeRemaining] = useState(0);
   const [showExerciseDescription, setShowExerciseDescription] = useState(false);
+
+  // Exercise modifications (persistent across sessions)
+  const [loadedModifications, setLoadedModifications] = useState<Record<string, ExerciseModification>>({});
 
   // Video upload modal state
   const [showVideoUpload, setShowVideoUpload] = useState(false);
@@ -321,6 +344,61 @@ export default function LiveWorkoutSession({
 
     fetchPainThresholds();
   }, [userId, open, initialExercises]);
+
+  // Load exercise modifications from DB at workout start
+  useEffect(() => {
+    if (!userId || !programId || !open) return;
+
+    const loadModifications = async () => {
+      try {
+        const { data: modifications, error } = await getActiveModifications(
+          supabase,
+          userId,
+          programId
+        );
+
+        if (error) {
+          console.error('[ExerciseModifications] Error loading:', error);
+          return;
+        }
+
+        if (modifications && modifications.length > 0) {
+          // Convert array to Record<exerciseName, modification>
+          const modsMap: Record<string, ExerciseModification> = {};
+          const tempoMap: Record<string, string> = {};
+
+          modifications.forEach((mod) => {
+            modsMap[mod.exercise_name] = mod;
+
+            // Se ha TUT attivo, impostalo
+            if (mod.tempo_changed && mod.tempo_modifier_id && mod.tempo_modifier_id !== 'standard') {
+              tempoMap[mod.exercise_name] = mod.tempo_modifier_id;
+            }
+          });
+
+          setLoadedModifications(modsMap);
+          setActiveTempo(tempoMap);
+
+          console.log('[ExerciseModifications] Loaded:', modifications.length, 'modifications');
+
+          // Notifica utente se ci sono modifiche attive
+          const tutCount = Object.keys(tempoMap).length;
+          const variantCount = modifications.filter(m => m.variant_changed).length;
+
+          if (tutCount > 0 || variantCount > 0) {
+            toast.info(
+              `📋 ${modifications.length} modifiche caricate: ${tutCount} TUT, ${variantCount} varianti`,
+              { duration: 4000 }
+            );
+          }
+        }
+      } catch (error) {
+        console.error('[ExerciseModifications] Error:', error);
+      }
+    };
+
+    loadModifications();
+  }, [userId, programId, open]);
 
   // Handle location switch for THIS SESSION ONLY
   const handleSessionLocationSwitch = async () => {
@@ -857,6 +935,307 @@ export default function LiveWorkoutSession({
     }
   }, [restTimerActive]);
 
+  /**
+   * Salva un alert di sicurezza RIR nel database
+   */
+  const saveRIRSafetyAlert = async (
+    alertData: {
+      exercise_name: string;
+      exercise_pattern?: string;
+      set_number: number;
+      target_rir: number;
+      actual_rir: number;
+      target_reps: number;
+      actual_reps: number;
+      weight_used?: number;
+      severity: 'warning' | 'critical';
+      auto_adjustment_applied: boolean;
+      adjustment_details?: {
+        old_weight: number;
+        new_weight: number;
+        reduction_percent: number;
+      };
+    }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('rir_safety_alerts')
+        .insert({
+          user_id: userId,
+          program_id: programId,
+          ...alertData
+        });
+
+      if (error) {
+        console.error('[RIR Safety] Failed to save alert:', error);
+      } else {
+        console.log('[RIR Safety] Alert saved:', alertData.severity, alertData.exercise_name);
+      }
+    } catch (err) {
+      console.error('[RIR Safety] Error saving alert:', err);
+    }
+  };
+
+  /**
+   * Valida RIR usando logica unificata, mostra alert se necessario, salva nel DB
+   * TUT = AGGRAVANTE (aumenta difficoltà), NON compensazione
+   *
+   * LOGICA:
+   * - RIR < target (troppo difficile) -> DOWNGRADE variante/peso, NO TUT
+   * - RIR > target (troppo facile):
+   *   - Se NO TUT attivo -> Aggiungi TUT (primo step)
+   *   - Se TUT già attivo -> UPGRADE variante/peso, rimuovi TUT
+   */
+  const handleRIRValidationAndComplete = async () => {
+    if (!currentExercise) return;
+
+    const targetReps = typeof currentExercise.reps === 'number'
+      ? currentExercise.reps
+      : parseInt(String(currentExercise.reps).split('-')[0]) || 10;
+    const targetRIR = currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity);
+    const currentWeightNum = typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0;
+
+    // Determina tipo esercizio (bodyweight vs weighted)
+    const isBW = isBodyweightExercise(currentExercise.name);
+    const exerciseType = isBW ? 'bodyweight' : 'weighted';
+
+    // Controlla se ha già TUT attivo per questo esercizio
+    const currentTUTId = activeTempo[currentExercise.name];
+    const hasTUT = currentTUTId && !isStandardTempo(currentTUTId);
+
+    // Controlla se esistono modifiche caricate per questo esercizio
+    const activeMod = loadedModifications[currentExercise.name] ||
+      Object.values(loadedModifications).find(
+        m => m.original_variant === currentExercise.name || m.current_variant === currentExercise.name
+      );
+
+    // ================================================================
+    // CASO 1: RIR < TARGET (troppo difficile) -> DOWNGRADE
+    // ================================================================
+    if (currentRIR < targetRIR) {
+      const rirGap = targetRIR - currentRIR;
+      const severity = rirGap >= 2 ? 'critical' : 'warning';
+
+      // Input per downgrade
+      const downgradeInput: DowngradeInput = {
+        exerciseType,
+        currentWeight: currentWeightNum,
+        currentVariant: currentExercise.name,
+        variantDifficulty: currentDifficulty,
+        targetRIR,
+        actualRIR: currentRIR,
+        targetReps,
+        actualReps: currentReps,
+        currentTempo: hasTUT ? currentTUTId : undefined
+      };
+
+      const downgrade = calculateDowngrade(downgradeInput);
+
+      // RIMUOVI TUT se presente (downgrade = semplifica)
+      if (hasTUT) {
+        const newTempo = { ...activeTempo };
+        delete newTempo[currentExercise.name];
+        setActiveTempo(newTempo);
+        toast.info('⏱️ TUT rimosso - focus su forma corretta', { duration: 5000 });
+      }
+
+      // Applica modifiche
+      if (downgrade.newWeight !== undefined && currentWeightNum > 0) {
+        setAdjustedWeights(prev => ({ ...prev, [currentExercise.name]: downgrade.newWeight! }));
+        setCurrentWeight(downgrade.newWeight);
+        toast.info(`⚖️ Carico ridotto a ${downgrade.newWeight}kg per i prossimi set`, { duration: 5000 });
+      }
+
+      if (downgrade.suggestVariantDowngrade && downgrade.suggestedVariant) {
+        toast.warning(
+          `💡 Prova: ${downgrade.suggestedVariant}`,
+          { description: 'Variante più gestibile per il tuo livello attuale', duration: 8000 }
+        );
+      }
+
+      // Alert
+      if (severity === 'critical') {
+        toast.error(`🛑 ${downgrade.alertMessage}`, { duration: 10000 });
+        toast.info(getEducationalMessage('critical'), { duration: 10000 });
+      } else {
+        toast.warning(`⚠️ ${downgrade.alertMessage}`, { duration: 6000 });
+        toast.info(getEducationalMessage('warning'), { duration: 8000 });
+      }
+
+      // Salva alert nel DB
+      await saveRIRSafetyAlert({
+        exercise_name: currentExercise.name,
+        exercise_pattern: currentExercise.pattern,
+        set_number: currentSet,
+        target_rir: targetRIR,
+        actual_rir: currentRIR,
+        target_reps: targetReps,
+        actual_reps: currentReps,
+        weight_used: currentWeightNum || undefined,
+        severity,
+        auto_adjustment_applied: downgrade.newWeight !== undefined || downgrade.suggestVariantDowngrade,
+        adjustment_details: downgrade.newWeight !== undefined ? {
+          old_weight: currentWeightNum,
+          new_weight: downgrade.newWeight,
+          reduction_percent: downgrade.weightReductionPercent || 10
+        } : undefined
+      });
+
+      // Salva modifica persistente
+      if (userId && programId) {
+        await saveModification(supabase, {
+          user_id: userId,
+          program_id: programId,
+          cycle_number: 1,
+          exercise_name: currentExercise.name,
+          exercise_pattern: currentExercise.pattern,
+          original_variant: currentExercise.name,
+          current_variant: downgrade.suggestedVariant || currentExercise.name,
+          variant_changed: !!downgrade.suggestVariantDowngrade,
+          original_tempo: '2-0-1-0',
+          current_tempo: '2-0-1-0', // DOWNGRADE = tempo standard, NO TUT
+          tempo_modifier_id: 'standard',
+          tempo_changed: false,
+          original_weight: currentWeightNum,
+          current_weight: downgrade.newWeight,
+          weight_reduction_percent: downgrade.weightReductionPercent,
+          original_reps: targetReps,
+          current_reps: currentReps,
+          reason: 'rir_exceeded_downgrade',
+          severity,
+          rir_target: targetRIR,
+          rir_actual: currentRIR
+        });
+      }
+
+      console.log(`[RIR DOWNGRADE] ${currentExercise.name}: RIR ${currentRIR} < target ${targetRIR} -> ${severity}`);
+    }
+
+    // ================================================================
+    // CASO 2: RIR > TARGET (troppo facile) -> UPGRADE (progressivo)
+    // ================================================================
+    else if (currentRIR > targetRIR) {
+      const rirGap = currentRIR - targetRIR;
+
+      // Solo se gap significativo (≥2)
+      if (rirGap >= 2) {
+        // Input per upgrade
+        const upgradeInput: UpgradeInput = {
+          exerciseType,
+          currentWeight: currentWeightNum,
+          currentVariant: currentExercise.name,
+          variantDifficulty: currentDifficulty,
+          targetRIR,
+          actualRIR: currentRIR,
+          targetReps,
+          actualReps: currentReps,
+          hasTUTActive: hasTUT,
+          currentTempo: hasTUT ? currentTUTId : undefined
+        };
+
+        const upgrade = calculateUpgrade(upgradeInput);
+
+        if (upgrade.action === 'add_tut') {
+          // STEP 1: Aggiungi TUT come aggravante
+          setActiveTempo(prev => ({
+            ...prev,
+            [currentExercise.name]: upgrade.newTempo!
+          }));
+
+          const tempoMod = getTempoById(upgrade.newTempo!);
+          toast.info(
+            `⏱️ TUT aggiunto: ${tempoMod?.name || upgrade.newTempo}`,
+            { description: 'Aumenta difficoltà con tempo controllato', duration: 6000 }
+          );
+
+          // Salva modifica persistente
+          if (userId && programId) {
+            await saveModification(supabase, {
+              user_id: userId,
+              program_id: programId,
+              cycle_number: 1,
+              exercise_name: currentExercise.name,
+              exercise_pattern: currentExercise.pattern,
+              original_variant: currentExercise.name,
+              current_variant: currentExercise.name,
+              variant_changed: false,
+              original_tempo: '2-0-1-0',
+              current_tempo: tempoMod?.tempo || '3-0-2-0',
+              tempo_modifier_id: upgrade.newTempo,
+              tempo_changed: true,
+              original_weight: currentWeightNum,
+              current_weight: currentWeightNum,
+              original_reps: targetReps,
+              current_reps: currentReps,
+              reason: 'rir_high_add_tut',
+              severity: 'warning',
+              rir_target: targetRIR,
+              rir_actual: currentRIR
+            });
+          }
+
+          console.log(`[RIR UPGRADE - TUT] ${currentExercise.name}: Added TUT ${upgrade.newTempo}`);
+        } else if (upgrade.action === 'upgrade_variant') {
+          // STEP 2: Già ha TUT, upgrade variante/peso e RIMUOVI TUT
+          const newTempo = { ...activeTempo };
+          delete newTempo[currentExercise.name];
+          setActiveTempo(newTempo);
+
+          if (upgrade.newWeight !== undefined) {
+            setAdjustedWeights(prev => ({ ...prev, [currentExercise.name]: upgrade.newWeight! }));
+            toast.success(
+              `💪 Aumenta a ${upgrade.newWeight}kg!`,
+              { description: 'TUT rimosso, pronto per nuovo carico', duration: 6000 }
+            );
+          }
+
+          if (upgrade.suggestVariantUpgrade && upgrade.suggestedVariant) {
+            toast.success(
+              `🚀 Prova: ${upgrade.suggestedVariant}`,
+              { description: 'Variante più sfidante - TUT rimosso', duration: 8000 }
+            );
+          }
+
+          // Salva modifica persistente
+          if (userId && programId) {
+            await saveModification(supabase, {
+              user_id: userId,
+              program_id: programId,
+              cycle_number: 1,
+              exercise_name: currentExercise.name,
+              exercise_pattern: currentExercise.pattern,
+              original_variant: currentExercise.name,
+              current_variant: upgrade.suggestedVariant || currentExercise.name,
+              variant_changed: !!upgrade.suggestVariantUpgrade,
+              original_tempo: activeMod?.current_tempo || '3-0-2-0',
+              current_tempo: '2-0-1-0', // UPGRADE = rimuovi TUT
+              tempo_modifier_id: 'standard',
+              tempo_changed: false,
+              original_weight: currentWeightNum,
+              current_weight: upgrade.newWeight,
+              original_reps: targetReps,
+              current_reps: currentReps,
+              reason: 'rir_high_upgrade',
+              severity: 'warning',
+              rir_target: targetRIR,
+              rir_actual: currentRIR
+            });
+          }
+
+          console.log(`[RIR UPGRADE - VARIANT] ${currentExercise.name}: Upgraded, TUT removed`);
+        }
+      } else {
+        // Gap piccolo (1), solo feedback
+        toast.info(
+          '💡 Potevi spingere un po\' di più',
+          { description: `Ti sei fermato a RIR ${currentRIR}, target era RIR ${targetRIR}`, duration: 5000 }
+        );
+      }
+    }
+
+    handleSetComplete();
+  };
+
   // Handle set completion
   const handleSetComplete = () => {
     if (currentReps === 0) {
@@ -901,6 +1280,8 @@ export default function LiveWorkoutSession({
       setCurrentExerciseIndex(prev => prev + 1);
       setCurrentSet(1);
       setShowRPEInput(false);
+      setShowRIRConfirm(false);
+      setActiveTempo(null); // Reset tempo per nuovo esercizio
       setCurrentPainLevel(0);
       setPainAdaptations([]);
     }
@@ -919,6 +1300,8 @@ export default function LiveWorkoutSession({
       setCurrentExerciseIndex(prev => prev + 1);
       setCurrentSet(1);
       setShowRPEInput(false);
+      setShowRIRConfirm(false);
+      setActiveTempo(null); // Reset tempo per nuovo esercizio
       setCurrentPainLevel(0);
       setPainAdaptations([]);
     }
@@ -1155,6 +1538,8 @@ export default function LiveWorkoutSession({
             setCurrentExerciseIndex(prev => prev + 1);
             setCurrentSet(1);
             setShowRPEInput(false);
+            setShowRIRConfirm(false);
+            setActiveTempo(null); // Reset tempo per nuovo esercizio
             setCurrentPainLevel(0);
             setPainAdaptations([]);
             return;
@@ -1196,6 +1581,7 @@ export default function LiveWorkoutSession({
 
     // Reset for next set
     setShowRPEInput(false);
+    setShowRIRConfirm(false);
     setCurrentReps(0);
     setCurrentWeight(0);
     setCurrentRPE(7);
@@ -2187,7 +2573,7 @@ export default function LiveWorkoutSession({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-4 gap-3 text-center">
             <div>
               <p className="text-slate-400 text-sm">Target</p>
               <p className="text-emerald-400 font-bold text-xl">{targetReps} reps</p>
@@ -2197,10 +2583,59 @@ export default function LiveWorkoutSession({
               <p className="text-blue-400 font-bold text-xl">{currentSet}/{currentTargetSets}</p>
             </div>
             <div>
+              <p className="text-slate-400 text-sm">RIR</p>
+              <p className="text-orange-400 font-bold text-xl">
+                {currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)}
+              </p>
+            </div>
+            <div>
               <p className="text-slate-400 text-sm">Rest</p>
               <p className="text-purple-400 font-bold text-xl">{currentExercise.rest}</p>
             </div>
           </div>
+
+          {/* RIR Safety Reminder */}
+          <div className="mt-4 bg-purple-500/10 border border-purple-500/30 rounded-xl p-3">
+            <p className="text-purple-300 text-sm text-center">
+              Fermati quando ti restano <span className="font-bold">~{currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)} reps</span> in tank
+            </p>
+            <p className="text-slate-500 text-xs text-center mt-1">
+              Non forzare le reps a costo di superare questo limite
+            </p>
+          </div>
+
+          {/* Active Tempo Modifier - TUT Aggravante */}
+          {currentExercise && activeTempo[currentExercise.name] && !isStandardTempo(activeTempo[currentExercise.name]) && (() => {
+            const tempoMod = getTempoById(activeTempo[currentExercise.name]);
+            if (!tempoMod) return null;
+            return (
+              <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-amber-300 text-sm font-medium">
+                      ⏱️ TUT Attivo: {tempoMod.name}
+                    </p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      {formatTempoDisplay(tempoMod.tempo)} ({tempoMod.tut_per_rep}s/rep, +{Math.round(tempoMod.difficulty_increase * 100)}% difficoltà)
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newTempo = { ...activeTempo };
+                      delete newTempo[currentExercise.name];
+                      setActiveTempo(newTempo);
+                    }}
+                    className="text-slate-500 hover:text-amber-400 text-xs underline"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <p className="text-slate-500 text-xs mt-2 italic">
+                  {tempoMod.description_it}
+                </p>
+              </div>
+            );
+          })()}
 
           {/* Exercise Description Panel - Always Visible */}
           {exerciseInfo && (
@@ -2283,7 +2718,10 @@ export default function LiveWorkoutSession({
             )}
 
             <button
-              onClick={handleSetComplete}
+              onClick={() => {
+                if (currentReps === 0) return;
+                setShowRIRConfirm(true); // Mostra conferma RIR invece di procedere direttamente
+              }}
               disabled={currentReps === 0}
               className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-slate-700 disabled:to-slate-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
             >
@@ -2293,8 +2731,59 @@ export default function LiveWorkoutSession({
           </div>
         )}
 
-        {/* RPE & RIR Input */}
-        {showRPEInput && !suggestion && (
+        {/* RIR CONFIRMATION - Post-set safety check */}
+        {showRIRConfirm && !showRPEInput && currentExercise && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4 mb-6"
+          >
+            <div className="bg-slate-800 rounded-xl p-4 text-center">
+              <p className="text-slate-400 text-sm">Hai completato</p>
+              <p className="text-3xl font-bold text-white">
+                {currentReps} reps
+                {currentWeight > 0 && <span className="text-emerald-400"> @ {currentWeight}kg</span>}
+              </p>
+            </div>
+
+            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+              <p className="text-purple-300 font-bold text-center mb-2">
+                Hai rispettato RIR {currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)}?
+              </p>
+              <p className="text-slate-400 text-xs text-center">
+                Ti sei fermato quando ti restavano ~{currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)} reps?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  const targetRIR = currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity);
+                  setCurrentRIR(targetRIR);
+                  setCurrentRPE(10 - targetRIR);
+                  setShowRIRConfirm(false);
+                  handleSetComplete();
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Sì
+              </button>
+              <button
+                onClick={() => {
+                  setShowRIRConfirm(false);
+                  setShowRPEInput(true);
+                }}
+                className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors"
+              >
+                No, diverso
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* RPE & RIR Input - Quando dice "No, diverso" */}
+        {showRPEInput && !suggestion && currentExercise && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -2475,10 +2964,13 @@ export default function LiveWorkoutSession({
             </button>
 
             <button
-              onClick={handleRPESubmit}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl transition-all duration-300"
+              onClick={() => {
+                setShowRPEInput(false);
+                handleRIRValidationAndComplete();
+              }}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all duration-300"
             >
-              Conferma Feedback
+              Conferma RIR {currentRIR}
             </button>
           </motion.div>
         )}

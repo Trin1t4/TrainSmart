@@ -596,3 +596,33 @@ export {
   findExerciseByName,
   updateExerciseWeight
 } from './programNormalizer';
+
+// Tempo Modifiers (TUT = AGGRAVANTE)
+export type { TempoModifier } from '../data/tempoModifiers';
+export {
+  TEMPO_MODIFIERS,
+  getFirstTUTAggravante,
+  getStandardTempo,
+  getTempoById,
+  formatTempoDisplay,
+  getNextHarderTempo,
+  isStandardTempo
+} from '../data/tempoModifiers';
+
+// RIR Adjustment Logic (Downgrade/Upgrade)
+export type {
+  ExerciseType,
+  LocationType,
+  DowngradeInput,
+  DowngradeResult,
+  ActiveModification,
+  UpgradeInput,
+  UpgradeResult
+} from './rirAdjustmentLogic';
+export {
+  calculateDowngrade,
+  calculateUpgrade,
+  isBodyweightExercise,
+  didUserPushTooHard,
+  getEducationalMessage
+} from './rirAdjustmentLogic';
