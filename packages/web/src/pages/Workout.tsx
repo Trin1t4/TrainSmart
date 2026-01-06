@@ -48,6 +48,9 @@ export default function Workout() {
   // Running session state
   const [showRunningSession, setShowRunningSession] = useState(false);
 
+  // Workout type selection state
+  const [showWorkoutTypeSelector, setShowWorkoutTypeSelector] = useState(false);
+
   useEffect(() => {
     loadProgram();
   }, []);
@@ -352,27 +355,106 @@ export default function Workout() {
     return 90;
   }
 
-  function handleStartWorkout() {
-    const todayWorkout = program?.weekly_schedule?.[currentDay];
+  // Check if user has running in their program
+  function hasRunningInProgram(): boolean {
+    // Check onboarding data for running preference
+    const onboardingData = localStorage.getItem('onboarding_data');
+    if (onboardingData) {
+      const data = JSON.parse(onboardingData);
+      if (data.running?.enabled || data.runningInterest?.enabled) {
+        return true;
+      }
+    }
+    // Also check if any day in schedule is type 'running'
+    return program?.weekly_schedule?.some((day: any) => day.type === 'running') || false;
+  }
 
-    // CHECK: Se è giorno running puro, mostra interfaccia running dedicata
-    if (todayWorkout?.type === 'running' && todayWorkout?.runningSession) {
-      console.log('[Workout] Running day detected, showing RunningSessionView');
-      setShowRunningSession(true);
+  // Check if today's workout has strength exercises
+  function hasStrengthExercises(): boolean {
+    const todayWorkout = program?.weekly_schedule?.[currentDay];
+    return todayWorkout?.exercises && todayWorkout.exercises.length > 0;
+  }
+
+  function handleStartWorkout() {
+    // Show workout type selector if user has both options available
+    const hasRunning = hasRunningInProgram();
+    const hasStrength = hasStrengthExercises();
+
+    console.log('[Workout] hasRunning:', hasRunning, 'hasStrength:', hasStrength);
+
+    if (hasRunning && hasStrength) {
+      // User has both options - show selector
+      setShowWorkoutTypeSelector(true);
       return;
     }
 
-    // CHECK: Safety guard - se exercises è vuoto e non è running, mostra errore
-    if (!todayWorkout?.exercises || todayWorkout.exercises.length === 0) {
-      if (todayWorkout?.type !== 'running') {
-        console.warn('[Workout] Day has no exercises and is not running type');
-        toast.error('Giornata senza esercizi programmati');
-        return;
-      }
+    // Only running available
+    if (hasRunning && !hasStrength) {
+      handleSelectRunning();
+      return;
     }
 
-    // Giorno normale (strength/mixed) → procedi con recovery screening
+    // Only strength available (or nothing)
+    handleSelectStrength();
+  }
+
+  function handleSelectStrength() {
+    setShowWorkoutTypeSelector(false);
+    const todayWorkout = program?.weekly_schedule?.[currentDay];
+
+    // CHECK: Safety guard - se exercises è vuoto, mostra errore
+    if (!todayWorkout?.exercises || todayWorkout.exercises.length === 0) {
+      console.warn('[Workout] Day has no exercises');
+      toast.error('Nessun esercizio programmato per oggi');
+      return;
+    }
+
+    // Giorno normale (strength) → procedi con recovery screening
     setShowRecoveryScreening(true);
+  }
+
+  function handleSelectRunning() {
+    setShowWorkoutTypeSelector(false);
+
+    // Get running session from program or create default
+    const todayWorkout = program?.weekly_schedule?.[currentDay];
+
+    if (todayWorkout?.runningSession) {
+      // Use existing running session
+      setShowRunningSession(true);
+    } else {
+      // Create default running session from onboarding preferences
+      const onboardingData = localStorage.getItem('onboarding_data');
+      let runningPrefs = null;
+      if (onboardingData) {
+        const data = JSON.parse(onboardingData);
+        runningPrefs = data.running || data.runningInterest;
+      }
+
+      // Set a default running session
+      const defaultSession = {
+        type: runningPrefs?.goal === 'base_aerobica' ? 'easy_run' : 'interval',
+        targetDuration: 30,
+        warmup: { duration: 5, description: 'Camminata veloce o corsa leggera' },
+        mainWork: runningPrefs?.goal === 'base_aerobica'
+          ? { type: 'continuous', duration: 20, intensity: 'easy', targetHR: '120-140' }
+          : { type: 'intervals', sets: 6, workDuration: 60, restDuration: 90, intensity: 'moderate' },
+        cooldown: { duration: 5, description: 'Camminata di defaticamento' },
+        notes: 'Sessione di corsa'
+      };
+
+      // Temporarily add to program for the view
+      if (program) {
+        const updatedSchedule = [...program.weekly_schedule];
+        updatedSchedule[currentDay] = {
+          ...updatedSchedule[currentDay],
+          runningSession: defaultSession
+        };
+        setProgram({ ...program, weekly_schedule: updatedSchedule });
+      }
+
+      setShowRunningSession(true);
+    }
   }
 
   // Handler per running session completion
@@ -897,6 +979,56 @@ console.log("📊 MULTIPLIER:", { volumeMultiplier, intensityMultiplier, restMul
           </button>
         </div>
       </div>
+
+      {/* Workout Type Selector Modal */}
+      {showWorkoutTypeSelector && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-6 max-w-md w-full border border-slate-700 shadow-2xl">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-white mb-2">Cosa vuoi fare oggi?</h3>
+              <p className="text-slate-400 text-sm">Scegli il tipo di allenamento</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Strength/Weights Option */}
+              <button
+                onClick={handleSelectStrength}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white p-6 rounded-xl flex items-center gap-4 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-blue-500/30"
+              >
+                <div className="w-16 h-16 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Dumbbell className="w-8 h-8 text-blue-200" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xl font-bold block">Pesi</span>
+                  <span className="text-blue-200 text-sm">Allenamento di forza</span>
+                </div>
+              </button>
+
+              {/* Running Option */}
+              <button
+                onClick={handleSelectRunning}
+                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white p-6 rounded-xl flex items-center gap-4 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-emerald-500/30"
+              >
+                <div className="w-16 h-16 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Footprints className="w-8 h-8 text-emerald-200" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xl font-bold block">Corsa</span>
+                  <span className="text-emerald-200 text-sm">Sessione cardio</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Cancel button */}
+            <button
+              onClick={() => setShowWorkoutTypeSelector(false)}
+              className="w-full mt-6 py-3 text-slate-400 hover:text-white transition-colors"
+            >
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Running Session View */}
       {showRunningSession && program?.weekly_schedule?.[currentDay]?.runningSession && (
