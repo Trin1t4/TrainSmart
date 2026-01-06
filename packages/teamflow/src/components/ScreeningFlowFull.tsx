@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check, Timer, RotateCw, X, ZoomIn, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
-import { getExerciseImageWithFallback } from '@trainsmart/shared';
+import {
+  getExerciseImageWithFallback,
+  CALISTHENICS_PATTERNS
+} from '@trainsmart/shared';
 
 // Video disponibili per i test iniziali (SOLO quelli verificati esistenti)
 const SCREENING_VIDEOS: Record<string, string> = {
@@ -53,94 +56,8 @@ function calculateOneRepMax(weight: number, reps: number): number {
   return weight / (1.0278 - 0.0278 * reps);
 }
 
-// ===== PROGRESSIONI CALISTHENICS SCIENTIFICHE =====
-const CALISTHENICS_PATTERNS = [
-  {
-    id: 'lower_push',
-    name: 'Lower Body Push (Squat)',
-    description: 'Progressioni squat - dalla più facile alla più difficile',
-    progressions: [
-      { id: 'squat_assisted', name: 'Squat Assistito (con supporto)', difficulty: 1 },
-      { id: 'air_squat', name: 'Air Squat', difficulty: 2 },
-      { id: 'jump_squat', name: 'Jump Squat', difficulty: 4 },
-      { id: 'bulgarian_split', name: 'Bulgarian Split Squat', difficulty: 5 },
-      { id: 'pistol_assisted', name: 'Pistol Squat Assistito', difficulty: 7 },
-      { id: 'shrimp_squat', name: 'Shrimp Squat', difficulty: 8 },
-      { id: 'pistol', name: 'Pistol Squat', difficulty: 10 }
-    ]
-  },
-  {
-    id: 'horizontal_push',
-    name: 'Horizontal Push (Push-up)',
-    description: 'Progressioni push-up orizzontali',
-    progressions: [
-      { id: 'wall_pushup', name: 'Wall Push-up', difficulty: 1 },
-      { id: 'incline_pushup', name: 'Incline Push-up (rialzato)', difficulty: 2 },
-      { id: 'knee_pushup', name: 'Push-up su Ginocchia', difficulty: 3 },
-      { id: 'standard_pushup', name: 'Push-up Standard', difficulty: 5 },
-      { id: 'diamond_pushup', name: 'Diamond Push-up', difficulty: 6 },
-      { id: 'archer_pushup', name: 'Archer Push-up', difficulty: 8 },
-      { id: 'pseudo_planche', name: 'Pseudo Planche Push-up', difficulty: 9 },
-      { id: 'one_arm_pushup', name: 'One Arm Push-up', difficulty: 10 }
-    ]
-  },
-  {
-    id: 'vertical_push',
-    name: 'Vertical Push (Pike → HSPU)',
-    description: 'Progressioni spinta verticale verso handstand',
-    progressions: [
-      { id: 'pike_pushup', name: 'Pike Push-up', difficulty: 4 },
-      { id: 'elevated_pike', name: 'Elevated Pike Push-up', difficulty: 5 },
-      { id: 'wall_walk', name: 'Wall Walk', difficulty: 6 },
-      { id: 'wall_hspu_partial', name: 'Wall HSPU (ROM parziale)', difficulty: 7 },
-      { id: 'wall_hspu', name: 'Wall HSPU (ROM completo)', difficulty: 8 },
-      { id: 'freestanding_hspu', name: 'Freestanding HSPU', difficulty: 10 }
-    ]
-  },
-  {
-    id: 'vertical_pull',
-    name: 'Vertical Pull (Row → Pull-up)',
-    description: 'Progressioni trazione verticale - BASE: inverted row',
-    progressions: [
-      { id: 'inverted_row_high', name: 'Inverted Row (barra alta)', difficulty: 2 },
-      { id: 'inverted_row_mid', name: 'Inverted Row (barra media)', difficulty: 3 },
-      { id: 'inverted_row_low', name: 'Inverted Row (barra bassa)', difficulty: 4 },
-      { id: 'negative_pullup', name: 'Negative Pull-up (solo eccentrica)', difficulty: 5 },
-      { id: 'band_pullup', name: 'Band-Assisted Pull-up', difficulty: 6 },
-      { id: 'pullup', name: 'Pull-up Standard', difficulty: 7 },
-      { id: 'chinup', name: 'Chin-up', difficulty: 7 },
-      { id: 'archer_pullup', name: 'Archer Pull-up', difficulty: 9 },
-      { id: 'one_arm_pullup_prog', name: 'One Arm Pull-up Progression', difficulty: 10 }
-    ]
-  },
-  {
-    id: 'lower_pull',
-    name: 'Lower Body Pull (Hinge/Hamstring)',
-    description: 'Progressioni cerniera anca e femorali',
-    progressions: [
-      { id: 'glute_bridge', name: 'Glute Bridge', difficulty: 2 },
-      { id: 'single_leg_glute', name: 'Single Leg Glute Bridge', difficulty: 3 },
-      { id: 'rdl_bodyweight', name: 'Single Leg RDL (corpo libero)', difficulty: 4 },
-      { id: 'nordic_eccentric', name: 'Nordic Curl (solo eccentrica)', difficulty: 6 },
-      { id: 'nordic_full', name: 'Nordic Curl (completo)', difficulty: 9 },
-      { id: 'sliding_leg_curl', name: 'Sliding Leg Curl', difficulty: 5 }
-    ]
-  },
-  {
-    id: 'core',
-    name: 'Core Stability',
-    description: 'Progressioni core e stabilità',
-    progressions: [
-      { id: 'plank', name: 'Plank', difficulty: 2, isometric: true },
-      { id: 'side_plank', name: 'Side Plank', difficulty: 3, isometric: true },
-      { id: 'hollow_body', name: 'Hollow Body Hold', difficulty: 5, isometric: true },
-      { id: 'lsit_tuck', name: 'Tuck L-sit', difficulty: 6, isometric: true },
-      { id: 'lsit_one_leg', name: 'One Leg L-sit', difficulty: 7, isometric: true },
-      { id: 'lsit_full', name: 'Full L-sit', difficulty: 9, isometric: true },
-      { id: 'dragon_flag', name: 'Dragon Flag', difficulty: 10 }
-    ]
-  }
-];
+// ===== PROGRESSIONI CALISTHENICS - IMPORTATE DA SSOT =====
+// CALISTHENICS_PATTERNS è importato da @trainsmart/shared (Single Source of Truth)
 
 // ===== PROGRESSIONI PALESTRA - PESI LIBERI (10RM TEST) =====
 // Per chi si allena con bilanciere e manubri

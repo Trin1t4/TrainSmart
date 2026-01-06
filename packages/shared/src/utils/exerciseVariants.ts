@@ -2,7 +2,14 @@
  * Exercise Variants Mapping
  * Database di varianti per creare split intelligenti
  * Ogni pattern ha 3-4 varianti per evitare ripetizioni
+ *
+ * ARCHITETTURA SSOT:
+ * - Le progressioni bodyweight vengono da calisthenicsProgressions.ts (Single Source of Truth)
+ * - Qui definiamo solo le varianti GYM-only
+ * - Gli array esportati combinano SSOT + GYM con deduplicazione
  */
+
+import { getAllVariantsForPattern } from '../data/calisthenicsProgressions';
 
 export interface ExerciseVariant {
   id: string;
@@ -14,84 +21,17 @@ export interface ExerciseVariant {
 }
 
 /**
- * LOWER PUSH VARIANTS (Squat pattern - Quadriceps dominanti)
- * Progressione completa dal più facile al più difficile per ogni equipment type
+ * Rimuove duplicati da array di varianti (per ID)
  */
-export const LOWER_PUSH_VARIANTS: ExerciseVariant[] = [
-  // Bodyweight progressions (dall'utente più debole al più forte)
-  {
-    id: 'squat_basic',
-    name: 'Squat a Corpo Libero',
-    difficulty: 3,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core']
-  },
-  {
-    id: 'squat_pause',
-    name: 'Squat con Pausa',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core']
-  },
-  {
-    id: 'squat_jump',
-    name: 'Squat Jump',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core', 'power']
-  },
-  {
-    id: 'split_squat',
-    name: 'Split Squat',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core', 'balance']
-  },
-  {
-    id: 'lunge_reverse',
-    name: 'Affondi Indietro',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core']
-  },
-  {
-    id: 'bulgarian_split',
-    name: 'Squat Bulgaro',
-    difficulty: 5,
-    equipment: 'both',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core']
-  },
-  {
-    id: 'skater_squat',
-    name: 'Skater Squat',
-    difficulty: 6,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core', 'balance']
-  },
-  {
-    id: 'shrimp_squat',
-    name: 'Shrimp Squat',
-    difficulty: 7,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core', 'balance']
-  },
-  {
-    id: 'pistol_squat',
-    name: 'Pistol Squat',
-    difficulty: 8,
-    equipment: 'bodyweight',
-    primary: ['quadriceps', 'glutes'],
-    secondary: ['hamstrings', 'core', 'balance']
-  },
-  // Gym progressions
+function deduplicateVariants(variants: ExerciseVariant[]): ExerciseVariant[] {
+  return variants.filter((v, i, arr) => arr.findIndex(x => x.id === v.id) === i);
+}
+
+/**
+ * LOWER PUSH - GYM ONLY VARIANTS
+ * Varianti che esistono solo in palestra
+ */
+const GYM_LOWER_PUSH_VARIANTS: ExerciseVariant[] = [
   {
     id: 'squat_goblet',
     name: 'Goblet Squat',
@@ -135,76 +75,18 @@ export const LOWER_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * LOWER PULL VARIANTS (Deadlift/Hip Hinge - Posterior chain)
- * Progressione completa per bodyweight e gym
+ * LOWER PUSH VARIANTS (Squat pattern - Quadriceps dominanti)
+ * SSOT bodyweight + GYM variants
  */
-export const LOWER_PULL_VARIANTS: ExerciseVariant[] = [
-  // Bodyweight progressions
-  {
-    id: 'hinge_basic',
-    name: 'Hip Hinge a Corpo Libero',
-    difficulty: 2,
-    equipment: 'bodyweight',
-    primary: ['hamstrings', 'glutes'],
-    secondary: ['erectors', 'core']
-  },
-  {
-    id: 'glute_bridge',
-    name: 'Ponte Glutei',
-    difficulty: 2,
-    equipment: 'bodyweight',
-    primary: ['glutes', 'hamstrings'],
-    secondary: ['core']
-  },
-  {
-    id: 'single_leg_bridge',
-    name: 'Ponte Glutei a Una Gamba',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['glutes', 'hamstrings'],
-    secondary: ['core', 'balance']
-  },
-  {
-    id: 'single_leg_rdl',
-    name: 'Stacco Rumeno a Una Gamba',
-    difficulty: 5,
-    equipment: 'bodyweight',
-    primary: ['hamstrings', 'glutes'],
-    secondary: ['erectors', 'balance']
-  },
-  {
-    id: 'hip_thrust_elevated',
-    name: 'Hip Thrust Rialzato',
-    difficulty: 5,
-    equipment: 'bodyweight',
-    primary: ['glutes', 'hamstrings'],
-    secondary: ['core']
-  },
-  {
-    id: 'nordic_eccentric',
-    name: 'Nordic Curl (Solo Eccentrica)',
-    difficulty: 5,
-    equipment: 'bodyweight',
-    primary: ['hamstrings'],
-    secondary: ['glutes', 'core']
-  },
-  {
-    id: 'slider_leg_curl',
-    name: 'Slider Leg Curl',
-    difficulty: 6,
-    equipment: 'bodyweight',
-    primary: ['hamstrings', 'glutes'],
-    secondary: ['core']
-  },
-  {
-    id: 'nordic_curl',
-    name: 'Nordic Curl',
-    difficulty: 7,
-    equipment: 'bodyweight',
-    primary: ['hamstrings'],
-    secondary: ['glutes', 'core']
-  },
-  // Gym progressions
+export const LOWER_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('lower_push'),
+  ...GYM_LOWER_PUSH_VARIANTS
+]);
+
+/**
+ * LOWER PULL - GYM ONLY VARIANTS
+ */
+const GYM_LOWER_PULL_VARIANTS: ExerciseVariant[] = [
   {
     id: 'leg_curl',
     name: 'Leg Curl',
@@ -256,74 +138,18 @@ export const LOWER_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * HORIZONTAL PUSH VARIANTS (Bench Press pattern - Pectorals)
- * DIFFICOLTÀ ALLINEATE CON SCREENING: 1-10 scala
+ * LOWER PULL VARIANTS (Deadlift/Hip Hinge - Posterior chain)
+ * SSOT bodyweight + GYM variants
  */
-export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
-  {
-    id: 'pushup_wall',
-    name: 'Push-up al Muro',
-    difficulty: 1,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts']
-  },
-  {
-    id: 'pushup_incline',
-    name: 'Push-up Inclinato',
-    difficulty: 2,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts', 'core']
-  },
-  {
-    id: 'pushup_knee',
-    name: 'Push-up su Ginocchia',
-    difficulty: 3,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts', 'core']
-  },
-  {
-    id: 'pushup_standard',
-    name: 'Piegamenti',
-    difficulty: 5,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts', 'core']
-  },
-  {
-    id: 'pushup_diamond',
-    name: 'Piegamenti Diamante',
-    difficulty: 6,
-    equipment: 'bodyweight',
-    primary: ['triceps', 'pectorals'],
-    secondary: ['front_delts', 'core']
-  },
-  {
-    id: 'pushup_archer',
-    name: 'Archer Push-up',
-    difficulty: 8,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts', 'core', 'obliques']
-  },
-  {
-    id: 'pushup_pseudo_planche',
-    name: 'Pseudo Planche Push-up',
-    difficulty: 9,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'front_delts', 'triceps'],
-    secondary: ['core', 'serratus']
-  },
-  {
-    id: 'pushup_one_arm',
-    name: 'One Arm Push-up',
-    difficulty: 10,
-    equipment: 'bodyweight',
-    primary: ['pectorals', 'triceps'],
-    secondary: ['front_delts', 'core', 'obliques', 'stabilizers']
-  },
+export const LOWER_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('lower_pull'),
+  ...GYM_LOWER_PULL_VARIANTS
+]);
+
+/**
+ * HORIZONTAL PUSH - GYM ONLY VARIANTS
+ */
+const GYM_HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
   {
     id: 'bench_flat',
     name: 'Panca Piana con Bilanciere',
@@ -367,25 +193,18 @@ export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * VERTICAL PUSH VARIANTS (Overhead Press - Shoulders)
+ * HORIZONTAL PUSH VARIANTS (Bench Press pattern - Pectorals)
+ * SSOT bodyweight + GYM variants
  */
-export const VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = [
-  {
-    id: 'pike_pushup',
-    name: 'Pike Push-up',
-    difficulty: 5,
-    equipment: 'bodyweight',
-    primary: ['front_delts', 'triceps'],
-    secondary: ['upper_pectorals', 'core']
-  },
-  {
-    id: 'handstand_wall',
-    name: 'Verticale al Muro Push-up',
-    difficulty: 8,
-    equipment: 'bodyweight',
-    primary: ['front_delts', 'triceps'],
-    secondary: ['traps', 'core']
-  },
+export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('horizontal_push'),
+  ...GYM_HORIZONTAL_PUSH_VARIANTS
+]);
+
+/**
+ * VERTICAL PUSH - GYM ONLY VARIANTS
+ */
+const GYM_VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = [
   {
     id: 'military_press',
     name: 'Lento Avanti',
@@ -421,41 +240,18 @@ export const VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * VERTICAL PULL VARIANTS (Pull-up/Lat Pulldown - Lats)
+ * VERTICAL PUSH VARIANTS (Overhead Press - Shoulders)
+ * SSOT bodyweight + GYM variants
  */
-export const VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
-  {
-    id: 'pullup_standard',
-    name: 'Trazioni alla Sbarra',
-    difficulty: 7,
-    equipment: 'both',
-    primary: ['lats', 'biceps'],
-    secondary: ['rear_delts', 'traps', 'core']
-  },
-  {
-    id: 'pullup_wide',
-    name: 'Trazioni Presa Larga',
-    difficulty: 8,
-    equipment: 'both',
-    primary: ['lats', 'teres_major'],
-    secondary: ['biceps', 'rear_delts']
-  },
-  {
-    id: 'pullup_chinup',
-    name: 'Chin-up (Supinato)',
-    difficulty: 6,
-    equipment: 'both',
-    primary: ['biceps', 'lats'],
-    secondary: ['rear_delts', 'core']
-  },
-  {
-    id: 'pullup_neutral',
-    name: 'Trazioni Presa Neutra',
-    difficulty: 6,
-    equipment: 'both',
-    primary: ['lats', 'biceps'],
-    secondary: ['brachialis', 'rear_delts']
-  },
+export const VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('vertical_push'),
+  ...GYM_VERTICAL_PUSH_VARIANTS
+]);
+
+/**
+ * VERTICAL PULL - GYM ONLY VARIANTS
+ */
+const GYM_VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
   {
     id: 'lat_pulldown',
     name: 'Lat Machine',
@@ -475,36 +271,18 @@ export const VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * HORIZONTAL PULL VARIANTS (Row pattern - Mid-back)
- * Utilizzato per split avanzati (Pull day in PPL)
+ * VERTICAL PULL VARIANTS (Pull-up/Lat Pulldown - Lats)
+ * SSOT bodyweight + GYM variants
  */
-export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
-  // === BODYWEIGHT VARIANTS (solo esercizi con video) ===
-  {
-    id: 'row_inverted_easy',
-    name: 'Rematore Inverso Facilitato',
-    difficulty: 3,
-    equipment: 'bodyweight',
-    primary: ['mid_back', 'biceps'],
-    secondary: ['rear_delts', 'core']
-  },
-  {
-    id: 'row_inverted',
-    name: 'Rematore Inverso',
-    difficulty: 5,
-    equipment: 'both',
-    primary: ['mid_back', 'biceps'],
-    secondary: ['rear_delts', 'core']
-  },
-  {
-    id: 'row_inverted_feet_elevated',
-    name: 'Rematore Inverso Piedi Elevati',
-    difficulty: 7,
-    equipment: 'bodyweight',
-    primary: ['mid_back', 'lats'],
-    secondary: ['biceps', 'rear_delts', 'core']
-  },
-  // === GYM VARIANTS ===
+export const VERTICAL_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('vertical_pull'),
+  ...GYM_VERTICAL_PULL_VARIANTS
+]);
+
+/**
+ * HORIZONTAL PULL - GYM ONLY VARIANTS
+ */
+const GYM_HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
   {
     id: 'row_barbell',
     name: 'Rematore con Bilanciere',
@@ -540,41 +318,18 @@ export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
- * CORE VARIANTS
+ * HORIZONTAL PULL VARIANTS (Row pattern - Mid-back)
+ * SSOT bodyweight + GYM variants
  */
-export const CORE_VARIANTS: ExerciseVariant[] = [
-  {
-    id: 'plank_standard',
-    name: 'Plank',
-    difficulty: 3,
-    equipment: 'bodyweight',
-    primary: ['rectus_abdominis', 'transverse'],
-    secondary: ['obliques', 'hip_flexors']
-  },
-  {
-    id: 'plank_side',
-    name: 'Plank Laterale',
-    difficulty: 4,
-    equipment: 'bodyweight',
-    primary: ['obliques', 'transverse'],
-    secondary: ['glute_medius', 'shoulder_stabilizers']
-  },
-  {
-    id: 'leg_raise',
-    name: 'Alzate Gambe alla Sbarra',
-    difficulty: 6,
-    equipment: 'both',
-    primary: ['lower_abs', 'hip_flexors'],
-    secondary: ['lats', 'grip']
-  },
-  {
-    id: 'ab_wheel',
-    name: 'Ab Wheel Rollout',
-    difficulty: 7,
-    equipment: 'both',
-    primary: ['rectus_abdominis', 'transverse'],
-    secondary: ['lats', 'hip_flexors']
-  },
+export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('horizontal_pull'),
+  ...GYM_HORIZONTAL_PULL_VARIANTS
+]);
+
+/**
+ * CORE - GYM ONLY VARIANTS
+ */
+const GYM_CORE_VARIANTS: ExerciseVariant[] = [
   {
     id: 'crunch_cable',
     name: 'Crunch ai Cavi',
@@ -592,6 +347,15 @@ export const CORE_VARIANTS: ExerciseVariant[] = [
     secondary: ['shoulder_stabilizers']
   }
 ];
+
+/**
+ * CORE VARIANTS
+ * SSOT bodyweight + GYM variants
+ */
+export const CORE_VARIANTS: ExerciseVariant[] = deduplicateVariants([
+  ...getAllVariantsForPattern('core'),
+  ...GYM_CORE_VARIANTS
+]);
 
 /**
  * PELVIC FLOOR EXERCISES (Modern approach - not just Kegel)
