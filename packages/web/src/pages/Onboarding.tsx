@@ -35,6 +35,17 @@ const GOALS_WITHOUT_RUNNING = [
   'disabilita',
 ];
 
+// Key per salvare progresso parziale
+const ONBOARDING_PROGRESS_KEY = 'onboarding_progress';
+
+interface OnboardingProgress {
+  step: number;
+  data: Partial<OnboardingData>;
+  skipRunningStep: boolean;
+  showRunningOnboarding: boolean;
+  timestamp: string;
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -45,6 +56,56 @@ export default function Onboarding() {
   const [isSaving, setIsSaving] = useState(false);
   const [skipRunningStep, setSkipRunningStep] = useState(false);
   const [showRunningOnboarding, setShowRunningOnboarding] = useState(false);
+  const [progressRestored, setProgressRestored] = useState(false);
+
+  // Salva progresso parziale dopo ogni cambio di step/dati
+  const saveProgress = (step: number, stepData: Partial<OnboardingData>, skipRunning: boolean, showRunning: boolean) => {
+    const progress: OnboardingProgress = {
+      step,
+      data: stepData,
+      skipRunningStep: skipRunning,
+      showRunningOnboarding: showRunning,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem(ONBOARDING_PROGRESS_KEY, JSON.stringify(progress));
+    console.log('[ONBOARDING] 💾 Progress saved at step', step);
+  };
+
+  // Cancella progresso salvato (quando onboarding completato)
+  const clearProgress = () => {
+    localStorage.removeItem(ONBOARDING_PROGRESS_KEY);
+    console.log('[ONBOARDING] 🗑️ Progress cleared');
+  };
+
+  // Ripristina progresso salvato al mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem(ONBOARDING_PROGRESS_KEY);
+    if (savedProgress && !progressRestored) {
+      try {
+        const progress: OnboardingProgress = JSON.parse(savedProgress);
+
+        // Verifica che il progresso non sia troppo vecchio (max 7 giorni)
+        const savedTime = new Date(progress.timestamp).getTime();
+        const now = Date.now();
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 giorni
+
+        if (now - savedTime < maxAge && progress.step > 0) {
+          console.log('[ONBOARDING] 🔄 Restoring progress from step', progress.step);
+          setData(progress.data);
+          setCurrentStep(progress.step);
+          setSkipRunningStep(progress.skipRunningStep);
+          setShowRunningOnboarding(progress.showRunningOnboarding);
+        } else {
+          console.log('[ONBOARDING] ⏰ Saved progress too old, starting fresh');
+          clearProgress();
+        }
+      } catch (e) {
+        console.error('[ONBOARDING] ❌ Error restoring progress:', e);
+        clearProgress();
+      }
+      setProgressRestored(true);
+    }
+  }, [progressRestored]);
 
   // Check if user already accepted disclaimer
   useEffect(() => {
@@ -78,11 +139,15 @@ export default function Onboarding() {
   const effectiveStep = skipRunningStep && currentStep > 2 ? currentStep - 1 : currentStep;
   const progress = ((effectiveStep + 1) / totalSteps) * 100;
 
-  const updateData = (stepData: Partial<OnboardingData>) => {
+  const updateData = (stepData: Partial<OnboardingData>, nextStepNum?: number) => {
     const newData = { ...data, ...stepData };
     console.log('[ONBOARDING] 📝 Step data received:', stepData);
     console.log('[ONBOARDING] 📋 Current data state:', newData);
     setData(newData);
+    // Salva progresso dopo ogni update
+    if (nextStepNum !== undefined) {
+      saveProgress(nextStepNum, newData, skipRunningStep, showRunningOnboarding);
+    }
   };
 
   const saveOnboardingToDatabase = async (onboardingData: Partial<OnboardingData>) => {
@@ -174,6 +239,9 @@ export default function Onboarding() {
       console.log('[ONBOARDING] 🔄 Saving to Supabase...');
       await saveOnboardingToDatabase(finalData);
 
+      // Cancella progresso parziale - onboarding completato!
+      clearProgress();
+
       navigateToQuiz(finalData);
     } catch (error) {
       console.error('[ONBOARDING] ❌ Error saving onboarding:', error);
@@ -195,6 +263,7 @@ export default function Onboarding() {
         setShowRunningOnboarding(true);
         setSkipRunningStep(false);
         setCurrentStep(3);
+        saveProgress(3, finalData, false, true);
         return;
       }
 
@@ -206,6 +275,7 @@ export default function Onboarding() {
         setSkipRunningStep(true);
         console.log('[ONBOARDING] ⏭️ Skipping running step → Location');
         setCurrentStep(4);
+        saveProgress(4, finalData, true, false);
         return;
       } else {
         setSkipRunningStep(false);
@@ -228,8 +298,10 @@ export default function Onboarding() {
     }
 
     // Vai al prossimo step normale
-    console.log(`[ONBOARDING] ➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
-    setCurrentStep(currentStep + 1);
+    const nextStepNum = currentStep + 1;
+    console.log(`[ONBOARDING] ➡️ Moving from step ${currentStep} to ${nextStepNum}`);
+    setCurrentStep(nextStepNum);
+    saveProgress(nextStepNum, finalData, skipRunningStep, showRunningOnboarding);
   };
 
   const prevStep = () => {
@@ -295,6 +367,7 @@ export default function Onboarding() {
                 setShowRunningOnboarding(false);
                 // Vai al prossimo step (Location)
                 setCurrentStep(4);
+                saveProgress(4, updatedData, skipRunningStep, false);
               }}
               onBack={() => {
                 setShowRunningOnboarding(false);
@@ -365,10 +438,13 @@ export default function Onboarding() {
 
                 // Vai direttamente a Location (step 4)
                 setCurrentStep(4);
+                saveProgress(4, updatedData, skipRunningStep, showRunningOnboarding);
               } else {
                 // L'utente NON vuole running → salva e vai a Location
-                updateData(stepData as Partial<OnboardingData>);
+                const updatedData = { ...data, ...stepData };
+                setData(updatedData);
                 setCurrentStep(4);
+                saveProgress(4, updatedData, skipRunningStep, showRunningOnboarding);
               }
             }}
             onBack={prevStep}
