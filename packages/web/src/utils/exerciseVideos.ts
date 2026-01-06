@@ -90,24 +90,41 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   // === PUSH-UP varianti ===
   'Push-up Standard': 'standard-push-up.mp4',
   'Push-up': 'standard-push-up.mp4',
-  'Push-up su Ginocchia': 'standard-push-up.mp4',
-  'Push-up Ginocchia': 'standard-push-up.mp4',
+  'Standard Push-up': 'standard-push-up.mp4',
   'Piegamenti': 'standard-push-up.mp4',
   'Piegamenti sulle Braccia': 'standard-push-up.mp4',
   'Flessioni': 'standard-push-up.mp4',
+  // Knee push-up
+  'Push-up su Ginocchia': 'knee-push-up.mp4',
+  'Push-up sulle Ginocchia': 'knee-push-up.mp4',
+  'Push-up Ginocchia': 'knee-push-up.mp4',
+  'Knee Push-up': 'knee-push-up.mp4',
+  'Piegamenti sulle Ginocchia': 'knee-push-up.mp4',
+  // Decline push-up
   'Decline Push-up': 'decline-push-up.mp4',
   'Piegamenti Declinati': 'decline-push-up.mp4',
   'Piegamenti Piedi Elevati': 'decline-push-up.mp4',
+  // Incline push-up
   'Incline Push-up': 'incline-push-up.mp4',
   'Piegamenti Inclinati': 'incline-push-up.mp4',
   'Piegamenti su Rialzo': 'incline-push-up.mp4',
+  'Push-up Inclinati': 'incline-push-up.mp4',
+  // Diamond push-up
   'Diamond Push-up': 'diamond-push-up.mp4',
   'Piegamenti Diamante': 'diamond-push-up.mp4',
   'Piegamenti Stretti': 'diamond-push-up.mp4',
+  'Push-up Diamante': 'diamond-push-up.mp4',
+  'Push-up Stretti': 'diamond-push-up.mp4',
+  'Push-up Mani Strette': 'diamond-push-up.mp4',
+  'Close Grip Push-up': 'diamond-push-up.mp4',
+  'Narrow Push-up': 'diamond-push-up.mp4',
+  // Wall push-up
   'Wall Push-up': 'wall-push-up.mp4',
   'Wall Push Up': 'wall-push-up.mp4',
   'Piegamenti al Muro': 'wall-push-up.mp4',
   'Flessioni al Muro': 'wall-push-up.mp4',
+  // Pike push-up (altre varianti in ADVANCED PUSH-UP)
+  'Piegamenti Pike': 'pike-push-up.mp4',
 
   // === SQUAT varianti ===
   'Air Squat': 'bodyweight-squat.mp4',
@@ -493,8 +510,6 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'L-Sit': 'l-sit.mp4',
   'L Sit': 'l-sit.mp4',
   'Tenuta a L': 'l-sit.mp4',
-  'Knee Push-up': 'knee-push-up.mp4',
-  'Piegamenti sulle Ginocchia': 'knee-push-up.mp4',
   'Lying Leg Raise': 'lying-leg-raise.mp4',
   'Alzate Gambe Supino': 'lying-leg-raise.mp4',
   'Alzate Gambe a Terra': 'lying-leg-raise.mp4',
