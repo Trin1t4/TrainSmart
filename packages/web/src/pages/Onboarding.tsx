@@ -115,6 +115,11 @@ export default function Onboarding() {
     }
   }, []);
 
+  // Scroll to top quando cambia step
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
+
   const handleDisclaimerAccept = () => {
     localStorage.setItem('medical_disclaimer_accepted', 'true');
     localStorage.setItem('medical_disclaimer_date', new Date().toISOString());
