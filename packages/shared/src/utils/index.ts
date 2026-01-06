@@ -682,3 +682,23 @@ export {
   migrateGoalValue,
   GOAL_CONFIGS
 } from './goalMapper';
+
+// Program Structure Normalizer (V2) - Unificazione avanzata strutture programma
+// Note: Uses different naming to avoid conflicts with legacy programNormalizer
+export type {
+  NormalizedExercise as StructureNormalizedExercise,
+  NormalizedDay as StructureNormalizedDay,
+  NormalizedRunningSession,
+  NormalizedWeeklySplit,
+  NormalizedProgram as StructureNormalizedProgram,
+  PatternBaseline as StructurePatternBaseline,
+  PainArea as StructurePainArea
+} from './programStructureNormalizer';
+export {
+  detectProgramStructure as detectStructureType,
+  isNormalizedProgram as isStructureNormalized,
+  normalizeProgram as normalizeToStructure,
+  updateExerciseInProgram as updateStructureExercise,
+  getExerciseById as getStructureExerciseById,
+  getAllExercises as getAllStructureExercises
+} from './programStructureNormalizer';

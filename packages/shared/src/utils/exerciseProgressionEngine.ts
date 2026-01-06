@@ -1,501 +1,525 @@
 /**
- * Exercise Progression Engine
+ * EXERCISE PROGRESSION ENGINE
  *
- * Sistema unificato per gestire la progressione degli esercizi con logica separata per:
- * - Esercizi bodyweight: progressione tramite varianti (non peso)
- * - Esercizi weighted: progressione tramite carico
+ * Separazione COMPLETA della logica di progressione tra:
+ * - WEIGHTED: Progressione tramite peso (powerlifting logic)
+ * - BODYWEIGHT: Progressione tramite varianti (calisthenics logic)
  *
- * @module exerciseProgressionEngine
+ * REGOLA FONDAMENTALE:
+ * - Weighted: RIR basso → riduci peso, RIR alto → aumenta peso
+ * - Bodyweight: RIR basso → variante più facile, RIR alto → variante più difficile
+ *
+ * MAI applicare logica di peso a esercizi bodyweight!
  */
 
-import { PROGRESSION_CHAINS } from './exerciseProgression';
-
-// ============================================
+// ============================================================================
 // TYPES
-// ============================================
+// ============================================================================
 
-export type ExerciseType = 'bodyweight' | 'weighted' | 'mixed';
-export type Location = 'gym' | 'home' | 'home_gym';
+export type ExerciseType = 'weighted' | 'bodyweight' | 'hybrid';
+export type ProgressionAction = 'maintain' | 'upgrade' | 'downgrade';
+export type LocationType = 'gym' | 'home' | 'home_gym';
 
 export interface ExerciseFeedback {
   exerciseName: string;
-  exerciseType?: ExerciseType;
+  exerciseType: ExerciseType;
   pattern: string;
+
+  // Performance metrics
   targetReps: number;
   completedReps: number;
-  targetRIR?: number;
+  targetRIR: number;
   actualRIR: number;
+  rpe?: number; // 1-10
+
+  // For weighted exercises
   currentWeight?: number;
-  currentDifficulty?: number;
-  location: Location;
-  rpe?: number;
+
+  // For bodyweight exercises
+  currentDifficulty?: number; // 1-10
+  currentVariant?: string;
+
+  // Context
+  location: LocationType;
+  setNumber?: number;
+  isLastSet?: boolean;
 }
 
 export interface WeightedProgressionResult {
-  action: 'increase_weight' | 'decrease_weight' | 'maintain';
-  currentWeight: number;
-  suggestedWeight: number;
-  percentageChange: number;
+  action: 'maintain' | 'increase_weight' | 'decrease_weight';
+  newWeight?: number;
+  weightChangePercent?: number;
+  reason: string;
   userMessage: string;
-  technicalDetails: string;
+  severity: 'info' | 'warning' | 'critical';
 }
 
 export interface BodyweightProgressionResult {
-  action: 'upgrade_variant' | 'downgrade_variant' | 'maintain' | 'add_reps';
-  currentVariant: string;
-  suggestedVariant?: string;
-  currentDifficulty: number;
-  suggestedDifficulty?: number;
-  repsAdjustment?: number;
+  action: 'maintain' | 'upgrade_variant' | 'downgrade_variant';
+  newVariant?: string;
+  newDifficulty?: number;
+  repsAdjustment?: number; // +2 or -2 reps
+  reason: string;
   userMessage: string;
+  severity: 'info' | 'warning' | 'critical';
   educationalTip?: string;
 }
 
 export interface ProgressionResult {
   exerciseType: ExerciseType;
-  shouldProgress: boolean;
   weighted?: WeightedProgressionResult;
   bodyweight?: BodyweightProgressionResult;
-  autoRegulationApplied: boolean;
-  notes: string;
+  shouldPersist: boolean;
+  nextSessionRecommendation?: string;
 }
 
-// ============================================
+// ============================================================================
 // EXERCISE CLASSIFICATION
-// ============================================
+// ============================================================================
 
-/**
- * Lista esercizi puramente bodyweight (nessun peso esterno)
- */
-const PURE_BODYWEIGHT_EXERCISES = new Set([
-  // Push-up variations
-  'wall push-up', 'incline push-up', 'knee push-up', 'standard push-up',
-  'push-up', 'diamond push-up', 'archer push-up', 'one-arm push-up',
-  'decline push-up', 'pike push-up', 'pseudo planche push-up',
-  'typewriter push-up', 'clap push-up', 'ring push-up',
+const BODYWEIGHT_EXERCISES = new Set([
+  // Push
+  'push-up', 'pushup', 'pike push-up', 'pike pushup', 'diamond push-up',
+  'archer push-up', 'one arm push-up', 'handstand push-up', 'hspu',
+  'dips', 'parallel dips', 'ring dips',
 
-  // Pull-up variations
-  'pull-up', 'chin-up', 'negative pull-up', 'assisted pull-up',
-  'wide grip pull-up', 'neutral grip pull-up', 'archer pull-up',
-  'muscle-up', 'l-sit pull-up',
+  // Pull
+  'pull-up', 'pullup', 'chin-up', 'chinup', 'muscle-up', 'muscleup',
+  'inverted row', 'australian pull-up', 'body row',
+  'negative pull-up', 'band assisted pull-up',
 
-  // Squat variations (bodyweight)
-  'bodyweight squat', 'air squat', 'split squat', 'bulgarian split squat',
-  'pistol squat', 'shrimp squat', 'skater squat', 'sissy squat',
-  'assisted pistol squat', 'box squat',
-
-  // Hinge (bodyweight)
-  'glute bridge', 'single leg glute bridge', 'hip thrust',
-  'nordic curl', 'slider leg curl', 'reverse nordic curl',
-
-  // Row variations (bodyweight)
-  'inverted row', 'australian pull-up', 'archer row',
-  'trx row', 'ring row',
+  // Legs
+  'pistol squat', 'shrimp squat', 'bulgarian split squat', 'bodyweight squat',
+  'jump squat', 'box jump', 'step up', 'lunge', 'walking lunge',
+  'nordic curl', 'glute bridge', 'single leg glute bridge',
+  'sissy squat', 'natural leg curl',
 
   // Core
-  'plank', 'side plank', 'dead bug', 'bird dog', 'hollow body hold',
-  'hanging leg raise', 'hanging knee raise', 'l-sit', 'dragon flag',
-  'ab wheel rollout', 'v-up', 'lying leg raise',
-
-  // HSPU progression
-  'wall handstand push-up', 'pike push-up elevated', 'handstand hold',
-
-  // Dips (bodyweight)
-  'dips', 'tricep dips', 'chest dips', 'bench dips',
-
-  // Calf (bodyweight)
-  'calf raise', 'single leg calf raise'
+  'plank', 'side plank', 'hollow body', 'l-sit', 'v-sit',
+  'dragon flag', 'front lever', 'back lever',
+  'hanging leg raise', 'toes to bar', 'dead bug',
+  'mountain climber', 'burpee'
 ]);
 
-/**
- * Lista esercizi che richiedono peso/macchina
- */
 const WEIGHTED_EXERCISES = new Set([
-  // Barbell
-  'back squat', 'front squat', 'deadlift', 'conventional deadlift',
-  'sumo deadlift', 'romanian deadlift', 'bench press',
-  'flat barbell bench press', 'incline bench press', 'decline bench press',
-  'overhead press', 'military press', 'barbell row', 'pendlay row',
-  'barbell curl', 'skull crushers', 'good morning',
+  // Compound
+  'squat', 'back squat', 'front squat', 'goblet squat',
+  'deadlift', 'conventional deadlift', 'sumo deadlift', 'romanian deadlift', 'rdl',
+  'bench press', 'incline bench', 'decline bench', 'floor press',
+  'overhead press', 'military press', 'push press',
+  'barbell row', 'pendlay row', 't-bar row',
+  'lat pulldown', 'cable row', 'seated row',
 
-  // Dumbbell
-  'dumbbell bench press', 'dumbbell row', 'dumbbell shoulder press',
-  'dumbbell curl', 'hammer curl', 'lateral raise', 'front raise',
-  'goblet squat', 'dumbbell rdl', 'concentration curl',
-
-  // Cable
-  'lat pulldown', 'seated cable row', 'cable fly', 'face pull',
-  'tricep pushdown', 'cable crunch', 'cable pull through',
-  'cable kickback', 'straight arm pulldown',
-
-  // Machine
-  'leg press', 'leg curl', 'leg extension', 'seated leg curl',
-  'lying leg curl', 'hack squat', 'chest press machine',
-  'shoulder press machine', 'pec deck',
-
-  // Other weighted
-  'hip thrust', 'weighted pull-up', 'weighted dips'
+  // Isolation
+  'bicep curl', 'hammer curl', 'preacher curl',
+  'tricep extension', 'skull crusher', 'tricep pushdown',
+  'lateral raise', 'front raise', 'rear delt fly',
+  'leg press', 'leg extension', 'leg curl', 'calf raise',
+  'chest fly', 'cable crossover', 'pec deck'
 ]);
 
 /**
- * Classifica un esercizio come bodyweight, weighted o mixed
+ * Determine exercise type from name
  */
 export function classifyExercise(exerciseName: string): ExerciseType {
   const normalized = exerciseName.toLowerCase().trim();
 
-  if (PURE_BODYWEIGHT_EXERCISES.has(normalized)) {
-    return 'bodyweight';
+  // Check hybrid first (weighted + bodyweight name)
+  if (normalized.includes('weighted') || normalized.includes('zavorrat')) {
+    return 'hybrid'; // e.g., "weighted pull-up"
   }
 
-  if (WEIGHTED_EXERCISES.has(normalized)) {
-    return 'weighted';
+  // Check specific bodyweight terms first (priority)
+  const specificBodyweightTerms = [
+    'pistol', 'shrimp', 'bulgarian', 'bodyweight',
+    'push-up', 'pushup', 'pull-up', 'pullup', 'chin-up', 'chinup',
+    'dips', 'plank', 'l-sit', 'hollow', 'nordic', 'inverted',
+    'muscle-up', 'muscleup', 'handstand', 'pike', 'hspu',
+    'dead bug', 'bird dog', 'dragon flag'
+  ];
+
+  for (const term of specificBodyweightTerms) {
+    if (normalized.includes(term)) return 'bodyweight';
   }
 
-  // Euristica per esercizi non in lista
-  const bodyweightKeywords = ['push-up', 'pull-up', 'plank', 'hollow', 'l-sit', 'pistol', 'nordic'];
-  const weightedKeywords = ['barbell', 'dumbbell', 'cable', 'machine', 'press', 'curl', 'row'];
-
-  for (const kw of bodyweightKeywords) {
-    if (normalized.includes(kw)) return 'bodyweight';
+  // Check weighted exercises
+  for (const w of WEIGHTED_EXERCISES) {
+    if (normalized === w || normalized.includes(w) || w.includes(normalized)) {
+      return 'weighted';
+    }
   }
 
-  for (const kw of weightedKeywords) {
-    if (normalized.includes(kw)) return 'weighted';
+  // Check remaining bodyweight exercises
+  for (const bw of BODYWEIGHT_EXERCISES) {
+    if (normalized === bw || normalized.includes(bw) || bw.includes(normalized)) {
+      return 'bodyweight';
+    }
   }
 
-  return 'mixed';
+  // Default - assume bodyweight if unknown
+  return 'bodyweight';
 }
 
+/**
+ * Check if exercise is primarily bodyweight
+ */
 export function isBodyweightExercise(exerciseName: string): boolean {
   return classifyExercise(exerciseName) === 'bodyweight';
 }
 
+/**
+ * Check if exercise is primarily weighted
+ */
 export function isWeightedExercise(exerciseName: string): boolean {
   return classifyExercise(exerciseName) === 'weighted';
 }
 
-// ============================================
-// PROGRESSION CHAINS (BODYWEIGHT)
-// ============================================
+// ============================================================================
+// WEIGHTED PROGRESSION LOGIC
+// ============================================================================
 
-export const BODYWEIGHT_PROGRESSIONS: Record<string, string[]> = {
-  horizontal_push: [
-    'Wall Push-up',
-    'Incline Push-up',
-    'Knee Push-up',
-    'Standard Push-up',
-    'Diamond Push-up',
-    'Decline Push-up',
-    'Archer Push-up',
-    'Pseudo Planche Push-up',
-    'One-Arm Push-up'
-  ],
-  vertical_push: [
-    'Pike Push-up (Knees)',
-    'Pike Push-up',
-    'Elevated Pike Push-up',
-    'Wall Handstand Hold',
-    'Wall Handstand Push-up (Negative)',
-    'Wall Handstand Push-up'
-  ],
-  vertical_pull: [
-    'Dead Hang',
-    'Scapular Pull-up',
-    'Negative Pull-up',
-    'Band-Assisted Pull-up',
-    'Chin-up',
-    'Standard Pull-up',
-    'Wide Grip Pull-up',
-    'Archer Pull-up'
-  ],
-  horizontal_pull: [
-    'Inverted Row (High)',
-    'Inverted Row',
-    'Inverted Row (Feet Elevated)',
-    'Archer Row',
-    'One-Arm Inverted Row'
-  ],
-  lower_push: [
-    'Assisted Squat',
-    'Box Squat',
-    'Bodyweight Squat',
-    'Split Squat',
-    'Bulgarian Split Squat',
-    'Skater Squat',
-    'Assisted Pistol Squat',
-    'Pistol Squat',
-    'Shrimp Squat'
-  ],
-  lower_pull: [
-    'Glute Bridge',
-    'Single Leg Glute Bridge',
-    'Hip Thrust (Bodyweight)',
-    'Slider Leg Curl',
-    'Nordic Curl (Negative)',
-    'Nordic Curl'
-  ],
-  core: [
-    'Dead Bug',
-    'Bird Dog',
-    'Plank',
-    'Side Plank',
-    'Hanging Knee Raise',
-    'Hanging Leg Raise',
-    'Tuck L-Sit',
-    'L-Sit',
-    'Dragon Flag'
-  ]
+const WEIGHT_ADJUSTMENT_CONFIG = {
+  tooHard: {
+    critical: -3,
+    warning: -2
+  },
+  tooEasy: {
+    threshold: 2
+  },
+  decrease: {
+    critical: 20,
+    warning: 10
+  },
+  increase: {
+    normal: 5,
+    confident: 7.5
+  }
 };
 
 /**
- * Ottieni la catena di progressione per un pattern
+ * Calculate weighted exercise progression
  */
-export function getProgressionChain(pattern: string): string[] {
-  return BODYWEIGHT_PROGRESSIONS[pattern] || PROGRESSION_CHAINS[`${pattern}_bodyweight`] || [];
-}
+export function calculateWeightedProgression(feedback: ExerciseFeedback): WeightedProgressionResult {
+  const { targetRIR, actualRIR, currentWeight, completedReps, targetReps } = feedback;
 
-/**
- * Trova posizione di un esercizio nella catena
- */
-function findInChain(exerciseName: string, chain: string[]): number {
-  const normalized = exerciseName.toLowerCase();
-  return chain.findIndex(ex =>
-    ex.toLowerCase() === normalized ||
-    normalized.includes(ex.toLowerCase()) ||
-    ex.toLowerCase().includes(normalized)
-  );
-}
+  if (!currentWeight || currentWeight <= 0) {
+    return {
+      action: 'maintain',
+      reason: 'No weight data available',
+      userMessage: 'Continua con il carico attuale.',
+      severity: 'info'
+    };
+  }
 
-/**
- * Ottieni difficolta di un esercizio (1-10)
- */
-export function getExerciseDifficulty(exerciseName: string, pattern: string): number {
-  const chain = getProgressionChain(pattern);
-  const position = findInChain(exerciseName, chain);
-
-  if (position === -1) return 5; // Default medio
-
-  // Scala da 1 a 10 basata sulla posizione
-  return Math.round(1 + (position / Math.max(1, chain.length - 1)) * 9);
-}
-
-/**
- * Ottieni variante successiva (upgrade)
- */
-export function getNextVariant(exerciseName: string, pattern: string): string | null {
-  const chain = getProgressionChain(pattern);
-  const position = findInChain(exerciseName, chain);
-
-  if (position === -1 || position >= chain.length - 1) return null;
-  return chain[position + 1];
-}
-
-/**
- * Ottieni variante precedente (downgrade)
- */
-export function getPreviousVariant(exerciseName: string, pattern: string): string | null {
-  const chain = getProgressionChain(pattern);
-  const position = findInChain(exerciseName, chain);
-
-  if (position <= 0) return null;
-  return chain[position - 1];
-}
-
-// ============================================
-// WEIGHTED PROGRESSION LOGIC
-// ============================================
-
-/**
- * Calcola progressione per esercizi con peso
- */
-export function calculateWeightedProgression(
-  feedback: ExerciseFeedback
-): WeightedProgressionResult {
-  const { targetReps, completedReps, actualRIR, currentWeight = 0, targetRIR = 2 } = feedback;
-
+  const rirDelta = actualRIR - targetRIR;
   const completionRate = completedReps / targetReps;
-  const rirDiff = actualRIR - targetRIR;
 
-  // Troppo difficile: RIR < target o reps non completate
-  if (actualRIR < targetRIR || completionRate < 0.9) {
-    const reduction = actualRIR === 0 ? 0.10 : 0.05; // -10% se failure, -5% altrimenti
-    const suggestedWeight = Math.round(currentWeight * (1 - reduction));
-
+  if (rirDelta <= WEIGHT_ADJUSTMENT_CONFIG.tooHard.critical || completionRate < 0.7) {
+    const reduction = WEIGHT_ADJUSTMENT_CONFIG.decrease.critical;
+    const newWeight = roundWeight(currentWeight * (1 - reduction / 100));
     return {
       action: 'decrease_weight',
-      currentWeight,
-      suggestedWeight,
-      percentageChange: -reduction * 100,
-      userMessage: actualRIR === 0
-        ? `Cedimento raggiunto! Riduci a ${suggestedWeight}kg per la prossima serie`
-        : `RIR troppo basso. Prova ${suggestedWeight}kg`,
-      technicalDetails: `RIR target: ${targetRIR}, attuale: ${actualRIR}. Completamento: ${Math.round(completionRate * 100)}%`
+      newWeight,
+      weightChangePercent: -reduction,
+      reason: `RIR ${actualRIR} vs target ${targetRIR}, completion: ${Math.round(completionRate * 100)}%`,
+      userMessage: `🛑 Carico troppo alto! Prossima sessione: ${newWeight}kg (-${reduction}%)`,
+      severity: 'critical'
     };
   }
 
-  // Troppo facile: RIR > target + 2 e reps completate
-  if (rirDiff >= 2 && completionRate >= 1) {
-    const increase = rirDiff >= 4 ? 0.075 : 0.05; // +7.5% se molto facile, +5% altrimenti
-    const suggestedWeight = Math.round(currentWeight * (1 + increase));
+  if (rirDelta <= WEIGHT_ADJUSTMENT_CONFIG.tooHard.warning) {
+    const reduction = WEIGHT_ADJUSTMENT_CONFIG.decrease.warning;
+    const newWeight = roundWeight(currentWeight * (1 - reduction / 100));
+    return {
+      action: 'decrease_weight',
+      newWeight,
+      weightChangePercent: -reduction,
+      reason: `RIR ${actualRIR} vs target ${targetRIR}`,
+      userMessage: `⚠️ Leggermente pesante. Prossima sessione: ${newWeight}kg (-${reduction}%)`,
+      severity: 'warning'
+    };
+  }
 
+  if (rirDelta >= WEIGHT_ADJUSTMENT_CONFIG.tooEasy.threshold + 1) {
+    const increase = WEIGHT_ADJUSTMENT_CONFIG.increase.confident;
+    const newWeight = roundWeight(currentWeight * (1 + increase / 100));
     return {
       action: 'increase_weight',
-      currentWeight,
-      suggestedWeight,
-      percentageChange: increase * 100,
-      userMessage: `Ottimo! Puoi aumentare a ${suggestedWeight}kg`,
-      technicalDetails: `RIR ${actualRIR} > target ${targetRIR}. Margine per progredire.`
+      newWeight,
+      weightChangePercent: increase,
+      reason: `RIR ${actualRIR} vs target ${targetRIR} - molto facile`,
+      userMessage: `💪 Troppo facile! Prossima sessione: ${newWeight}kg (+${increase}%)`,
+      severity: 'info'
     };
   }
 
-  // Zona ottimale
+  if (rirDelta >= WEIGHT_ADJUSTMENT_CONFIG.tooEasy.threshold) {
+    const increase = WEIGHT_ADJUSTMENT_CONFIG.increase.normal;
+    const newWeight = roundWeight(currentWeight * (1 + increase / 100));
+    return {
+      action: 'increase_weight',
+      newWeight,
+      weightChangePercent: increase,
+      reason: `RIR ${actualRIR} vs target ${targetRIR}`,
+      userMessage: `📈 Pronto per progredire! Prossima sessione: ${newWeight}kg (+${increase}%)`,
+      severity: 'info'
+    };
+  }
+
   return {
     action: 'maintain',
-    currentWeight,
-    suggestedWeight: currentWeight,
-    percentageChange: 0,
-    userMessage: 'Perfetto! Mantieni questo peso',
-    technicalDetails: `RIR ${actualRIR} in zona target (${targetRIR}). Continua cosi.`
+    reason: `RIR ${actualRIR} nel range target (${targetRIR})`,
+    userMessage: `✅ Carico perfetto! Mantieni ${currentWeight}kg.`,
+    severity: 'info'
   };
 }
 
-// ============================================
+function roundWeight(weight: number): number {
+  if (weight < 20) {
+    return Math.round(weight * 2) / 2;
+  } else if (weight < 50) {
+    return Math.round(weight / 2.5) * 2.5;
+  } else {
+    return Math.round(weight / 5) * 5;
+  }
+}
+
+// ============================================================================
 // BODYWEIGHT PROGRESSION LOGIC
-// ============================================
+// ============================================================================
+
+export const BODYWEIGHT_PROGRESSIONS: Record<string, string[]> = {
+  horizontal_push: [
+    'Wall Push-up', 'Incline Push-up', 'Knee Push-up', 'Push-up',
+    'Diamond Push-up', 'Wide Push-up', 'Decline Push-up', 'Archer Push-up',
+    'One Arm Push-up (Assisted)', 'One Arm Push-up'
+  ],
+  vertical_push: [
+    'Pike Push-up (Knee)', 'Pike Push-up', 'Pike Push-up (Elevated)',
+    'Box Pike Push-up', 'Wall Handstand Push-up', 'Handstand Push-up (Assisted)',
+    'Handstand Push-up', 'Handstand Push-up (Deficit)'
+  ],
+  horizontal_pull: [
+    'Inverted Row (High Bar)', 'Inverted Row (45°)', 'Inverted Row (Horizontal)',
+    'Inverted Row (Feet Elevated)', 'Archer Inverted Row',
+    'Front Lever Row (Tuck)', 'Front Lever Row'
+  ],
+  vertical_pull: [
+    'Dead Hang', 'Scapular Pull-up', 'Negative Pull-up', 'Band Assisted Pull-up',
+    'Pull-up', 'Chest to Bar Pull-up', 'L-Sit Pull-up', 'Weighted Pull-up',
+    'Archer Pull-up', 'One Arm Pull-up (Assisted)', 'One Arm Pull-up'
+  ],
+  lower_push: [
+    'Assisted Squat', 'Box Squat', 'Bodyweight Squat', 'Squat (Pause)',
+    'Bulgarian Split Squat', 'Shrimp Squat (Assisted)', 'Shrimp Squat',
+    'Pistol Squat (Assisted)', 'Pistol Squat', 'Dragon Squat'
+  ],
+  lower_pull: [
+    'Glute Bridge', 'Single Leg Glute Bridge', 'Hip Thrust (BW)',
+    'Nordic Curl (Eccentric)', 'Nordic Curl (Partial)', 'Nordic Curl (Assisted)',
+    'Nordic Curl', 'Natural Leg Curl'
+  ],
+  core: [
+    'Dead Bug', 'Bird Dog', 'Plank', 'Side Plank', 'Hollow Body Hold',
+    'Hollow Body Rock', 'L-Sit (Tucked)', 'L-Sit', 'Hanging Leg Raise',
+    'Toes to Bar', 'Dragon Flag (Partial)', 'Dragon Flag'
+  ],
+  dips: [
+    'Bench Dips', 'Bench Dips (Feet Elevated)', 'Parallel Dips (Assisted)',
+    'Parallel Dips', 'Ring Dips (Assisted)', 'Ring Dips', 'Weighted Dips', 'Korean Dips'
+  ]
+};
+
+function findInProgressionChain(exerciseName: string, pattern: string): number {
+  const chain = BODYWEIGHT_PROGRESSIONS[pattern];
+  if (!chain) return -1;
+  const normalized = exerciseName.toLowerCase();
+  return chain.findIndex(ex => {
+    const chainNormalized = ex.toLowerCase();
+    return chainNormalized.includes(normalized) || normalized.includes(chainNormalized);
+  });
+}
+
+function getExerciseAtPosition(pattern: string, position: number): string | null {
+  const chain = BODYWEIGHT_PROGRESSIONS[pattern];
+  if (!chain || position < 0 || position >= chain.length) return null;
+  return chain[position];
+}
 
 /**
- * Calcola progressione per esercizi bodyweight
+ * Calculate bodyweight exercise progression
  */
-export function calculateBodyweightProgression(
-  feedback: ExerciseFeedback
-): BodyweightProgressionResult {
-  const {
-    exerciseName,
-    pattern,
-    targetReps,
-    completedReps,
-    actualRIR,
-    targetRIR = 2,
-    currentDifficulty = 5
-  } = feedback;
+export function calculateBodyweightProgression(feedback: ExerciseFeedback): BodyweightProgressionResult {
+  const { exerciseName, pattern, targetRIR, actualRIR, completedReps, targetReps } = feedback;
 
+  const rirDelta = actualRIR - targetRIR;
   const completionRate = completedReps / targetReps;
-  const rirDiff = actualRIR - targetRIR;
+  const currentPosition = findInProgressionChain(exerciseName, pattern);
 
-  // Troppo difficile: downgrade a variante piu facile
-  if (actualRIR < 1 || completionRate < 0.7) {
-    const previousVariant = getPreviousVariant(exerciseName, pattern);
+  if (rirDelta <= -2 || completionRate < 0.7) {
+    const newPosition = Math.max(0, currentPosition - 1);
+    const newVariant = getExerciseAtPosition(pattern, newPosition);
 
-    if (previousVariant) {
+    if (newVariant && newVariant !== exerciseName) {
       return {
         action: 'downgrade_variant',
-        currentVariant: exerciseName,
-        suggestedVariant: previousVariant,
-        currentDifficulty,
-        suggestedDifficulty: currentDifficulty - 1,
-        userMessage: `Passiamo a ${previousVariant} per consolidare la tecnica`,
-        educationalTip: 'Nel calisthenics, padroneggiare le basi e fondamentale prima di avanzare'
+        newVariant,
+        newDifficulty: newPosition + 1,
+        repsAdjustment: 2,
+        reason: `RIR ${actualRIR} vs target ${targetRIR}, completion ${Math.round(completionRate * 100)}%`,
+        userMessage: `🔄 Proviamo una variante più accessibile: ${newVariant}`,
+        severity: rirDelta <= -3 ? 'critical' : 'warning',
+        educationalTip: 'Nel calisthenics, la progressione avviene tramite varianti più difficili, non tramite peso.'
       };
     }
-
-    // Nessuna variante precedente: riduci reps
     return {
-      action: 'add_reps',
-      currentVariant: exerciseName,
-      currentDifficulty,
+      action: 'downgrade_variant',
       repsAdjustment: -2,
-      userMessage: `Riduci a ${Math.max(3, targetReps - 2)} ripetizioni per serie`,
-      educationalTip: 'Meglio meno ripetizioni con tecnica perfetta'
+      reason: 'Già alla variante più facile',
+      userMessage: `⚠️ Riduci a ${Math.max(3, targetReps - 2)} reps per migliorare la qualità.`,
+      severity: 'warning',
+      educationalTip: 'Sei alla variante base. Concentrati sulla qualità del movimento.'
     };
   }
 
-  // Troppo facile: upgrade a variante piu difficile
-  if (rirDiff >= 3 && completionRate >= 1) {
-    const nextVariant = getNextVariant(exerciseName, pattern);
+  if (rirDelta >= 3 && completionRate >= 1.0) {
+    const chain = BODYWEIGHT_PROGRESSIONS[pattern] || [];
+    const newPosition = Math.min(chain.length - 1, currentPosition + 1);
+    const newVariant = getExerciseAtPosition(pattern, newPosition);
 
-    if (nextVariant) {
+    if (newVariant && newVariant !== exerciseName) {
       return {
         action: 'upgrade_variant',
-        currentVariant: exerciseName,
-        suggestedVariant: nextVariant,
-        currentDifficulty,
-        suggestedDifficulty: currentDifficulty + 1,
-        userMessage: `Sei pronto per ${nextVariant}!`,
-        educationalTip: 'Inizia con poche ripetizioni della nuova variante e aumenta gradualmente'
+        newVariant,
+        newDifficulty: newPosition + 1,
+        repsAdjustment: -2,
+        reason: `RIR ${actualRIR} vs target ${targetRIR} - molto facile`,
+        userMessage: `🚀 Pronto per la progressione! Prova: ${newVariant}`,
+        severity: 'info',
+        educationalTip: `Hai padroneggiato ${exerciseName}. La prossima sfida è ${newVariant}.`
       };
     }
+  }
 
-    // Nessuna variante successiva: aumenta reps
+  if (rirDelta >= 2 && completionRate >= 1.0) {
+    const chain = BODYWEIGHT_PROGRESSIONS[pattern] || [];
+    const newPosition = currentPosition + 1;
+    const newVariant = getExerciseAtPosition(pattern, newPosition);
+
+    if (newVariant) {
+      return {
+        action: 'upgrade_variant',
+        newVariant,
+        newDifficulty: newPosition + 1,
+        reason: `RIR ${actualRIR} vs target ${targetRIR}`,
+        userMessage: `📈 Buon lavoro! Prossima sessione prova: ${newVariant}`,
+        severity: 'info',
+        educationalTip: 'Quando completi tutte le reps con reps in riserva, è il momento di progredire.'
+      };
+    }
     return {
-      action: 'add_reps',
-      currentVariant: exerciseName,
-      currentDifficulty,
+      action: 'maintain',
       repsAdjustment: 2,
-      userMessage: `Aumenta a ${targetReps + 2} ripetizioni per serie`,
-      educationalTip: 'Hai raggiunto il top della progressione per questo pattern!'
+      reason: 'Variante massima raggiunta',
+      userMessage: `💪 Sei alla variante avanzata! Prova ${targetReps + 2} reps.`,
+      severity: 'info',
+      educationalTip: 'Hai raggiunto la variante più avanzata. Aumenta le ripetizioni o rallenta il tempo.'
     };
   }
 
-  // Zona ottimale
   return {
     action: 'maintain',
-    currentVariant: exerciseName,
-    currentDifficulty,
-    userMessage: 'Continua cosi! Stai progredendo bene',
-    educationalTip: 'Concentrati sulla qualita del movimento'
+    reason: `RIR ${actualRIR} nel range target`,
+    userMessage: `✅ Ottimo! Continua con ${exerciseName}.`,
+    severity: 'info'
   };
 }
 
-// ============================================
-// MAIN PROGRESSION FUNCTION
-// ============================================
+// ============================================================================
+// UNIFIED PROGRESSION FUNCTION
+// ============================================================================
 
-/**
- * Calcola la progressione appropriata per qualsiasi esercizio
- */
 export function calculateProgression(feedback: ExerciseFeedback): ProgressionResult {
   const exerciseType = feedback.exerciseType || classifyExercise(feedback.exerciseName);
-
-  if (exerciseType === 'bodyweight') {
-    const bodyweight = calculateBodyweightProgression(feedback);
-    return {
-      exerciseType,
-      shouldProgress: bodyweight.action !== 'maintain',
-      bodyweight,
-      autoRegulationApplied: true,
-      notes: bodyweight.userMessage
-    };
-  }
 
   if (exerciseType === 'weighted') {
     const weighted = calculateWeightedProgression(feedback);
     return {
-      exerciseType,
-      shouldProgress: weighted.action !== 'maintain',
+      exerciseType: 'weighted',
       weighted,
-      autoRegulationApplied: true,
-      notes: weighted.userMessage
+      shouldPersist: weighted.action !== 'maintain',
+      nextSessionRecommendation: weighted.userMessage
     };
   }
 
-  // Mixed: decide based on weight presence
+  if (exerciseType === 'bodyweight') {
+    const bodyweight = calculateBodyweightProgression(feedback);
+    return {
+      exerciseType: 'bodyweight',
+      bodyweight,
+      shouldPersist: bodyweight.action !== 'maintain',
+      nextSessionRecommendation: bodyweight.userMessage
+    };
+  }
+
+  // Hybrid
   if (feedback.currentWeight && feedback.currentWeight > 0) {
     const weighted = calculateWeightedProgression(feedback);
     return {
-      exerciseType: 'weighted',
-      shouldProgress: weighted.action !== 'maintain',
+      exerciseType: 'hybrid',
       weighted,
-      autoRegulationApplied: true,
-      notes: weighted.userMessage
+      shouldPersist: weighted.action !== 'maintain',
+      nextSessionRecommendation: weighted.userMessage
+    };
+  } else {
+    const bodyweight = calculateBodyweightProgression(feedback);
+    return {
+      exerciseType: 'hybrid',
+      bodyweight,
+      shouldPersist: bodyweight.action !== 'maintain',
+      nextSessionRecommendation: bodyweight.userMessage
     };
   }
-
-  const bodyweight = calculateBodyweightProgression(feedback);
-  return {
-    exerciseType: 'bodyweight',
-    shouldProgress: bodyweight.action !== 'maintain',
-    bodyweight,
-    autoRegulationApplied: true,
-    notes: bodyweight.userMessage
-  };
 }
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+export function getNextVariant(exerciseName: string, pattern: string): string | null {
+  const position = findInProgressionChain(exerciseName, pattern);
+  if (position === -1) return null;
+  return getExerciseAtPosition(pattern, position + 1);
+}
+
+export function getPreviousVariant(exerciseName: string, pattern: string): string | null {
+  const position = findInProgressionChain(exerciseName, pattern);
+  if (position <= 0) return null;
+  return getExerciseAtPosition(pattern, position - 1);
+}
+
+export function getExerciseDifficulty(exerciseName: string, pattern: string): number {
+  const chain = BODYWEIGHT_PROGRESSIONS[pattern];
+  if (!chain) return 5;
+  const position = findInProgressionChain(exerciseName, pattern);
+  if (position === -1) return 5;
+  return Math.round((position / (chain.length - 1)) * 9) + 1;
+}
+
+export function getProgressionChain(pattern: string): string[] {
+  return BODYWEIGHT_PROGRESSIONS[pattern] || [];
+}
+
+export default {
+  classifyExercise,
+  isBodyweightExercise,
+  isWeightedExercise,
+  calculateProgression,
+  calculateWeightedProgression,
+  calculateBodyweightProgression,
+  getNextVariant,
+  getPreviousVariant,
+  getExerciseDifficulty,
+  getProgressionChain,
+  BODYWEIGHT_PROGRESSIONS
+};
