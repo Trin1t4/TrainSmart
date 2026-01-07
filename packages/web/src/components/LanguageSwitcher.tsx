@@ -17,14 +17,14 @@ export default function LanguageSwitcher() {
   const currentLang = languages.find(l => l.code === language) || languages[0];
 
   return (
-    <div className="relative">
+    <div className="relative z-[100]">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm text-white transition-all"
+        className="flex items-center gap-2 px-3 py-2 bg-muted hover:bg-accent border border-border rounded-lg text-sm text-foreground transition-all"
       >
-        <Globe className="w-4 h-4 text-slate-400" />
+        <Globe className="w-4 h-4 text-muted-foreground" />
         <span className="text-lg">{currentLang.flag}</span>
-        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
@@ -32,7 +32,7 @@ export default function LanguageSwitcher() {
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-[90]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -42,7 +42,7 @@ export default function LanguageSwitcher() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 mt-2 w-44 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 mt-2 w-44 bg-popover border border-border rounded-lg shadow-xl z-[100] overflow-hidden"
             >
               {languages.map((lang) => (
                 <button
@@ -53,14 +53,14 @@ export default function LanguageSwitcher() {
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
                     language === lang.code
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'text-white hover:bg-slate-700'
+                      ? 'bg-primary/20 text-primary'
+                      : 'text-popover-foreground hover:bg-accent'
                   }`}
                 >
                   <span className="text-lg">{lang.flag}</span>
                   <span className="font-medium">{lang.name}</span>
                   {language === lang.code && (
-                    <span className="ml-auto text-emerald-400">✓</span>
+                    <span className="ml-auto text-primary">✓</span>
                   )}
                 </button>
               ))}

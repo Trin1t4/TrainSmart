@@ -129,13 +129,13 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Piegamenti Pike': 'pike-push-up.mp4',
 
   // === SQUAT varianti ===
-  'Air Squat': 'bodyweight-squat.mp4',
-  'Squat': 'bodyweight-squat.mp4',
-  'Squat Assistito': 'bodyweight-squat.mp4',
-  'Squat Completo': 'bodyweight-squat.mp4',
-  'Bodyweight Squat': 'bodyweight-squat.mp4',
-  'Squat a Corpo Libero': 'bodyweight-squat.mp4',
-  'Accosciata': 'bodyweight-squat.mp4',
+  'Air Squat': 'modified-squat.mp4',
+  'Squat': 'modified-squat.mp4',
+  'Squat Assistito': 'modified-squat.mp4',
+  'Squat Completo': 'deep-squat-hold.mp4',
+  'Bodyweight Squat': 'modified-squat.mp4',
+  'Squat a Corpo Libero': 'modified-squat.mp4',
+  'Accosciata': 'modified-squat.mp4',
   'Modified Squat': 'modified-squat.mp4',
   'Squat Modificato': 'modified-squat.mp4',
   'Deep Squat Hold': 'deep-squat-hold.mp4',
@@ -466,24 +466,57 @@ const VIDEO_OVERRIDES: Record<string, string> = {
 
   // === FMS (Functional Movement Screening) ===
   'FMS Deep Squat': 'fms-deep-squat.mp4',
-  'FMS Hurdle Step': '39 FMS Hurdle Step.mp4',
-  'FMS Inline Lunge': '40 FMS Inline Lunge.mp4',
-  'FMS Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
-  'FMS Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
-  'FMS Rotary Stability': '43 FMS Rotary Stability.mp4',
-  'Hurdle Step': '39 FMS Hurdle Step.mp4',
-  'Inline Lunge': '40 FMS Inline Lunge.mp4',
-  'Active Straight Leg Raise': '41 FMS Active Straight Leg Raise.mp4',
-  'Trunk Stability Push-up': '42 FMS Trunk Stability Push-up.mp4',
-  'Rotary Stability': '43 FMS Rotary Stability.mp4',
+  'FMS Hurdle Step': 'fms-hurdle-step.mp4',
+  'FMS Inline Lunge': 'fms-inline-lunge.mp4',
+  'FMS Active Straight Leg Raise': 'fms-active-straight-leg-raise.mp4',
+  'FMS Trunk Stability Push-up': 'fms-trunk-stability-push-up.mp4',
+  'FMS Rotary Stability': 'fms-rotary-stability.mp4',
+  'Hurdle Step': 'fms-hurdle-step.mp4',
+  'Inline Lunge': 'fms-inline-lunge.mp4',
+  'Active Straight Leg Raise': 'fms-active-straight-leg-raise.mp4',
+  'Trunk Stability Push-up': 'fms-trunk-stability-push-up.mp4',
+  'Rotary Stability': 'fms-rotary-stability.mp4',
 
   // === NECK (Esercizi per il collo) ===
-  'Neck Flexion': '44 Neck Flexion.mp4',
-  'Neck Extension': '45 Neck Extension.mp4',
-  'Neck Lateral Flexion': '46 Neck Lateral Flexion.mp4',
-  'Flessione Collo': '44 Neck Flexion.mp4',
-  'Estensione Collo': '45 Neck Extension.mp4',
-  'Flessione Laterale Collo': '46 Neck Lateral Flexion.mp4',
+  'Neck Flexion': 'neck-flexion.mp4',
+  'Neck Extension': 'neck-extension.mp4',
+  'Neck Lateral Flexion': 'neck-lateral-flexion.mp4',
+  'Flessione Collo': 'neck-flexion.mp4',
+  'Estensione Collo': 'neck-extension.mp4',
+  'Flessione Laterale Collo': 'neck-lateral-flexion.mp4',
+  'Neck Rotation': 'neck-rotation.mp4',
+  'Rotazione Collo': 'neck-rotation.mp4',
+  'Neck Harness Exercise': 'neck-harness-exercise.mp4',
+
+  // === KETTLEBELL ===
+  'Kettlebell Swing': 'kettlebell-swing.mp4',
+  'Swing con Kettlebell': 'kettlebell-swing.mp4',
+  'Kettlebell Clean': 'kettlebell-clean.mp4',
+  'Clean con Kettlebell': 'kettlebell-clean.mp4',
+  'Kettlebell Snatch': 'kettlebell-snatch.mp4',
+  'Snatch con Kettlebell': 'kettlebell-snatch.mp4',
+  'Turkish Get Up': 'turkish-get-up.mp4',
+  'Turkish Get-Up': 'turkish-get-up.mp4',
+  'Alzata Turca': 'turkish-get-up.mp4',
+
+  // === FUNCTIONAL / CONDITIONING ===
+  'Battle Ropes': 'battle-ropes.mp4',
+  'Corde da Battaglia': 'battle-ropes.mp4',
+  'Farmers Walk': 'farmers-walk.mp4',
+  "Farmer's Walk": 'farmers-walk.mp4',
+  'Camminata del Contadino': 'farmers-walk.mp4',
+  'Sandbag Carry': 'sandbag-carry.mp4',
+  'Trasporto Sandbag': 'sandbag-carry.mp4',
+  'Sled Push': 'sled-push.mp4',
+  'Spinta Slitta': 'sled-push.mp4',
+  'Sled Pull': 'sled-pull.mp4',
+  'Tirata Slitta': 'sled-pull.mp4',
+  'Landmine Press': 'landmine-press.mp4',
+  'Pressa Landmine': 'landmine-press.mp4',
+  'Fire Hydrant': 'fire-hydrant.mp4',
+  'Idrante': 'fire-hydrant.mp4',
+  'Cable Kickback': 'cable-kickback.mp4',
+  'Kickback ai Cavi': 'cable-kickback.mp4',
 
   // === PLYOMETRICS / JUMP TRAINING ===
   'Box Jump': 'box-jump.mp4',
@@ -526,6 +559,305 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   // === VERTICAL PUSH ===
   'Verticale al Muro Push-up': 'wall-handstand-push-up.mp4',
   'HSPU al Muro': 'wall-handstand-push-up.mp4',
+
+  // === ADDITIONAL EXERCISES ===
+  // Back Extension
+  'Back Extension': 'back-extension-roman-chair.mp4',
+  'Back Extension (Roman Chair)': 'back-extension-roman-chair.mp4',
+  'Iperestensioni': 'back-extension-roman-chair.mp4',
+  'Estensioni Schiena': 'back-extension-roman-chair.mp4',
+
+  // Band Rows
+  'Band Rows': 'band-rows.mp4',
+  'Rematore con Banda': 'band-rows.mp4',
+
+  // Banded Hip Thrust
+  'Banded Hip Thrust': 'banded-hip-thrust.mp4',
+  'Hip Thrust con Banda': 'banded-hip-thrust.mp4',
+
+  // Cable Fly varianti
+  'Cable Fly High to Low': 'cable-fly-high-to-low.mp4',
+  'Cable Fly (High to Low)': 'cable-fly-high-to-low.mp4',
+  'Croci ai Cavi Alto-Basso': 'cable-fly-high-to-low.mp4',
+  'Cable Fly Low to High': 'cable-fly-low-to-high.mp4',
+  'Cable Fly (Low to High)': 'cable-fly-low-to-high.mp4',
+  'Croci ai Cavi Basso-Alto': 'cable-fly-low-to-high.mp4',
+  'Cable Fly Mid': 'cable-fly-mid.mp4',
+  'Cable Fly': 'cable-fly-mid.mp4',
+  'Croci ai Cavi': 'cable-fly-mid.mp4',
+
+  // Cable Pull Through
+  'Cable Pull Through': 'cable-pull-through.mp4',
+  'Pull Through ai Cavi': 'cable-pull-through.mp4',
+
+  // Chest Supported Row
+  'Chest Supported Row': 'chest-supported-row.mp4',
+  'Rematore con Supporto Petto': 'chest-supported-row.mp4',
+
+  // Close Grip Bench Press
+  'Close Grip Bench Press': 'close-grip-bench-press.mp4',
+  'Panca Presa Stretta': 'close-grip-bench-press.mp4',
+  'Distensioni Presa Stretta': 'close-grip-bench-press.mp4',
+
+  // Concentration Curl
+  'Concentration Curl': 'concentration-curl.mp4',
+  'Curl di Concentrazione': 'concentration-curl.mp4',
+
+  // Cuban Press
+  'Cuban Press': 'cuban-press.mp4',
+  'Pressa Cubana': 'cuban-press.mp4',
+
+  // Decline Bench Press
+  'Decline Bench Press': 'decline-bench-press.mp4',
+  'Panca Declinata': 'decline-bench-press.mp4',
+
+  // Donkey Calf Raise
+  'Donkey Calf Raise': 'donkey-calf-raise.mp4',
+  'Polpacci alla Donkey': 'donkey-calf-raise.mp4',
+
+  // Dumbbell Fly
+  'Dumbbell Fly': 'dumbbell-fly.mp4',
+  'Croci con Manubri': 'dumbbell-fly.mp4',
+  'Aperture con Manubri': 'dumbbell-fly.mp4',
+
+  // External Rotation
+  'External Rotation (Band)': 'external-rotation-band.mp4',
+  'Rotazione Esterna con Banda': 'external-rotation-band.mp4',
+  'External Rotation (Cable)': 'external-rotation-cable.mp4',
+  'Rotazione Esterna ai Cavi': 'external-rotation-cable.mp4',
+  'External Rotation': 'external-rotation-cable.mp4',
+
+  // Frog Pump
+  'Frog Pump': 'frog-pump.mp4',
+  'Pompa Rana': 'frog-pump.mp4',
+
+  // Hack Squat
+  'Hack Squat': 'hack-squat.mp4',
+  'Squat Hack': 'hack-squat.mp4',
+
+  // Hanging Knee Raise
+  'Hanging Knee Raise': 'hanging-knee-raise.mp4',
+  'Alzate Ginocchia alla Sbarra': 'hanging-knee-raise.mp4',
+
+  // Hollow Body Rock
+  'Hollow Body Rock': 'hollow-body-rock.mp4',
+  'Dondolo Hollow': 'hollow-body-rock.mp4',
+
+  // Incline Bench Press
+  'Incline Barbell Bench Press': 'incline-barbell-bench-press.mp4',
+  'Panca Inclinata Bilanciere': 'incline-barbell-bench-press.mp4',
+  'Incline Bench Press': 'incline-barbell-bench-press.mp4',
+  'Incline Dumbbell Bench Press': 'incline-dumbbell-bench-press.mp4',
+  'Panca Inclinata Manubri': 'incline-dumbbell-bench-press.mp4',
+
+  // Incline Dumbbell Curl
+  'Incline Dumbbell Curl': 'incline-dumbbell-curl.mp4',
+  'Curl Inclinato con Manubri': 'incline-dumbbell-curl.mp4',
+
+  // Lying Leg Curl
+  'Lying Leg Curl': 'lying-leg-curl.mp4',
+  'Leg Curl Prono': 'lying-leg-curl.mp4',
+
+  // Meadows Row
+  'Meadows Row': 'meadows-row.mp4',
+  'Rematore Meadows': 'meadows-row.mp4',
+
+  // Overhead Tricep Extension
+  'Overhead Tricep Extension': 'overhead-tricep-extension.mp4',
+  'Estensione Tricipiti Sopra la Testa': 'overhead-tricep-extension.mp4',
+
+  // Pec Deck
+  'Pec Deck': 'pec-deck-machine-fly.mp4',
+  'Pec Deck Machine Fly': 'pec-deck-machine-fly.mp4',
+  'Pectoral Machine': 'pec-deck-machine-fly.mp4',
+
+  // Pendlay Row
+  'Pendlay Row': 'pendlay-row.mp4',
+  'Rematore Pendlay': 'pendlay-row.mp4',
+
+  // Preacher Curl
+  'Preacher Curl': 'preacher-curl.mp4',
+  'Curl alla Panca Scott': 'preacher-curl.mp4',
+  'Scott Curl': 'preacher-curl.mp4',
+
+  // Pullover
+  'Pullover': 'pullover-dumbbell.mp4',
+  'Pullover Dumbbell': 'pullover-dumbbell.mp4',
+  'Pullover con Manubrio': 'pullover-dumbbell.mp4',
+
+  // Rear Delt
+  'Rear Delt Fly (Cable)': 'rear-delt-fly-cable.mp4',
+  'Rear Delt Fly Cable': 'rear-delt-fly-cable.mp4',
+  'Alzate Posteriori ai Cavi': 'rear-delt-fly-cable.mp4',
+  'Rear Delt Fly (Dumbbell)': 'rear-delt-fly-dumbbell.mp4',
+  'Rear Delt Fly Dumbbell': 'rear-delt-fly-dumbbell.mp4',
+  'Rear Delt Fly': 'rear-delt-fly-dumbbell.mp4',
+  'Alzate Posteriori': 'rear-delt-fly-dumbbell.mp4',
+
+  // Reverse Hyperextension
+  'Reverse Hyperextension': 'reverse-hyperextension.mp4',
+  'Iperestensione Inversa': 'reverse-hyperextension.mp4',
+
+  // Reverse Nordic Curl
+  'Reverse Nordic Curl': 'reverse-nordic-curl.mp4',
+  'Nordic Curl Inverso': 'reverse-nordic-curl.mp4',
+
+  // Seal Row
+  'Seal Row': 'seal-row.mp4',
+  'Rematore Foca': 'seal-row.mp4',
+
+  // Seated Leg Curl
+  'Seated Leg Curl': 'seated-leg-curl.mp4',
+  'Leg Curl Seduto': 'seated-leg-curl.mp4',
+
+  // Single Leg Calf Raise
+  'Single Leg Calf Raise': 'single-leg-calf-raise.mp4',
+  'Polpacci su una Gamba': 'single-leg-calf-raise.mp4',
+
+  // Single Leg Hip Thrust
+  'Single Leg Hip Thrust': 'single-leg-hip-thrust.mp4',
+  'Hip Thrust su una Gamba': 'single-leg-hip-thrust.mp4',
+
+  // Sissy Squat
+  'Sissy Squat': 'sissy-squat.mp4',
+  'Squat Sissy': 'sissy-squat.mp4',
+
+  // Spanish Squat
+  'Spanish Squat': 'spanish-squat.mp4',
+  'Squat Spagnolo': 'spanish-squat.mp4',
+
+  // Spider Curl
+  'Spider Curl': 'spider-curl.mp4',
+  'Curl Ragno': 'spider-curl.mp4',
+
+  // Straight Arm Pulldown
+  'Straight Arm Pulldown': 'straight-arm-pulldown.mp4',
+  'Pulldown Braccia Tese': 'straight-arm-pulldown.mp4',
+
+  // Swiss Ball Leg Curl
+  'Swiss Ball Leg Curl': 'swiss-ball-leg-curl.mp4',
+  'Leg Curl con Palla Svizzera': 'swiss-ball-leg-curl.mp4',
+
+  // Tibialis Raise
+  'Tibialis Raise': 'tibialis-raise.mp4',
+  'Alzata Tibiale': 'tibialis-raise.mp4',
+
+  // Tricep Kickback
+  'Tricep Kickback': 'tricep-kickback.mp4',
+  'Kickback Tricipiti': 'tricep-kickback.mp4',
+
+  // V-Up
+  'V-Up': 'v-up.mp4',
+  'V Up': 'v-up.mp4',
+  'Crunch a V': 'v-up.mp4',
+
+  // === VARIANTI ESERCIZI (mapping a video esistenti) ===
+
+  // Ab Wheel varianti
+  'Ab Wheel (in ginocchio)': 'ab-wheel-rollout.mp4',
+  'Barbell Rollout': 'ab-wheel-rollout.mp4',
+  'Stability Ball Rollout': 'ab-wheel-rollout.mp4',
+
+  // Pull-up varianti
+  'Band Pull-up': 'assisted-pull-up.mp4',
+  'Negative Pull-up': 'standard-pull-up.mp4',
+
+  // Bench Press varianti
+  'Bench Press (leggero)': 'flat-barbell-bench-press.mp4',
+  'Panca Piana con Bilanciere': 'flat-barbell-bench-press.mp4',
+  'Panca con Manubri': 'dumbbell-bench-press.mp4',
+  'Panca Inclinata': 'incline-barbell-bench-press.mp4',
+  'Panca Inclinata con Manubri': 'incline-dumbbell-bench-press.mp4',
+  'Floor Press': 'flat-barbell-bench-press.mp4',
+  'Floor Press con Manubri': 'dumbbell-bench-press.mp4',
+  'Decline Dumbbell Press': 'decline-bench-press.mp4',
+  'Incline Dumbbell Press': 'incline-dumbbell-bench-press.mp4',
+  'Single Arm Dumbbell Press': 'dumbbell-bench-press.mp4',
+
+  // Machine varianti
+  'Chest Press (Macchina)': 'flat-barbell-bench-press.mp4',
+  'Machine Chest Press': 'flat-barbell-bench-press.mp4',
+  'Incline Chest Press (Macchina)': 'incline-barbell-bench-press.mp4',
+  'Shoulder Press (Macchina)': 'dumbbell-shoulder-press.mp4',
+  'Machine Shoulder Press': 'dumbbell-shoulder-press.mp4',
+  'Machine Row': 'seated-cable-row.mp4',
+  'Machine Crunch': 'cable-crunch.mp4',
+
+  // Squat varianti
+  'Bulgarian Split Squat profondo': 'bulgarian-split-squat.mp4',
+  'Dumbbell Squat': 'goblet-squat.mp4',
+  'Dumbbell Front Squat': 'goblet-squat.mp4',
+  'Goblet Squat (leggero)': 'goblet-squat.mp4',
+  'Smith Machine Squat': 'back-squat.mp4',
+  'Sumo Squat': 'sumo-deadlift.mp4',
+  'Zercher Squat': 'front-squat.mp4',
+
+  // Deadlift varianti
+  'Dumbbell Deadlift': 'conventional-deadlift.mp4',
+  'Dumbbell Sumo Deadlift': 'sumo-deadlift.mp4',
+  'Dumbbell RDL': 'romanian-deadlift.mp4',
+  'Stacco con Manubri': 'conventional-deadlift.mp4',
+  'Stacco in Deficit': 'conventional-deadlift.mp4',
+  'Stacco Rumeno con Manubri': 'romanian-deadlift.mp4',
+
+  // Cable varianti
+  'Cable Curl + Pulldown': 'lat-pulldown.mp4',
+  'Cable Lateral Raise': 'lateral-raise.mp4',
+  'Cable Pullover': 'straight-arm-pulldown.mp4',
+  'Cable Rotation': 'pallof-press.mp4',
+  'High Cable Fly': 'cable-fly-high-to-low.mp4',
+  'Low Cable Fly': 'cable-fly-low-to-high.mp4',
+  'Pushdown ai Cavi': 'tricep-pushdown.mp4',
+  'Seated Cable Row (presa alta)': 'seated-cable-row.mp4',
+
+  // Lat Pulldown varianti
+  'Neutral Grip Lat Pulldown': 'lat-pulldown.mp4',
+  'Supinated Lat Pulldown': 'lat-pulldown.mp4',
+  'Wide Grip Lat Pulldown': 'lat-pulldown.mp4',
+
+  // Shoulder Press varianti
+  'Dumbbell Push Press': 'dumbbell-shoulder-press.mp4',
+  'Dumbbell Shoulder Press (pesante)': 'dumbbell-shoulder-press.mp4',
+  'Shoulder Press con Manubri': 'dumbbell-shoulder-press.mp4',
+  'Push Press': 'military-press.mp4',
+
+  // Row varianti
+  'Landmine Row': 't-bar-row.mp4',
+
+  // Leg Press varianti
+  'Leg Press (piedi alti)': 'leg-press.mp4',
+  'Single Leg Press': 'leg-press.mp4',
+  'Wide Stance Leg Press': 'leg-press.mp4',
+  'Pressa': 'leg-press.mp4',
+
+  // Core varianti
+  'Captain Chair Leg Raise': 'hanging-leg-raise.mp4',
+  'Weighted Crunch': 'cable-crunch.mp4',
+  'TRX Fallout': 'ab-wheel-rollout.mp4',
+
+  // Leg Curl varianti
+  'GHD Raise': 'nordic-hamstring-curl.mp4',
+  'Nordic Curl (eccentrico)': 'nordic-hamstring-curl.mp4',
+
+  // Push-up varianti
+  'Pike Push-up (elevato)': 'elevated-pike-push-up.mp4',
+  'Push-up (piedi rialzati)': 'decline-push-up.mp4',
+  'Push-up (weighted)': 'standard-push-up.mp4',
+
+  // Dips varianti
+  'Dip Tricipiti': 'tricep-dips.mp4',
+
+  // Raise varianti
+  'Lateral Raise + Press': 'lateral-raise.mp4',
+
+  // Carry varianti
+  'Suitcase Carry': 'farmers-walk.mp4',
+
+  // Thruster / compound
+  'Thruster': 'front-squat.mp4',
+
+  // Wall varianti
+  'Wall Sit': 'wall-sit-breathing.mp4',
 };
 
 /**

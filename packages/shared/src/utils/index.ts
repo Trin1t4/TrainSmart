@@ -702,3 +702,99 @@ export {
   getExerciseById as getStructureExerciseById,
   getAllExercises as getAllStructureExercises
 } from './programStructureNormalizer';
+
+// ============================================================
+// DCSS PARADIGM - Discomfort & Recovery System
+// ============================================================
+
+// Pain Tracking Service (DCSS - choice-based approach)
+export type {
+  DiscomfortLevel,
+  UserChoice,
+  DiscomfortReport as DCSSDiscomfortReport,
+  AdaptationOption,
+  DiscomfortResponse,
+  RecoveryProgress as DCSSRecoveryProgress,
+  RecoveryTracker
+} from './painTrackingServiceDCSS';
+export {
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  evaluateDiscomfortChange,
+  checkPersistentPattern,
+  initializeRecovery,
+  updateRecoveryProgress,
+  generateRecoverySummary,
+  calculateLoadReduction as calculateDCSSLoadReduction,
+  getAlternativeExercise,
+  TOLERABLE_DISCOMFORT_THRESHOLD,
+  PROFESSIONAL_THRESHOLD,
+  SESSIONS_FOR_RECOVERY
+} from './painTrackingServiceDCSS';
+
+// Discomfort Messages (DCSS educational approach)
+export type {
+  MessageCategory as DiscomfortMessageCategory,
+  SeverityLevel,
+  DiscomfortMessage,
+  MessageContext
+} from './discomfortMessages';
+export {
+  getDiscomfortMessage,
+  getToleranceEducation,
+  getRecoveryMessage,
+  getPersistenceWarning,
+  formatMessageWithContext,
+  DISCOMFORT_MESSAGES
+} from './discomfortMessages';
+
+// Corrective Protocols (DCSS)
+export type {
+  CorrectiveProtocol,
+  CorrectiveStep,
+  ProtocolPhase,
+  MobilityExercise,
+  ActivationExercise,
+  StretchExercise
+} from './correctiveProtocols';
+export {
+  CORRECTIVE_PROTOCOLS,
+  getProtocolForArea,
+  getCorrectiveProtocol,
+  getWarmupProtocol,
+  getCooldownProtocol,
+  formatProtocolDuration
+} from './correctiveProtocols';
+
+// Return to Normal Service (DCSS progressive recovery)
+export type {
+  RecoveryProgress as RTNRecoveryProgress,
+  ProgressionStep,
+  ProgressionSuggestion,
+  ReturnToNormalResult
+} from './returnToNormalService';
+export {
+  PROGRESSION_CONFIG,
+  calculateStartingPercentage,
+  canProgressToNextLevel,
+  returnToNormalService,
+  setSupabaseClient as setRTNSupabaseClient,
+  RECOVERY_MESSAGES
+} from './returnToNormalService';
+
+// Exercise Analyzers (DCSS biomechanics - educational feedback)
+export {
+  // Main analysis function
+  analyzeExerciseFrame as analyzeExerciseDCSS,
+  // Individual analyzers
+  analyzeSquatDCSS,
+  analyzeDeadliftDCSS,
+  analyzeBenchDCSS,
+  analyzeRowDCSS,
+  // Morphotype helpers
+  classifyMorphotype as classifyMorphotypeDCSS,
+  getMorphotypeContext,
+  // Evidence-based notes
+  BIOMECHANICS_EVIDENCE,
+  MORPHOTYPE_NOTES
+} from './biomechanics/exerciseAnalyzers';

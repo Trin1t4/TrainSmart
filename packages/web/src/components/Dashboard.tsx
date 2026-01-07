@@ -120,12 +120,20 @@ export default function Dashboard() {
   // Add Running modal state
   const [showAddRunningModal, setShowAddRunningModal] = useState(false);
 
+  // Completed sessions state
+  const [completedSessions, setCompletedSessions] = useState<{
+    total: number;
+    thisWeek: number;
+    lastWorkoutDate: string | null;
+  } | null>(null);
+
   useEffect(() => {
     loadData();
     initializePrograms();
     checkAdminStatus();
     checkPaywallTrigger();
     loadUserEmail();
+    loadCompletedSessions();
   }, []);
 
   // Load user email for feature gating
@@ -133,6 +141,59 @@ export default function Dashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user?.email) {
       setUserEmail(user.email);
+    }
+  }
+
+  // Load completed sessions count
+  async function loadCompletedSessions() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Count all completed sessions
+      const { count: totalCount, error: totalError } = await supabase
+        .from('workout_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('completed', true);
+
+      if (totalError) throw totalError;
+
+      // Count sessions this week
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+
+      const { count: weekCount, error: weekError } = await supabase
+        .from('workout_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('completed', true)
+        .gte('workout_date', weekStart.toISOString());
+
+      if (weekError) throw weekError;
+
+      // Find last workout
+      const { data: lastWorkout, error: lastError } = await supabase
+        .from('workout_logs')
+        .select('workout_date')
+        .eq('user_id', user.id)
+        .eq('completed', true)
+        .order('workout_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastError) throw lastError;
+
+      setCompletedSessions({
+        total: totalCount || 0,
+        thisWeek: weekCount || 0,
+        lastWorkoutDate: lastWorkout?.workout_date || null
+      });
+
+    } catch (error) {
+      console.error('[Dashboard] Error loading sessions:', error);
+      setCompletedSessions({ total: 0, thisWeek: 0, lastWorkoutDate: null });
     }
   }
 
@@ -158,11 +219,14 @@ export default function Dashboard() {
         (Date.now() - new Date(userData.created_at).getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      console.log('[Paywall] Days since signup:', daysSinceSignup, 'Tier:', userData.subscription_tier);
+      // Trial period: 6 settimane = 42 giorni
+      const TRIAL_PERIOD_DAYS = 42;
 
-      // Show paywall after 7 days if still on free tier
-      if (daysSinceSignup >= 7 && userData.subscription_tier === 'free') {
-        console.log('[Paywall] ✅ Triggering paywall modal');
+      console.log('[Paywall] Days since signup:', daysSinceSignup, '/', TRIAL_PERIOD_DAYS, 'Tier:', userData.subscription_tier);
+
+      // Show paywall after 6 WEEKS (42 days) if still on free tier
+      if (daysSinceSignup >= TRIAL_PERIOD_DAYS && userData.subscription_tier === 'free') {
+        console.log('[Paywall] ✅ Trial ended after 6 weeks, triggering paywall modal');
         setShowPaywall(true);
       }
     } catch (error) {
@@ -1632,16 +1696,40 @@ export default function Dashboard() {
             <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
               <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
                 <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
-                  {dataStatus.quiz ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
-                  Quiz
+                  {completedSessions && completedSessions.total > 0
+                    ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+                    : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                  }
+                  {t('dashboard.sessions') || 'Sessioni'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 md:p-6 pt-0">
-                <p className="text-xs md:text-sm text-slate-400 font-medium">
-                  {dataStatus.quiz ? (
-                    <>Score: <span className="text-emerald-400 font-mono">{dataStatus.quiz.score}%</span></>
-                  ) : 'Non completato'}
-                </p>
+                {completedSessions ? (
+                  <div className="space-y-1">
+                    <p className="text-xs md:text-sm text-slate-400 font-medium">
+                      {t('dashboard.total') || 'Totale'}: <span className="text-emerald-400 font-bold">{completedSessions.total}</span>
+                    </p>
+                    {completedSessions.thisWeek > 0 && (
+                      <p className="text-xs text-slate-500">
+                        {t('dashboard.thisWeek') || 'Questa settimana'}: <span className="text-emerald-400">{completedSessions.thisWeek}</span>
+                      </p>
+                    )}
+                    {completedSessions.lastWorkoutDate && (
+                      <p className="text-xs text-slate-500">
+                        {(() => {
+                          const days = Math.floor((Date.now() - new Date(completedSessions.lastWorkoutDate).getTime()) / (1000 * 60 * 60 * 24));
+                          if (days === 0) return '🔥 Oggi';
+                          if (days === 1) return 'Ieri';
+                          return `${days}g fa`;
+                        })()}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs md:text-sm text-slate-400 font-medium">
+                    {t('common.loading') || 'Caricamento...'}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </motion.div>

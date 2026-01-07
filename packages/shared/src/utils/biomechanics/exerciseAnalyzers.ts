@@ -1,16 +1,24 @@
 /**
- * MEDIAPIPE EXERCISE ANALYZERS - Evidence-Based
+ * MEDIAPIPE EXERCISE ANALYZERS - Evidence-Based (DCSS Paradigm)
  *
  * Sistema di analisi biomeccanica client-side per form check in tempo reale.
  * Utilizza MediaPipe Pose per rilevare i landmark corporei e applicare
- * analisi basate su letteratura scientifica.
+ * analisi basate su letteratura scientifica MODERNA.
+ *
+ * PARADIGMA: DCSS di Paolo Evangelista
+ * - La tecnica ottimale dipende dalle proporzioni individuali
+ * - L'obiettivo è lo stimolo, non la "forma perfetta"
+ * - I tessuti si adattano ai carichi progressivi
+ * - Osservazioni, non giudizi
  *
  * Riferimenti chiave:
- * - Fry AC et al. (2003) - Knee past toe myth debunked
+ * - Evangelista P - DCSS (Didattica e Correzione degli esercizi)
+ * - Swain CTV et al. (2020) - No association between lumbar flexion and back pain
+ * - Caneiro JP et al. (2019) - Beliefs about the body and pain
+ * - Vigotsky AD et al. (2015) - Lumbar flexion in powerlifters is normal
+ * - Lorenzetti S et al. (2018) - Torso lean and femur length relationship
  * - Kompf & Arandjelović (2017) - Squat depth and muscle activation
  * - Schoenfeld BJ (2010) - Full ROM for hypertrophy
- * - McGill SM (2007, 2015) - Spine mechanics
- * - Lorenzetti S et al. (2018) - Torso lean and femur length
  */
 
 // ============================================================================
@@ -20,9 +28,10 @@
 export interface AnalysisContext {
   goal: 'strength' | 'hypertrophy' | 'powerlifting' | 'rehab' | 'general';
   morphotype?: UserMorphotype;
-  painAreas?: string[];
+  discomfortAreas?: string[];  // Renamed from painAreas
   injuryHistory?: string[];
   equipment?: 'barbell' | 'dumbbell' | 'machine' | 'bodyweight';
+  userExperience?: 'beginner' | 'intermediate' | 'advanced';
 }
 
 export interface UserMorphotype {
@@ -36,130 +45,130 @@ export interface UserMorphotype {
   thoracicExtension?: 'limited' | 'normal' | 'hypermobile';
 }
 
-export interface FormCheck {
+/**
+ * NUOVA CLASSIFICAZIONE SEVERITY (DCSS-aligned)
+ * 
+ * - 'note': Osservazione tecnica, non necessariamente da correggere
+ * - 'suggestion': Suggerimento per ottimizzare, opzionale
+ * - 'attention': Merita attenzione, potrebbe indicare sovraccarico o limitazione
+ * - 'concern': Perdita di controllo significativa, valutare se procedere
+ */
+export type ObservationSeverity = 'note' | 'suggestion' | 'attention' | 'concern';
+
+/**
+ * NUOVA CLASSIFICAZIONE TIPO
+ * 
+ * - 'technique': Osservazione sulla meccanica del movimento
+ * - 'efficiency': Suggerimento per ottimizzare lo stimolo
+ * - 'individual': Nota legata alle proporzioni/struttura individuale
+ */
+export type ObservationType = 'technique' | 'efficiency' | 'individual';
+
+export interface FormObservation {
   id: string;
   phase: string | 'ALL';
-  type: 'safety' | 'efficiency' | 'optimization';
-  severity: 'high' | 'medium' | 'low';
+  type: ObservationType;
+  severity: ObservationSeverity;
   check: (angles: Record<string, number>, prevAngles?: Record<string, number>, context?: AnalysisContext) => boolean;
-  issue: string;
-  issueIt: string;
-  rationale: string;
-  rationaleIt: string;
-  correction: string;
-  correctionIt: string;
+  observation: string;
+  observationIt: string;
+  context: string;        // Spiega PERCHÉ potrebbe succedere (non "rischio")
+  contextIt: string;
+  suggestion: string;     // Suggerimento opzionale
+  suggestionIt: string;
+  askUser?: string;       // Domanda per l'utente (es. "Senti fastidio?")
+  askUserIt?: string;
   reference?: string;
-  exceptions?: string;
+  individualNote?: string; // Nota se dipende da proporzioni
 }
 
 export interface ROMRange {
   angle: string;
   phase: string;
   acceptable: { min: number; max: number };
-  optimal: { min: number; max: number };
+  typical: { min: number; max: number };  // Renamed from "optimal" - less judgmental
   context: string;
 }
 
 export interface AnalysisResult {
   phase: string;
   angles: Record<string, number>;
-  issues: Array<{
+  observations: Array<{
     id: string;
-    type: 'safety' | 'efficiency' | 'optimization';
-    severity: 'high' | 'medium' | 'low';
-    issue: string;
-    issueIt: string;
-    rationale: string;
-    rationaleIt: string;
-    correction: string;
-    correctionIt: string;
+    type: ObservationType;
+    severity: ObservationSeverity;
+    observation: string;
+    observationIt: string;
+    context: string;
+    contextIt: string;
+    suggestion: string;
+    suggestionIt: string;
+    askUser?: string;
+    askUserIt?: string;
     reference?: string;
   }>;
   cue?: { cue: string; cueIt: string };
-  morphotypeNotes?: string[];
-  romStatus?: Record<string, 'below' | 'acceptable' | 'optimal' | 'above'>;
+  individualNotes?: string[];
+  romStatus?: Record<string, 'below' | 'acceptable' | 'typical' | 'above'>;
 }
 
 export interface ExerciseAnalyzer {
   name: string;
   nameIt: string;
   phases: string[];
-  formChecks: FormCheck[];
+  formObservations: FormObservation[];
   romRanges: ROMRange[];
   cues: Array<{ phase: string; cue: string; cueIt: string }>;
   analyze: (angles: Record<string, number>, prevAngles?: Record<string, number>, context?: AnalysisContext) => AnalysisResult;
 }
 
 // ============================================================================
-// UTILITY FUNCTIONS
+// HELPER FUNCTIONS
 // ============================================================================
 
 /**
- * Get acceptable knee travel range based on morphotype
- * Reference: Fry AC et al. (2003), Lorenzetti S et al. (2018)
+ * Get acceptable torso lean range based on morphotype
+ * DCSS principle: Long femurs REQUIRE more forward lean - it's not an error
  */
-export function getAcceptableKneeTravelRange(morphotype?: UserMorphotype): { min: number; max: number } {
-  if (!morphotype) return { min: -2, max: 10 };
-
-  switch (morphotype.femurToTibia) {
-    case 'long':
-      return { min: 5, max: 15 };   // DEVE avanzare il ginocchio
-    case 'short':
-      return { min: -5, max: 8 };   // Può restare indietro
-    default:
-      return { min: 0, max: 12 };
-  }
-}
-
-/**
- * Get acceptable torso lean range based on morphotype and goal
- * Reference: Lorenzetti S et al. (2018)
- */
-export function getAcceptableTorsoLeanRange(
+function getAcceptableTorsoLeanRange(
   morphotype?: UserMorphotype,
   goal?: string
 ): { min: number; max: number } {
-  let base = { min: 25, max: 55 };
+  let base = { min: 25, max: 60 };
 
-  // Femori lunghi RICHIEDONO più lean
+  // Femori lunghi RICHIEDONO più lean - è NORMALE, non un problema
   if (morphotype?.femurToTibia === 'long') {
-    base.max = 65;
+    base.max = 70;
   }
 
-  // Powerlifting (low bar) richiede più lean
+  // Powerlifting (low bar) richiede più lean - è TECNICA, non errore
   if (goal === 'powerlifting') {
-    base = { min: 35, max: 70 };
-  }
-
-  // Rehab: più conservativo
-  if (goal === 'rehab') {
-    base.max = 50;
+    base = { min: 35, max: 75 };
   }
 
   return base;
 }
 
 /**
- * Get acceptable shoulder abduction range
- * Reference: Green CM & Comfort P (2007)
+ * Get acceptable shoulder abduction range for bench press
  */
-export function getAcceptableShoulderAbductionRange(context?: AnalysisContext): { min: number; max: number } {
+function getAcceptableShoulderAbductionRange(context?: AnalysisContext): { min: number; max: number } {
   if (context?.goal === 'powerlifting') {
     return { min: 30, max: 75 };  // More tucked for powerlifting
   }
   if (context?.goal === 'hypertrophy') {
-    return { min: 45, max: 85 };  // Slightly more abduction for chest activation
+    return { min: 45, max: 80 };  // Slightly more abduction can increase chest activation
   }
-  return { min: 35, max: 80 };    // Default safe range
+  return { min: 35, max: 80 };    // Default range
 }
 
 /**
  * Check ROM status against range
  */
-function getROMStatus(value: number, range: ROMRange): 'below' | 'acceptable' | 'optimal' | 'above' {
+function getROMStatus(value: number, range: ROMRange): 'below' | 'acceptable' | 'typical' | 'above' {
   if (value < range.acceptable.min) return 'below';
   if (value > range.acceptable.max) return 'above';
-  if (value >= range.optimal.min && value <= range.optimal.max) return 'optimal';
+  if (value >= range.typical.min && value <= range.typical.max) return 'typical';
   return 'acceptable';
 }
 
@@ -174,7 +183,7 @@ function getSquatPhase(kneeAngle: number): string {
 }
 
 // ============================================================================
-// SQUAT ANALYZER
+// SQUAT ANALYZER (DCSS Paradigm)
 // ============================================================================
 
 export const SQUAT_ANALYZER: ExerciseAnalyzer = {
@@ -186,330 +195,179 @@ export const SQUAT_ANALYZER: ExerciseAnalyzer = {
     {
       angle: 'left_knee',
       phase: 'BOTTOM',
-      acceptable: { min: 70, max: 120 },
-      optimal: { min: 80, max: 100 },
-      context: 'Hip crease at or below knee = ~80-100° knee angle'
-    },
-    {
-      angle: 'right_knee',
-      phase: 'BOTTOM',
-      acceptable: { min: 70, max: 120 },
-      optimal: { min: 80, max: 100 },
-      context: 'Hip crease at or below knee = ~80-100° knee angle'
+      acceptable: { min: 60, max: 130 },
+      typical: { min: 80, max: 110 },
+      context: 'La profondità dipende da obiettivi e struttura. Parallelo (~90°) è sufficiente per la maggior parte degli obiettivi.'
     },
     {
       angle: 'torso_lean',
       phase: 'BOTTOM',
-      acceptable: { min: 25, max: 65 },
-      optimal: { min: 35, max: 55 },
-      context: 'Varies by femur:torso ratio and bar position'
+      acceptable: { min: 20, max: 75 },
+      typical: { min: 35, max: 55 },
+      context: 'Varia significativamente in base al rapporto femore:torso e alla posizione della barra.'
     }
   ],
 
-  formChecks: [
-    // SAFETY CHECKS
+  formObservations: [
+    // ========== TECHNIQUE OBSERVATIONS ==========
     {
-      id: 'LUMBAR_FLEXION_EXCESSIVE',
+      id: 'LUMBAR_FLEXION_OBSERVED',
       phase: 'BOTTOM',
-      type: 'safety',
-      severity: 'high',
+      type: 'technique',
+      severity: 'note',  // NOT 'high' - it's an observation, not an error
       check: (angles, _, context) => {
-        const maxLean = context?.goal === 'powerlifting' ? 80 : 70;
-        return (angles.torso_lean || 0) > maxLean;
+        // Detect significant lumbar flexion, but with reasonable threshold
+        const torsoLean = angles.torso_lean || 0;
+        const threshold = context?.goal === 'powerlifting' ? 80 : 70;
+        return torsoLean > threshold;
       },
-      issue: 'Excessive lumbar flexion (butt wink)',
-      issueIt: 'Flessione lombare eccessiva (butt wink)',
-      rationale: 'Spinal flexion under load increases disc injury risk. May indicate hip mobility limitation.',
-      rationaleIt: 'La flessione spinale sotto carico aumenta il rischio di lesioni discali. Può indicare mobilità anca limitata.',
-      correction: 'Stop descent when pelvis starts to tuck. Work on hip mobility.',
-      correctionIt: 'Ferma la discesa quando il bacino inizia a ruotare. Lavora sulla mobilità delle anche.',
-      reference: 'McGill SM (2015) - Low Back Disorders'
+      observation: 'Lumbar flexion observed at bottom position',
+      observationIt: 'Flessione lombare osservata nel bottom',
+      context: 'This is common and often normal. It can depend on: hip/ankle mobility, femur length, load relative to your capacity, or acetabulum structure.',
+      contextIt: 'È comune e spesso normale. Può dipendere da: mobilità anca/caviglia, lunghezza femore, carico relativo alla tua capacità, o struttura dell\'acetabolo.',
+      suggestion: 'If this doesn\'t cause discomfort, it may be fine for your structure. To reduce it: work on hip mobility, try heel elevation, or reduce depth slightly.',
+      suggestionIt: 'Se non causa fastidio, potrebbe essere normale per la tua struttura. Per ridurla: lavora su mobilità anca, prova rialzo talloni, o riduci leggermente la profondità.',
+      askUser: 'Do you feel discomfort in your lower back during this movement?',
+      askUserIt: 'Senti fastidio nella bassa schiena durante questo movimento?',
+      reference: 'Swain et al. (2020): No association between lumbar flexion and back pain in trained lifters'
     },
     {
       id: 'KNEE_VALGUS_DYNAMIC',
       phase: 'ASCENT',
-      type: 'safety',
-      severity: 'high',
+      type: 'technique',
+      severity: 'suggestion',  // Changed from 'high'
       check: (angles) => {
-        const leftKnee = angles.left_knee_valgus || 0;
-        const rightKnee = angles.right_knee_valgus || 0;
-        return Math.abs(leftKnee - rightKnee) > 25;
+        const leftValgus = angles.left_knee_valgus || 0;
+        const rightValgus = angles.right_knee_valgus || 0;
+        // Only flag if SIGNIFICANT and ASYMMETRIC
+        return Math.abs(leftValgus - rightValgus) > 20;
       },
-      issue: 'Dynamic knee valgus during ascent',
-      issueIt: 'Valgo dinamico del ginocchio durante la salita',
-      rationale: 'Increases ACL and meniscus injury risk. Often indicates hip abductor weakness.',
-      rationaleIt: 'Aumenta rischio lesione LCA e menisco. Spesso indica debolezza abduttori anca.',
-      correction: 'Push knees out, cue "spread the floor". Strengthen glutes.',
-      correctionIt: 'Spingi le ginocchia fuori, "allarga il pavimento". Rinforza i glutei.',
-      reference: 'Hewett TE et al. (2005) - ACL injury mechanisms'
+      observation: 'Knee tracking inward during ascent',
+      observationIt: 'Ginocchia che si muovono verso l\'interno in risalita',
+      context: 'Some inward movement is normal and functional. It becomes relevant if excessive, asymmetric, or associated with discomfort.',
+      contextIt: 'Un certo movimento verso l\'interno è normale e funzionale. Diventa rilevante se eccessivo, asimmetrico, o associato a fastidio.',
+      suggestion: 'Cue: "Push knees out" or "Spread the floor". Glute activation work can help if you want to address this.',
+      suggestionIt: 'Cue: "Spingi le ginocchia fuori" o "Allarga il pavimento". Lavoro di attivazione glutei può aiutare se vuoi lavorarci.',
+      askUser: 'Do you feel any discomfort in your knees?',
+      askUserIt: 'Senti fastidio alle ginocchia?',
+      reference: 'DCSS: Moderate valgus is often functional; excessive valgus may indicate glute activation opportunity'
+    },
+    {
+      id: 'HEEL_RISE_OBSERVED',
+      phase: 'BOTTOM',
+      type: 'technique',
+      severity: 'note',
+      check: (angles) => {
+        // This would need heel tracking which MediaPipe provides
+        return (angles.heel_elevation || 0) > 5;
+      },
+      observation: 'Heels lifting from floor',
+      observationIt: 'Talloni che si alzano dal pavimento',
+      context: 'Usually indicates ankle mobility limitation. Not inherently problematic if controlled.',
+      contextIt: 'Di solito indica limitazione nella mobilità della caviglia. Non è intrinsecamente problematico se controllato.',
+      suggestion: 'Options: heel elevation (squat shoes or plates), ankle mobility work, or reduce depth to where heels stay down.',
+      suggestionIt: 'Opzioni: rialzo talloni (scarpe da squat o dischi), lavoro su mobilità caviglia, o ridurre profondità dove i talloni restano giù.',
+      reference: 'DCSS: Heel rise is a mobility issue, not a safety issue'
     },
 
-    // EFFICIENCY CHECKS
+    // ========== EFFICIENCY OBSERVATIONS ==========
     {
-      id: 'TORSO_LEAN_MISMATCH',
+      id: 'TORSO_LEAN_INDIVIDUAL',
       phase: 'BOTTOM',
-      type: 'efficiency',
-      severity: 'medium',
+      type: 'individual',
+      severity: 'note',
       check: (angles, _, context) => {
         const range = getAcceptableTorsoLeanRange(context?.morphotype, context?.goal);
         const torsoLean = angles.torso_lean || 0;
         return torsoLean < range.min || torsoLean > range.max;
       },
-      issue: 'Torso lean outside optimal range for your build',
-      issueIt: 'Inclinazione busto fuori range ottimale per la tua struttura',
-      rationale: 'Torso angle should match femur length. Long femurs require more forward lean.',
-      rationaleIt: 'Angolo busto deve corrispondere a lunghezza femore. Femori lunghi richiedono più inclinazione.',
-      correction: 'This may be correct for you. Consider heel elevation if mobility limited.',
-      correctionIt: 'Potrebbe essere corretto per te. Considera rialzo talloni se mobilità limitata.',
-      reference: 'Lorenzetti S et al. (2018)',
-      exceptions: 'Long femurs naturally require more lean - this is NOT an error'
+      observation: 'Torso lean outside typical range for your build',
+      observationIt: 'Inclinazione busto fuori dal range tipico per la tua struttura',
+      context: 'Torso angle should match your femur length. Long femurs require more forward lean - this is physics, not technique error.',
+      contextIt: 'L\'angolo del busto deve corrispondere alla lunghezza del femore. Femori lunghi richiedono più inclinazione - è fisica, non errore tecnico.',
+      suggestion: 'This may be correct for you. If you feel excessive lower back fatigue, consider heel elevation or front squat variation.',
+      suggestionIt: 'Potrebbe essere corretto per te. Se senti eccessivo affaticamento nella bassa schiena, considera rialzo talloni o variante front squat.',
+      individualNote: 'Torso lean is highly individual. What looks "wrong" may be optimal for your proportions.',
+      reference: 'Lorenzetti et al. (2018): Torso lean correlates with femur:torso ratio'
     },
     {
-      id: 'DEPTH_INSUFFICIENT_HYPERTROPHY',
+      id: 'DEPTH_OBSERVATION',
       phase: 'BOTTOM',
       type: 'efficiency',
-      severity: 'medium',
-      check: (angles, _, context) => {
-        if (context?.goal !== 'hypertrophy') return false;
-        return (angles.left_knee || 180) > 105 && (angles.right_knee || 180) > 105;
-      },
-      issue: 'Insufficient depth for hypertrophy goals',
-      issueIt: 'Profondità insufficiente per obiettivi di ipertrofia',
-      rationale: 'Full ROM squats produce greater quad and glute hypertrophy.',
-      rationaleIt: 'Squat a ROM completo produce maggiore ipertrofia di quadricipiti e glutei.',
-      correction: 'Aim for hip crease below knee. Work on mobility if limited.',
-      correctionIt: 'Mira a portare la piega dell\'anca sotto il ginocchio. Lavora sulla mobilità se limitata.',
-      reference: 'Schoenfeld BJ (2010) - Full ROM for hypertrophy'
-    },
-
-    // OPTIMIZATION CHECKS
-    {
-      id: 'DESCENT_SPEED',
-      phase: 'DESCENT',
-      type: 'optimization',
-      severity: 'low',
-      check: (angles, prevAngles) => {
-        if (!prevAngles) return false;
-        const kneeChange = Math.abs((angles.left_knee || 0) - (prevAngles.left_knee || 0));
-        return kneeChange > 30; // Too fast if >30° per frame
-      },
-      issue: 'Descent may be too fast',
-      issueIt: 'Discesa potrebbe essere troppo veloce',
-      rationale: 'Controlled eccentric improves muscle activation and control.',
-      rationaleIt: 'Eccentrica controllata migliora attivazione muscolare e controllo.',
-      correction: 'Slow down the descent. Aim for 2-3 seconds.',
-      correctionIt: 'Rallenta la discesa. Punta a 2-3 secondi.',
-      reference: 'Standard coaching practice'
-    },
-    {
-      id: 'ASYMMETRIC_DEPTH',
-      phase: 'BOTTOM',
-      type: 'optimization',
-      severity: 'low',
+      severity: 'note',
       check: (angles) => {
-        const diff = Math.abs((angles.left_knee || 0) - (angles.right_knee || 0));
-        return diff > 10 && diff <= 25;
+        const knee = angles.left_knee || angles.right_knee || 180;
+        return knee > 110; // Not reaching parallel
       },
-      issue: 'Slight depth asymmetry detected',
-      issueIt: 'Leggera asimmetria nella profondità rilevata',
-      rationale: 'Some asymmetry is normal. Only concerning if >25° or progressing.',
-      rationaleIt: 'Un po\' di asimmetria è normale. Preoccupante solo se >25° o in peggioramento.',
-      correction: 'Monitor for progression. Consider unilateral work.',
-      correctionIt: 'Monitora il progresso. Considera lavoro unilaterale.',
-      reference: 'Clinical observation'
+      observation: 'Squat depth above parallel',
+      observationIt: 'Profondità squat sopra il parallelo',
+      context: 'Depth depends on your goals. Parallel is sufficient for most purposes. Deeper is fine if you have the mobility.',
+      contextIt: 'La profondità dipende dai tuoi obiettivi. Il parallelo è sufficiente per la maggior parte degli scopi. Più profondo va bene se hai la mobilità.',
+      suggestion: 'For hypertrophy: parallel is fine. For powerlifting: just below parallel is required. For mobility: go as deep as controlled.',
+      suggestionIt: 'Per ipertrofia: parallelo va bene. Per powerlifting: appena sotto il parallelo è richiesto. Per mobilità: vai profondo quanto controlli.',
+      reference: 'Kompf & Arandjelović (2017): Depth and muscle activation'
     }
   ],
 
   cues: [
-    { phase: 'DESCENT', cue: 'Sit back into the squat', cueIt: 'Siediti indietro nello squat' },
-    { phase: 'BOTTOM', cue: 'Drive through the whole foot', cueIt: 'Spingi attraverso tutto il piede' },
-    { phase: 'ASCENT', cue: 'Push the floor away', cueIt: 'Spingi via il pavimento' }
+    { phase: 'STANDING', cue: 'Big breath, brace your core', cueIt: 'Grande respiro, stabilizza il core' },
+    { phase: 'DESCENT', cue: 'Control the descent, knees track over toes', cueIt: 'Controlla la discesa, ginocchia in linea con le punte' },
+    { phase: 'BOTTOM', cue: 'Maintain tension, don\'t relax', cueIt: 'Mantieni tensione, non rilassarti' },
+    { phase: 'ASCENT', cue: 'Drive through your feet, lead with chest', cueIt: 'Spingi attraverso i piedi, guida col petto' }
   ],
 
   analyze(angles, prevAngles, context) {
-    const phase = getSquatPhase(angles.left_knee || 180);
-    const issues: AnalysisResult['issues'] = [];
-    const morphotypeNotes: string[] = [];
+    const phase = getSquatPhase(angles.left_knee || angles.right_knee || 180);
+    const observations: AnalysisResult['observations'] = [];
+    const individualNotes: string[] = [];
 
-    // Run form checks
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
+    for (const obs of this.formObservations) {
+      if (obs.phase === 'ALL' || obs.phase === phase) {
+        if (obs.check(angles, prevAngles, context)) {
+          observations.push({
+            id: obs.id,
+            type: obs.type,
+            severity: obs.severity,
+            observation: obs.observation,
+            observationIt: obs.observationIt,
+            context: obs.context,
+            contextIt: obs.contextIt,
+            suggestion: obs.suggestion,
+            suggestionIt: obs.suggestionIt,
+            askUser: obs.askUser,
+            askUserIt: obs.askUserIt,
+            reference: obs.reference
           });
+          
+          if (obs.individualNote) {
+            individualNotes.push(obs.individualNote);
+          }
         }
       }
     }
 
     // Add morphotype-specific notes
     if (context?.morphotype?.femurToTibia === 'long') {
-      morphotypeNotes.push('Femori lunghi: più avanzamento ginocchio e inclinazione busto sono NORMALI per te');
+      individualNotes.push('Con femori lunghi, più inclinazione del busto è normale e necessaria per mantenere il bilanciere sopra il centro del piede.');
     }
     if (context?.morphotype?.ankleDorsiflexion === 'limited') {
-      morphotypeNotes.push('Mobilità caviglia limitata: considera rialzo talloni o stance più largo');
+      individualNotes.push('Con mobilità caviglia limitata, considera scarpe con tacco o rialzo talloni per raggiungere profondità confortevolmente.');
     }
 
-    // Get ROM status
-    const romStatus: Record<string, 'below' | 'acceptable' | 'optimal' | 'above'> = {};
-    for (const range of this.romRanges) {
-      if (range.phase === phase && angles[range.angle] !== undefined) {
-        romStatus[range.angle] = getROMStatus(angles[range.angle], range);
-      }
-    }
-
-    // Get appropriate cue
     const cue = this.cues.find(c => c.phase === phase);
 
-    return {
-      phase,
-      angles,
-      issues,
-      cue,
-      morphotypeNotes: morphotypeNotes.length > 0 ? morphotypeNotes : undefined,
-      romStatus: Object.keys(romStatus).length > 0 ? romStatus : undefined
+    return { 
+      phase, 
+      angles, 
+      observations, 
+      cue, 
+      individualNotes: individualNotes.length > 0 ? individualNotes : undefined 
     };
   }
 };
 
 // ============================================================================
-// BENCH PRESS ANALYZER
-// ============================================================================
-
-export const BENCH_PRESS_ANALYZER: ExerciseAnalyzer = {
-  name: 'Bench Press',
-  nameIt: 'Panca Piana',
-  phases: ['START', 'DESCENT', 'BOTTOM', 'PRESS'],
-
-  romRanges: [
-    {
-      angle: 'left_elbow',
-      phase: 'BOTTOM',
-      acceptable: { min: 70, max: 110 },
-      optimal: { min: 80, max: 100 },
-      context: 'Full ROM requires elbows at or below shoulder level'
-    },
-    {
-      angle: 'shoulder_abduction',
-      phase: 'ALL',
-      acceptable: { min: 35, max: 85 },
-      optimal: { min: 45, max: 75 },
-      context: 'Excessive abduction increases shoulder stress'
-    }
-  ],
-
-  formChecks: [
-    // SAFETY
-    {
-      id: 'SHOULDER_EXCESSIVE_ABDUCTION',
-      phase: 'ALL',
-      type: 'safety',
-      severity: 'high',
-      check: (angles, _, context) => {
-        const range = getAcceptableShoulderAbductionRange(context);
-        return (angles.shoulder_abduction || 0) > range.max;
-      },
-      issue: 'Shoulders flared too wide',
-      issueIt: 'Spalle troppo aperte',
-      rationale: 'Increases impingement and rotator cuff injury risk.',
-      rationaleIt: 'Aumenta rischio impingement e lesione cuffia rotatori.',
-      correction: 'Tuck elbows to 45-75°. Cue "bend the bar".',
-      correctionIt: 'Chiudi i gomiti a 45-75°. Cue "piega la barra".',
-      reference: 'Green CM & Comfort P (2007)'
-    },
-
-    // EFFICIENCY
-    {
-      id: 'RANGE_OF_MOTION_BENCH',
-      phase: 'BOTTOM',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles, _, context) => {
-        if (context?.goal !== 'hypertrophy') return false;
-        return (angles.left_elbow || 0) > 105;
-      },
-      issue: 'Partial range of motion',
-      issueIt: 'Range di movimento parziale',
-      rationale: 'Full ROM is superior for hypertrophy.',
-      rationaleIt: 'ROM completo è superiore per ipertrofia.',
-      correction: 'Touch chest (or close to it) unless injury prevents.',
-      correctionIt: 'Tocca il petto (o avvicinati) se non ci sono infortuni.',
-      reference: 'Schoenfeld & Grgic (2020)'
-    },
-    {
-      id: 'ARM_ASYMMETRY_BENCH',
-      phase: 'ALL',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        const diff = Math.abs((angles.left_elbow || 0) - (angles.right_elbow || 0));
-        return diff > 15;
-      },
-      issue: 'Arm asymmetry detected',
-      issueIt: 'Asimmetria braccia rilevata',
-      rationale: 'May indicate strength imbalance or mobility limitation.',
-      rationaleIt: 'Può indicare squilibrio di forza o limitazione mobilità.',
-      correction: 'Add unilateral dumbbell work. Check for tightness.',
-      correctionIt: 'Aggiungi lavoro unilaterale con manubri. Controlla rigidità.',
-      reference: 'Clinical observation'
-    }
-  ],
-
-  cues: [
-    { phase: 'START', cue: 'Retract and depress scapulae', cueIt: 'Retrarre e deprimere le scapole' },
-    { phase: 'DESCENT', cue: 'Control the bar down', cueIt: 'Controlla la barra in discesa' },
-    { phase: 'BOTTOM', cue: 'Drive feet into floor', cueIt: 'Spingi i piedi nel pavimento' },
-    { phase: 'PRESS', cue: 'Press up and slightly back', cueIt: 'Spingi su e leggermente indietro' }
-  ],
-
-  analyze(angles, prevAngles, context) {
-    const phase = angles.left_elbow > 150 ? 'START' :
-                  angles.left_elbow > 110 ? 'DESCENT' :
-                  angles.left_elbow < 100 ? 'BOTTOM' : 'PRESS';
-
-    const issues: AnalysisResult['issues'] = [];
-    const morphotypeNotes: string[] = [];
-
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
-          });
-        }
-      }
-    }
-
-    if (context?.morphotype?.armToTorso === 'long') {
-      morphotypeNotes.push('Braccia lunghe: ROM più lungo = più lavoro. Grip più largo può aiutare.');
-    }
-
-    const cue = this.cues.find(c => c.phase === phase);
-
-    return { phase, angles, issues, cue, morphotypeNotes: morphotypeNotes.length > 0 ? morphotypeNotes : undefined };
-  }
-};
-
-// ============================================================================
-// DEADLIFT ANALYZER
+// DEADLIFT ANALYZER (DCSS Paradigm)
 // ============================================================================
 
 export const DEADLIFT_ANALYZER: ExerciseAnalyzer = {
@@ -521,145 +379,274 @@ export const DEADLIFT_ANALYZER: ExerciseAnalyzer = {
     {
       angle: 'hip_angle',
       phase: 'SETUP',
-      acceptable: { min: 55, max: 95 },
-      optimal: { min: 65, max: 85 },
-      context: 'Hip height varies by body proportions'
+      acceptable: { min: 55, max: 100 },
+      typical: { min: 65, max: 90 },
+      context: 'Hip height varies significantly by body proportions. Find what lets you maintain a strong back position.'
     },
     {
       angle: 'torso_lean',
       phase: 'SETUP',
-      acceptable: { min: 30, max: 60 },
-      optimal: { min: 35, max: 50 },
-      context: 'More upright with long arms, more lean with short arms'
+      acceptable: { min: 25, max: 65 },
+      typical: { min: 35, max: 55 },
+      context: 'More upright with long arms, more horizontal with short arms. Both are correct for different builds.'
     }
   ],
 
-  formChecks: [
-    // SAFETY
+  formObservations: [
     {
-      id: 'LUMBAR_ROUNDING',
+      id: 'LUMBAR_FLEXION_DEADLIFT',
       phase: 'ALL',
-      type: 'safety',
-      severity: 'high',
-      check: (angles, _, context) => {
-        const maxLean = context?.goal === 'powerlifting' ? 35 : 25;
-        return (angles.lumbar_flexion || 0) > maxLean;
-      },
-      issue: 'Lumbar spine rounding',
-      issueIt: 'Arrotondamento colonna lombare',
-      rationale: 'Increases disc injury risk, especially under heavy load.',
-      rationaleIt: 'Aumenta rischio lesione discale, specialmente sotto carico pesante.',
-      correction: 'Set back flat before lifting. Engage lats. Lower weight if needed.',
-      correctionIt: 'Prepara la schiena dritta prima di sollevare. Attiva i dorsali. Riduci peso se necessario.',
-      reference: 'McGill SM (2007) - Spine mechanics'
-    },
-    {
-      id: 'HIPS_RISE_FIRST',
-      phase: 'LIFT',
-      type: 'safety',
-      severity: 'high',
+      type: 'technique',
+      severity: 'note',  // Changed from 'high'
       check: (angles, prevAngles) => {
-        if (!prevAngles) return false;
-        const hipExtension = (angles.hip_angle || 0) - (prevAngles.hip_angle || 0);
-        const kneeExtension = (angles.left_knee || 0) - (prevAngles.left_knee || 0);
-        return hipExtension > 15 && kneeExtension < 5;
+        const currentLean = angles.torso_lean || 0;
+        const prevLean = prevAngles?.torso_lean || currentLean;
+        // Only flag if there's SUDDEN loss of position (>15° change in one frame)
+        return Math.abs(currentLean - prevLean) > 15;
       },
-      issue: 'Hips rising faster than shoulders',
-      issueIt: 'Anche si alzano più velocemente delle spalle',
-      rationale: 'Puts excessive stress on lower back. Usually means weight too heavy or poor setup.',
-      rationaleIt: 'Mette stress eccessivo sulla bassa schiena. Di solito significa peso troppo pesante o setup scarso.',
-      correction: 'Push through the floor, keep chest up. Consider reducing weight.',
-      correctionIt: 'Spingi attraverso il pavimento, mantieni petto alto. Considera ridurre il peso.',
-      reference: 'Hales M (2010)'
+      observation: 'Sudden change in back position during lift',
+      observationIt: 'Cambio improvviso della posizione della schiena durante il sollevamento',
+      context: 'A gradual, controlled back position is fine. Sudden changes may indicate the load is challenging your current capacity.',
+      contextIt: 'Una posizione della schiena graduale e controllata va bene. Cambi improvvisi possono indicare che il carico sta sfidando la tua capacità attuale.',
+      suggestion: 'If this happens consistently, consider: reducing load, strengthening back position with paused deadlifts, or checking if fatigue is a factor.',
+      suggestionIt: 'Se succede costantemente, considera: ridurre il carico, rinforzare la posizione della schiena con stacchi in pausa, o verificare se la fatica è un fattore.',
+      askUser: 'Do you feel like you\'re losing control of the weight?',
+      askUserIt: 'Senti di perdere il controllo del peso?',
+      reference: 'Vigotsky et al. (2015): Some lumbar flexion is normal in heavy deadlifts; sudden changes indicate capacity limit'
     },
-
-    // EFFICIENCY
     {
-      id: 'SETUP_HIPS_TOO_LOW',
-      phase: 'SETUP',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles, _, context) => {
-        const minHip = context?.morphotype?.torsoToFemur === 'short' ? 55 : 65;
-        return (angles.hip_angle || 90) < minHip;
+      id: 'UPPER_BACK_ROUNDING',
+      phase: 'LIFT',
+      type: 'technique',
+      severity: 'note',
+      check: (angles) => {
+        return (angles.thoracic_flexion || 0) > 30;
       },
-      issue: 'Hips too low in setup',
-      issueIt: 'Anche troppo basse nel setup',
-      rationale: 'Squatting the deadlift reduces efficiency and puts knees in way of bar.',
-      rationaleIt: 'Fare squat nello stacco riduce efficienza e mette le ginocchia davanti alla barra.',
-      correction: 'Raise hips until shins are more vertical. Shoulders over or slightly in front of bar.',
-      correctionIt: 'Alza le anche fino a quando gli stinchi sono più verticali. Spalle sopra o leggermente davanti alla barra.',
-      reference: 'Standard biomechanics'
+      observation: 'Upper back rounding during lift',
+      observationIt: 'Arrotondamento della parte alta della schiena durante il sollevamento',
+      context: 'Upper back (thoracic) rounding is common and often acceptable, especially in conventional stance. It\'s different from lower back rounding.',
+      contextIt: 'L\'arrotondamento della parte alta della schiena (toracica) è comune e spesso accettabile, specialmente nello stacco convenzionale. È diverso dall\'arrotondamento lombare.',
+      suggestion: 'Upper back rounding is a valid technique choice for some lifters. Focus on keeping lower back stable.',
+      suggestionIt: 'L\'arrotondamento della parte alta della schiena è una scelta tecnica valida per alcuni atleti. Concentrati sul mantenere la bassa schiena stabile.',
+      reference: 'DCSS: Thoracic flexion is acceptable; lumbar control is the priority'
     },
     {
       id: 'LOCKOUT_HYPEREXTENSION',
       phase: 'LOCKOUT',
       type: 'efficiency',
-      severity: 'medium',
+      severity: 'note',
       check: (angles) => {
-        return (angles.hip_angle || 0) > 185;
+        return (angles.hip_angle || 0) > 190; // Hyperextension
       },
-      issue: 'Excessive back hyperextension at lockout',
-      issueIt: 'Iperestensione eccessiva della schiena al lockout',
-      rationale: 'Unnecessary stress on spine. Stand tall is sufficient.',
-      rationaleIt: 'Stress non necessario sulla colonna. Stare dritti è sufficiente.',
-      correction: 'Squeeze glutes, stand tall. Don\'t lean back.',
-      correctionIt: 'Stringi i glutei, stai dritto. Non inclinarti indietro.',
-      reference: 'Safety concern'
+      observation: 'Hyperextension at lockout',
+      observationIt: 'Iperestensione al lockout',
+      context: 'Excessive lean back at lockout puts unnecessary stress on the lower back. The lift is complete when you\'re standing tall.',
+      contextIt: 'Inclinarsi troppo indietro al lockout mette stress non necessario sulla bassa schiena. Il sollevamento è completo quando sei in piedi dritto.',
+      suggestion: 'Finish tall with glutes squeezed, hips fully extended. No need to lean back.',
+      suggestionIt: 'Finisci in posizione eretta con glutei contratti, anche completamente estese. Non c\'è bisogno di inclinarsi indietro.',
+      reference: 'Standard technique'
+    },
+    {
+      id: 'BAR_DRIFT',
+      phase: 'LIFT',
+      type: 'efficiency',
+      severity: 'suggestion',
+      check: (angles) => {
+        return (angles.bar_path_deviation || 0) > 8; // cm from vertical
+      },
+      observation: 'Bar drifting away from body',
+      observationIt: 'Bilanciere che si allontana dal corpo',
+      context: 'Keeping the bar close is mechanically efficient. Drift increases the moment arm and makes the lift harder.',
+      contextIt: 'Tenere il bilanciere vicino è meccanicamente efficiente. L\'allontanamento aumenta il braccio di leva e rende il sollevamento più difficile.',
+      suggestion: 'Cue: "Drag the bar up your legs". Keep lats engaged.',
+      suggestionIt: 'Cue: "Trascina il bilanciere sulle gambe". Mantieni i dorsali attivi.',
+      reference: 'DCSS: Bar path optimization'
     }
   ],
 
   cues: [
-    { phase: 'SETUP', cue: 'Wedge into the bar, take slack out', cueIt: 'Incuneati nella barra, togli il gioco' },
-    { phase: 'LIFT', cue: 'Push the floor away', cueIt: 'Spingi via il pavimento' },
-    { phase: 'LOCKOUT', cue: 'Hips through, squeeze glutes', cueIt: 'Anche avanti, stringi i glutei' }
+    { phase: 'SETUP', cue: 'Chest up, lats tight, slack out of the bar', cueIt: 'Petto alto, dorsali tesi, togli il gioco dal bilanciere' },
+    { phase: 'LIFT', cue: 'Push the floor away, keep bar close', cueIt: 'Spingi il pavimento via, tieni il bilanciere vicino' },
+    { phase: 'LOCKOUT', cue: 'Stand tall, squeeze glutes', cueIt: 'In piedi dritto, stringi i glutei' },
+    { phase: 'DESCENT', cue: 'Hinge at hips, control the descent', cueIt: 'Piegati dalle anche, controlla la discesa' }
   ],
 
   analyze(angles, prevAngles, context) {
-    const phase = angles.hip_angle < 100 ? 'SETUP' :
-                  angles.hip_angle < 160 ? 'LIFT' :
-                  angles.hip_angle >= 170 ? 'LOCKOUT' : 'DESCENT';
+    const hipAngle = angles.hip_angle || 180;
+    const phase = hipAngle < 100 ? 'SETUP' :
+                  hipAngle < 160 ? 'LIFT' :
+                  hipAngle >= 175 ? 'LOCKOUT' : 'DESCENT';
 
-    const issues: AnalysisResult['issues'] = [];
-    const morphotypeNotes: string[] = [];
+    const observations: AnalysisResult['observations'] = [];
+    const individualNotes: string[] = [];
 
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
+    for (const obs of this.formObservations) {
+      if (obs.phase === 'ALL' || obs.phase === phase) {
+        if (obs.check(angles, prevAngles, context)) {
+          observations.push({
+            id: obs.id,
+            type: obs.type,
+            severity: obs.severity,
+            observation: obs.observation,
+            observationIt: obs.observationIt,
+            context: obs.context,
+            contextIt: obs.contextIt,
+            suggestion: obs.suggestion,
+            suggestionIt: obs.suggestionIt,
+            askUser: obs.askUser,
+            askUserIt: obs.askUserIt,
+            reference: obs.reference
           });
         }
       }
     }
 
+    // Morphotype notes
     if (context?.morphotype?.armToTorso === 'long') {
-      morphotypeNotes.push('Braccia lunghe: busto più dritto naturalmente (vantaggio)');
+      individualNotes.push('Con braccia lunghe, puoi mantenere un torso più verticale. Questo è un vantaggio meccanico, non un errore.');
     }
     if (context?.morphotype?.armToTorso === 'short') {
-      morphotypeNotes.push('Braccia corte: considera sumo per ridurre ROM');
-    }
-    if (context?.morphotype?.femurToTibia === 'long') {
-      morphotypeNotes.push('Femori lunghi: sumo tipicamente più adatto');
+      individualNotes.push('Con braccia corte, avrai più inclinazione del torso. Considera lo stacco sumo o trap bar come alternative che potrebbero adattarsi meglio.');
     }
 
     const cue = this.cues.find(c => c.phase === phase);
 
-    return { phase, angles, issues, cue, morphotypeNotes: morphotypeNotes.length > 0 ? morphotypeNotes : undefined };
+    return { phase, angles, observations, cue, individualNotes: individualNotes.length > 0 ? individualNotes : undefined };
   }
 };
 
 // ============================================================================
-// BARBELL ROW ANALYZER
+// BENCH PRESS ANALYZER (DCSS Paradigm)
+// ============================================================================
+
+export const BENCH_PRESS_ANALYZER: ExerciseAnalyzer = {
+  name: 'Bench Press',
+  nameIt: 'Panca Piana',
+  phases: ['START', 'DESCENT', 'BOTTOM', 'PRESS'],
+
+  romRanges: [
+    {
+      angle: 'elbow',
+      phase: 'BOTTOM',
+      acceptable: { min: 70, max: 120 },
+      typical: { min: 80, max: 100 },
+      context: 'Depth depends on shoulder mobility and goals. Touch chest if possible without discomfort.'
+    },
+    {
+      angle: 'shoulder_abduction',
+      phase: 'ALL',
+      acceptable: { min: 30, max: 80 },
+      typical: { min: 45, max: 70 },
+      context: 'Elbow angle from torso. More tucked = less shoulder stress, more flared = more chest activation.'
+    }
+  ],
+
+  formObservations: [
+    {
+      id: 'ELBOW_FLARE_EXCESSIVE',
+      phase: 'ALL',
+      type: 'technique',
+      severity: 'suggestion',
+      check: (angles) => {
+        const abduction = angles.shoulder_abduction || 0;
+        return abduction > 80;
+      },
+      observation: 'Elbows flared wide (>80° from torso)',
+      observationIt: 'Gomiti molto larghi (>80° dal torso)',
+      context: 'Very wide elbow position increases shoulder stress. Some lifters tolerate this fine; others may feel shoulder discomfort.',
+      contextIt: 'Una posizione molto larga dei gomiti aumenta lo stress sulla spalla. Alcuni atleti la tollerano bene; altri possono sentire fastidio alla spalla.',
+      suggestion: 'If you have shoulder discomfort, try tucking elbows to 45-60°. If it feels fine, this may work for you.',
+      suggestionIt: 'Se hai fastidio alla spalla, prova a tenere i gomiti a 45-60°. Se non dà problemi, potrebbe funzionare per te.',
+      askUser: 'Do you feel any shoulder discomfort with this elbow position?',
+      askUserIt: 'Senti fastidio alla spalla con questa posizione dei gomiti?',
+      reference: 'Green CM & Comfort P (2007): Shoulder abduction and impingement risk'
+    },
+    {
+      id: 'SCAPULAE_POSITION',
+      phase: 'ALL',
+      type: 'efficiency',
+      severity: 'note',
+      check: (angles) => {
+        // This would need scapula tracking
+        return (angles.scapula_protraction || 0) > 15;
+      },
+      observation: 'Scapulae not fully retracted',
+      observationIt: 'Scapole non completamente retratte',
+      context: 'Retracted scapulae create a stable pressing surface and may reduce shoulder stress.',
+      contextIt: 'Le scapole retratte creano una superficie di spinta stabile e possono ridurre lo stress sulla spalla.',
+      suggestion: 'Cue: "Put your scapulae in your back pockets" before unracking.',
+      suggestionIt: 'Cue: "Metti le scapole nelle tasche posteriori" prima di staccare il bilanciere.',
+      reference: 'Standard technique'
+    },
+    {
+      id: 'ARCH_OBSERVATION',
+      phase: 'ALL',
+      type: 'individual',
+      severity: 'note',
+      check: (angles) => {
+        // Detect if there's lumbar arch
+        return (angles.lumbar_extension || 0) > 30;
+      },
+      observation: 'Significant lumbar arch',
+      observationIt: 'Arco lombare significativo',
+      context: 'Arch is a technique choice. More arch = shorter ROM and better shoulder position. Less arch = more chest work. Both are valid.',
+      contextIt: 'L\'arco è una scelta tecnica. Più arco = ROM più corto e migliore posizione spalla. Meno arco = più lavoro pettorale. Entrambi sono validi.',
+      suggestion: 'Choose your arch based on your goals and comfort. Powerlifters often arch more; bodybuilders may prefer less.',
+      suggestionIt: 'Scegli il tuo arco in base ai tuoi obiettivi e comfort. I powerlifter spesso arcuano di più; i bodybuilder possono preferire meno.',
+      reference: 'DCSS: Arch is individual preference and goal-dependent'
+    }
+  ],
+
+  cues: [
+    { phase: 'START', cue: 'Retract scapulae, set your arch', cueIt: 'Retrai le scapole, imposta il tuo arco' },
+    { phase: 'DESCENT', cue: 'Control the bar down to your chest', cueIt: 'Controlla la barra in discesa verso il petto' },
+    { phase: 'BOTTOM', cue: 'Stay tight, drive feet into floor', cueIt: 'Resta compatto, spingi i piedi nel pavimento' },
+    { phase: 'PRESS', cue: 'Press up and slightly back toward rack', cueIt: 'Spingi su e leggermente indietro verso i supporti' }
+  ],
+
+  analyze(angles, prevAngles, context) {
+    const elbowAngle = angles.left_elbow || angles.right_elbow || 180;
+    const phase = elbowAngle > 150 ? 'START' :
+                  elbowAngle > 110 ? 'DESCENT' :
+                  elbowAngle < 100 ? 'BOTTOM' : 'PRESS';
+
+    const observations: AnalysisResult['observations'] = [];
+    const individualNotes: string[] = [];
+
+    for (const obs of this.formObservations) {
+      if (obs.phase === 'ALL' || obs.phase === phase) {
+        if (obs.check(angles, prevAngles, context)) {
+          observations.push({
+            id: obs.id,
+            type: obs.type,
+            severity: obs.severity,
+            observation: obs.observation,
+            observationIt: obs.observationIt,
+            context: obs.context,
+            contextIt: obs.contextIt,
+            suggestion: obs.suggestion,
+            suggestionIt: obs.suggestionIt,
+            askUser: obs.askUser,
+            askUserIt: obs.askUserIt,
+            reference: obs.reference
+          });
+        }
+      }
+    }
+
+    // Morphotype notes
+    if (context?.morphotype?.armToTorso === 'long') {
+      individualNotes.push('Con braccia lunghe, il ROM è più lungo. Considera grip più largo o più arco per compensare.');
+    }
+
+    const cue = this.cues.find(c => c.phase === phase);
+
+    return { phase, angles, observations, cue, individualNotes: individualNotes.length > 0 ? individualNotes : undefined };
+  }
+};
+
+// ============================================================================
+// BARBELL ROW ANALYZER (DCSS Paradigm)
 // ============================================================================
 
 export const BARBELL_ROW_ANALYZER: ExerciseAnalyzer = {
@@ -672,102 +659,86 @@ export const BARBELL_ROW_ANALYZER: ExerciseAnalyzer = {
       angle: 'torso_lean',
       phase: 'ALL',
       acceptable: { min: 20, max: 70 },
-      optimal: { min: 30, max: 60 },
-      context: 'More horizontal = more lat. More upright = more trap/rhomboid'
+      typical: { min: 30, max: 60 },
+      context: 'More horizontal = more lat emphasis. More upright = more trap/rhomboid emphasis. Both are valid variations.'
     },
     {
       angle: 'elbow',
       phase: 'CONTRACTED',
       acceptable: { min: 60, max: 110 },
-      optimal: { min: 70, max: 95 },
-      context: 'Full contraction means elbows past torso'
+      typical: { min: 70, max: 95 },
+      context: 'Full contraction means elbows at or past torso line.'
     }
   ],
 
-  formChecks: [
-    // SAFETY
+  formObservations: [
     {
-      id: 'EXCESSIVE_BODY_ENGLISH',
+      id: 'BODY_ENGLISH',
       phase: 'PULL',
-      type: 'safety',
-      severity: 'high',
+      type: 'technique',
+      severity: 'note',
       check: (angles, prevAngles) => {
         if (!prevAngles) return false;
         const torsoChange = Math.abs((angles.torso_lean || 0) - (prevAngles.torso_lean || 0));
         return torsoChange > 20;
       },
-      issue: 'Excessive body swing',
-      issueIt: 'Oscillazione del corpo eccessiva',
-      rationale: 'Using momentum puts spine at risk and reduces muscle activation.',
-      rationaleIt: 'Usare lo slancio mette a rischio la colonna e riduce attivazione muscolare.',
-      correction: 'Keep torso stable. If you need to swing, reduce weight.',
-      correctionIt: 'Mantieni il torso stabile. Se devi oscillare, riduci il peso.',
-      reference: 'McGill SM (2007)'
-    },
-
-    // EFFICIENCY
-    {
-      id: 'TORSO_TOO_UPRIGHT',
-      phase: 'ALL',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles, _, context) => {
-        if (context?.goal !== 'hypertrophy') return false;
-        return (angles.torso_lean || 0) > 70;
-      },
-      issue: 'Torso too upright for lat activation',
-      issueIt: 'Torso troppo dritto per attivazione dorsali',
-      rationale: 'More upright shifts emphasis to traps. More horizontal = more lats.',
-      rationaleIt: 'Più dritto sposta enfasi sui trapezi. Più orizzontale = più dorsali.',
-      correction: 'Lean forward more (45-60°) if targeting lats.',
-      correctionIt: 'Inclinati di più in avanti (45-60°) se miri ai dorsali.',
-      reference: 'Fenwick CM et al. (2009)'
+      observation: 'Significant body momentum used',
+      observationIt: 'Uso significativo di slancio corporeo',
+      context: 'Some "body English" is acceptable and can be a valid technique choice. Excessive momentum may indicate the load is heavy relative to your strict strength.',
+      contextIt: 'Un po\' di "slancio" è accettabile e può essere una scelta tecnica valida. Slancio eccessivo può indicare che il carico è pesante rispetto alla tua forza stretta.',
+      suggestion: 'If you want stricter rows: reduce weight or try chest-supported rows. If you\'re intentionally using momentum for overload: that\'s a valid training tool.',
+      suggestionIt: 'Se vuoi rematori più stretti: riduci il peso o prova rematori con supporto petto. Se stai usando intenzionalmente lo slancio per sovraccarico: è uno strumento di allenamento valido.',
+      reference: 'DCSS: Controlled cheating is a valid technique; uncontrolled cheating indicates load selection issue'
     },
     {
-      id: 'INCOMPLETE_CONTRACTION',
+      id: 'INCOMPLETE_ROM',
       phase: 'CONTRACTED',
       type: 'efficiency',
-      severity: 'medium',
+      severity: 'note',
       check: (angles) => {
         return (angles.left_elbow || 180) > 110;
       },
-      issue: 'Incomplete contraction',
-      issueIt: 'Contrazione incompleta',
-      rationale: 'Not pulling to full contraction limits muscle development.',
-      rationaleIt: 'Non tirare a contrazione completa limita lo sviluppo muscolare.',
-      correction: 'Pull until elbows pass torso. Touch bar to belly.',
-      correctionIt: 'Tira finché i gomiti passano il torso. Tocca la barra alla pancia.',
-      reference: 'Standard technique'
+      observation: 'Elbows not reaching full contraction',
+      observationIt: 'Gomiti che non raggiungono la contrazione completa',
+      context: 'Full ROM typically means pulling until elbows are at or past your torso. Partial ROM is fine if intentional.',
+      contextIt: 'ROM completo tipicamente significa tirare finché i gomiti sono al livello o oltre il torso. ROM parziale va bene se intenzionale.',
+      suggestion: 'For full back development, pull until the bar touches your belly. For heavy overload work, partial ROM can be a valid tool.',
+      suggestionIt: 'Per sviluppo completo della schiena, tira finché il bilanciere tocca la pancia. Per lavoro di sovraccarico pesante, ROM parziale può essere uno strumento valido.',
+      reference: 'Schoenfeld (2010): Full ROM for hypertrophy'
     }
   ],
 
   cues: [
-    { phase: 'START', cue: 'Hinge at hips, chest up', cueIt: 'Cerniera alle anche, petto alto' },
-    { phase: 'PULL', cue: 'Drive elbows back', cueIt: 'Porta i gomiti indietro' },
-    { phase: 'CONTRACTED', cue: 'Squeeze shoulder blades', cueIt: 'Stringi le scapole' }
+    { phase: 'START', cue: 'Hinge forward, back flat, lats engaged', cueIt: 'Inclinati in avanti, schiena piatta, dorsali attivi' },
+    { phase: 'PULL', cue: 'Pull with elbows, squeeze shoulder blades', cueIt: 'Tira coi gomiti, stringi le scapole' },
+    { phase: 'CONTRACTED', cue: 'Hold briefly, feel the squeeze', cueIt: 'Tieni brevemente, senti la contrazione' },
+    { phase: 'LOWER', cue: 'Control the descent, stretch at bottom', cueIt: 'Controlla la discesa, allunga in basso' }
   ],
 
   analyze(angles, prevAngles, context) {
-    const phase = angles.left_elbow > 150 ? 'START' :
-                  angles.left_elbow > 110 ? 'PULL' :
-                  angles.left_elbow < 100 ? 'CONTRACTED' : 'LOWER';
+    const elbowAngle = angles.left_elbow || angles.right_elbow || 180;
+    const phase = elbowAngle > 150 ? 'START' :
+                  elbowAngle > 120 ? 'PULL' :
+                  elbowAngle < 100 ? 'CONTRACTED' : 'LOWER';
 
-    const issues: AnalysisResult['issues'] = [];
+    const observations: AnalysisResult['observations'] = [];
 
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
+    for (const obs of this.formObservations) {
+      if (obs.phase === 'ALL' || obs.phase === phase) {
+        if (obs.check(angles, prevAngles, context)) {
+          observations.push({
+            id: obs.id,
+            type: obs.type,
+            severity: obs.severity,
+            observation: obs.observation,
+            observationIt: obs.observationIt,
+            context: obs.context,
+            contextIt: obs.contextIt,
+            suggestion: obs.suggestion,
+            suggestionIt: obs.suggestionIt,
+            askUser: obs.askUser,
+            askUserIt: obs.askUserIt,
+            reference: obs.reference
           });
         }
       }
@@ -775,508 +746,12 @@ export const BARBELL_ROW_ANALYZER: ExerciseAnalyzer = {
 
     const cue = this.cues.find(c => c.phase === phase);
 
-    return { phase, angles, issues, cue };
+    return { phase, angles, observations, cue };
   }
 };
 
 // ============================================================================
-// PULL-UP ANALYZER
-// ============================================================================
-
-export const PULLUP_ANALYZER: ExerciseAnalyzer = {
-  name: 'Pull-up',
-  nameIt: 'Trazioni',
-  phases: ['HANGING', 'PULL', 'TOP', 'LOWER'],
-
-  romRanges: [
-    {
-      angle: 'elbow',
-      phase: 'HANGING',
-      acceptable: { min: 160, max: 180 },
-      optimal: { min: 165, max: 180 },
-      context: 'Full extension at bottom'
-    },
-    {
-      angle: 'elbow',
-      phase: 'TOP',
-      acceptable: { min: 50, max: 110 },
-      optimal: { min: 60, max: 90 },
-      context: 'Chin over bar'
-    }
-  ],
-
-  formChecks: [
-    // EFFICIENCY
-    {
-      id: 'PARTIAL_REP_TOP',
-      phase: 'TOP',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        return (angles.left_elbow || 0) > 110;
-      },
-      issue: 'Partial rep - not reaching full contraction',
-      issueIt: 'Ripetizione parziale - non raggiungi contrazione completa',
-      rationale: 'Chin should clear the bar for full lat activation.',
-      rationaleIt: 'Il mento dovrebbe superare la sbarra per attivazione dorsali completa.',
-      correction: 'Pull chin over bar. Use assistance if needed.',
-      correctionIt: 'Porta il mento sopra la sbarra. Usa assistenza se necessario.',
-      reference: 'Standard technique'
-    },
-    {
-      id: 'PARTIAL_REP_BOTTOM',
-      phase: 'HANGING',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        return (angles.left_elbow || 0) < 165;
-      },
-      issue: 'Not achieving full extension at bottom',
-      issueIt: 'Non raggiungi estensione completa in basso',
-      rationale: 'Full stretch at bottom increases muscle activation.',
-      rationaleIt: 'Stretch completo in basso aumenta attivazione muscolare.',
-      correction: 'Fully extend arms at bottom of each rep.',
-      correctionIt: 'Estendi completamente le braccia in fondo a ogni ripetizione.',
-      reference: 'Schoenfeld & Grgic (2020)'
-    },
-    {
-      id: 'ASYMMETRIC_PULL',
-      phase: 'PULL',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        const diff = Math.abs((angles.left_elbow || 0) - (angles.right_elbow || 0));
-        return diff > 20;
-      },
-      issue: 'Pulling asymmetrically',
-      issueIt: 'Trazione asimmetrica',
-      rationale: 'May indicate strength imbalance or mobility issue.',
-      rationaleIt: 'Può indicare squilibrio di forza o problema di mobilità.',
-      correction: 'Focus on pulling evenly. Add single-arm work.',
-      correctionIt: 'Concentrati su tirare uniformemente. Aggiungi lavoro a un braccio.',
-      reference: 'Clinical observation'
-    },
-
-    // OPTIMIZATION
-    {
-      id: 'EXCESSIVE_KIPPING',
-      phase: 'PULL',
-      type: 'optimization',
-      severity: 'low',
-      check: (angles, prevAngles) => {
-        if (!prevAngles) return false;
-        const shoulderChange = Math.abs((angles.shoulder_angle || 0) - (prevAngles.shoulder_angle || 0));
-        return shoulderChange > 30;
-      },
-      issue: 'Significant kipping detected',
-      issueIt: 'Kipping significativo rilevato',
-      rationale: 'Strict pull-ups build more strength. Kipping is valid for CrossFit.',
-      rationaleIt: 'Trazioni strette costruiscono più forza. Kipping è valido per CrossFit.',
-      correction: 'Use strict form for strength building.',
-      correctionIt: 'Usa forma stretta per costruire forza.',
-      reference: 'Standard coaching',
-      exceptions: 'Kipping is a legitimate technique in CrossFit'
-    }
-  ],
-
-  cues: [
-    { phase: 'HANGING', cue: 'Engage lats, shoulders down', cueIt: 'Attiva dorsali, spalle giù' },
-    { phase: 'PULL', cue: 'Drive elbows down', cueIt: 'Porta i gomiti giù' },
-    { phase: 'TOP', cue: 'Chin over bar, squeeze', cueIt: 'Mento sopra sbarra, stringi' }
-  ],
-
-  analyze(angles, prevAngles, context) {
-    const phase = angles.left_elbow > 160 ? 'HANGING' :
-                  angles.left_elbow > 110 ? 'PULL' :
-                  angles.left_elbow < 100 ? 'TOP' : 'LOWER';
-
-    const issues: AnalysisResult['issues'] = [];
-
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
-          });
-        }
-      }
-    }
-
-    const cue = this.cues.find(c => c.phase === phase);
-
-    return { phase, angles, issues, cue };
-  }
-};
-
-// ============================================================================
-// OVERHEAD PRESS ANALYZER
-// ============================================================================
-
-export const OVERHEAD_PRESS_ANALYZER: ExerciseAnalyzer = {
-  name: 'Overhead Press',
-  nameIt: 'Military Press',
-  phases: ['RACK', 'PRESS', 'LOCKOUT', 'LOWER'],
-
-  romRanges: [
-    {
-      angle: 'shoulder_flexion',
-      phase: 'LOCKOUT',
-      acceptable: { min: 160, max: 180 },
-      optimal: { min: 170, max: 180 },
-      context: 'Full overhead position'
-    },
-    {
-      angle: 'torso_lean',
-      phase: 'ALL',
-      acceptable: { min: 0, max: 25 },
-      optimal: { min: 0, max: 15 },
-      context: 'Excessive lean puts stress on lower back'
-    }
-  ],
-
-  formChecks: [
-    // SAFETY
-    {
-      id: 'EXCESSIVE_BACK_LEAN',
-      phase: 'ALL',
-      type: 'safety',
-      severity: 'high',
-      check: (angles, _, context) => {
-        const maxLean = context?.goal === 'strength' ? 25 : 15;
-        return (angles.back_lean || 0) > maxLean;
-      },
-      issue: 'Excessive backward lean',
-      issueIt: 'Inclinazione indietro eccessiva',
-      rationale: 'Converts press into incline bench, increases lower back stress.',
-      rationaleIt: 'Trasforma la pressa in panca inclinata, aumenta stress sulla bassa schiena.',
-      correction: 'Squeeze glutes, keep ribs down. Consider seated press.',
-      correctionIt: 'Stringi i glutei, mantieni costole basse. Considera pressa seduta.',
-      reference: 'Saeterbakken AH & Fimland MS (2013)'
-    },
-
-    // EFFICIENCY
-    {
-      id: 'INCOMPLETE_LOCKOUT',
-      phase: 'LOCKOUT',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        return (angles.shoulder_flexion || 0) < 170 || (angles.left_elbow || 0) < 165;
-      },
-      issue: 'Incomplete lockout',
-      issueIt: 'Lockout incompleto',
-      rationale: 'Full lockout increases stability and shoulder strength.',
-      rationaleIt: 'Lockout completo aumenta stabilità e forza delle spalle.',
-      correction: 'Push head through at top. Lock elbows.',
-      correctionIt: 'Passa la testa attraverso in alto. Blocca i gomiti.',
-      reference: 'Standard technique'
-    },
-    {
-      id: 'ARM_ASYMMETRY_OHP',
-      phase: 'LOCKOUT',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => {
-        const diff = Math.abs((angles.left_elbow || 0) - (angles.right_elbow || 0));
-        return diff > 15;
-      },
-      issue: 'Arm asymmetry at lockout',
-      issueIt: 'Asimmetria braccia al lockout',
-      rationale: 'May indicate strength imbalance or mobility limitation.',
-      rationaleIt: 'Può indicare squilibrio di forza o limitazione mobilità.',
-      correction: 'Add single-arm work. Check shoulder mobility.',
-      correctionIt: 'Aggiungi lavoro a un braccio. Controlla mobilità spalle.',
-      reference: 'Clinical observation'
-    }
-  ],
-
-  cues: [
-    { phase: 'RACK', cue: 'Big breath, brace core', cueIt: 'Grande respiro, stabilizza il core' },
-    { phase: 'PRESS', cue: 'Drive bar up and slightly back', cueIt: 'Spingi la barra su e leggermente indietro' },
-    { phase: 'LOCKOUT', cue: 'Push head through', cueIt: 'Passa la testa attraverso' }
-  ],
-
-  analyze(angles, prevAngles, context) {
-    const phase = angles.shoulder_flexion < 90 ? 'RACK' :
-                  angles.shoulder_flexion < 150 ? 'PRESS' :
-                  angles.shoulder_flexion >= 170 ? 'LOCKOUT' : 'LOWER';
-
-    const issues: AnalysisResult['issues'] = [];
-    const morphotypeNotes: string[] = [];
-
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({
-            id: check.id,
-            type: check.type,
-            severity: check.severity,
-            issue: check.issue,
-            issueIt: check.issueIt,
-            rationale: check.rationale,
-            rationaleIt: check.rationaleIt,
-            correction: check.correction,
-            correctionIt: check.correctionIt,
-            reference: check.reference
-          });
-        }
-      }
-    }
-
-    if (context?.morphotype?.shoulderFlexion === 'limited') {
-      morphotypeNotes.push('Mobilità spalla limitata: lavora su estensione toracica e flessibilità dorsali');
-    }
-    if (context?.morphotype?.armToTorso === 'long') {
-      morphotypeNotes.push('Braccia lunghe: bar path più lungo = più lavoro, serve più stabilità core');
-    }
-
-    const cue = this.cues.find(c => c.phase === phase);
-
-    return { phase, angles, issues, cue, morphotypeNotes: morphotypeNotes.length > 0 ? morphotypeNotes : undefined };
-  }
-};
-
-// ============================================================================
-// ADDITIONAL ANALYZERS (11 more exercises)
-// ============================================================================
-
-// RDL ANALYZER
-export const RDL_ANALYZER: ExerciseAnalyzer = {
-  name: 'Romanian Deadlift',
-  nameIt: 'Stacco Rumeno',
-  phases: ['START', 'HINGE', 'BOTTOM', 'RETURN'],
-  romRanges: [
-    { angle: 'hip_angle', phase: 'BOTTOM', acceptable: { min: 60, max: 110 }, optimal: { min: 70, max: 95 }, context: 'Depends on hamstring flexibility' }
-  ],
-  formChecks: [
-    {
-      id: 'LUMBAR_ROUNDING_RDL',
-      phase: 'ALL',
-      type: 'safety',
-      severity: 'high',
-      check: (angles) => (angles.lumbar_flexion || 0) > 15,
-      issue: 'Lower back rounding',
-      issueIt: 'Arrotondamento bassa schiena',
-      rationale: 'RDL should maintain neutral spine. Stop descent when back starts to round.',
-      rationaleIt: 'Lo stacco rumeno dovrebbe mantenere colonna neutra. Ferma la discesa quando la schiena inizia ad arrotondarsi.',
-      correction: 'Stop at hamstring stretch, not at floor.',
-      correctionIt: 'Fermati allo stretch dei femorali, non al pavimento.',
-      reference: 'McGill SM (2007)'
-    },
-    {
-      id: 'KNEES_TOO_BENT_RDL',
-      phase: 'BOTTOM',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => (angles.left_knee || 180) < 150,
-      issue: 'Excessive knee bend - becoming a squat',
-      issueIt: 'Piegamento ginocchio eccessivo - sta diventando uno squat',
-      rationale: 'RDL targets hamstrings. Too much knee bend shifts load to quads.',
-      rationaleIt: 'Lo stacco rumeno lavora i femorali. Troppo piegamento ginocchio sposta carico sui quadricipiti.',
-      correction: 'Keep slight knee bend constant throughout movement.',
-      correctionIt: 'Mantieni leggera flessione ginocchio costante durante tutto il movimento.',
-      reference: 'Standard technique'
-    }
-  ],
-  cues: [
-    { phase: 'START', cue: 'Soft knees, chest up', cueIt: 'Ginocchia morbide, petto alto' },
-    { phase: 'HINGE', cue: 'Push hips back', cueIt: 'Spingi le anche indietro' },
-    { phase: 'BOTTOM', cue: 'Feel hamstring stretch', cueIt: 'Senti stretch femorali' }
-  ],
-  analyze(angles, prevAngles, context) {
-    const phase = angles.hip_angle > 160 ? 'START' : angles.hip_angle < 100 ? 'BOTTOM' : 'HINGE';
-    const issues: AnalysisResult['issues'] = [];
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({ id: check.id, type: check.type, severity: check.severity, issue: check.issue, issueIt: check.issueIt, rationale: check.rationale, rationaleIt: check.rationaleIt, correction: check.correction, correctionIt: check.correctionIt, reference: check.reference });
-        }
-      }
-    }
-    const cue = this.cues.find(c => c.phase === phase);
-    return { phase, angles, issues, cue };
-  }
-};
-
-// LUNGE ANALYZER
-export const LUNGE_ANALYZER: ExerciseAnalyzer = {
-  name: 'Lunge',
-  nameIt: 'Affondo',
-  phases: ['START', 'DESCENT', 'BOTTOM', 'ASCENT'],
-  romRanges: [
-    { angle: 'front_knee', phase: 'BOTTOM', acceptable: { min: 70, max: 105 }, optimal: { min: 80, max: 95 }, context: '~90° at bottom is typical' }
-  ],
-  formChecks: [
-    {
-      id: 'FRONT_KNEE_COLLAPSE',
-      phase: 'ALL',
-      type: 'safety',
-      severity: 'high',
-      check: (angles) => (angles.front_knee_valgus || 0) > 20,
-      issue: 'Front knee collapsing inward',
-      issueIt: 'Ginocchio anteriore che crolla verso l\'interno',
-      rationale: 'Increases knee injury risk. Usually indicates hip weakness.',
-      rationaleIt: 'Aumenta rischio infortunio ginocchio. Di solito indica debolezza anche.',
-      correction: 'Push knee out over toe. Strengthen glutes.',
-      correctionIt: 'Spingi ginocchio fuori sopra la punta. Rinforza glutei.',
-      reference: 'Hewett TE et al. (2005)'
-    },
-    {
-      id: 'TORSO_FORWARD_LUNGE',
-      phase: 'BOTTOM',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => (angles.torso_lean || 0) > 30,
-      issue: 'Excessive forward lean',
-      issueIt: 'Inclinazione in avanti eccessiva',
-      rationale: 'Puts more stress on lower back. Keep torso upright.',
-      rationaleIt: 'Mette più stress sulla bassa schiena. Mantieni torso dritto.',
-      correction: 'Keep chest up, drop straight down.',
-      correctionIt: 'Mantieni petto alto, scendi dritto.',
-      reference: 'Standard technique'
-    }
-  ],
-  cues: [
-    { phase: 'DESCENT', cue: 'Drop straight down', cueIt: 'Scendi dritto' },
-    { phase: 'BOTTOM', cue: 'Drive through front heel', cueIt: 'Spingi attraverso tallone anteriore' }
-  ],
-  analyze(angles, prevAngles, context) {
-    const phase = angles.front_knee > 150 ? 'START' : angles.front_knee < 100 ? 'BOTTOM' : 'DESCENT';
-    const issues: AnalysisResult['issues'] = [];
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({ id: check.id, type: check.type, severity: check.severity, issue: check.issue, issueIt: check.issueIt, rationale: check.rationale, rationaleIt: check.rationaleIt, correction: check.correction, correctionIt: check.correctionIt, reference: check.reference });
-        }
-      }
-    }
-    const cue = this.cues.find(c => c.phase === phase);
-    return { phase, angles, issues, cue };
-  }
-};
-
-// HIP THRUST ANALYZER
-export const HIP_THRUST_ANALYZER: ExerciseAnalyzer = {
-  name: 'Hip Thrust',
-  nameIt: 'Hip Thrust',
-  phases: ['START', 'THRUST', 'TOP', 'LOWER'],
-  romRanges: [
-    { angle: 'hip_angle', phase: 'TOP', acceptable: { min: 170, max: 190 }, optimal: { min: 175, max: 185 }, context: 'Full hip extension at top' }
-  ],
-  formChecks: [
-    {
-      id: 'HYPEREXTENSION_HIP_THRUST',
-      phase: 'TOP',
-      type: 'safety',
-      severity: 'medium',
-      check: (angles) => (angles.hip_angle || 0) > 195,
-      issue: 'Excessive lower back hyperextension',
-      issueIt: 'Iperestensione eccessiva della bassa schiena',
-      rationale: 'Overextension comes from spine, not hips. Reduces glute activation.',
-      rationaleIt: 'L\'iperestensione viene dalla colonna, non dalle anche. Riduce attivazione glutei.',
-      correction: 'Tuck chin, squeeze glutes, posterior pelvic tilt at top.',
-      correctionIt: 'Tira il mento, stringi i glutei, retroversione del bacino in alto.',
-      reference: 'Contreras B (2013)'
-    },
-    {
-      id: 'INCOMPLETE_EXTENSION_HT',
-      phase: 'TOP',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => (angles.hip_angle || 0) < 170,
-      issue: 'Incomplete hip extension',
-      issueIt: 'Estensione anca incompleta',
-      rationale: 'Full extension maximizes glute contraction.',
-      rationaleIt: 'Estensione completa massimizza contrazione glutei.',
-      correction: 'Drive hips to full extension. Squeeze hard at top.',
-      correctionIt: 'Porta le anche a estensione completa. Stringi forte in alto.',
-      reference: 'Standard technique'
-    }
-  ],
-  cues: [
-    { phase: 'START', cue: 'Feet flat, chin tucked', cueIt: 'Piedi piatti, mento tucked' },
-    { phase: 'TOP', cue: 'Squeeze glutes, hold', cueIt: 'Stringi i glutei, tieni' }
-  ],
-  analyze(angles, prevAngles, context) {
-    const phase = angles.hip_angle < 100 ? 'START' : angles.hip_angle >= 170 ? 'TOP' : 'THRUST';
-    const issues: AnalysisResult['issues'] = [];
-    for (const check of this.formChecks) {
-      if (check.phase === 'ALL' || check.phase === phase) {
-        if (check.check(angles, prevAngles, context)) {
-          issues.push({ id: check.id, type: check.type, severity: check.severity, issue: check.issue, issueIt: check.issueIt, rationale: check.rationale, rationaleIt: check.rationaleIt, correction: check.correction, correctionIt: check.correctionIt, reference: check.reference });
-        }
-      }
-    }
-    const cue = this.cues.find(c => c.phase === phase);
-    return { phase, angles, issues, cue };
-  }
-};
-
-// PLANK ANALYZER
-export const PLANK_ANALYZER: ExerciseAnalyzer = {
-  name: 'Plank',
-  nameIt: 'Plank',
-  phases: ['HOLD'],
-  romRanges: [
-    { angle: 'body_line', phase: 'HOLD', acceptable: { min: 165, max: 195 }, optimal: { min: 175, max: 185 }, context: 'Straight line from head to heels' }
-  ],
-  formChecks: [
-    {
-      id: 'HIPS_SAGGING',
-      phase: 'HOLD',
-      type: 'safety',
-      severity: 'high',
-      check: (angles) => (angles.hip_sag || 0) > 15,
-      issue: 'Hips sagging - hyperextending lower back',
-      issueIt: 'Anche che cedono - iperestensione bassa schiena',
-      rationale: 'Puts stress on lumbar spine instead of working core.',
-      rationaleIt: 'Mette stress sulla colonna lombare invece di lavorare il core.',
-      correction: 'Squeeze glutes, tuck pelvis slightly, engage abs.',
-      correctionIt: 'Stringi glutei, retroverti leggermente il bacino, attiva addominali.',
-      reference: 'McGill SM (2015)'
-    },
-    {
-      id: 'HIPS_TOO_HIGH',
-      phase: 'HOLD',
-      type: 'efficiency',
-      severity: 'medium',
-      check: (angles) => (angles.hip_pike || 0) > 20,
-      issue: 'Hips too high - pike position',
-      issueIt: 'Anche troppo alte - posizione a picco',
-      rationale: 'Reduces core engagement. This is easier but less effective.',
-      rationaleIt: 'Riduce ingaggio del core. È più facile ma meno efficace.',
-      correction: 'Lower hips to align with shoulders and ankles.',
-      correctionIt: 'Abbassa le anche per allinearle con spalle e caviglie.',
-      reference: 'Standard technique'
-    }
-  ],
-  cues: [
-    { phase: 'HOLD', cue: 'Straight line head to heels', cueIt: 'Linea dritta dalla testa ai talloni' }
-  ],
-  analyze(angles, prevAngles, context) {
-    const phase = 'HOLD';
-    const issues: AnalysisResult['issues'] = [];
-    for (const check of this.formChecks) {
-      if (check.check(angles, prevAngles, context)) {
-        issues.push({ id: check.id, type: check.type, severity: check.severity, issue: check.issue, issueIt: check.issueIt, rationale: check.rationale, rationaleIt: check.rationaleIt, correction: check.correction, correctionIt: check.correctionIt, reference: check.reference });
-      }
-    }
-    const cue = this.cues[0];
-    return { phase, angles, issues, cue };
-  }
-};
-
-// ============================================================================
-// ALL ANALYZERS EXPORT
+// EXPORT ALL ANALYZERS
 // ============================================================================
 
 export const EXERCISE_ANALYZERS: Record<string, ExerciseAnalyzer> = {
@@ -1284,13 +759,7 @@ export const EXERCISE_ANALYZERS: Record<string, ExerciseAnalyzer> = {
   bench_press: BENCH_PRESS_ANALYZER,
   deadlift: DEADLIFT_ANALYZER,
   barbell_row: BARBELL_ROW_ANALYZER,
-  pullup: PULLUP_ANALYZER,
-  overhead_press: OVERHEAD_PRESS_ANALYZER,
-  rdl: RDL_ANALYZER,
-  romanian_deadlift: RDL_ANALYZER,
-  lunge: LUNGE_ANALYZER,
-  hip_thrust: HIP_THRUST_ANALYZER,
-  plank: PLANK_ANALYZER
+  // Add more as needed
 };
 
 /**
@@ -1302,59 +771,73 @@ export function getExerciseAnalyzer(exerciseName: string): ExerciseAnalyzer | nu
 }
 
 /**
- * Generate session report from analysis history
+ * Generate session summary from analysis history
+ * DCSS approach: Focus on patterns and actionable insights, not "errors"
  */
-export function generateSessionReport(
+export function generateSessionSummary(
   analysisHistory: AnalysisResult[],
   context: AnalysisContext
 ): {
-  totalIssues: { safety: number; efficiency: number; optimization: number };
-  mostCommonIssues: Array<{ id: string; count: number; type: string }>;
-  morphotypeNotes: string[];
-  overallAssessment: string;
-  overallAssessmentIt: string;
+  totalObservations: { technique: number; efficiency: number; individual: number };
+  commonPatterns: Array<{ id: string; count: number; type: string }>;
+  individualNotes: string[];
+  summary: string;
+  summaryIt: string;
+  actionItems: string[];
+  actionItemsIt: string[];
 } {
-  const totalIssues = { safety: 0, efficiency: 0, optimization: 0 };
-  const issueCounts: Record<string, { count: number; type: string }> = {};
-  const allMorphotypeNotes = new Set<string>();
+  const totalObservations = { technique: 0, efficiency: 0, individual: 0 };
+  const observationCounts: Record<string, { count: number; type: string }> = {};
+  const allIndividualNotes = new Set<string>();
 
   for (const result of analysisHistory) {
-    for (const issue of result.issues) {
-      totalIssues[issue.type]++;
-      if (!issueCounts[issue.id]) {
-        issueCounts[issue.id] = { count: 0, type: issue.type };
+    for (const obs of result.observations) {
+      totalObservations[obs.type]++;
+      if (!observationCounts[obs.id]) {
+        observationCounts[obs.id] = { count: 0, type: obs.type };
       }
-      issueCounts[issue.id].count++;
+      observationCounts[obs.id].count++;
     }
-    if (result.morphotypeNotes) {
-      result.morphotypeNotes.forEach(note => allMorphotypeNotes.add(note));
+    if (result.individualNotes) {
+      result.individualNotes.forEach(note => allIndividualNotes.add(note));
     }
   }
 
-  const mostCommonIssues = Object.entries(issueCounts)
+  const commonPatterns = Object.entries(observationCounts)
     .map(([id, data]) => ({ id, ...data }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  let overallAssessment: string;
-  let overallAssessmentIt: string;
+  // Generate summary based on what was observed
+  let summary: string;
+  let summaryIt: string;
+  const actionItems: string[] = [];
+  const actionItemsIt: string[] = [];
 
-  if (totalIssues.safety > 0) {
-    overallAssessment = 'Address safety issues first. These can increase injury risk.';
-    overallAssessmentIt = 'Affronta prima i problemi di sicurezza. Questi possono aumentare il rischio di infortuni.';
-  } else if (totalIssues.efficiency > analysisHistory.length * 0.3) {
-    overallAssessment = 'Form is generally safe but could be more efficient.';
-    overallAssessmentIt = 'La forma è generalmente sicura ma potrebbe essere più efficiente.';
+  const totalObs = totalObservations.technique + totalObservations.efficiency + totalObservations.individual;
+
+  if (totalObs === 0) {
+    summary = 'Movement looked controlled throughout the session. No specific observations to note.';
+    summaryIt = 'Il movimento è apparso controllato durante tutta la sessione. Nessuna osservazione specifica da notare.';
+  } else if (totalObservations.technique > totalObservations.efficiency) {
+    summary = `We noticed some technique patterns. These aren't necessarily errors - review the observations and decide if you want to work on them.`;
+    summaryIt = `Abbiamo notato alcuni pattern tecnici. Non sono necessariamente errori - rivedi le osservazioni e decidi se vuoi lavorarci.`;
+    actionItems.push('Review technique observations', 'Consider if any are causing discomfort');
+    actionItemsIt.push('Rivedi le osservazioni tecniche', 'Considera se qualcuna causa fastidio');
   } else {
-    overallAssessment = 'Good form overall. Minor optimization suggestions available.';
-    overallAssessmentIt = 'Buona forma complessiva. Suggerimenti di ottimizzazione minori disponibili.';
+    summary = 'Movement quality looks good. Some efficiency suggestions noted for optimization if you\'re interested.';
+    summaryIt = 'La qualità del movimento sembra buona. Alcuni suggerimenti di efficienza notati per ottimizzazione se ti interessa.';
+    actionItems.push('Review efficiency suggestions if interested in optimization');
+    actionItemsIt.push('Rivedi i suggerimenti di efficienza se interessato all\'ottimizzazione');
   }
 
   return {
-    totalIssues,
-    mostCommonIssues,
-    morphotypeNotes: Array.from(allMorphotypeNotes),
-    overallAssessment,
-    overallAssessmentIt
+    totalObservations,
+    commonPatterns,
+    individualNotes: Array.from(allIndividualNotes),
+    summary,
+    summaryIt,
+    actionItems,
+    actionItemsIt
   };
 }

@@ -12,6 +12,8 @@ import RunningOnboarding from '../components/RunningOnboarding';
 import LocationStep from '../components/onboarding/LocationStep';
 import ScreeningTypeStep from '../components/onboarding/ScreeningTypeStep';
 import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
+import HealthDataConsentModal from '../components/HealthDataConsentModal';
+import { getConsents, hasHealthDataConsent } from '@trainsmart/shared';
 import {
   sportRequiresRunning,
   SportType
@@ -57,6 +59,11 @@ export default function Onboarding() {
   const [skipRunningStep, setSkipRunningStep] = useState(false);
   const [showRunningOnboarding, setShowRunningOnboarding] = useState(false);
   const [progressRestored, setProgressRestored] = useState(false);
+
+  // Health Data Consent (Art. 9 GDPR)
+  const [showHealthConsentModal, setShowHealthConsentModal] = useState(false);
+  const [healthConsentGranted, setHealthConsentGranted] = useState<boolean | null>(null);
+  const [healthConsentChecked, setHealthConsentChecked] = useState(false);
 
   // Salva progresso parziale dopo ogni cambio di step/dati
   const saveProgress = (step: number, stepData: Partial<OnboardingData>, skipRunning: boolean, showRunning: boolean) => {
@@ -115,6 +122,37 @@ export default function Onboarding() {
     }
   }, []);
 
+  // Check if user already gave health data consent (from Register or previous session)
+  useEffect(() => {
+    async function checkHealthConsent() {
+      if (!user || healthConsentChecked) return;
+
+      try {
+        const result = await getConsents(user.id);
+
+        if (result.success && result.data) {
+          const consents = result.data.consents.reduce((acc, c) => {
+            acc[c.consent_type] = c.granted;
+            return acc;
+          }, {} as Record<string, boolean>);
+
+          const hasConsent = hasHealthDataConsent(consents);
+          console.log('[ONBOARDING] Health consent status:', hasConsent);
+          setHealthConsentGranted(hasConsent);
+        } else {
+          setHealthConsentGranted(false);
+        }
+      } catch (error) {
+        console.error('[ONBOARDING] Error checking health consent:', error);
+        setHealthConsentGranted(false);
+      } finally {
+        setHealthConsentChecked(true);
+      }
+    }
+
+    checkHealthConsent();
+  }, [user, healthConsentChecked]);
+
   // Scroll to top quando cambia step
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -128,6 +166,27 @@ export default function Onboarding() {
 
   const handleDisclaimerDecline = () => {
     navigate('/');
+  };
+
+  // Health Data Consent Handlers
+  const handleHealthConsentAccept = () => {
+    console.log('[ONBOARDING] ✅ Health consent ACCEPTED');
+    setHealthConsentGranted(true);
+    setShowHealthConsentModal(false);
+  };
+
+  const handleHealthConsentDecline = () => {
+    console.log('[ONBOARDING] ❌ Health consent DECLINED');
+    setHealthConsentGranted(false);
+    setShowHealthConsentModal(false);
+    // User can still proceed, but pain data won't be collected
+  };
+
+  // Check if current step needs health consent
+  const stepRequiresHealthConsent = (): boolean => {
+    // Goals that require health data collection
+    const healthGoals = ['motor_recovery', 'pre_partum', 'post_partum', 'disabilita'];
+    return healthGoals.includes(data.goal || '');
   };
 
   if (showDisclaimer) {
@@ -510,6 +569,16 @@ export default function Onboarding() {
           </div>
         )}
       </div>
+
+      {/* Health Data Consent Modal (Art. 9 GDPR) */}
+      <HealthDataConsentModal
+        isOpen={showHealthConsentModal}
+        onAccept={handleHealthConsentAccept}
+        onDecline={handleHealthConsentDecline}
+        userId={user?.id || ''}
+        language="it"
+        allowSkip={true}
+      />
     </div>
   );
 }

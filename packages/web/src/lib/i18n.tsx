@@ -640,8 +640,8 @@ const translations: Translations = {
   "dashboard.location_switch.error_message": { it: "Errore durante il cambio di location", en: "Error changing location", fr: "Erreur lors du changement de lieu", es: "Error al cambiar ubicación" },
 
   // Paywall Modal
-  "paywall.congrats_title": { it: "🎉 Complimenti! Hai finito la settimana 1", en: "🎉 Congratulations! You finished week 1", fr: "🎉 Félicitations! Vous avez terminé la semaine 1", es: "🎉 ¡Felicidades! Has terminado la semana 1" },
-  "paywall.unlock_subtitle": { it: "Sblocca le prossime 5 settimane e raggiungi i tuoi obiettivi", en: "Unlock the next 5 weeks and reach your goals", fr: "Débloquez les 5 prochaines semaines et atteignez vos objectifs", es: "Desbloquea las próximas 5 semanas y alcanza tus metas" },
+  "paywall.congrats_title": { it: "🎉 Complimenti! Hai completato le 6 settimane di prova", en: "🎉 Congratulations! You completed your 6-week trial", fr: "🎉 Félicitations! Vous avez terminé vos 6 semaines d'essai", es: "🎉 ¡Felicidades! Has completado tus 6 semanas de prueba" },
+  "paywall.unlock_subtitle": { it: "Continua il tuo percorso e raggiungi i tuoi obiettivi", en: "Continue your journey and reach your goals", fr: "Continuez votre parcours et atteignez vos objectifs", es: "Continúa tu camino y alcanza tus metas" },
   "paywall.workouts_completed": { it: "Workout Completati", en: "Workouts Completed", fr: "Entraînements Terminés", es: "Entrenamientos Completados" },
   "paywall.baseline_improvements": { it: "Miglioramenti Baseline", en: "Baseline Improvements", fr: "Améliorations de Base", es: "Mejoras de Línea Base" },
   "paywall.injuries_avoided": { it: "Esercizi Sostituiti (dolore evitato)", en: "Exercises Replaced (pain avoided)", fr: "Exercices Remplacés (douleur évitée)", es: "Ejercicios Reemplazados (dolor evitado)" },
@@ -756,6 +756,311 @@ const translations: Translations = {
   "exercise_dislike.mild_pain_adjusted": { it: "Piccolo aggiustamento fatto. Continua con attenzione!", en: "Small adjustment made. Continue carefully!", fr: "Petit ajustement effectué. Continuez prudemment!", es: "¡Pequeño ajuste hecho. Continúa con cuidado!" },
   "exercise_dislike.weight_reduced_dislike": { it: "Peso ridotto! Vediamo se così va meglio.", en: "Weight reduced! Let's see if it's better now.", fr: "Poids réduit! Voyons si c'est mieux maintenant.", es: "¡Peso reducido! Veamos si ahora va mejor." },
   "exercise_dislike.replaced_for_dislike": { it: "Esercizio sostituito con variante equivalente.", en: "Exercise replaced with equivalent variant.", fr: "Exercice remplacé par une variante équivalente.", es: "Ejercicio reemplazado con variante equivalente." },
+
+  // ============================================================================
+  // DCSS PARADIGM - Pain/Discomfort System
+  // ============================================================================
+
+  "pain.preWorkout.title": { it: "Come ti senti oggi?", en: "How are you feeling today?", fr: "Comment vous sentez-vous aujourd'hui?", es: "¿Cómo te sientes hoy?" },
+  "pain.preWorkout.subtitle": { it: "Segnalaci eventuali fastidi per adattare la sessione", en: "Let us know about any discomfort to adapt the session", fr: "Signalez tout inconfort pour adapter la séance", es: "Avísanos de cualquier molestia para adaptar la sesión" },
+  "pain.preWorkout.noPain": { it: "Mi sento bene, nessun fastidio", en: "I feel good, no discomfort", fr: "Je me sens bien, aucun inconfort", es: "Me siento bien, sin molestias" },
+  "pain.preWorkout.hasPain": { it: "Ho qualche fastidio da segnalare", en: "I have some discomfort to report", fr: "J'ai un inconfort à signaler", es: "Tengo alguna molestia que reportar" },
+  "pain.preWorkout.selectAreas": { it: "Seleziona le zone interessate", en: "Select the affected areas", fr: "Sélectionnez les zones concernées", es: "Selecciona las zonas afectadas" },
+  "pain.preWorkout.intensityQuestion": { it: "Quanto è intenso il fastidio? (1-10)", en: "How intense is the discomfort? (1-10)", fr: "Quelle est l'intensité de l'inconfort? (1-10)", es: "¿Qué tan intenso es la molestia? (1-10)" },
+
+  "pain.intensity.mild.label": { it: "Lieve", en: "Mild", fr: "Léger", es: "Leve" },
+  "pain.intensity.mild.description": { it: "Avvertibile ma non limitante", en: "Noticeable but not limiting", fr: "Perceptible mais non limitant", es: "Perceptible pero no limitante" },
+  "pain.intensity.moderate.label": { it: "Moderato", en: "Moderate", fr: "Modéré", es: "Moderado" },
+  "pain.intensity.moderate.description": { it: "Presente durante alcuni movimenti", en: "Present during some movements", fr: "Présent pendant certains mouvements", es: "Presente durante algunos movimientos" },
+  "pain.intensity.significant.label": { it: "Forte", en: "Significant", fr: "Significatif", es: "Significativo" },
+  "pain.intensity.significant.description": { it: "Limita i movimenti normali", en: "Limits normal movements", fr: "Limite les mouvements normaux", es: "Limita los movimientos normales" },
+
+  "pain.adaptation.mild.title": { it: "Fastidio registrato", en: "Discomfort noted", fr: "Inconfort noté", es: "Molestia registrada" },
+  "pain.adaptation.mild.message": { it: "Fastidio lieve registrato. Questo livello è generalmente accettabile durante l'allenamento. Procedi come ti senti, il sistema tiene traccia per te.", en: "Mild discomfort noted. This level is generally acceptable during training. Proceed as you feel, the system is tracking for you.", fr: "Inconfort léger noté. Ce niveau est généralement acceptable pendant l'entraînement.", es: "Molestia leve registrada. Este nivel es generalmente aceptable durante el entrenamiento." },
+
+  "pain.adaptation.moderate.title": { it: "Fastidio moderato - Cosa preferisci fare?", en: "Moderate discomfort - What would you prefer?", fr: "Inconfort modéré - Que préférez-vous?", es: "Molestia moderada - ¿Qué prefieres hacer?" },
+  "pain.adaptation.moderate.message": { it: "Hai alcune opzioni per questa sessione:", en: "You have some options for this session:", fr: "Vous avez plusieurs options pour cette séance:", es: "Tienes algunas opciones para esta sesión:" },
+  "pain.adaptation.moderate.option1": { it: "Continua con adattamento (carico ridotto del 20%)", en: "Continue with adaptation (20% reduced load)", fr: "Continuer avec adaptation (charge réduite de 20%)", es: "Continuar con adaptación (carga reducida 20%)" },
+  "pain.adaptation.moderate.option2": { it: "Cambia esercizio (variante che lavora diversamente)", en: "Change exercise (variation that works differently)", fr: "Changer d'exercice (variante différente)", es: "Cambiar ejercicio (variante diferente)" },
+  "pain.adaptation.moderate.option3": { it: "Procedi come programmato (se ti senti di gestirlo)", en: "Proceed as programmed (if you feel you can manage it)", fr: "Continuer comme prévu (si vous vous sentez capable)", es: "Proceder como programado (si te sientes capaz)" },
+
+  "pain.adaptation.severe.title": { it: "Fastidio importante", en: "Significant discomfort", fr: "Inconfort significatif", es: "Molestia significativa" },
+  "pain.adaptation.severe.message": { it: "Con questo livello di fastidio, ti consigliamo di consultare un fisioterapista o medico sportivo prima di continuare con esercizi che coinvolgono questa zona.", en: "With this level of discomfort, we recommend consulting a physiotherapist or sports doctor before continuing with exercises involving this area.", fr: "Avec ce niveau d'inconfort, nous recommandons de consulter un physiothérapeute.", es: "Con este nivel de molestia, recomendamos consultar a un fisioterapeuta." },
+
+  "pain.during.tolerableReminder": { it: "💡 Reminder: Un fastidio fino a 3-4/10 che non peggiora durante il set è generalmente accettabile. Se supera 5/10 o peggiora, fermati e segnalalo.", en: "💡 Reminder: Discomfort up to 3-4/10 that doesn't worsen during the set is generally acceptable. If it exceeds 5/10 or worsens, stop and report it.", fr: "💡 Rappel: Un inconfort jusqu'à 3-4/10 qui ne s'aggrave pas est généralement acceptable.", es: "💡 Recordatorio: Una molestia hasta 3-4/10 que no empeora es generalmente aceptable." },
+  "pain.during.checkQuestion": { it: "Come è andato il fastidio durante il set?", en: "How was the discomfort during the set?", fr: "Comment était l'inconfort pendant la série?", es: "¿Cómo estuvo la molestia durante la serie?" },
+  "pain.during.better": { it: "Meglio o uguale", en: "Better or same", fr: "Mieux ou pareil", es: "Mejor o igual" },
+  "pain.during.slightlyWorse": { it: "Leggermente peggio", en: "Slightly worse", fr: "Légèrement pire", es: "Ligeramente peor" },
+  "pain.during.muchWorse": { it: "Molto peggio", en: "Much worse", fr: "Beaucoup pire", es: "Mucho peor" },
+
+  "pain.recovery.progress.title": { it: "📈 Aggiornamento Recupero", en: "📈 Recovery Update", fr: "📈 Mise à jour récupération", es: "📈 Actualización de recuperación" },
+  "pain.recovery.complete.title": { it: "🎉 Tornato a piena capacità!", en: "🎉 Back to full capacity!", fr: "🎉 Retour à pleine capacité!", es: "🎉 ¡De vuelta a plena capacidad!" },
+  "pain.recovery.complete.message": { it: "Ottimo lavoro nel gestire questa situazione. Il corpo si adatta!", en: "Great job managing this situation. The body adapts!", fr: "Excellent travail! Le corps s'adapte!", es: "¡Excelente trabajo! ¡El cuerpo se adapta!" },
+
+  // ============================================================================
+  // DCSS PARADIGM - Video Feedback (Educational)
+  // ============================================================================
+
+  "video.analysis.title": { it: "📊 Analisi del Movimento", en: "📊 Movement Analysis", fr: "📊 Analyse du mouvement", es: "📊 Análisis del movimiento" },
+  "video.analysis.subtitle": { it: "Osservazioni dalla tua esecuzione", en: "Observations from your execution", fr: "Observations de votre exécution", es: "Observaciones de tu ejecución" },
+  "video.section.observations": { it: "Osservazioni", en: "Observations", fr: "Observations", es: "Observaciones" },
+  "video.section.context": { it: "Contesto", en: "Context", fr: "Contexte", es: "Contexto" },
+  "video.section.suggestion": { it: "Se vuoi lavorarci", en: "If you want to work on it", fr: "Si vous voulez y travailler", es: "Si quieres trabajar en ello" },
+  "video.question.discomfort": { it: "Senti fastidio durante questo movimento?", en: "Do you feel discomfort during this movement?", fr: "Ressentez-vous un inconfort?", es: "¿Sientes molestia durante este movimiento?" },
+  "video.disclaimer": { it: "ℹ️ Questa analisi usa la fotocamera del telefono che ha precisione limitata (±5-10°). Per una valutazione accurata, consulta un coach o fisioterapista di persona.", en: "ℹ️ This analysis uses your phone camera which has limited precision (±5-10°). For an accurate assessment, consult a coach or physiotherapist in person.", fr: "ℹ️ Cette analyse utilise la caméra du téléphone avec une précision limitée.", es: "ℹ️ Este análisis usa la cámara del teléfono con precisión limitada." },
+
+  "severity.note": { it: "📊 Nota", en: "📊 Note", fr: "📊 Note", es: "📊 Nota" },
+  "severity.suggestion": { it: "💡 Suggerimento", en: "💡 Suggestion", fr: "💡 Suggestion", es: "💡 Sugerencia" },
+  "severity.attention": { it: "📋 Da valutare", en: "📋 To evaluate", fr: "📋 À évaluer", es: "📋 A evaluar" },
+
+  "ui.choice.proceed": { it: "Procedi", en: "Proceed", fr: "Continuer", es: "Proceder" },
+  "ui.choice.adapt": { it: "Adatta", en: "Adapt", fr: "Adapter", es: "Adaptar" },
+  "ui.choice.skip": { it: "Salta", en: "Skip", fr: "Passer", es: "Saltar" },
+  "ui.choice.understood": { it: "Ho capito", en: "Got it", fr: "Compris", es: "Entendido" },
+
+  "disclaimer.notMedical": { it: "TrainSmart non sostituisce il parere medico. Per dolori persistenti o condizioni specifiche, consulta un professionista sanitario.", en: "TrainSmart does not replace medical advice. For persistent pain or specific conditions, consult a healthcare professional.", fr: "TrainSmart ne remplace pas l'avis médical.", es: "TrainSmart no reemplaza el consejo médico." },
+
+  // ============================================================================
+  // DCSS PARADIGM - Additional Translations (i18nUpdates)
+  // ============================================================================
+
+  // Pre-workout check
+  "pain.precheck.title": { it: "Come ti senti oggi?", en: "How are you feeling today?", fr: "Comment vous sentez-vous?", es: "¿Cómo te sientes hoy?" },
+  "pain.precheck.subtitle": { it: "Segnala eventuali zone di fastidio per adattare la sessione", en: "Report any areas of discomfort to adapt the session", fr: "Signalez toute zone d'inconfort", es: "Reporta cualquier zona de molestia" },
+  "pain.precheck.none": { it: "Nessun fastidio, sto bene!", en: "No discomfort, I'm good!", fr: "Aucun inconfort, je vais bien!", es: "Sin molestias, ¡estoy bien!" },
+  "pain.precheck.hasDiscomfort": { it: "Ho un fastidio da segnalare", en: "I have some discomfort to report", fr: "J'ai un inconfort à signaler", es: "Tengo una molestia que reportar" },
+
+  // Intensity labels (1-10)
+  "pain.intensity.1": { it: "Appena percettibile", en: "Barely noticeable", fr: "À peine perceptible", es: "Apenas perceptible" },
+  "pain.intensity.2": { it: "Molto lieve", en: "Very mild", fr: "Très léger", es: "Muy leve" },
+  "pain.intensity.3": { it: "Lieve", en: "Mild", fr: "Léger", es: "Leve" },
+  "pain.intensity.4": { it: "Moderato", en: "Moderate", fr: "Modéré", es: "Moderado" },
+  "pain.intensity.5": { it: "Moderato+", en: "Moderate+", fr: "Modéré+", es: "Moderado+" },
+  "pain.intensity.6": { it: "Fastidioso", en: "Bothersome", fr: "Gênant", es: "Molesto" },
+  "pain.intensity.7": { it: "Significativo", en: "Significant", fr: "Significatif", es: "Significativo" },
+  "pain.intensity.8": { it: "Forte", en: "Strong", fr: "Fort", es: "Fuerte" },
+  "pain.intensity.9": { it: "Molto forte", en: "Very strong", fr: "Très fort", es: "Muy fuerte" },
+  "pain.intensity.10": { it: "Massimo", en: "Maximum", fr: "Maximum", es: "Máximo" },
+
+  // Tolerable discomfort education
+  "pain.tolerable.title": { it: "Sul fastidio durante l'allenamento", en: "About discomfort during training", fr: "À propos de l'inconfort pendant l'entraînement", es: "Sobre las molestias durante el entrenamiento" },
+  "pain.tolerable.message": { it: "Un fastidio fino a 3-4/10 che non peggiora durante l'esercizio è generalmente accettabile. Il tuo corpo è resiliente e si adatta all'allenamento.", en: "Discomfort up to 3-4/10 that doesn't worsen during exercise is generally acceptable. Your body is resilient and adapts to training.", fr: "Un inconfort jusqu'à 3-4/10 qui ne s'aggrave pas est généralement acceptable.", es: "Una molestia hasta 3-4/10 que no empeora es generalmente aceptable." },
+
+  // User choice options
+  "pain.option.continueNormal": { it: "Procedi come pianificato", en: "Proceed as planned", fr: "Continuer comme prévu", es: "Proceder como planeado" },
+  "pain.option.continueNormal.desc": { it: "Inizio con i pesi programmati. Monitorerò come mi sento.", en: "Start with programmed weights. I'll monitor how I feel.", fr: "Commencer avec les poids programmés.", es: "Empezar con los pesos programados." },
+  "pain.option.continueAdapted": { it: "Continua con adattamento", en: "Continue with adaptation", fr: "Continuer avec adaptation", es: "Continuar con adaptación" },
+  "pain.option.continueAdapted.desc": { it: "Riduci il carico per gli esercizi che coinvolgono questa zona", en: "Reduce load for exercises involving this area", fr: "Réduire la charge pour les exercices impliquant cette zone", es: "Reducir carga para ejercicios que involucran esta zona" },
+  "pain.option.switchExercise": { it: "Prova un'alternativa", en: "Try an alternative", fr: "Essayer une alternative", es: "Probar una alternativa" },
+  "pain.option.skipExercise": { it: "Salta questo esercizio", en: "Skip this exercise", fr: "Passer cet exercice", es: "Saltar este ejercicio" },
+  "pain.option.endSession": { it: "Termina sessione", en: "End session", fr: "Terminer la séance", es: "Terminar sesión" },
+
+  // Professional advice
+  "pain.professional.suggest": { it: "Per fastidi persistenti, un fisioterapista può fornire una valutazione personalizzata. Questo è un suggerimento, non un'emergenza.", en: "For persistent discomfort, a physiotherapist can provide personalized assessment. This is a suggestion, not an emergency.", fr: "Pour un inconfort persistant, un physiothérapeute peut fournir une évaluation personnalisée.", es: "Para molestias persistentes, un fisioterapeuta puede proporcionar una evaluación personalizada." },
+
+  // Return to normal celebration
+  "pain.return.progress": { it: "Ottimi progressi! Hai completato {sessions} sessioni senza fastidio.", en: "Great progress! You've completed {sessions} sessions without discomfort.", fr: "Excellents progrès! Vous avez complété {sessions} séances sans inconfort.", es: "¡Gran progreso! Has completado {sessions} sesiones sin molestias." },
+  "pain.return.complete": { it: "🎉 {exercise} è tornato nel tuo programma a piena capacità!", en: "🎉 {exercise} is back in your program at full capacity!", fr: "🎉 {exercise} est de retour dans votre programme à pleine capacité!", es: "🎉 ¡{exercise} ha vuelto a tu programa a plena capacidad!" },
+  "pain.return.celebration": { it: "Hai lavorato con successo su questo. Il tuo corpo si è adattato e recuperato. Ottimo lavoro!", en: "You've successfully worked through this. Your body adapted and recovered. Great job!", fr: "Vous avez réussi à surmonter cela. Votre corps s'est adapté et récupéré!", es: "Has trabajado exitosamente en esto. ¡Tu cuerpo se adaptó y recuperó!" },
+
+  // Post-set feedback
+  "feedback.discomfort.question": { it: "Come è andata quella serie in termini di fastidio?", en: "How did that set feel in terms of discomfort?", fr: "Comment était cette série en termes d'inconfort?", es: "¿Cómo estuvo esa serie en términos de molestia?" },
+  "feedback.discomfort.better": { it: "😊 Meglio / Nessun fastidio", en: "😊 Better / No discomfort", fr: "😊 Mieux / Aucun inconfort", es: "😊 Mejor / Sin molestias" },
+  "feedback.discomfort.same": { it: "😐 Come prima", en: "😐 Same as before", fr: "😐 Comme avant", es: "😐 Igual que antes" },
+  "feedback.discomfort.slightlyWorse": { it: "😕 Leggermente peggio", en: "😕 Slightly worse", fr: "😕 Légèrement pire", es: "😕 Ligeramente peor" },
+  "feedback.discomfort.muchWorse": { it: "😟 Molto peggio", en: "😟 Much worse", fr: "😟 Beaucoup pire", es: "😟 Mucho peor" },
+
+  // RPE scale
+  "rpe.1": { it: "Molto facile", en: "Very easy", fr: "Très facile", es: "Muy fácil" },
+  "rpe.2": { it: "Facile", en: "Easy", fr: "Facile", es: "Fácil" },
+  "rpe.3": { it: "Leggero", en: "Light", fr: "Léger", es: "Ligero" },
+  "rpe.4": { it: "Moderato", en: "Moderate", fr: "Modéré", es: "Moderado" },
+  "rpe.5": { it: "Moderato+", en: "Moderate+", fr: "Modéré+", es: "Moderado+" },
+  "rpe.6": { it: "Impegnativo", en: "Challenging", fr: "Exigeant", es: "Desafiante" },
+  "rpe.7": { it: "Difficile", en: "Hard", fr: "Difficile", es: "Difícil" },
+  "rpe.8": { it: "Molto difficile", en: "Very hard", fr: "Très difficile", es: "Muy difícil" },
+  "rpe.9": { it: "Quasi massimale", en: "Near maximal", fr: "Presque maximal", es: "Casi máximo" },
+  "rpe.10": { it: "Massimale", en: "Maximal", fr: "Maximal", es: "Máximo" },
+
+  // RIR scale
+  "rir.0": { it: "0 - Ero al limite", en: "0 - I was at my limit", fr: "0 - J'étais à ma limite", es: "0 - Estaba al límite" },
+  "rir.1": { it: "1 - Forse una", en: "1 - Maybe one more", fr: "1 - Peut-être une de plus", es: "1 - Quizás una más" },
+  "rir.2": { it: "2 - Altre due", en: "2 - Two more", fr: "2 - Deux de plus", es: "2 - Dos más" },
+  "rir.3": { it: "3 - Altre tre", en: "3 - Three more", fr: "3 - Trois de plus", es: "3 - Tres más" },
+  "rir.4plus": { it: "4+ - Molte di più", en: "4+ - Many more", fr: "4+ - Beaucoup plus", es: "4+ - Muchas más" },
+
+  // Deload/Recovery week
+  "deload.title": { it: "Settimana di Recupero", en: "Recovery Week", fr: "Semaine de récupération", es: "Semana de recuperación" },
+  "deload.explanation": { it: "Il tuo corpo si adatta durante il riposo, non durante l'allenamento. Questa settimana a intensità ridotta permette al corpo di consolidare i progressi.", en: "Your body adapts during rest, not during training. This reduced intensity week allows your body to consolidate progress.", fr: "Votre corps s'adapte pendant le repos, pas pendant l'entraînement.", es: "Tu cuerpo se adapta durante el descanso, no durante el entrenamiento." },
+
+  // Encouragement messages
+  "encourage.listening": { it: "Ascoltare il proprio corpo è intelligenza, non debolezza.", en: "Listening to your body is intelligence, not weakness.", fr: "Écouter son corps est de l'intelligence, pas de la faiblesse.", es: "Escuchar tu cuerpo es inteligencia, no debilidad." },
+  "encourage.adapting": { it: "Adattare l'allenamento è parte del processo. Stai facendo la cosa giusta.", en: "Adapting training is part of the process. You're doing the right thing.", fr: "Adapter l'entraînement fait partie du processus.", es: "Adaptar el entrenamiento es parte del proceso." },
+  "encourage.progress": { it: "I progressi non sono sempre lineari. Ogni sessione conta.", en: "Progress isn't always linear. Every session counts.", fr: "Les progrès ne sont pas toujours linéaires.", es: "El progreso no siempre es lineal." },
+  "encourage.recovery": { it: "Il recupero è quando il corpo si adatta. È allenamento anche questo.", en: "Recovery is when the body adapts. It's training too.", fr: "La récupération est quand le corps s'adapte.", es: "La recuperación es cuando el cuerpo se adapta." },
+  "encourage.consistency": { it: "La costanza batte l'intensità. Continua così.", en: "Consistency beats intensity. Keep it up.", fr: "La constance bat l'intensité.", es: "La constancia supera a la intensidad." },
+
+  // ============================================================================
+  // DASHBOARD - Sessions Card
+  // ============================================================================
+
+  "dashboard.sessions": { it: "Sessioni", en: "Sessions", fr: "Séances", es: "Sesiones" },
+  "dashboard.total": { it: "Totale", en: "Total", fr: "Total", es: "Total" },
+  "dashboard.thisWeek": { it: "Questa settimana", en: "This week", fr: "Cette semaine", es: "Esta semana" },
+  "common.loading": { it: "Caricamento...", en: "Loading...", fr: "Chargement...", es: "Cargando..." },
+
+  // ============================================================================
+  // LANDING PAGE - DCSS Paradigm
+  // ============================================================================
+
+  "landing.hero.title": { it: "Allenamento che si adatta a TE", en: "Training that adapts to YOU", fr: "Entraînement qui s'adapte à VOUS", es: "Entrenamiento que se adapta a TI" },
+  "landing.hero.subtitle": { it: "Alle tue proporzioni, al tuo stato, ai tuoi obiettivi. Programmazione scientifica, esperienza personalizzata.", en: "To your proportions, your current state, your goals. Scientific programming, personalized experience.", fr: "À vos proportions, votre état actuel, vos objectifs. Programmation scientifique, expérience personnalisée.", es: "A tus proporciones, tu estado actual, tus objetivos. Programación científica, experiencia personalizada." },
+
+  "landing.paindetect.title": { it: "Pain Detect & AdaptFlow", en: "Pain Detect & AdaptFlow", fr: "Pain Detect & AdaptFlow", es: "Pain Detect & AdaptFlow" },
+  "landing.paindetect.description": { it: "Segnali un fastidio? Il sistema ti propone opzioni: ridurre il carico, provare una variante, o continuare se ti senti pronto. Tu scegli, noi supportiamo.", en: "Report discomfort? The system offers options: reduce load, try a variation, or continue if you feel ready. You choose, we support.", fr: "Signalez un inconfort? Le système propose des options: réduire la charge, essayer une variante, ou continuer si vous vous sentez prêt. Vous choisissez, nous soutenons.", es: "¿Reportas molestia? El sistema ofrece opciones: reducir carga, probar una variante, o continuar si te sientes listo. Tú eliges, nosotros apoyamos." },
+  "landing.paindetect.tag1": { it: "Adattamento personalizzato", en: "Personalized adaptation", fr: "Adaptation personnalisée", es: "Adaptación personalizada" },
+  "landing.paindetect.tag2": { it: "Tu scegli come procedere", en: "You choose how to proceed", fr: "Vous choisissez comment procéder", es: "Tú eliges cómo proceder" },
+  "landing.paindetect.tag3": { it: "Tracking intelligente", en: "Intelligent tracking", fr: "Suivi intelligent", es: "Seguimiento inteligente" },
+
+  "landing.assessment.title": { it: "Assessment Completo", en: "Complete Assessment", fr: "Évaluation Complète", es: "Evaluación Completa" },
+  "landing.assessment.description": { it: "Quiz + test pratici per calibrare il programma sulle tue capacità attuali. Non giudichiamo, misuriamo.", en: "Quiz + practical tests to calibrate the program to your current capabilities. We don't judge, we measure.", fr: "Quiz + tests pratiques pour calibrer le programme à vos capacités actuelles. Nous ne jugeons pas, nous mesurons.", es: "Quiz + pruebas prácticas para calibrar el programa a tus capacidades actuales. No juzgamos, medimos." },
+
+  "landing.biomechanics.title": { it: "Analisi Biomeccanica", en: "Biomechanical Analysis", fr: "Analyse Biomécanique", es: "Análisis Biomecánico" },
+  "landing.biomechanics.description": { it: "Ti aiuta a capire il tuo movimento. Osservazioni personalizzate per le tue proporzioni, non standard universali.", en: "Helps you understand your movement. Personalized observations for your proportions, not universal standards.", fr: "Vous aide à comprendre votre mouvement. Observations personnalisées pour vos proportions, pas de standards universels.", es: "Te ayuda a entender tu movimiento. Observaciones personalizadas para tus proporciones, no estándares universales." },
+
+  "landing.progression.title": { it: "Progressione Intelligente", en: "Intelligent Progression", fr: "Progression Intelligente", es: "Progresión Inteligente" },
+  "landing.progression.description": { it: "Bilancia stimolo e recupero. Adatta automaticamente in base al tuo feedback reale, non a formule teoriche.", en: "Balances stimulus and recovery. Automatically adapts based on your real feedback, not theoretical formulas.", fr: "Équilibre stimulus et récupération. S'adapte automatiquement selon vos retours réels, pas des formules théoriques.", es: "Equilibra estímulo y recuperación. Se adapta automáticamente según tu feedback real, no fórmulas teóricas." },
+
+  "landing.evangelista.quote": { it: "La tecnica ottimale dipende dalle proporzioni individuali: rapporto femore/torso/tibia, lunghezza braccia, mobilità articolare, struttura del bacino.", en: "Optimal technique depends on individual proportions: femur/torso/tibia ratio, arm length, joint mobility, pelvic structure.", fr: "La technique optimale dépend des proportions individuelles: rapport fémur/torse/tibia, longueur des bras, mobilité articulaire, structure du bassin.", es: "La técnica óptima depende de las proporciones individuales: relación fémur/torso/tibia, longitud de brazos, movilidad articular, estructura pélvica." },
+  "landing.evangelista.attribution": { it: "— Paolo Evangelista, DCSS", en: "— Paolo Evangelista, DCSS", fr: "— Paolo Evangelista, DCSS", es: "— Paolo Evangelista, DCSS" },
+
+  "landing.hierarchy.safety": { it: "Controllo", en: "Control", fr: "Contrôle", es: "Control" },
+  "landing.hierarchy.safety.desc": { it: "Movimento controllato, articolazioni stabili, range of motion appropriato", en: "Controlled movement, stable joints, appropriate range of motion", fr: "Mouvement contrôlé, articulations stables, amplitude de mouvement appropriée", es: "Movimiento controlado, articulaciones estables, rango de movimiento apropiado" },
+  "landing.hierarchy.efficiency": { it: "Efficienza", en: "Efficiency", fr: "Efficacité", es: "Eficiencia" },
+  "landing.hierarchy.efficiency.desc": { it: "Percorso ottimale, timing corretto, attivazione muscolare", en: "Optimal path, correct timing, muscle activation", fr: "Trajet optimal, timing correct, activation musculaire", es: "Trayecto óptimo, timing correcto, activación muscular" },
+  "landing.hierarchy.optimization": { it: "Personalizzazione", en: "Personalization", fr: "Personnalisation", es: "Personalización" },
+  "landing.hierarchy.optimization.desc": { it: "Adattamenti individuali alle tue proporzioni uniche", en: "Individual adaptations to your unique proportions", fr: "Adaptations individuelles à vos proportions uniques", es: "Adaptaciones individuales a tus proporciones únicas" },
+
+  "landing.cta.primary": { it: "Inizia Gratis", en: "Start Free", fr: "Commencer Gratuitement", es: "Empezar Gratis" },
+  "landing.cta.secondary": { it: "Scopri di più", en: "Learn More", fr: "En savoir plus", es: "Saber más" },
+
+  // ============================================================================
+  // DISCOMFORT SYSTEM - Extended (i18n-updates)
+  // ============================================================================
+
+  "discomfort.title": { it: "Come ti senti oggi?", en: "How are you feeling today?", fr: "Comment vous sentez-vous aujourd'hui?", es: "¿Cómo te sientes hoy?" },
+  "discomfort.subtitle": { it: "Facci sapere se qualcosa non va così possiamo adattare la tua sessione.", en: "Let us know if anything feels off so we can adapt your session.", fr: "Dites-nous si quelque chose ne va pas pour adapter votre séance.", es: "Avísanos si algo no va bien para adaptar tu sesión." },
+  "discomfort.none": { it: "Mi sento bene, pronto ad allenarmi", en: "I feel good, ready to train", fr: "Je me sens bien, prêt à m'entraîner", es: "Me siento bien, listo para entrenar" },
+  "discomfort.has": { it: "Ho qualche fastidio", en: "I have some discomfort", fr: "J'ai un inconfort", es: "Tengo alguna molestia" },
+  "discomfort.selectArea": { it: "Dove senti fastidio?", en: "Where do you feel discomfort?", fr: "Où ressentez-vous l'inconfort?", es: "¿Dónde sientes molestia?" },
+  "discomfort.selectIntensity": { it: "Quanto è intenso? (1-10)", en: "How intense is it? (1-10)", fr: "Quelle est l'intensité? (1-10)", es: "¿Qué tan intenso? (1-10)" },
+
+  "discomfort.level.0": { it: "Nessuno", en: "None", fr: "Aucun", es: "Ninguno" },
+  "discomfort.level.1": { it: "Minimo", en: "Minimal", fr: "Minimal", es: "Mínimo" },
+  "discomfort.level.2": { it: "Lieve", en: "Mild", fr: "Léger", es: "Leve" },
+  "discomfort.level.3": { it: "Percepibile", en: "Noticeable", fr: "Perceptible", es: "Perceptible" },
+  "discomfort.level.4": { it: "Moderato", en: "Moderate", fr: "Modéré", es: "Moderado" },
+  "discomfort.level.5": { it: "Fastidioso", en: "Uncomfortable", fr: "Gênant", es: "Molesto" },
+  "discomfort.level.6": { it: "Significativo", en: "Significant", fr: "Significatif", es: "Significativo" },
+  "discomfort.level.7": { it: "Forte", en: "Strong", fr: "Fort", es: "Fuerte" },
+  "discomfort.level.8": { it: "Severo", en: "Severe", fr: "Sévère", es: "Severo" },
+  "discomfort.level.9": { it: "Molto severo", en: "Very severe", fr: "Très sévère", es: "Muy severo" },
+  "discomfort.level.10": { it: "Massimo", en: "Maximum", fr: "Maximum", es: "Máximo" },
+
+  "discomfort.option.continue": { it: "Continua come programmato", en: "Continue as planned", fr: "Continuer comme prévu", es: "Continuar como planeado" },
+  "discomfort.option.continue.desc": { it: "Procedi normalmente, monitoreremo", en: "Proceed normally, we'll monitor", fr: "Continuez normalement, nous surveillons", es: "Procede normalmente, monitorearemos" },
+  "discomfort.option.reduce": { it: "Riduci il carico", en: "Reduce load", fr: "Réduire la charge", es: "Reducir carga" },
+  "discomfort.option.reduce.desc": { it: "Carico ridotto per precauzione", en: "Reduced load as precaution", fr: "Charge réduite par précaution", es: "Carga reducida por precaución" },
+  "discomfort.option.switch": { it: "Prova un'alternativa", en: "Try an alternative", fr: "Essayer une alternative", es: "Probar una alternativa" },
+  "discomfort.option.switch.desc": { it: "Variante che carica questa zona diversamente", en: "Variation that loads this area differently", fr: "Variante qui charge cette zone différemment", es: "Variante que carga esta zona diferente" },
+  "discomfort.option.skip": { it: "Salta questo esercizio", en: "Skip this exercise", fr: "Passer cet exercice", es: "Saltar este ejercicio" },
+  "discomfort.option.skip.desc": { it: "Passa al prossimo esercizio", en: "Move to next exercise", fr: "Passer à l'exercice suivant", es: "Pasar al siguiente ejercicio" },
+
+  "discomfort.tolerable.info": { it: "Reminder: Un fastidio fino a 3-4/10 che non peggiora durante il set è generalmente accettabile. Se supera 5/10 o peggiora, fermati e segnalacelo.", en: "Reminder: Discomfort up to 3-4/10 that doesn't worsen during the set is generally acceptable. If it exceeds 5/10 or worsens, stop and let us know.", fr: "Rappel: Un inconfort jusqu'à 3-4/10 qui ne s'aggrave pas pendant la série est généralement acceptable. S'il dépasse 5/10 ou s'aggrave, arrêtez et signalez-le.", es: "Recordatorio: Una molestia hasta 3-4/10 que no empeora durante la serie es generalmente aceptable. Si supera 5/10 o empeora, para y avísanos." },
+  "discomfort.postset.question": { it: "Come è stato il fastidio durante il set?", en: "How did the discomfort feel during the set?", fr: "Comment était l'inconfort pendant la série?", es: "¿Cómo fue la molestia durante la serie?" },
+  "discomfort.postset.better": { it: "Meglio o uguale", en: "Better or same", fr: "Mieux ou pareil", es: "Mejor o igual" },
+  "discomfort.postset.worse": { it: "Leggermente peggio", en: "Slightly worse", fr: "Légèrement pire", es: "Ligeramente peor" },
+  "discomfort.postset.muchworse": { it: "Molto peggio", en: "Much worse", fr: "Beaucoup pire", es: "Mucho peor" },
+
+  "discomfort.professional.title": { it: "Consiglio Professionale", en: "Professional Advice", fr: "Conseil Professionnel", es: "Consejo Profesional" },
+  "discomfort.professional.message": { it: "Il fastidio persiste da più sessioni. Ti consigliamo di consultare un fisioterapista o un medico dello sport per una valutazione. Non è un allarme - è una precauzione sensata per problemi persistenti.", en: "Discomfort has persisted across multiple sessions. We recommend consulting a physiotherapist or sports medicine professional for an assessment. This isn't an alarm - it's a sensible precaution for persistent issues.", fr: "L'inconfort persiste depuis plusieurs séances. Nous recommandons de consulter un physiothérapeute ou un médecin du sport. Ce n'est pas une alarme - c'est une précaution sensée.", es: "La molestia persiste desde varias sesiones. Recomendamos consultar a un fisioterapeuta o médico deportivo. No es una alarma - es una precaución sensata." },
+
+  "discomfort.return.title": { it: "Tornato a Piena Capacità!", en: "Back to Full Capacity!", fr: "Retour à Pleine Capacité!", es: "¡De Vuelta a Plena Capacidad!" },
+  "discomfort.return.message": { it: "L'esercizio è tornato nel tuo programma senza restrizioni. Il tuo corpo si adatta!", en: "The exercise is back in your program without restrictions. Your body adapts!", fr: "L'exercice est de retour dans votre programme sans restrictions. Votre corps s'adapte!", es: "El ejercicio ha vuelto a tu programa sin restricciones. ¡Tu cuerpo se adapta!" },
+
+  // ============================================================================
+  // VIDEO FEEDBACK - Extended
+  // ============================================================================
+
+  "video.observation": { it: "Osservazione", en: "Observation", fr: "Observation", es: "Observación" },
+  "video.context": { it: "Contesto", en: "Context", fr: "Contexte", es: "Contexto" },
+  "video.suggestion": { it: "Suggerimento", en: "Suggestion", fr: "Suggestion", es: "Sugerencia" },
+  "video.question": { it: "Domanda per te", en: "Question for you", fr: "Question pour vous", es: "Pregunta para ti" },
+  "video.wantSuggestions": { it: "Sì, dammi suggerimenti", en: "Yes, show suggestions", fr: "Oui, montrez les suggestions", es: "Sí, muéstrame sugerencias" },
+  "video.noSuggestions": { it: "No, va bene così", en: "No, I'm fine", fr: "Non, ça va", es: "No, estoy bien" },
+  "video.noObservations": { it: "Movimento controllato. Non abbiamo osservazioni particolari da segnalare.", en: "Controlled movement. No particular observations to note.", fr: "Mouvement contrôlé. Pas d'observations particulières à noter.", es: "Movimiento controlado. No hay observaciones particulares que señalar." },
+
+  "video.severity.note": { it: "Nota", en: "Note", fr: "Note", es: "Nota" },
+  "video.severity.suggestion": { it: "Suggerimento", en: "Suggestion", fr: "Suggestion", es: "Sugerencia" },
+  "video.severity.attention": { it: "Da considerare", en: "Worth noting", fr: "À considérer", es: "A considerar" },
+  "video.severity.concern": { it: "Attenzione", en: "Attention", fr: "Attention", es: "Atención" },
+
+  "video.type.technique": { it: "Tecnica", en: "Technique", fr: "Technique", es: "Técnica" },
+  "video.type.efficiency": { it: "Efficienza", en: "Efficiency", fr: "Efficacité", es: "Eficiencia" },
+  "video.type.individual": { it: "Individuale", en: "Individual", fr: "Individuel", es: "Individual" },
+
+  // ============================================================================
+  // WORKOUT SESSION - Extended
+  // ============================================================================
+
+  "workout.rpe.question": { it: "Quanto è stato impegnativo questo set?", en: "How hard was this set?", fr: "Quelle était la difficulté de cette série?", es: "¿Qué tan difícil fue esta serie?" },
+  "workout.rir.question": { it: "Quante ripetizioni potevi ancora fare?", en: "How many reps could you still do?", fr: "Combien de répétitions pouviez-vous encore faire?", es: "¿Cuántas repeticiones podrías hacer aún?" },
+  "workout.completed": { it: "Hai completato il set?", en: "Did you complete the set?", fr: "Avez-vous complété la série?", es: "¿Completaste la serie?" },
+  "workout.reps.done": { it: "Quante ripetizioni hai fatto?", en: "How many reps did you do?", fr: "Combien de répétitions avez-vous fait?", es: "¿Cuántas repeticiones hiciste?" },
+  "workout.incomplete.reason": { it: "Perché non hai completato?", en: "Why didn't you complete?", fr: "Pourquoi n'avez-vous pas complété?", es: "¿Por qué no completaste?" },
+  "workout.reason.discomfort": { it: "Fastidio", en: "Discomfort", fr: "Inconfort", es: "Molestia" },
+  "workout.reason.fatigue": { it: "Fatica", en: "Fatigue", fr: "Fatigue", es: "Fatiga" },
+  "workout.reason.other": { it: "Altro", en: "Other", fr: "Autre", es: "Otro" },
+
+  "workout.autoregulation.reduce": { it: "Prossimo set: riduzione suggerita", en: "Next set: reduction suggested", fr: "Prochaine série: réduction suggérée", es: "Próxima serie: reducción sugerida" },
+  "workout.autoregulation.increase": { it: "Prossimo set: puoi aumentare", en: "Next set: you can increase", fr: "Prochaine série: vous pouvez augmenter", es: "Próxima serie: puedes aumentar" },
+  "workout.autoregulation.maintain": { it: "Perfetto, mantieni così", en: "Perfect, keep it up", fr: "Parfait, continuez ainsi", es: "Perfecto, sigue así" },
+
+  // ============================================================================
+  // QUIZ / ASSESSMENT - Extended
+  // ============================================================================
+
+  "quiz.deadlift.question": { it: "Durante lo stacco da terra, qual è la priorità per la schiena?", en: "During deadlift, what's the priority for your back?", fr: "Pendant le soulevé de terre, quelle est la priorité pour le dos?", es: "Durante el peso muerto, ¿cuál es la prioridad para la espalda?" },
+  "quiz.deadlift.option1": { it: "Mantenerla perfettamente dritta sempre", en: "Keep it perfectly straight always", fr: "La garder parfaitement droite toujours", es: "Mantenerla perfectamente recta siempre" },
+  "quiz.deadlift.option2": { it: "Mantenere il controllo senza perdite improvvise di posizione", en: "Maintain control without sudden losses of position", fr: "Maintenir le contrôle sans pertes soudaines de position", es: "Mantener control sin pérdidas repentinas de posición" },
+  "quiz.deadlift.option3": { it: "La posizione non è importante se il peso sale", en: "Position doesn't matter if the weight goes up", fr: "La position n'a pas d'importance si le poids monte", es: "La posición no importa si el peso sube" },
+  "quiz.deadlift.option4": { it: "Non so", en: "I don't know", fr: "Je ne sais pas", es: "No sé" },
+  "quiz.deadlift.explanation": { it: "La chiave non è una posizione 'perfetta', ma il CONTROLLO. Una certa flessione è normale, specialmente con carichi elevati. Quello che conta è che non ci siano perdite improvvise di posizione che indicano perdita di controllo.", en: "The key isn't a 'perfect' position, but CONTROL. Some flexion is normal, especially with heavy loads. What matters is that there are no sudden position losses indicating loss of control.", fr: "La clé n'est pas une position 'parfaite', mais le CONTRÔLE. Une certaine flexion est normale, surtout avec des charges lourdes.", es: "La clave no es una posición 'perfecta', sino el CONTROL. Cierta flexión es normal, especialmente con cargas pesadas." },
+
+  // ============================================================================
+  // GENERAL UI - Extended
+  // ============================================================================
+
+  "general.continue": { it: "Continua", en: "Continue", fr: "Continuer", es: "Continuar" },
+  "general.skip": { it: "Salta", en: "Skip", fr: "Passer", es: "Saltar" },
+  "general.back": { it: "Indietro", en: "Back", fr: "Retour", es: "Atrás" },
+  "general.next": { it: "Avanti", en: "Next", fr: "Suivant", es: "Siguiente" },
+  "general.done": { it: "Fatto", en: "Done", fr: "Terminé", es: "Hecho" },
+  "general.cancel": { it: "Annulla", en: "Cancel", fr: "Annuler", es: "Cancelar" },
+  "general.save": { it: "Salva", en: "Save", fr: "Enregistrer", es: "Guardar" },
+  "general.understood": { it: "Ho capito", en: "Got it", fr: "Compris", es: "Entendido" },
+
+  // ============================================================================
+  // EDUCATIONAL NOTES
+  // ============================================================================
+
+  "education.adaptation": { it: "Il tuo corpo si adatta ai carichi progressivi. Quello che oggi sembra difficile, domani sarà normale.", en: "Your body adapts to progressive loads. What seems difficult today will be normal tomorrow.", fr: "Votre corps s'adapte aux charges progressives. Ce qui semble difficile aujourd'hui sera normal demain.", es: "Tu cuerpo se adapta a cargas progresivas. Lo que hoy parece difícil, mañana será normal." },
+  "education.discomfort.mild": { it: "Un fastidio lieve (1-3/10) che non peggiora durante l'esercizio è normale e non è segno di danno.", en: "Mild discomfort (1-3/10) that doesn't worsen during exercise is normal and not a sign of damage.", fr: "Un inconfort léger (1-3/10) qui ne s'aggrave pas pendant l'exercice est normal.", es: "Una molestia leve (1-3/10) que no empeora durante el ejercicio es normal." },
+  "education.discomfort.moderate": { it: "Un fastidio moderato (4-5/10) è nella 'zona gialla'. Va bene allenarsi se non peggiora, ma ascolta il tuo corpo.", en: "Moderate discomfort (4-5/10) is in the 'yellow zone'. It's okay to train if it doesn't worsen, but listen to your body.", fr: "Un inconfort modéré (4-5/10) est dans la 'zone jaune'. C'est ok de s'entraîner s'il ne s'aggrave pas.", es: "Una molestia moderada (4-5/10) está en la 'zona amarilla'. Está bien entrenar si no empeora." },
+  "education.discomfort.significant": { it: "Un fastidio a 6/10 ti sta dicendo qualcosa. Allenarsi attraverso di esso occasionalmente va bene, ma un fastidio costante a questo livello merita attenzione.", en: "Discomfort at 6/10 is telling you something. Training through it occasionally is okay, but consistent discomfort at this level deserves attention.", fr: "Un inconfort à 6/10 vous dit quelque chose. S'entraîner à travers de temps en temps est ok, mais un inconfort constant mérite attention.", es: "Una molestia a 6/10 te está diciendo algo. Entrenar ocasionalmente está bien, pero molestia constante merece atención." },
+  "education.discomfort.severe": { it: "Un fastidio severo è il segnale chiaro del tuo corpo di fermarti. Riposare oggi è un investimento nel tuo progresso a lungo termine.", en: "Severe discomfort is your body's clear signal to stop. Rest today is an investment in your long-term progress.", fr: "Un inconfort sévère est le signal clair de votre corps de s'arrêter. Se reposer aujourd'hui est un investissement.", es: "Una molestia severa es la señal clara de tu cuerpo de parar. Descansar hoy es una inversión." },
+  "education.lumbar.flexion": { it: "La flessione lombare moderata è comune e spesso normale. Studi recenti non trovano correlazione con infortuni in soggetti allenati.", en: "Moderate lumbar flexion is common and often normal. Recent studies find no correlation with injuries in trained individuals.", fr: "La flexion lombaire modérée est courante et souvent normale. Des études récentes ne trouvent pas de corrélation avec les blessures.", es: "La flexión lumbar moderada es común y a menudo normal. Estudios recientes no encuentran correlación con lesiones." },
+  "education.individual.technique": { it: "Non esiste una tecnica 'perfetta' universale. La tecnica ottimale dipende dalle tue proporzioni, mobilità e obiettivi.", en: "There's no universal 'perfect' technique. Optimal technique depends on your proportions, mobility, and goals.", fr: "Il n'y a pas de technique 'parfaite' universelle. La technique optimale dépend de vos proportions, mobilité et objectifs.", es: "No existe una técnica 'perfecta' universal. La técnica óptima depende de tus proporciones, movilidad y objetivos." },
 };
 
 

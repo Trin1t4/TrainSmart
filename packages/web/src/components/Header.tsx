@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Zap, Menu } from "lucide-react";
-import LanguageToggle from "@/components/LanguageToggle";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Link } from "react-router-dom";
 
 export default function Header() {
@@ -27,7 +27,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <LanguageToggle />
+          <LanguageSwitcher />
           <Button 
             onClick={() => window.location.href = "/api/login"}
             data-testid="button-login"
