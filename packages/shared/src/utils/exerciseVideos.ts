@@ -61,6 +61,7 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   // === NORDIC CURL varianti ===
   'Nordic Curl': 'nordic-hamstring-curl.mp4',
   'Nordic Curl (solo eccentrica)': 'nordic-hamstring-curl.mp4',
+  'Nordic Curl (Solo Eccentrica)': 'nordic-hamstring-curl.mp4',
   'Nordic Curl (completo)': 'nordic-hamstring-curl.mp4',
   'Nordic Curl Negativo': 'nordic-hamstring-curl.mp4',
   'Nordic Hamstring Curl': 'nordic-hamstring-curl.mp4',
@@ -78,6 +79,7 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Trazioni alla Sbarra': 'standard-pull-up.mp4',
   'Trazioni Prone': 'standard-pull-up.mp4',
   'Trazioni Negative': 'standard-pull-up.mp4',
+  'Trazione Negativa (solo eccentrica)': 'standard-pull-up.mp4',
   'Chin-up': 'chin-up.mp4',
   'Chin-ups': 'chin-up.mp4',
   'Trazioni Supine': 'chin-up.mp4',
@@ -86,6 +88,7 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Assisted Pull-up': 'assisted-pull-up.mp4',
   'Trazioni Assistite': 'assisted-pull-up.mp4',
   'Trazioni con Elastico': 'assisted-pull-up.mp4',
+  'Trazione con Elastico': 'assisted-pull-up.mp4',
 
   // === PUSH-UP varianti ===
   'Push-up Standard': 'standard-push-up.mp4',
@@ -119,6 +122,11 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Push-up Mani Strette': 'diamond-push-up.mp4',
   'Close Grip Push-up': 'diamond-push-up.mp4',
   'Narrow Push-up': 'diamond-push-up.mp4',
+  // Wide push-up
+  'Wide Push-up': 'standard-push-up.mp4',
+  'Push-up Larghi': 'standard-push-up.mp4',
+  'Push-up Presa Larga': 'standard-push-up.mp4',
+  'Piegamenti Larghi': 'standard-push-up.mp4',
   // Wall push-up
   'Wall Push-up': 'wall-push-up.mp4',
   'Wall Push Up': 'wall-push-up.mp4',
@@ -148,6 +156,7 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Squat con Bilanciere': 'back-squat.mp4',
   'Bulgarian Split Squat': 'bulgarian-split-squat.mp4',
   'Split Squat Bulgaro': 'bulgarian-split-squat.mp4',
+  'Squat Bulgaro': 'bulgarian-split-squat.mp4',
   'Affondi Bulgari': 'bulgarian-split-squat.mp4',
   'Pistol Squat': 'pistol-squat.mp4',
   'Squat su una Gamba': 'pistol-squat.mp4',
@@ -156,6 +165,7 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Slider Leg Curl': 'slider-leg-curl.mp4',
   'Sliding Leg Curl': 'slider-leg-curl.mp4',
   'Leg Curl con Slider': 'slider-leg-curl.mp4',
+  'Leg Curl Scivolato': 'slider-leg-curl.mp4',
   'Leg Curl': 'leg-curl.mp4',
   'Leg Curl (Machine)': 'leg-curl.mp4',
   'Leg Curl Machine': 'leg-curl.mp4',
@@ -545,6 +555,8 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'L-Sit': 'l-sit.mp4',
   'L Sit': 'l-sit.mp4',
   'Tenuta a L': 'l-sit.mp4',
+  'L-sit Raccolto': 'l-sit.mp4',
+  'Tuck L-Sit': 'l-sit.mp4',
   'Lying Leg Raise': 'lying-leg-raise.mp4',
   'Alzate Gambe Supino': 'lying-leg-raise.mp4',
   'Alzate Gambe a Terra': 'lying-leg-raise.mp4',
@@ -559,6 +571,16 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   // === VERTICAL PUSH ===
   'Verticale al Muro Push-up': 'wall-handstand-push-up.mp4',
   'HSPU al Muro': 'wall-handstand-push-up.mp4',
+  'Camminata al Muro': 'wall-handstand-push-up.mp4',
+  'Wall Walk': 'wall-handstand-push-up.mp4',
+
+  // === FLOOR PULL (Bodyweight rowing alternatives) ===
+  'Floor Pull': 'band-rows.mp4',
+  'Floor Pull (asciugamano)': 'band-rows.mp4',
+  'Floor Pull con Asciugamano': 'band-rows.mp4',
+  'Prone Row': 'band-rows.mp4',
+  'Superman Row': 'band-rows.mp4',
+  'Remata a Terra': 'band-rows.mp4',
 
   // === ADDITIONAL EXERCISES ===
   // Back Extension

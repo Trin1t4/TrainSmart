@@ -22,6 +22,7 @@ import {
 } from './exerciseVariants';
 import { adaptExercisesForLocation } from './locationAdapter';
 import { getUpgradedExercise } from './exerciseProgression';
+import { isBodyweightExercise } from './exerciseProgressionEngine';
 
 /**
  * Mapping nomi esercizi inglese -> italiano
@@ -384,6 +385,21 @@ function enrichExercisesWithWeights(
       return exercise;
     }
 
+    // ⚡ BODYWEIGHT CHECK: Non assegnare kg a esercizi a corpo libero
+    // Per questi usiamo RPE/TUT invece di pesi
+    if (isBodyweightExercise(exercise.name)) {
+      // Aggiungi solo nota TUT per esercizi bodyweight
+      const targetReps = typeof exercise.reps === 'number' ? exercise.reps : 10;
+      const tutSeconds = targetReps * 4; // ~4s per rep (2s ecc + 2s con)
+      console.log(`  🏋️ ${exercise.name}: bodyweight (TUT: ~${tutSeconds}s per set)`);
+      return {
+        ...exercise,
+        notes: exercise.notes
+          ? `${exercise.notes} | TUT: ${tutSeconds}s/set`
+          : `TUT: ${tutSeconds}s/set`
+      };
+    }
+
     // Prova a trovare il pattern dall'esercizio
     let pattern = exercise.pattern as string | undefined;
     if (!pattern || pattern === 'corrective') {
@@ -690,9 +706,30 @@ function getWorkType(reps: number | string): WorkType {
  * RESISTENZA (13+ rep): Riscaldamento leggero
  * - 1x8 @ 50%
  */
-function createWarmupSets(zone: MuscleZone, targetReps: number | string = 10): WarmupSet {
+function createWarmupSets(zone: MuscleZone, targetReps: number | string = 10, isBodyweight = false): WarmupSet {
   const workType = getWorkType(targetReps);
   const zoneLabel = zone === 'upper' ? 'parte alta' : 'parte bassa';
+
+  // ⚡ BODYWEIGHT: Usa RPE/intensità invece di percentuali peso
+  if (isBodyweight) {
+    if (workType === 'strength') {
+      // Per forza bodyweight: varianti più facili come warmup
+      return {
+        sets: 2,
+        reps: 5,
+        percentage: 0, // Non usato per bodyweight
+        note: `Riscaldamento ${zoneLabel}: 2x5 variante facile`
+      };
+    }
+
+    // Ipertrofia/Resistenza bodyweight: meno reps con controllo
+    return {
+      sets: 1,
+      reps: 6,
+      percentage: 0, // Non usato per bodyweight
+      note: `Attivazione ${zoneLabel}: 1x6 controllato`
+    };
+  }
 
   if (workType === 'strength') {
     // FORZA: Rampa progressiva (fondamentale per carichi pesanti)
@@ -751,6 +788,7 @@ const GOALS_WITHOUT_AUTO_WARMUP = [
  * - Adatta lo schema di warmup al tipo di lavoro (forza/ipertrofia/resistenza)
  * - Core/correttivi non ricevono warmup con pesi
  * - Goal speciali (prenatal, postnatal, motor_recovery, disability) non ricevono warmup automatico
+ * - Esercizi bodyweight: warmup senza percentuali peso
  */
 function applyWarmupToExercises(exercises: Exercise[], goal?: Goal): Exercise[] {
   // Skip warmup per goal che richiedono valutazione speciale
@@ -777,11 +815,16 @@ function applyWarmupToExercises(exercises: Exercise[], goal?: Goal): Exercise[] 
     // Prima volta che incontriamo questa zona -> aggiungi warmup
     warmedUpZones.add(zone);
 
+    // Determina se esercizio è bodyweight
+    const isBW = isBodyweightExercise(exercise.name);
+
     // Crea warmup basato sulle ripetizioni target dell'esercizio
-    const warmup = createWarmupSets(zone, exercise.reps);
+    const warmup = createWarmupSets(zone, exercise.reps, isBW);
     const workType = getWorkType(exercise.reps);
 
-    if (workType === 'strength') {
+    if (isBW) {
+      console.log(`🔥 Warmup bodyweight ${zone}: ${exercise.name} (${warmup.note})`);
+    } else if (workType === 'strength') {
       console.log(`🔥 Warmup FORZA ${zone}: ${exercise.name} (rampa: 8@40%, 5@55%, 3@70%, 1@85%)`);
     } else if (workType === 'hypertrophy') {
       console.log(`🔥 Warmup ${zone}: ${exercise.name} (2x6 @ 60%)`);
