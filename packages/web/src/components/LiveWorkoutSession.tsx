@@ -3644,7 +3644,10 @@ export default function LiveWorkoutSession({
                   setCurrentRIR(targetRIR);
                   setCurrentRPE(10 - targetRIR);
                   setShowRIRConfirm(false);
-                  handleSetComplete();
+                  // FIX: Use handleRIRValidationAndComplete instead of handleSetComplete
+                  // to avoid double timer start (handleSetComplete sets showRPEInput=true
+                  // which then triggers handleRIRValidationAndComplete again)
+                  handleRIRValidationAndComplete();
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
