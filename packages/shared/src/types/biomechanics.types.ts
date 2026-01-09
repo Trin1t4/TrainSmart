@@ -383,3 +383,38 @@ export interface AdaptFlowIntegration {
     reason: string;
   }[];
 }
+
+// ============================================
+// ANALISI ASIMMETRIE (VISTA 45° LATERO-POST.)
+// ============================================
+
+export type AsymmetryType = 'DEPTH' | 'KNEE_ANGLE' | 'HIP_ANGLE' | 'TORSO_ROTATION' | 'WEIGHT_SHIFT';
+export type ScapularIssue = 'PROTRACTED' | 'ELEVATED' | 'ASYMMETRIC' | 'WINGING';
+
+export interface AsymmetryAnalysis {
+  hasAsymmetry: boolean;
+  type?: AsymmetryType;
+  weakerSide?: 'LEFT' | 'RIGHT';
+  delta: number;
+  severity: IssueSeverity;
+  description?: string;
+}
+
+export interface ScapularAnalysis {
+  isOptimal: boolean;
+  issue?: ScapularIssue;
+  severity: IssueSeverity;
+  description?: string;
+  correction?: string;
+}
+
+export interface LateroPosteriorAnalysis {
+  depthAsymmetry: AsymmetryAnalysis;
+  kneeAsymmetry: AsymmetryAnalysis;
+  torsoRotation: AsymmetryAnalysis;
+  weightShift: AsymmetryAnalysis;
+  scapularPosition: ScapularAnalysis;
+  overallSymmetryScore: number;  // 0-10
+  issues: string[];
+  recommendations: string[];
+}

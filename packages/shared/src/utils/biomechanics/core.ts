@@ -550,3 +550,316 @@ export function areHeelsDown(landmarks: PoseLandmarks): boolean {
 
   return !leftHeelHigher && !rightHeelHigher;
 }
+
+// ============================================
+// ANALISI VISTA LATERO-POSTERIORE (45°)
+// Controlli specifici per errori visibili solo
+// dalla vista a 45° posteriore-laterale
+// ============================================
+
+/**
+ * Risultato dell'analisi di asimmetria bilaterale
+ */
+export interface BilateralAsymmetryResult {
+  hasAsymmetry: boolean;
+  asymmetryType?: 'DEPTH' | 'KNEE_ANGLE' | 'HIP_ANGLE' | 'TORSO_ROTATION' | 'WEIGHT_SHIFT';
+  weakerSide?: 'LEFT' | 'RIGHT';
+  delta: number;  // Differenza percentuale o in gradi
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  description?: string;
+}
+
+/**
+ * Rileva asimmetria nella profondità del movimento (un lato scende più dell'altro)
+ * Visibile dalla vista 45° latero-posteriore
+ */
+export function detectDepthAsymmetry(landmarks: PoseLandmarks): BilateralAsymmetryResult {
+  // Confronta la posizione Y delle anche
+  const leftHipY = landmarks.left_hip.y;
+  const rightHipY = landmarks.right_hip.y;
+
+  // Confronta la posizione Y delle ginocchia
+  const leftKneeY = landmarks.left_knee.y;
+  const rightKneeY = landmarks.right_knee.y;
+
+  // Delta nelle anche (normalizzato)
+  const hipDelta = Math.abs(leftHipY - rightHipY);
+
+  // Delta nelle ginocchia
+  const kneeDelta = Math.abs(leftKneeY - rightKneeY);
+
+  // Combinato: se un lato è significativamente più basso
+  const totalDelta = (hipDelta + kneeDelta) / 2;
+
+  // Soglie: > 0.02 = lieve, > 0.04 = medio, > 0.06 = severo
+  if (totalDelta < 0.02) {
+    return { hasAsymmetry: false, delta: totalDelta * 100, severity: 'LOW' };
+  }
+
+  const weakerSide = leftHipY > rightHipY ? 'LEFT' : 'RIGHT';
+  const severity: 'LOW' | 'MEDIUM' | 'HIGH' =
+    totalDelta > 0.06 ? 'HIGH' : totalDelta > 0.04 ? 'MEDIUM' : 'LOW';
+
+  return {
+    hasAsymmetry: true,
+    asymmetryType: 'DEPTH',
+    weakerSide,
+    delta: totalDelta * 100,
+    severity,
+    description: `Lato ${weakerSide === 'LEFT' ? 'sinistro' : 'destro'} scende meno in profondità`
+  };
+}
+
+/**
+ * Rileva asimmetria negli angoli del ginocchio (valgismo/varismo asimmetrico)
+ * Fondamentale dalla vista 45° per vedere entrambe le ginocchia
+ */
+export function detectKneeAsymmetry(landmarks: PoseLandmarks): BilateralAsymmetryResult {
+  const leftKneeAngle = calculateAngle(
+    landmarks.left_hip,
+    landmarks.left_knee,
+    landmarks.left_ankle
+  );
+
+  const rightKneeAngle = calculateAngle(
+    landmarks.right_hip,
+    landmarks.right_knee,
+    landmarks.right_ankle
+  );
+
+  const angleDelta = Math.abs(leftKneeAngle - rightKneeAngle);
+
+  // Soglie: > 5° = lieve, > 10° = medio, > 15° = severo
+  if (angleDelta < 5) {
+    return { hasAsymmetry: false, delta: angleDelta, severity: 'LOW' };
+  }
+
+  // Il lato con angolo maggiore è più "esteso" quindi potenzialmente più debole
+  const weakerSide = leftKneeAngle > rightKneeAngle ? 'LEFT' : 'RIGHT';
+  const severity: 'LOW' | 'MEDIUM' | 'HIGH' =
+    angleDelta > 15 ? 'HIGH' : angleDelta > 10 ? 'MEDIUM' : 'LOW';
+
+  return {
+    hasAsymmetry: true,
+    asymmetryType: 'KNEE_ANGLE',
+    weakerSide,
+    delta: angleDelta,
+    severity,
+    description: `Ginocchio ${weakerSide === 'LEFT' ? 'sinistro' : 'destro'} con ${angleDelta.toFixed(1)}° di differenza`
+  };
+}
+
+/**
+ * Rileva rotazione del tronco durante il movimento
+ * Solo visibile dalla vista 45° (le spalle ruotano rispetto alle anche)
+ */
+export function detectTorsoRotation(landmarks: PoseLandmarks): BilateralAsymmetryResult {
+  // Calcola l'angolo delle spalle rispetto all'orizzontale
+  const shoulderAngle = Math.atan2(
+    landmarks.right_shoulder.y - landmarks.left_shoulder.y,
+    landmarks.right_shoulder.x - landmarks.left_shoulder.x
+  );
+
+  // Calcola l'angolo delle anche rispetto all'orizzontale
+  const hipAngle = Math.atan2(
+    landmarks.right_hip.y - landmarks.left_hip.y,
+    landmarks.right_hip.x - landmarks.left_hip.x
+  );
+
+  // La differenza indica rotazione del tronco
+  const rotationDelta = toDegrees(Math.abs(shoulderAngle - hipAngle));
+
+  // Soglie: > 5° = lieve, > 10° = medio, > 15° = severo
+  if (rotationDelta < 5) {
+    return { hasAsymmetry: false, delta: rotationDelta, severity: 'LOW' };
+  }
+
+  // Determina la direzione della rotazione
+  const rotatingToward = shoulderAngle > hipAngle ? 'LEFT' : 'RIGHT';
+  const severity: 'LOW' | 'MEDIUM' | 'HIGH' =
+    rotationDelta > 15 ? 'HIGH' : rotationDelta > 10 ? 'MEDIUM' : 'LOW';
+
+  return {
+    hasAsymmetry: true,
+    asymmetryType: 'TORSO_ROTATION',
+    weakerSide: rotatingToward,
+    delta: rotationDelta,
+    severity,
+    description: `Tronco ruota di ${rotationDelta.toFixed(1)}° verso ${rotatingToward === 'LEFT' ? 'sinistra' : 'destra'}`
+  };
+}
+
+/**
+ * Rileva shift laterale del peso (centro di massa spostato su un lato)
+ * Cruciale dalla vista 45° per vedere lo sbilanciamento
+ */
+export function detectLateralWeightShift(landmarks: PoseLandmarks): BilateralAsymmetryResult {
+  // Calcola il centro di massa approssimato (baricentro tra spalle e anche)
+  const shoulderMid = midpoint(landmarks.left_shoulder, landmarks.right_shoulder);
+  const hipMid = midpoint(landmarks.left_hip, landmarks.right_hip);
+  const centerOfMass = midpoint(shoulderMid, hipMid);
+
+  // Calcola il punto medio tra le caviglie (base di appoggio)
+  const ankleMid = midpoint(landmarks.left_ankle, landmarks.right_ankle);
+
+  // Lo shift laterale è la differenza X tra centro di massa e base
+  const lateralShift = centerOfMass.x - ankleMid.x;
+
+  // Normalizza rispetto alla larghezza delle anche
+  const hipWidth = distance2D(landmarks.left_hip, landmarks.right_hip);
+  const normalizedShift = Math.abs(lateralShift) / hipWidth;
+
+  // Soglie: > 0.1 = lieve, > 0.2 = medio, > 0.3 = severo
+  if (normalizedShift < 0.1) {
+    return { hasAsymmetry: false, delta: normalizedShift * 100, severity: 'LOW' };
+  }
+
+  const shiftDirection = lateralShift > 0 ? 'RIGHT' : 'LEFT';
+  const severity: 'LOW' | 'MEDIUM' | 'HIGH' =
+    normalizedShift > 0.3 ? 'HIGH' : normalizedShift > 0.2 ? 'MEDIUM' : 'LOW';
+
+  return {
+    hasAsymmetry: true,
+    asymmetryType: 'WEIGHT_SHIFT',
+    weakerSide: shiftDirection === 'LEFT' ? 'RIGHT' : 'LEFT', // Il lato opposto allo shift è il più debole
+    delta: normalizedShift * 100,
+    severity,
+    description: `Peso spostato verso ${shiftDirection === 'LEFT' ? 'sinistra' : 'destra'} del ${(normalizedShift * 100).toFixed(1)}%`
+  };
+}
+
+/**
+ * Rileva problemi di posizione delle scapole/upper back
+ * Visibile dalla vista 45° posteriore
+ */
+export interface ScapularPositionResult {
+  isOptimal: boolean;
+  issue?: 'PROTRACTED' | 'ELEVATED' | 'ASYMMETRIC' | 'WINGING';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  description?: string;
+  correction?: string;
+}
+
+export function detectScapularPosition(landmarks: PoseLandmarks): ScapularPositionResult {
+  // Distanza tra le spalle (indica protrazione/retrazione)
+  const shoulderWidth = distance2D(landmarks.left_shoulder, landmarks.right_shoulder);
+
+  // Distanza tra le anche per normalizzare
+  const hipWidth = distance2D(landmarks.left_hip, landmarks.right_hip);
+
+  // Rapporto spalle/anche (normalmente ~1.2-1.4)
+  const shoulderToHipRatio = shoulderWidth / hipWidth;
+
+  // Elevazione delle spalle (differenza Y rispetto alle orecchie)
+  const leftElevation = landmarks.left_ear.y - landmarks.left_shoulder.y;
+  const rightElevation = landmarks.right_ear.y - landmarks.right_shoulder.y;
+  const avgElevation = (leftElevation + rightElevation) / 2;
+  const elevationAsymmetry = Math.abs(leftElevation - rightElevation);
+
+  // Controlla protrazione (spalle troppo strette/in avanti)
+  if (shoulderToHipRatio < 1.1) {
+    return {
+      isOptimal: false,
+      issue: 'PROTRACTED',
+      severity: shoulderToHipRatio < 1.0 ? 'HIGH' : 'MEDIUM',
+      description: 'Scapole protratte - spalle in avanti',
+      correction: 'Retrarre le scapole, "petto fuori". Lavoro su romboidi e trapezio medio.'
+    };
+  }
+
+  // Controlla elevazione eccessiva (spalle alle orecchie)
+  if (avgElevation < 0.08) {  // Spalle troppo vicine alle orecchie
+    return {
+      isOptimal: false,
+      issue: 'ELEVATED',
+      severity: avgElevation < 0.05 ? 'HIGH' : 'MEDIUM',
+      description: 'Spalle elevate - tensione nel trapezio superiore',
+      correction: 'Abbassa le spalle, "spalle lontane dalle orecchie". Rilassa il trapezio superiore.'
+    };
+  }
+
+  // Controlla asimmetria nell'elevazione
+  if (elevationAsymmetry > 0.03) {
+    return {
+      isOptimal: false,
+      issue: 'ASYMMETRIC',
+      severity: elevationAsymmetry > 0.05 ? 'HIGH' : 'MEDIUM',
+      description: `Spalla ${leftElevation < rightElevation ? 'sinistra' : 'destra'} più elevata`,
+      correction: 'Possibile squilibrio muscolare. Valutare mobilità e forza unilaterale.'
+    };
+  }
+
+  return {
+    isOptimal: true,
+    severity: 'LOW'
+  };
+}
+
+/**
+ * Analisi completa delle asimmetrie dalla vista 45°
+ */
+export interface FullAsymmetryAnalysis {
+  depth: BilateralAsymmetryResult;
+  knee: BilateralAsymmetryResult;
+  torsoRotation: BilateralAsymmetryResult;
+  weightShift: BilateralAsymmetryResult;
+  scapular: ScapularPositionResult;
+  overallAsymmetryScore: number; // 0-10, dove 10 = perfetta simmetria
+  primaryIssues: string[];
+  recommendations: string[];
+}
+
+export function analyzeFullAsymmetry(landmarks: PoseLandmarks): FullAsymmetryAnalysis {
+  const depth = detectDepthAsymmetry(landmarks);
+  const knee = detectKneeAsymmetry(landmarks);
+  const torsoRotation = detectTorsoRotation(landmarks);
+  const weightShift = detectLateralWeightShift(landmarks);
+  const scapular = detectScapularPosition(landmarks);
+
+  // Calcola score complessivo
+  let score = 10;
+  const primaryIssues: string[] = [];
+  const recommendations: string[] = [];
+
+  // Penalità per asimmetrie
+  if (depth.hasAsymmetry) {
+    score -= depth.severity === 'HIGH' ? 2 : depth.severity === 'MEDIUM' ? 1 : 0.5;
+    if (depth.description) primaryIssues.push(depth.description);
+    recommendations.push('Lavoro unilaterale: Bulgarian split squat, single leg press');
+  }
+
+  if (knee.hasAsymmetry) {
+    score -= knee.severity === 'HIGH' ? 1.5 : knee.severity === 'MEDIUM' ? 1 : 0.5;
+    if (knee.description) primaryIssues.push(knee.description);
+    recommendations.push('Rinforzo glutei unilaterale: clamshell, single leg glute bridge');
+  }
+
+  if (torsoRotation.hasAsymmetry) {
+    score -= torsoRotation.severity === 'HIGH' ? 1.5 : torsoRotation.severity === 'MEDIUM' ? 1 : 0.5;
+    if (torsoRotation.description) primaryIssues.push(torsoRotation.description);
+    recommendations.push('Core anti-rotazione: Pallof press, plank con reach');
+  }
+
+  if (weightShift.hasAsymmetry) {
+    score -= weightShift.severity === 'HIGH' ? 2 : weightShift.severity === 'MEDIUM' ? 1.5 : 0.5;
+    if (weightShift.description) primaryIssues.push(weightShift.description);
+    recommendations.push('Consapevolezza distribuzione peso: esercizi a specchio, feedback tattile');
+  }
+
+  if (!scapular.isOptimal) {
+    score -= scapular.severity === 'HIGH' ? 1 : scapular.severity === 'MEDIUM' ? 0.5 : 0.25;
+    if (scapular.description) primaryIssues.push(scapular.description);
+    if (scapular.correction) recommendations.push(scapular.correction);
+  }
+
+  return {
+    depth,
+    knee,
+    torsoRotation,
+    weightShift,
+    scapular,
+    overallAsymmetryScore: Math.max(0, Math.min(10, score)),
+    primaryIssues,
+    recommendations: [...new Set(recommendations)]
+  };
+}

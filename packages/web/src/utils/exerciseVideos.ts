@@ -3,8 +3,8 @@
  * Mappa ogni esercizio al suo video locale in /videos/exercises/
  */
 
-// Path base per i video locali
-const VIDEO_BASE_PATH = '/videos/exercises';
+// Path base per i video su Supabase Storage
+const VIDEO_BASE_PATH = 'https://mhcdxqhhlrujbjxtgnmz.supabase.co/storage/v1/object/public/exercise-videos';
 
 /**
  * Converte nome esercizio in nome file video
@@ -575,11 +575,11 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Wall Walk': 'wall-handstand-push-up.mp4',
 
   // === FLOOR PULL (Bodyweight rowing alternatives) ===
-  'Floor Pull': 'band-rows.mp4',
-  'Floor Pull (asciugamano)': 'band-rows.mp4',
-  'Floor Pull con Asciugamano': 'band-rows.mp4',
-  'Prone Row': 'band-rows.mp4',
-  'Superman Row': 'band-rows.mp4',
+  'Floor Pull': 'floor-pull.mp4',
+  'Floor Pull (asciugamano)': 'floor-pull.mp4',
+  'Floor Pull con Asciugamano': 'floor-pull.mp4',
+  'Prone Row': 'floor-pull.mp4',
+  'Superman Row': 'floor-pull.mp4',
   'Remata a Terra': 'band-rows.mp4',
 
   // === ADDITIONAL EXERCISES ===
@@ -836,6 +836,11 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Neutral Grip Lat Pulldown': 'lat-pulldown.mp4',
   'Supinated Lat Pulldown': 'lat-pulldown.mp4',
   'Wide Grip Lat Pulldown': 'lat-pulldown.mp4',
+
+  // Cable Pulldown
+  'Cable Pulldown': 'cable-pulldown.mp4',
+  'Pulldown ai Cavi': 'cable-pulldown.mp4',
+  'Cable Lat Pulldown': 'cable-pulldown.mp4',
 
   // Shoulder Press varianti
   'Dumbbell Push Press': 'dumbbell-shoulder-press.mp4',

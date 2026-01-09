@@ -22,7 +22,15 @@ import {
   midpoint,
   distance2D,
   angleFromVertical,
-  isSpineNeutral
+  isSpineNeutral,
+  // Nuove funzioni per vista 45° latero-posteriore
+  detectDepthAsymmetry,
+  detectKneeAsymmetry,
+  detectTorsoRotation,
+  detectLateralWeightShift,
+  detectScapularPosition,
+  analyzeFullAsymmetry,
+  type FullAsymmetryAnalysis
 } from '../core';
 
 // ============================================
@@ -194,6 +202,57 @@ export const DEADLIFT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
 
       return maxDeviation > 0.08; // 8% della larghezza frame
     }
+  }
+];
+
+// ============================================
+// CONTROLLI VISTA 45° LATERO-POSTERIORE
+// Errori visibili solo dalla ripresa a 45°
+// ============================================
+
+export interface DeadliftLateroPosteriorCheck {
+  code: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  description: string;
+  correction: string;
+  checkAsymmetry: (asymmetry: FullAsymmetryAnalysis) => boolean;
+}
+
+export const DEADLIFT_LATERO_POSTERIOR_CHECKS: DeadliftLateroPosteriorCheck[] = [
+  {
+    code: 'HIP_SHIFT',
+    severity: 'HIGH',
+    description: 'Anche che si spostano lateralmente durante il pull',
+    correction: 'Attiva i glutei simmetricamente. Lavoro unilaterale: single leg RDL, hip thrust unilaterale.',
+    checkAsymmetry: (asymmetry) => asymmetry.weightShift.hasAsymmetry && asymmetry.weightShift.severity !== 'LOW'
+  },
+  {
+    code: 'TORSO_ROTATION_DEADLIFT',
+    severity: 'HIGH',
+    description: 'Rotazione del tronco durante lo stacco - una spalla sale prima dell\'altra',
+    correction: 'Mantieni le spalle allineate. Un lato è più forte: lavora sul lato debole con esercizi unilaterali.',
+    checkAsymmetry: (asymmetry) => asymmetry.torsoRotation.hasAsymmetry && asymmetry.torsoRotation.severity !== 'LOW'
+  },
+  {
+    code: 'KNEE_EXTENSION_ASYMMETRY',
+    severity: 'MEDIUM',
+    description: 'Le ginocchia si estendono a velocità diversa',
+    correction: 'Possibile squilibrio quadricipiti. Single leg press, leg extension unilaterale.',
+    checkAsymmetry: (asymmetry) => asymmetry.knee.hasAsymmetry && asymmetry.knee.severity !== 'LOW'
+  },
+  {
+    code: 'UPPER_BACK_ROUNDING_ASYMMETRIC',
+    severity: 'MEDIUM',
+    description: 'Upper back che cede in modo asimmetrico - una scapola più protratta',
+    correction: 'Rinforza il lato debole: single arm row, face pull unilaterale. Verifica presa.',
+    checkAsymmetry: (asymmetry) => !asymmetry.scapular.isOptimal && asymmetry.scapular.issue === 'ASYMMETRIC'
+  },
+  {
+    code: 'SCAPULAR_PROTRACTION_DEADLIFT',
+    severity: 'MEDIUM',
+    description: 'Scapole protratte - upper back che cede sotto carico',
+    correction: '"Metti le scapole nelle tasche posteriori". Lavoro su upper back: row, face pull.',
+    checkAsymmetry: (asymmetry) => !asymmetry.scapular.isOptimal && asymmetry.scapular.issue === 'PROTRACTED'
   }
 ];
 
@@ -453,6 +512,35 @@ export function generateDeadliftRecommendations(
       case 'HYPEREXTENSION_LOCKOUT':
         immediate.push('In cima: glutei stretti, non spingere le anche avanti');
         immediate.push('Pensa "tall posture", non "lean back"');
+        break;
+
+      // Nuovi controlli vista 45° latero-posteriore
+      case 'HIP_SHIFT':
+        immediate.push('Attiva i glutei simmetricamente prima di iniziare il pull');
+        immediate.push('Concentrati su spingere il pavimento con entrambi i piedi');
+        accessories.push('Single leg RDL 3x8 per lato', 'Hip thrust unilaterale 3x10');
+        break;
+
+      case 'TORSO_ROTATION_DEADLIFT':
+        immediate.push('Mantieni le spalle allineate - salgono insieme');
+        immediate.push('Verifica che la presa sia simmetrica');
+        accessories.push('Single arm row 3x10 lato debole', 'Pallof press 3x12');
+        break;
+
+      case 'KNEE_EXTENSION_ASYMMETRY':
+        immediate.push('Le ginocchia devono estendersi insieme');
+        accessories.push('Single leg press 3x10', 'Leg extension unilaterale');
+        break;
+
+      case 'UPPER_BACK_ROUNDING_ASYMMETRIC':
+        immediate.push('Retrarre le scapole prima di tirare');
+        accessories.push('Single arm row lato debole 3x12', 'Face pull unilaterale');
+        break;
+
+      case 'SCAPULAR_PROTRACTION_DEADLIFT':
+        immediate.push('"Metti le scapole nelle tasche posteriori"');
+        immediate.push('Upper back attivo prima di staccare dal pavimento');
+        accessories.push('Barbell row 3x10', 'Face pull 3x15', 'Shrug con hold');
         break;
     }
   }

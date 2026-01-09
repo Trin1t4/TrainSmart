@@ -24,7 +24,17 @@ import {
   areHeelsDown,
   midpoint,
   distance2D,
-  angleFromVertical
+  angleFromVertical,
+  // Nuove funzioni per vista 45° latero-posteriore
+  detectDepthAsymmetry,
+  detectKneeAsymmetry,
+  detectTorsoRotation,
+  detectLateralWeightShift,
+  detectScapularPosition,
+  analyzeFullAsymmetry,
+  type BilateralAsymmetryResult,
+  type ScapularPositionResult,
+  type FullAsymmetryAnalysis
 } from '../core';
 
 // ============================================
@@ -168,6 +178,71 @@ export const SQUAT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
 ];
 
 // ============================================
+// CONTROLLI VISTA 45° LATERO-POSTERIORE
+// Errori visibili solo dalla ripresa a 45°
+// ============================================
+
+export interface LateroPosteriorCheck {
+  code: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  description: string;
+  correction: string;
+  checkAsymmetry: (asymmetry: FullAsymmetryAnalysis) => boolean;
+}
+
+export const SQUAT_LATERO_POSTERIOR_CHECKS: LateroPosteriorCheck[] = [
+  {
+    code: 'DEPTH_ASYMMETRY',
+    severity: 'MEDIUM',
+    description: 'Un lato scende meno in profondità dell\'altro',
+    correction: 'Lavoro unilaterale: Bulgarian split squat, pistol squat assistito. Verifica mobilità anca.',
+    checkAsymmetry: (asymmetry) => asymmetry.depth.hasAsymmetry && asymmetry.depth.severity !== 'LOW'
+  },
+  {
+    code: 'KNEE_ANGLE_ASYMMETRY',
+    severity: 'MEDIUM',
+    description: 'Differenza significativa nell\'angolo delle ginocchia',
+    correction: 'Possibile squilibrio di forza quadricipiti. Single leg press, step-up unilaterali.',
+    checkAsymmetry: (asymmetry) => asymmetry.knee.hasAsymmetry && asymmetry.knee.severity !== 'LOW'
+  },
+  {
+    code: 'TORSO_ROTATION',
+    severity: 'HIGH',
+    description: 'Rotazione del tronco durante lo squat',
+    correction: 'Core anti-rotazione debole. Pallof press, bird-dog, dead bug. Verifica anche mobilità toracica.',
+    checkAsymmetry: (asymmetry) => asymmetry.torsoRotation.hasAsymmetry && asymmetry.torsoRotation.severity !== 'LOW'
+  },
+  {
+    code: 'WEIGHT_SHIFT_LATERAL',
+    severity: 'HIGH',
+    description: 'Peso spostato su un lato - squilibrio nella distribuzione del carico',
+    correction: 'Allenati davanti a uno specchio. Usa feedback tattile (mani sulle anche). Lavoro unilaterale.',
+    checkAsymmetry: (asymmetry) => asymmetry.weightShift.hasAsymmetry && asymmetry.weightShift.severity !== 'LOW'
+  },
+  {
+    code: 'SCAPULAR_PROTRACTION',
+    severity: 'MEDIUM',
+    description: 'Scapole protratte - spalle in avanti, upper back debole',
+    correction: 'Retrarre scapole prima di ogni rep. Lavoro su romboidi: face pull, band pull-apart.',
+    checkAsymmetry: (asymmetry) => !asymmetry.scapular.isOptimal && asymmetry.scapular.issue === 'PROTRACTED'
+  },
+  {
+    code: 'SHOULDERS_ELEVATED',
+    severity: 'LOW',
+    description: 'Spalle elevate - tensione nel trapezio superiore',
+    correction: 'Rilassa le spalle prima di iniziare. "Spalle lontane dalle orecchie".',
+    checkAsymmetry: (asymmetry) => !asymmetry.scapular.isOptimal && asymmetry.scapular.issue === 'ELEVATED'
+  },
+  {
+    code: 'SHOULDER_ASYMMETRY',
+    severity: 'MEDIUM',
+    description: 'Asimmetria nell\'altezza delle spalle',
+    correction: 'Verifica posizione del bilanciere. Possibile squilibrio muscolare da correggere.',
+    checkAsymmetry: (asymmetry) => !asymmetry.scapular.isOptimal && asymmetry.scapular.issue === 'ASYMMETRIC'
+  }
+];
+
+// ============================================
 // ANALISI FRAME SQUAT
 // ============================================
 
@@ -241,6 +316,35 @@ export function analyzeSquatFrame(
   }
 
   return frameAnalysis;
+}
+
+/**
+ * Analizza un singolo frame per asimmetrie (vista 45° latero-posteriore)
+ */
+export function analyzeSquatFrameAsymmetry(
+  landmarks: PoseLandmarks,
+  frameNumber: number,
+  timestamp: number
+): { asymmetryAnalysis: FullAsymmetryAnalysis; issues: Issue[] } {
+  const asymmetryAnalysis = analyzeFullAsymmetry(landmarks);
+  const issues: Issue[] = [];
+
+  // Controlla ogni tipo di asimmetria dalla vista 45°
+  for (const check of SQUAT_LATERO_POSTERIOR_CHECKS) {
+    if (check.checkAsymmetry(asymmetryAnalysis)) {
+      issues.push({
+        type: 'EFFICIENCY',
+        code: check.code,
+        severity: check.severity,
+        timestamp,
+        frameNumber,
+        description: check.description,
+        correction: check.correction
+      });
+    }
+  }
+
+  return { asymmetryAnalysis, issues };
 }
 
 // ============================================
@@ -406,6 +510,45 @@ export function generateSquatRecommendations(
       case 'EXCESSIVE_FORWARD_LEAN':
         immediate.push('Core attivo, respira nel diaframma prima di ogni rep');
         accessories.push('Front squat', 'Goblet squat');
+        break;
+
+      // Nuovi controlli vista 45° latero-posteriore
+      case 'DEPTH_ASYMMETRY':
+        immediate.push('Concentrati su scendere uniformemente su entrambi i lati');
+        accessories.push('Bulgarian split squat 3x8 per lato', 'Single leg press');
+        mobility.push('Pigeon stretch lato debole');
+        break;
+
+      case 'KNEE_ANGLE_ASYMMETRY':
+        immediate.push('Spingi le ginocchia fuori in modo simmetrico');
+        accessories.push('Single leg extension', 'Step-up 3x10 per lato');
+        break;
+
+      case 'TORSO_ROTATION':
+        immediate.push('Mantieni il petto rivolto in avanti, non ruotare');
+        accessories.push('Pallof press 3x12', 'Dead bug 3x10', 'Bird-dog 3x10');
+        mobility.push('Rotazione toracica su foam roller');
+        break;
+
+      case 'WEIGHT_SHIFT_LATERAL':
+        immediate.push('Allenati davanti a uno specchio per feedback visivo');
+        immediate.push('Distribuisci il peso equamente sui due piedi');
+        accessories.push('Goblet squat con pausa nel bottom', 'Box squat');
+        break;
+
+      case 'SCAPULAR_PROTRACTION':
+        immediate.push('Retrai le scapole prima di ogni rep - "petto fuori"');
+        accessories.push('Face pull 3x15', 'Band pull-apart 3x20');
+        break;
+
+      case 'SHOULDERS_ELEVATED':
+        immediate.push('Abbassa le spalle - "spalle lontane dalle orecchie"');
+        accessories.push('Shrug eccentrico', 'Upper trap stretch');
+        break;
+
+      case 'SHOULDER_ASYMMETRY':
+        immediate.push('Verifica che il bilanciere sia centrato sulla schiena');
+        accessories.push('Single arm row', 'Face pull unilaterale');
         break;
     }
   }

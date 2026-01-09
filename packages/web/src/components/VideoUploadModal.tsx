@@ -9,11 +9,30 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Video, Upload, CheckCircle, AlertCircle, Loader2, Cpu, Sparkles } from 'lucide-react';
+import { X, Video, Upload, CheckCircle, AlertCircle, Loader2, Cpu, Sparkles, Camera, Eye, RotateCcw } from 'lucide-react';
 import { checkVideoQuota, type QuotaInfo } from '../lib/videoCorrectionService';
 import { analyzeExerciseVideo, isExerciseSupportedInternally, type CorrectionProgress, type CorrectionResult } from '../lib/videoCorrectionEngine';
 import { supabase } from '../lib/supabaseClient';
 import { useAppStore } from '../store/useAppStore';
+
+// Istruzioni per il posizionamento camera a 45° latero-posteriore
+const CAMERA_SETUP_INSTRUCTIONS = {
+  title: 'Posizionamento Camera',
+  description: 'Per una migliore analisi, posiziona la camera a 45° dietro di te',
+  steps: [
+    { icon: '📐', text: 'Posiziona il telefono dietro di te, leggermente di lato (45°)' },
+    { icon: '👁️', text: 'La camera deve vedere sia la schiena che il fianco' },
+    { icon: '📏', text: 'Altezza: circa all\'altezza dei fianchi (1 metro)' },
+    { icon: '📍', text: 'Distanza: 2-3 metri (devi stare tutto nell\'inquadratura)' },
+    { icon: '💡', text: 'Assicurati che ci sia buona illuminazione (no controluce)' }
+  ],
+  benefits: [
+    'Rileva asimmetrie dx/sx',
+    'Identifica rotazione del tronco',
+    'Analizza distribuzione del peso',
+    'Verifica posizione scapole'
+  ]
+};
 
 interface VideoUploadModalProps {
   open: boolean;
@@ -45,6 +64,7 @@ export default function VideoUploadModal({
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [analysisSource, setAnalysisSource] = useState<'internal' | 'gemini' | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CorrectionResult | null>(null);
+  const [showCameraGuide, setShowCameraGuide] = useState(true);  // Mostra guida per prima
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -514,12 +534,88 @@ export default function VideoUploadModal({
           )}
         </div>
 
-        {/* Info */}
-        <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-          <p className="text-xs text-gray-400">
-            💡 <strong>Suggerimento:</strong> Registra il video da un angolo laterale per squat/deadlift,
-            o frontale per bench press. Inquadra tutto il corpo per una migliore analisi.
-          </p>
+        {/* Camera Setup Guide */}
+        <div className="mt-4">
+          <button
+            onClick={() => setShowCameraGuide(!showCameraGuide)}
+            className="w-full flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-blue-400" />
+              <span className="text-sm font-medium text-white">
+                Come posizionare la camera (45° latero-posteriore)
+              </span>
+            </div>
+            <RotateCcw className={`w-4 h-4 text-gray-400 transition-transform ${showCameraGuide ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {showCameraGuide && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="p-4 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-b-lg border-t border-gray-700">
+                  {/* Visual representation */}
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="relative w-48 h-32 bg-gray-800/50 rounded-lg p-2">
+                      {/* Person icon */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                          Tu
+                        </div>
+                      </div>
+                      {/* Camera position */}
+                      <div className="absolute bottom-2 right-2 transform rotate-[-45deg]">
+                        <div className="flex items-center gap-1">
+                          <Camera className="w-5 h-5 text-green-400" />
+                          <span className="text-xs text-green-400">45°</span>
+                        </div>
+                      </div>
+                      {/* Viewing cone */}
+                      <div className="absolute bottom-4 right-4 w-16 h-16">
+                        <div className="w-full h-full border-l-2 border-b-2 border-green-400/30 rounded-bl-full"></div>
+                      </div>
+                      {/* Label */}
+                      <span className="absolute top-1 left-2 text-[10px] text-gray-400">Vista dall'alto</span>
+                    </div>
+                  </div>
+
+                  {/* Steps */}
+                  <div className="space-y-2 mb-4">
+                    {CAMERA_SETUP_INSTRUCTIONS.steps.map((step, index) => (
+                      <div key={index} className="flex items-start gap-2 text-sm">
+                        <span className="text-base">{step.icon}</span>
+                        <span className="text-gray-300">{step.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Benefits */}
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Eye className="w-4 h-4 text-purple-400" />
+                      <span className="text-sm font-medium text-purple-300">
+                        Questa angolazione permette di rilevare:
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {CAMERA_SETUP_INSTRUCTIONS.benefits.map((benefit, index) => (
+                        <span
+                          key={index}
+                          className="text-xs px-2 py-1 bg-purple-800/50 text-purple-200 rounded-full"
+                        >
+                          {benefit}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>

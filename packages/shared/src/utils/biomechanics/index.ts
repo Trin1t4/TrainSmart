@@ -31,8 +31,39 @@ export type {
   StickingPointAnalysis,
   FormAnalysisResult,
   SupportedExercise,
-  CameraValidationResult
+  CameraValidationResult,
+  // Nuovi tipi per vista 45° latero-posteriore
+  AsymmetryType,
+  ScapularIssue,
+  AsymmetryAnalysis,
+  ScapularAnalysis,
+  LateroPosteriorAnalysis
 } from '../../types/biomechanics.types';
+
+// Export funzioni e tipi per analisi asimmetrie (vista 45°)
+export {
+  detectDepthAsymmetry,
+  detectKneeAsymmetry,
+  detectTorsoRotation,
+  detectLateralWeightShift,
+  detectScapularPosition,
+  analyzeFullAsymmetry,
+  type BilateralAsymmetryResult,
+  type ScapularPositionResult,
+  type FullAsymmetryAnalysis
+} from './core';
+
+// Export controlli latero-posteriori dagli analyzer
+export {
+  SQUAT_LATERO_POSTERIOR_CHECKS,
+  analyzeSquatFrameAsymmetry,
+  type LateroPosteriorCheck
+} from './analyzers/squatAnalyzer';
+
+export {
+  DEADLIFT_LATERO_POSTERIOR_CHECKS,
+  type DeadliftLateroPosteriorCheck
+} from './analyzers/deadliftAnalyzer';
 
 // ============================================
 // MAIN ANALYZER FUNCTION
