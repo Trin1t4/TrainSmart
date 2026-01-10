@@ -18,6 +18,7 @@ export interface ExerciseVariant {
   equipment: 'bodyweight' | 'gym' | 'both';
   primary: string[]; // Muscoli primari
   secondary: string[]; // Muscoli secondari
+  isometric?: boolean; // true per esercizi a tempo (secondi invece di reps)
 }
 
 /**

@@ -25,6 +25,37 @@ import { getUpgradedExercise } from './exerciseProgression';
 import { isBodyweightExercise } from './exerciseProgressionEngine';
 
 /**
+ * Lista esercizi isometrici (a tempo, non reps)
+ * Questi esercizi usano secondi invece di ripetizioni
+ */
+const ISOMETRIC_EXERCISES = [
+  'plank', 'plank laterale', 'side plank',
+  'hollow body hold', 'hollow body', 'hollow hold',
+  'l-sit', 'l-sit raccolto', 'l-sit completo', 'l-sit a una gamba',
+  'dead hang', 'hang', 'appeso',
+  'wall sit', 'isometric squat', 'squat isometrico',
+  'copenhagen plank', 'pallof hold',
+  'plank con oscillazione'
+];
+
+/**
+ * Controlla se un esercizio è isometrico (a tempo invece di reps)
+ */
+function isIsometricExercise(exerciseName: string): boolean {
+  const lowerName = exerciseName.toLowerCase();
+  return ISOMETRIC_EXERCISES.some(iso => lowerName.includes(iso));
+}
+
+/**
+ * Converte reps in secondi per esercizi isometrici
+ * Scala: ~3 secondi per ogni rep teorica
+ */
+function convertRepsToSeconds(reps: number): string {
+  const seconds = Math.max(15, Math.min(60, reps * 3));
+  return `${seconds}s`;
+}
+
+/**
  * Mapping nomi esercizi inglese -> italiano
  */
 const EXERCISE_NAMES_IT: Record<string, string> = {
@@ -2144,11 +2175,18 @@ function createExercise(
     console.log(`   -> 10RM: ${baseline.weight10RM}kg -> 1RM stimato: ${Math.round(estimated1RM)}kg`);
   }
 
+  // Converti reps in secondi per esercizi isometrici (core stability, plank, ecc.)
+  const translatedName = translateExerciseName(exerciseName);
+  const isIsometric = isIsometricExercise(translatedName);
+  const displayReps = isIsometric && typeof finalReps === 'number'
+    ? convertRepsToSeconds(finalReps)
+    : finalReps;
+
   return {
     pattern: patternId as any,
-    name: translateExerciseName(exerciseName),
+    name: translatedName,
     sets: finalSets,
-    reps: finalReps,
+    reps: displayReps,
     rest: volumeCalc.rest,
     intensity: volumeCalc.intensity,
     dayType: safeDayType, // DUP intra-giornata: heavy/moderate/volume (safety capped)
@@ -2162,7 +2200,7 @@ function createExercise(
     notes: [
       volumeCalc.notes,
       dupVariantAdjustment, // DUP bodyweight: mostra variante upgrade/base
-      `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
+      isIsometric ? 'Isometrico: mantieni la posizione' : `Baseline: ${baselineReps} reps @ diff. ${baseline.difficulty}/10`,
       suggestedWeight ? `Carico: ${suggestedWeight} (${weightNote})` : '',
       painNotes,
       machineNotes

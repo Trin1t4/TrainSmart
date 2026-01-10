@@ -653,44 +653,65 @@ function adaptExercise(
         noEquipment: (equipment as any)?.noEquipment === true
       };
 
-      // PRIMA controlla se richiede sbarra e se l'utente non ce l'ha
-      const needsPullupBar = PULLUP_BAR_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
       const hasPullupBar = equipment?.pullupBar === true;
-
-      // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
-      const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
       const hasTable = (equipment as any)?.sturdyTable === true;
+      const hasNoEquipment = (equipment as any)?.noEquipment === true;
 
-      if (needsTable && !hasTable) {
-        // Esercizio richiede tavolo ma non c'è → sostituisci
-        console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
-        if (NO_TABLE_ALTERNATIVES[lowerName]) {
-          newName = NO_TABLE_ALTERNATIVES[lowerName];
-          wasReplaced = true;
+      // CRITICO: Se l'utente ha selezionato "nessun attrezzo" O non ha né sbarra né tavolo,
+      // TUTTI gli esercizi di tirata (vertical_pull, horizontal_pull) devono essere sostituiti
+      // con esercizi a terra che non richiedono attrezzatura
+      const isPullPattern = exercise.pattern === 'vertical_pull' || exercise.pattern === 'horizontal_pull';
+      const canDoPulls = hasPullupBar || hasTable;
+
+      if (isPullPattern && (hasNoEquipment || !canDoPulls)) {
+        // Utente non ha attrezzi per fare tirate → sostituisci con Floor Pull o simili
+        console.log(`🚫 ${exercise.name} (${exercise.pattern}) - utente senza attrezzi per tirate → Floor Pull`);
+
+        // Esercizi a terra per tirate senza attrezzi
+        if (exercise.pattern === 'vertical_pull') {
+          newName = 'Floor Pull (asciugamano)';
         } else {
-          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
-          wasReplaced = newName !== exercise.name;
+          newName = 'Superman Row';
         }
-      } else if (needsPullupBar && !hasPullupBar) {
-        // Esercizio richiede sbarra ma non c'è → sostituisci
-        console.log(`🚫 ${exercise.name} richiede sbarra ma non disponibile → sostituzione`);
-        if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
-          newName = NO_PULLUP_BAR_ALTERNATIVES[lowerName];
-          wasReplaced = true;
-        } else {
-          // Fallback: usa alternative per vertical_pull o horizontal_pull
-          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
-          wasReplaced = newName !== exercise.name;
-        }
-      } else if (isAlreadyBodyweightExercise(exercise.name, exercise.pattern)) {
-        // Esercizio già bodyweight e non richiede sbarra (o ce l'ha) → mantieni
-        console.log(`✅ ${exercise.name} è già bodyweight, mantenuto`);
-        // Mantieni l'esercizio originale, nessuna sostituzione
+        wasReplaced = true;
       } else {
-        // Esercizio gym/macchina - trova alternativa bodyweight
-        console.log(`🔄 ${exercise.name} richiede conversione a bodyweight`);
-        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
-        wasReplaced = newName !== exercise.name;
+        // PRIMA controlla se richiede sbarra e se l'utente non ce l'ha
+        const needsPullupBar = PULLUP_BAR_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
+
+        // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
+        const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
+
+        if (needsTable && !hasTable) {
+          // Esercizio richiede tavolo ma non c'è → sostituisci
+          console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
+          if (NO_TABLE_ALTERNATIVES[lowerName]) {
+            newName = NO_TABLE_ALTERNATIVES[lowerName];
+            wasReplaced = true;
+          } else {
+            newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+            wasReplaced = newName !== exercise.name;
+          }
+        } else if (needsPullupBar && !hasPullupBar) {
+          // Esercizio richiede sbarra ma non c'è → sostituisci
+          console.log(`🚫 ${exercise.name} richiede sbarra ma non disponibile → sostituzione`);
+          if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
+            newName = NO_PULLUP_BAR_ALTERNATIVES[lowerName];
+            wasReplaced = true;
+          } else {
+            // Fallback: usa alternative per vertical_pull o horizontal_pull
+            newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+            wasReplaced = newName !== exercise.name;
+          }
+        } else if (isAlreadyBodyweightExercise(exercise.name, exercise.pattern)) {
+          // Esercizio già bodyweight e non richiede sbarra (o ce l'ha) → mantieni
+          console.log(`✅ ${exercise.name} è già bodyweight, mantenuto`);
+          // Mantieni l'esercizio originale, nessuna sostituzione
+        } else {
+          // Esercizio gym/macchina - trova alternativa bodyweight
+          console.log(`🔄 ${exercise.name} richiede conversione a bodyweight`);
+          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+          wasReplaced = newName !== exercise.name;
+        }
       }
     } else {
       // Casa con attrezzatura - verifica cosa e' disponibile
@@ -705,43 +726,62 @@ function adaptExercise(
         noEquipment: (equipment as any)?.noEquipment === true
       };
 
-      // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
-      const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
-      if (needsTable && !equipmentInfo.sturdyTable) {
-        console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
-        if (NO_TABLE_ALTERNATIVES[lowerName]) {
-          newName = NO_TABLE_ALTERNATIVES[lowerName];
-          wasReplaced = true;
+      const hasPullupBar = equipment.pullupBar === true;
+      const hasTable = (equipment as any)?.sturdyTable === true;
+      const hasNoEquipment = (equipment as any)?.noEquipment === true;
+
+      // CRITICO: Se l'utente ha selezionato "nessun attrezzo" O non ha né sbarra né tavolo,
+      // TUTTI gli esercizi di tirata devono essere sostituiti
+      const isPullPattern = exercise.pattern === 'vertical_pull' || exercise.pattern === 'horizontal_pull';
+      const canDoPulls = hasPullupBar || hasTable;
+
+      if (isPullPattern && (hasNoEquipment || !canDoPulls)) {
+        console.log(`🚫 ${exercise.name} (${exercise.pattern}) - utente senza attrezzi per tirate → Floor Pull`);
+        if (exercise.pattern === 'vertical_pull') {
+          newName = 'Floor Pull (asciugamano)';
         } else {
+          newName = 'Superman Row';
+        }
+        wasReplaced = true;
+      } else {
+        // NUOVO: controlla se richiede tavolo e se l'utente non ce l'ha
+        const needsTable = STURDY_TABLE_EXERCISES.some(ex => lowerName.includes(ex) || ex.includes(lowerName));
+        if (needsTable && !hasTable) {
+          console.log(`🚫 ${exercise.name} richiede tavolo ma non disponibile → sostituzione`);
+          if (NO_TABLE_ALTERNATIVES[lowerName]) {
+            newName = NO_TABLE_ALTERNATIVES[lowerName];
+            wasReplaced = true;
+          } else {
+            newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+            wasReplaced = newName !== exercise.name;
+          }
+        }
+
+        // Se richiede sbarra ma non ce l'ha
+        if (required.pullupBar && !hasPullupBar) {
+          if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
+            newName = NO_PULLUP_BAR_ALTERNATIVES[lowerName];
+            wasReplaced = true;
+          }
+        }
+
+        // Se richiede bilanciere ma non ce l'ha
+        if (required.barbell && !equipment.barbell) {
+          if (equipment.dumbbellMaxKg > 0) {
+            // Usa manubri come alternativa
+            newName = exercise.name.replace(/barbell/i, 'Dumbbell');
+          } else {
+            // Altrimenti bodyweight - USA PESO CORPOREO + CARICO REALE + DATA TEST
+            newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
+          }
+          wasReplaced = newName !== exercise.name;
+        }
+
+        // Se richiede panca ma non ce l'ha
+        if (required.bench && !equipment.bench) {
           newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
           wasReplaced = newName !== exercise.name;
         }
-      }
-
-      // Se richiede sbarra ma non ce l'ha
-      if (required.pullupBar && !equipment.pullupBar) {
-        if (NO_PULLUP_BAR_ALTERNATIVES[lowerName]) {
-          newName = NO_PULLUP_BAR_ALTERNATIVES[lowerName];
-          wasReplaced = true;
-        }
-      }
-
-      // Se richiede bilanciere ma non ce l'ha
-      if (required.barbell && !equipment.barbell) {
-        if (equipment.dumbbellMaxKg > 0) {
-          // Usa manubri come alternativa
-          newName = exercise.name.replace(/barbell/i, 'Dumbbell');
-        } else {
-          // Altrimenti bodyweight - USA PESO CORPOREO + CARICO REALE + DATA TEST
-          newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
-        }
-        wasReplaced = newName !== exercise.name;
-      }
-
-      // Se richiede panca ma non ce l'ha
-      if (required.bench && !equipment.bench) {
-        newName = findBodyweightAlternative(exercise.name, exercise.pattern, bodyweight, patternRealLoad, patternTestDate, equipmentInfo);
-        wasReplaced = newName !== exercise.name;
       }
     }
   }

@@ -294,6 +294,7 @@ export function progressionToVariant(
   equipment: 'bodyweight';
   primary: string[];
   secondary: string[];
+  isometric?: boolean;
 } {
   // Mappa dei muscoli primari/secondari per pattern
   const muscleMap: Record<string, { primary: string[]; secondary: string[] }> = {
@@ -314,7 +315,8 @@ export function progressionToVariant(
     difficulty: progression.difficulty,
     equipment: 'bodyweight',
     primary: muscles.primary,
-    secondary: muscles.secondary
+    secondary: muscles.secondary,
+    isometric: progression.isometric
   };
 }
 
