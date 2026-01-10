@@ -2818,13 +2818,13 @@ function calculateVolumeWeighted(
 }
 
 // ============================================================================
-// BODYWEIGHT TRAINING (Calisthenics - Home senza attrezzatura con pesi)
+// BODYWEIGHT TRAINING (Casa senza pesi)
 // ============================================================================
-// PRINCIPIO CHIAVE: La forza nel calisthenics NON viene da "meno reps"
-// ma da VARIANTI PIÙ DIFFICILI.
-// Progressione: Squat -> Bulgarian -> Pistol -> Shrimp
-//               Push-up -> Diamond -> Archer -> One-Arm
-// NON APPLICHIAMO workingReps = baseline * 0.75 perché non ha senso!
+// LOGICA DUP 2025: La progressione avviene tramite VARIANTI più difficili
+// + coordinamento REPS per dayType:
+// - HEAVY: variante più difficile → MENO reps (sforzo max)
+// - MODERATE: variante base → reps baseline (consolidamento)
+// - VOLUME: variante più facile → PIÙ reps (accumulo)
 // ============================================================================
 
 function calculateVolumeBodyweight(
@@ -2837,190 +2837,173 @@ function calculateVolumeBodyweight(
   // Base sets per livello
   const baseSets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
 
-  // Soglia per suggerire upgrade variante
-  const UPGRADE_THRESHOLD = 15;
-  const readyForUpgrade = baselineMaxReps >= UPGRADE_THRESHOLD;
-
   let sets = baseSets;
-  let reps = baselineMaxReps; // MANTIENI LE REPS BASELINE!
+  let reps: number | string = baselineMaxReps;
   let rest = '90s';
   let intensity = 'RPE 7';
   let notes = '';
 
-  // FORZA (bodyweight) - NON ridurre reps!
-  if (goal === 'forza' || goal === 'strength') {
-    const targetReps = Math.max(5, Math.min(baselineMaxReps, 12));
+  // ══════════════════════════════════════════════════════════════════════════
+  // STEP 1: Applica moltiplicatore DUP per dayType
+  // ══════════════════════════════════════════════════════════════════════════
 
-    if (dayType === 'heavy') {
-      sets = level === 'advanced' ? 6 : 5;
-      reps = targetReps;
-      rest = '2-3min';
-      intensity = 'RPE 9';
-      notes = readyForUpgrade
-        ? 'Pronto per variante più difficile!'
-        : 'Focus: controllo e tempo sotto tensione';
-    } else if (dayType === 'volume') {
-      sets = baseSets + 1;
-      reps = Math.min(baselineMaxReps + 2, 15);
-      rest = '90s';
-      intensity = 'RPE 7';
-      notes = 'Consolida la variante - Accumulo volume';
-    } else {
-      sets = baseSets;
-      reps = targetReps;
-      rest = '90s';
-      intensity = 'RPE 8';
-      notes = 'Forza dinamica - Qualità esecuzione';
-    }
-  }
-  // IPERTROFIA (bodyweight) - Volume è il driver
-  else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain' || goal === 'ipertrofia') {
-    const targetReps = Math.min(baselineMaxReps + 3, 20);
+  const DUP_MULTIPLIERS: Record<string, number> = {
+    heavy: 0.70,    // Meno reps (variante difficile)
+    moderate: 1.00, // Reps baseline
+    volume: 1.35    // Più reps (variante facile)
+  };
 
-    if (dayType === 'heavy') {
-      sets = baseSets;
-      reps = Math.max(8, baselineMaxReps);
-      rest = '90s';
-      intensity = 'RPE 8-9 (TUT)';
-      notes = 'Tempo 3-1-2 per massima tensione';
-    } else if (dayType === 'volume') {
-      sets = baseSets + 2;
-      reps = targetReps;
-      rest = '60s';
-      intensity = 'RPE 8';
-      notes = 'Volume alto - Cedimento controllato';
-    } else {
-      sets = baseSets + 1;
-      reps = targetReps;
-      rest = '75s';
-      intensity = 'RPE 7-8';
-      notes = 'Ipertrofia - Range ottimale';
-    }
-  }
-  // DIMAGRIMENTO / TONIFICAZIONE (bodyweight) - Alta densità
-  else if (goal === 'fat_loss' || goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'definizione') {
-    const targetReps = Math.min(baselineMaxReps + 5, 25);
+  const DUP_SETS_ADJUSTMENT: Record<string, number> = {
+    heavy: 0,       // Sets standard
+    moderate: 0,    // Sets standard
+    volume: 1       // +1 set per volume
+  };
 
-    if (dayType === 'heavy') {
-      sets = baseSets;
-      reps = Math.max(10, baselineMaxReps);
-      rest = '60s';
-      intensity = 'RPE 8';
-      notes = 'Preserva forza - Ritmo sostenuto';
-    } else if (dayType === 'volume') {
-      sets = baseSets + 1;
-      reps = targetReps;
-      rest = '30-45s';
-      intensity = 'RPE 7 (Circuit)';
-      notes = 'Max densità - Poco rest';
-    } else {
-      sets = baseSets;
-      reps = Math.min(baselineMaxReps + 3, 20);
-      rest = '45-60s';
-      intensity = 'RPE 7-8';
-      notes = 'Definizione - Ritmo costante';
-    }
-  }
-  // RESISTENZA (bodyweight) - Max reps
-  else if (goal === 'endurance' || goal === 'resistenza') {
-    const targetReps = Math.min(baselineMaxReps + 10, 30);
+  const baseReps = Math.round(baselineMaxReps * DUP_MULTIPLIERS[dayType]);
+  const adjustedSets = baseSets + DUP_SETS_ADJUSTMENT[dayType];
 
-    if (dayType === 'heavy') {
-      sets = baseSets;
-      reps = Math.min(baselineMaxReps + 5, 20);
-      rest = '45s';
-      intensity = 'RPE 8';
-      notes = 'Forza resistente';
-    } else if (dayType === 'volume') {
-      sets = baseSets;
-      reps = targetReps;
-      rest = '30s';
-      intensity = 'RPE 7';
-      notes = 'Max reps - Forma corretta';
-    } else {
-      sets = baseSets;
-      reps = Math.min(baselineMaxReps + 8, 25);
-      rest = '30-45s';
-      intensity = 'RPE 6-7';
-      notes = 'Capacità di lavoro';
-    }
-  }
-  // BENESSERE (bodyweight)
-  else if (goal === 'general_fitness' || goal === 'benessere') {
-    const targetReps = Math.min(baselineMaxReps + 2, 15);
+  // ══════════════════════════════════════════════════════════════════════════
+  // STEP 2: Applica range per GOAL (clamp delle reps)
+  // ══════════════════════════════════════════════════════════════════════════
 
-    if (dayType === 'heavy') {
-      sets = baseSets;
-      reps = baselineMaxReps;
-      rest = '90s';
-      intensity = 'RPE 7-8';
-      notes = 'Forza generale';
-    } else if (dayType === 'volume') {
-      sets = baseSets;
-      reps = targetReps;
-      rest = '60s';
-      intensity = 'RPE 6-7';
-      notes = 'Fitness generale';
-    } else {
-      sets = baseSets;
-      reps = targetReps;
-      rest = '75s';
-      intensity = 'RPE 6';
-      notes = 'Bilanciato';
+  const goalLower = (goal || '').toLowerCase();
+
+  // FORZA
+  if (goalLower === 'forza' || goalLower === 'strength') {
+    switch (dayType) {
+      case 'heavy':
+        sets = adjustedSets;
+        reps = Math.max(3, Math.min(baseReps, 6));  // 3-6 reps
+        rest = '2-3min';
+        intensity = 'RPE 8-9';
+        notes = 'Heavy Day - Variante impegnativa, max effort';
+        break;
+      case 'volume':
+        sets = adjustedSets;
+        reps = Math.max(10, Math.min(baseReps, 15)); // 10-15 reps
+        rest = '60-90s';
+        intensity = 'RPE 6-7';
+        notes = 'Volume Day - Variante accessibile, accumulo';
+        break;
+      case 'moderate':
+      default:
+        sets = adjustedSets;
+        reps = Math.max(6, Math.min(baseReps, 10));  // 6-10 reps
+        rest = '90s';
+        intensity = 'RPE 7-8';
+        notes = 'Moderate Day - Consolidamento tecnico';
     }
   }
-  // SPORT PERFORMANCE (bodyweight) - Potenza esplosiva
-  else if (goal === 'sport_performance' || goal === 'prestazioni_sportive') {
-    if (dayType === 'heavy') {
-      sets = baseSets;
-      reps = Math.max(5, Math.floor(baselineMaxReps * 0.7)); // Qui OK ridurre per esplosività
-      rest = '2min';
-      intensity = 'RPE 9 (Explosive)';
-      notes = 'Max velocità esecuzione';
-    } else if (dayType === 'volume') {
-      sets = baseSets + 1;
-      reps = baselineMaxReps + 3;
-      rest = '60s';
-      intensity = 'RPE 7';
-      notes = 'Capacità di lavoro';
-    } else {
-      sets = baseSets;
-      reps = baselineMaxReps;
-      rest = '90s';
-      intensity = 'RPE 8';
-      notes = 'Potenza controllata';
+
+  // IPERTROFIA / MASSA
+  else if (goalLower === 'massa' || goalLower === 'ipertrofia' || goalLower === 'muscle_gain' || goalLower === 'hypertrophy' || goalLower === 'massa muscolare') {
+    switch (dayType) {
+      case 'heavy':
+        sets = adjustedSets;
+        reps = Math.max(6, Math.min(baseReps, 10));  // 6-10 reps (TUT alto)
+        rest = '90-120s';
+        intensity = 'RPE 8-9';
+        notes = 'Heavy Day - Tensione meccanica, tempo 3-1-2';
+        break;
+      case 'volume':
+        sets = adjustedSets;
+        reps = Math.max(12, Math.min(baseReps, 20)); // 12-20 reps
+        rest = '45-60s';
+        intensity = 'RPE 7';
+        notes = 'Volume Day - Stress metabolico, pump';
+        break;
+      case 'moderate':
+      default:
+        sets = adjustedSets;
+        reps = Math.max(8, Math.min(baseReps, 15));  // 8-15 reps
+        rest = '75s';
+        intensity = 'RPE 7-8';
+        notes = 'Moderate Day - Ipertrofia classica';
     }
   }
-  // GOAL SPECIALI (bodyweight)
-  else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
-    sets = 3;
-    reps = Math.min(baselineMaxReps, 12);
-    rest = '90-120s';
-    intensity = 'RPE 5-6';
-    notes = 'Recupero - Focus tecnica e mobilità';
+
+  // DIMAGRIMENTO / TONIFICAZIONE
+  else if (goalLower === 'fat_loss' || goalLower === 'dimagrimento' || goalLower === 'tonificazione' || goalLower === 'definizione') {
+    switch (dayType) {
+      case 'heavy':
+        sets = adjustedSets;
+        reps = Math.max(8, Math.min(baseReps, 12));  // 8-12 reps
+        rest = '60-75s';
+        intensity = 'RPE 8';
+        notes = 'Heavy Day - Preserva forza';
+        break;
+      case 'volume':
+        sets = adjustedSets;
+        reps = Math.max(15, Math.min(baseReps, 25)); // 15-25 reps
+        rest = '30-45s';
+        intensity = 'RPE 6-7';
+        notes = 'Volume Day - Alta densità, circuit style';
+        break;
+      case 'moderate':
+      default:
+        sets = adjustedSets;
+        reps = Math.max(12, Math.min(baseReps, 18)); // 12-18 reps
+        rest = '45-60s';
+        intensity = 'RPE 7';
+        notes = 'Moderate Day - Definizione';
+    }
   }
-  else if (goal === 'pregnancy' || goal === 'gravidanza') {
-    sets = 3;
-    reps = Math.min(baselineMaxReps, 12);
-    rest = '90-120s';
-    intensity = 'RPE 5-6';
-    notes = 'Gravidanza - Intensità controllata, evita Valsalva';
+
+  // RESISTENZA
+  else if (goalLower === 'endurance' || goalLower === 'resistenza') {
+    switch (dayType) {
+      case 'heavy':
+        sets = adjustedSets;
+        reps = Math.max(12, Math.min(baseReps, 18)); // 12-18 reps
+        rest = '45s';
+        intensity = 'RPE 7-8';
+        notes = 'Heavy Day - Forza resistente';
+        break;
+      case 'volume':
+        sets = adjustedSets;
+        reps = Math.max(20, Math.min(baseReps, 35)); // 20-35 reps
+        rest = '20-30s';
+        intensity = 'RPE 6';
+        notes = 'Volume Day - Endurance pura';
+        break;
+      case 'moderate':
+      default:
+        sets = adjustedSets;
+        reps = Math.max(15, Math.min(baseReps, 25)); // 15-25 reps
+        rest = '30-45s';
+        intensity = 'RPE 6-7';
+        notes = 'Moderate Day - Capacità di lavoro';
+    }
   }
-  else if (goal === 'disability' || goal === 'disabilita') {
-    sets = 3;
-    reps = Math.min(baselineMaxReps, 10);
-    rest = '120s';
-    intensity = 'RPE 5-7';
-    notes = 'Adattamenti specifici alla condizione';
-  }
-  // DEFAULT (bodyweight)
+
+  // DEFAULT / BENESSERE
   else {
-    sets = 3;
-    reps = Math.min(baselineMaxReps + 2, 15);
-    rest = '60s';
-    intensity = 'RPE 7';
-    notes = 'Programma generale bodyweight';
+    switch (dayType) {
+      case 'heavy':
+        sets = adjustedSets;
+        reps = Math.max(6, Math.min(baseReps, 10));
+        rest = '90s';
+        intensity = 'RPE 7-8';
+        notes = 'Heavy Day - Forza generale';
+        break;
+      case 'volume':
+        sets = adjustedSets;
+        reps = Math.max(12, Math.min(baseReps, 18));
+        rest = '60s';
+        intensity = 'RPE 6';
+        notes = 'Volume Day - Fitness generale';
+        break;
+      case 'moderate':
+      default:
+        sets = adjustedSets;
+        reps = Math.max(8, Math.min(baseReps, 15));
+        rest = '75s';
+        intensity = 'RPE 6-7';
+        notes = 'Moderate Day - Bilanciato';
+    }
   }
+
+  console.log(`📊 [BW Volume] ${dayType}: baseline ${baselineMaxReps} × ${DUP_MULTIPLIERS[dayType]} = ${baseReps} → clamped to ${reps} | ${sets} sets`);
 
   return { sets, reps, rest, intensity, notes };
 }
