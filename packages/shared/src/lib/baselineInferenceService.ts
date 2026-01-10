@@ -124,21 +124,32 @@ export function inferMissingBaselines(
     const isFallback = targetPattern.includes('_fallback');
 
     // Salta se il pattern target esiste già (testato o già stimato)
-    if (result[targetKey] && result[targetKey]?.weight10RM) {
+    // CHECK: sia weight10RM (gym) che reps+difficulty (bodyweight)
+    const existingTarget = result[targetKey];
+    if (existingTarget && (existingTarget.weight10RM || (existingTarget.reps && existingTarget.difficulty))) {
       continue;
     }
 
-    // Salta se il pattern sorgente non esiste
+    // Salta se il pattern sorgente non ha dati utilizzabili
+    // SUPPORTA SIA GYM (weight10RM) CHE BODYWEIGHT (reps + difficulty)
     const sourceBaseline = result[sourceKey];
-    if (!sourceBaseline || !sourceBaseline.weight10RM) {
+    const hasGymData = sourceBaseline?.weight10RM && sourceBaseline.weight10RM > 0;
+    const hasBodyweightData = sourceBaseline?.reps && sourceBaseline?.difficulty;
+
+    if (!sourceBaseline || (!hasGymData && !hasBodyweightData)) {
       if (!isFallback) {
         console.log(`[BaselineInference] Cannot infer ${actualTargetPattern}: missing ${correlation.source}`);
       }
       continue;
     }
 
-    // Calcola il peso stimato
-    const estimatedWeight = Math.round(sourceBaseline.weight10RM * correlation.ratio);
+    // Determina se stiamo usando dati gym o bodyweight
+    const isBodyweightSource = !hasGymData && hasBodyweightData;
+
+    // Calcola il peso stimato (solo per gym, 0 per bodyweight)
+    const estimatedWeight = hasGymData
+      ? Math.round(sourceBaseline.weight10RM! * correlation.ratio)
+      : 0;
 
     // Calcola difficoltà adattata per il pattern target
     // IMPORTANTE: Le difficoltà tra pattern diversi NON sono comparabili!
@@ -157,18 +168,24 @@ export function inferMissingBaselines(
       variantId: actualTargetPattern,
       variantName: DEFAULT_VARIANT_NAMES[targetPattern] || actualTargetPattern,
       difficulty: Math.round(finalDifficulty), // Arrotonda a intero
-      reps: 10, // Default 10RM - valore conservativo per pattern stimati
+      reps: isBodyweightSource ? Math.min(sourceReps, 10) : 10, // Usa reps source per bodyweight
       weight10RM: estimatedWeight,
       testDate: new Date().toISOString(),
       isEstimated: true,
-      estimatedFrom: correlation.source + (isFallback ? ' (fallback)' : ''),
+      estimatedFrom: correlation.source + (isFallback ? ' (fallback)' : '') + (isBodyweightSource ? ' (bodyweight)' : ''),
     };
 
     result[targetKey] = estimatedBaseline;
 
-    console.log(
-      `[BaselineInference] ${actualTargetPattern}: ${estimatedWeight}kg (${correlation.ratio * 100}% of ${correlation.source} ${sourceBaseline.weight10RM}kg), diff ${sourceDifficulty}→${finalDifficulty} (adjust: ${difficultyAdjust}, reps-adj: ${repsBasedAdjust}) - STIMATO${isFallback ? ' (FALLBACK)' : ''}`
-    );
+    if (isBodyweightSource) {
+      console.log(
+        `[BaselineInference] ${actualTargetPattern}: BODYWEIGHT - diff ${sourceDifficulty}→${finalDifficulty} (adjust: ${difficultyAdjust}, reps: ${sourceReps}→reps-adj: ${repsBasedAdjust}) - STIMATO DA ${correlation.source}`
+      );
+    } else {
+      console.log(
+        `[BaselineInference] ${actualTargetPattern}: ${estimatedWeight}kg (${correlation.ratio * 100}% of ${correlation.source} ${sourceBaseline.weight10RM}kg), diff ${sourceDifficulty}→${finalDifficulty} - STIMATO${isFallback ? ' (FALLBACK)' : ''}`
+      );
+    }
   }
 
   return result;
