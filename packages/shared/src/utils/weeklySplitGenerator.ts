@@ -29,13 +29,21 @@ import { isBodyweightExercise } from './exerciseProgressionEngine';
  * Questi esercizi usano secondi invece di ripetizioni
  */
 const ISOMETRIC_EXERCISES = [
+  // Plank variations
   'plank', 'plank laterale', 'side plank',
+  'plank con oscillazione', 'plank rocking',
+  'copenhagen plank', 'reverse plank',
+  // Hollow body
   'hollow body hold', 'hollow body', 'hollow hold',
+  // L-sit progressions
   'l-sit', 'l-sit raccolto', 'l-sit completo', 'l-sit a una gamba',
-  'dead hang', 'hang', 'appeso',
+  // Hang variations
+  'dead hang', 'hang', 'appeso', 'active hang',
+  // Other isometrics
   'wall sit', 'isometric squat', 'squat isometrico',
-  'copenhagen plank', 'pallof hold',
-  'plank con oscillazione'
+  'pallof hold', 'bird dog hold',
+  // Front/back lever progressions
+  'front lever', 'back lever', 'tuck lever', 'advanced tuck'
 ];
 
 /**
@@ -48,10 +56,25 @@ function isIsometricExercise(exerciseName: string): boolean {
 
 /**
  * Converte reps in secondi per esercizi isometrici
- * Scala: ~3 secondi per ogni rep teorica
+ * Scala basata su livello dell'utente:
+ * - beginner: 15-20s
+ * - intermediate: 20-30s
+ * - advanced: 30-45s
  */
-function convertRepsToSeconds(reps: number): string {
-  const seconds = Math.max(15, Math.min(60, reps * 3));
+function convertRepsToSeconds(reps: number, level: 'beginner' | 'intermediate' | 'advanced' = 'intermediate'): string {
+  // Scala tempo in base al livello
+  const timeRanges = {
+    beginner: { min: 15, max: 25 },
+    intermediate: { min: 20, max: 35 },
+    advanced: { min: 30, max: 45 }
+  };
+
+  const range = timeRanges[level] || timeRanges.intermediate;
+
+  // Calcola secondi basandosi sulle reps teoriche, clampato nel range del livello
+  const baseSeconds = reps * 3;
+  const seconds = Math.max(range.min, Math.min(range.max, baseSeconds));
+
   return `${seconds}s`;
 }
 
@@ -1272,7 +1295,27 @@ export function estimateWorkoutDuration(exercises: Exercise[]): number {
 
   for (const exercise of exercises) {
     const sets = typeof exercise.sets === 'number' ? exercise.sets : 3;
-    const reps = typeof exercise.reps === 'number' ? exercise.reps : 10;
+
+    // Handle both numeric reps and time strings (e.g., "30s", "20-30s")
+    let reps: number;
+    let isTimeBasedExercise = false;
+    if (typeof exercise.reps === 'number') {
+      reps = exercise.reps;
+    } else if (typeof exercise.reps === 'string') {
+      // Parse time string like "30s", "20-30s"
+      const timeMatch = exercise.reps.match(/(\d+)(?:-(\d+))?s/);
+      if (timeMatch) {
+        isTimeBasedExercise = true;
+        // Use first number (or average if range)
+        const time1 = parseInt(timeMatch[1]);
+        const time2 = timeMatch[2] ? parseInt(timeMatch[2]) : time1;
+        reps = Math.round((time1 + time2) / 2); // Questo sarà il tempo in secondi
+      } else {
+        reps = 10; // Default
+      }
+    } else {
+      reps = 10;
+    }
 
     // ============================================
     // SERIE DI RISCALDAMENTO SPECIFICHE
@@ -1303,9 +1346,16 @@ export function estimateWorkoutDuration(exercises: Exercise[]): number {
     // ============================================
     // SERIE DI LAVORO
     // ============================================
-    // Tempo per set basato su reps (più reps = più tempo)
-    // ~3-4 secondi per rep (incluso tempo sotto tensione)
-    const secondsPerSet = Math.max(20, Math.min(reps * 3.5, 60));
+    // Tempo per set:
+    // - Per esercizi isometrici (time-based): il valore reps È già il tempo in secondi
+    // - Per esercizi dinamici: ~3-4 secondi per rep
+    let secondsPerSet: number;
+    if (isTimeBasedExercise) {
+      // reps già contiene il tempo in secondi (es. 30s -> reps = 30)
+      secondsPerSet = reps;
+    } else {
+      secondsPerSet = Math.max(20, Math.min(reps * 3.5, 60));
+    }
 
     // Parse rest time string (es: "90s", "2-3min", "60-75s")
     const restSeconds = parseRestTime(exercise.rest || '60s');
@@ -2177,9 +2227,9 @@ function createExercise(
 
   // Converti reps in secondi per esercizi isometrici (core stability, plank, ecc.)
   const translatedName = translateExerciseName(exerciseName);
-  const isIsometric = isIsometricExercise(translatedName);
+  const isIsometric = isIsometricExercise(translatedName) || patternId === 'core';
   const displayReps = isIsometric && typeof finalReps === 'number'
-    ? convertRepsToSeconds(finalReps)
+    ? convertRepsToSeconds(finalReps, level)
     : finalReps;
 
   return {
