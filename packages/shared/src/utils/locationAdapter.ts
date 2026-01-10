@@ -351,25 +351,27 @@ const RELATIVE_STRENGTH_ALTERNATIVES: Record<string, { minRatio: number; exercis
   // VERTICAL PULL - Basato su lat pulldown/weighted pull-up come riferimento
   // SENZA SBARRA: Floor Pull (trazioni scivolate) e Inverted Row sono i sostituti validi
   // Chi tira 1x BW ha bisogno di esercizi VERI, non riabilitazione!
+  // FIX: Fallback finale SENZA attrezzatura (Prone Y Raise invece di Band Pull-apart)
   'vertical_pull': [
     { minRatio: 1.2, exercise: 'Floor Pull Singolo Braccio', notes: 'Elite - unilaterale con asciugamano' },
     { minRatio: 1.0, exercise: 'Floor Pull (asciugamano)', notes: 'Avanzato - trazioni scivolate a terra' },
     { minRatio: 0.8, exercise: 'Inverted Row (tavolo)', notes: 'Avanzato - sotto un tavolo robusto' },
     { minRatio: 0.6, exercise: 'Floor Pull Facilitato', notes: 'Intermedio - ginocchia piegate' },
-    { minRatio: 0.4, exercise: 'Inverted Row Facilitato', notes: 'Intermedio - angolo più verticale' },
-    { minRatio: 0.2, exercise: 'Scapular Pull (a terra)', notes: 'Base - solo retrazione scapolare' },
-    { minRatio: 0, exercise: 'Band Pull-apart', notes: 'Principiante - con elastico leggero' }
+    { minRatio: 0.4, exercise: 'Prone Y-T-W Raises', notes: 'Intermedio - a terra prono SENZA ATTREZZI' },
+    { minRatio: 0.2, exercise: 'Superman Pull', notes: 'Base - tirata prona SENZA ATTREZZI' },
+    { minRatio: 0, exercise: 'Prone Y Raise', notes: 'Principiante - a terra prono ZERO ATTREZZI' }
   ],
   // HORIZONTAL PULL (row come riferimento - bent over row/cable row)
   // SENZA ATTREZZATURA: Inverted Row, Superman Row e Floor Pull sono esercizi ALLENANTI
+  // FIX: Più esercizi SENZA attrezzatura come fallback
   'horizontal_pull': [
     { minRatio: 1.2, exercise: 'Inverted Row Singolo Braccio', notes: 'Elite - unilaterale sotto tavolo' },
     { minRatio: 1.0, exercise: 'Rematore Inverso Piedi Elevati', notes: 'Avanzato - piedi elevati su sedia' },
     { minRatio: 0.85, exercise: 'Rematore Inverso', notes: 'Avanzato - gambe tese sotto tavolo' },
-    { minRatio: 0.7, exercise: 'Rematore Inverso Presa Larga', notes: 'Intermedio-avanzato - enfasi dorsali' },
-    { minRatio: 0.5, exercise: 'Superman Row', notes: 'Intermedio - a terra senza attrezzi' },
-    { minRatio: 0.3, exercise: 'Rematore Inverso Facilitato', notes: 'Base - ginocchia piegate' },
-    { minRatio: 0, exercise: 'Prone Y Raise', notes: 'Principiante - a terra prono' }
+    { minRatio: 0.7, exercise: 'Superman Row', notes: 'Intermedio-avanzato - a terra SENZA ATTREZZI' },
+    { minRatio: 0.5, exercise: 'Prone Y-T-W Raises', notes: 'Intermedio - a terra SENZA ATTREZZI' },
+    { minRatio: 0.3, exercise: 'Superman Pull', notes: 'Base - tirata prona SENZA ATTREZZI' },
+    { minRatio: 0, exercise: 'Prone Y Raise', notes: 'Principiante - a terra prono ZERO ATTREZZI' }
   ]
 };
 
@@ -486,22 +488,36 @@ function findBodyweightAlternative(
     const hasTable = equipment.sturdyTable === true;
     const hasBands = equipment.loopBands === true;
 
-    // Verifica se richiede tavolo
-    const needsTable = STURDY_TABLE_EXERCISES.some(ex => exLower.includes(ex) || ex.includes(exLower));
-    if (needsTable && !hasTable && (hasNoEquipment || !hasTable)) {
-      console.log(`🚫 ${exerciseName} richiede tavolo ma non disponibile`);
+    // FIX: Lista completa di keywords per esercizi che richiedono tavolo robusto
+    const TABLE_REQUIRED_KEYWORDS = [
+      'inverted row', 'inverted', 'rematore inverso', 'australian',
+      'body row', 'table row', 'bodyweight row', 'row sotto'
+    ];
+
+    // Verifica se richiede tavolo - CHECK MIGLIORATO
+    const needsTable = TABLE_REQUIRED_KEYWORDS.some(keyword => exLower.includes(keyword));
+    if (needsTable && !hasTable) {
+      console.log(`🚫 ${exerciseName} richiede tavolo robusto ma non disponibile`);
       return false;
     }
 
-    // Verifica se richiede sbarra
-    const needsPullupBar = PULLUP_BAR_EXERCISES.some(ex => exLower.includes(ex) || ex.includes(exLower));
+    // FIX: Lista completa di keywords per esercizi che richiedono sbarra
+    const PULLUP_REQUIRED_KEYWORDS = [
+      'pull-up', 'pullup', 'pull up', 'chin-up', 'chinup', 'chin up',
+      'trazioni', 'trazione', 'hanging', 'appeso', 'alla sbarra'
+    ];
+
+    // Verifica se richiede sbarra - CHECK MIGLIORATO
+    const needsPullupBar = PULLUP_REQUIRED_KEYWORDS.some(keyword => exLower.includes(keyword));
     if (needsPullupBar && !hasPullupBar) {
       console.log(`🚫 ${exerciseName} richiede sbarra ma non disponibile`);
       return false;
     }
 
-    // Verifica se richiede elastici
-    if ((exLower.includes('band') || exLower.includes('elastico')) && !hasBands && hasNoEquipment) {
+    // Verifica se richiede elastici - CHECK MIGLIORATO
+    const BAND_KEYWORDS = ['band', 'elastico', 'elastic', 'resistance band', 'loop band'];
+    const needsBands = BAND_KEYWORDS.some(keyword => exLower.includes(keyword));
+    if (needsBands && !hasBands) {
       console.log(`🚫 ${exerciseName} richiede elastici ma non disponibili`);
       return false;
     }

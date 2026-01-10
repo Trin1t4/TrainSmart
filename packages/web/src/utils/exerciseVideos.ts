@@ -578,8 +578,14 @@ const VIDEO_OVERRIDES: Record<string, string> = {
   'Floor Pull': 'floor-pull.mp4',
   'Floor Pull (asciugamano)': 'floor-pull.mp4',
   'Floor Pull con Asciugamano': 'floor-pull.mp4',
+  'Floor Pull Singolo Braccio': 'floor-pull.mp4',
+  'Floor Pull Facilitato': 'floor-pull.mp4',
   'Prone Row': 'floor-pull.mp4',
   'Superman Row': 'floor-pull.mp4',
+  'Superman Pull': 'floor-pull.mp4',
+  'Prone Y Raise': 'floor-pull.mp4',
+  'Prone Y-T-W Raises': 'floor-pull.mp4',
+  'Y-T-W Raises': 'floor-pull.mp4',
   'Remata a Terra': 'band-rows.mp4',
 
   // === ADDITIONAL EXERCISES ===
