@@ -2601,12 +2601,16 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
     const homeType = trainingType === 'bodyweight' ? 'bodyweight' : 'with_equipment';
 
     // Converti equipment in formato HomeEquipment per locationAdapter
+    // IMPORTANTE: includere sturdyTable, loopBands e noEquipment per filtro tirate!
     const homeEquipment = equipment ? {
       barbell: equipment.barbell || false,
       dumbbellMaxKg: equipment.dumbbellMaxKg || 0,
       bands: equipment.loopBands || false,
       pullupBar: equipment.pullupBar || false,
-      bench: equipment.bench || false
+      bench: equipment.bench || false,
+      sturdyTable: (equipment as any).sturdyTable || false,
+      loopBands: equipment.loopBands || false,
+      noEquipment: (equipment as any).noEquipment || false
     } : undefined;
 
     split.days.forEach(day => {

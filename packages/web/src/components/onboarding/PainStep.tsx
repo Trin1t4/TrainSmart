@@ -5,6 +5,7 @@ import { useTranslation } from '../../lib/i18n';
 interface PainStepProps {
   data: Partial<OnboardingData>;
   onNext: (data: Partial<OnboardingData>) => void;
+  onBack?: () => void;
   /** Se false, non permette la raccolta dati sanitari (Art. 9 GDPR) */
   healthConsentGranted?: boolean;
   /** Callback per aprire il modal di consenso */
@@ -35,7 +36,7 @@ function intensityToSeverity(intensity: number): PainSeverity {
   return 'mild';
 }
 
-export default function PainStep({ data, onNext, healthConsentGranted = true, onRequestConsent }: PainStepProps) {
+export default function PainStep({ data, onNext, onBack, healthConsentGranted = true, onRequestConsent }: PainStepProps) {
   const { t } = useTranslation();
   const PAIN_AREAS = getPainAreas(t);
 
@@ -244,13 +245,23 @@ export default function PainStep({ data, onNext, healthConsentGranted = true, on
         </div>
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={!isValid}
-        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {t('common.continue')}
-      </button>
+      <div className="flex gap-3 pt-4">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex-1 bg-slate-700 text-white py-4 rounded-lg font-semibold text-lg hover:bg-slate-600 transition"
+          >
+            {t('common.back')}
+          </button>
+        )}
+        <button
+          onClick={handleSubmit}
+          disabled={!isValid}
+          className={`${onBack ? 'flex-1' : 'w-full'} bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-lg font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {t('common.continue')}
+        </button>
+      </div>
     </div>
   );
 }

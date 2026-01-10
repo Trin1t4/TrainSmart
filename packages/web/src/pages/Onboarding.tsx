@@ -10,6 +10,7 @@ import GoalStep from '../components/onboarding/GoalStep';
 import RunningInterestStep from '../components/onboarding/RunningInterestStep';
 import RunningOnboarding from '../components/RunningOnboarding';
 import LocationStep from '../components/onboarding/LocationStep';
+import PainStep from '../components/onboarding/PainStep';
 import ScreeningTypeStep from '../components/onboarding/ScreeningTypeStep';
 import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
 import HealthDataConsentModal from '../components/HealthDataConsentModal';
@@ -20,13 +21,14 @@ import {
 } from '../utils/sportSpecificTraining';
 import type { RunningPreferences } from '@trainsmart/shared';
 
-// Onboarding - 6 step (running condizionale)
+// Onboarding - 7 step (running condizionale)
 // 0. Anagrafica (nome, cognome, data nascita)
 // 1. Personal Info (genere, età, altezza, peso)
 // 2. Goal (obiettivo)
 // 3. Running Interest (condizionale - solo interesse + livello)
 // 4. Location + Frequenza
-// 5. Screening Type (approfondito vs leggero)
+// 5. Pain (zone dolore per screening)
+// 6. Screening Type (approfondito vs leggero)
 // → Poi salva e vai al quiz appropriato
 
 // Goal che NON mostrano l'opzione running
@@ -198,8 +200,8 @@ export default function Onboarding() {
     );
   }
 
-  // Calcola step totali (5 se skip running, 6 se include running)
-  const totalSteps = skipRunningStep ? 5 : 6;
+  // Calcola step totali (6 se skip running, 7 se include running)
+  const totalSteps = skipRunningStep ? 6 : 7;
   const effectiveStep = skipRunningStep && currentStep > 2 ? currentStep - 1 : currentStep;
   const progress = ((effectiveStep + 1) / totalSteps) * 100;
 
@@ -314,7 +316,7 @@ export default function Onboarding() {
     }
   };
 
-  // Steps: 0=Anagrafica, 1=PersonalInfo, 2=Goal, 3=Running(condizionale), 4=Location, 5=ScreeningType
+  // Steps: 0=Anagrafica, 1=PersonalInfo, 2=Goal, 3=Running(condizionale), 4=Location, 5=Pain, 6=ScreeningType
   const nextStep = async (mergedData?: Partial<OnboardingData>) => {
     const finalData = mergedData || data;
 
@@ -346,8 +348,8 @@ export default function Onboarding() {
       }
     }
 
-    // Step 5 (ScreeningType) completato → salva e naviga
-    if (currentStep === 5) {
+    // Step 6 (ScreeningType) completato → salva e naviga
+    if (currentStep === 6) {
       console.log('[ONBOARDING] 🎯 Final step completed, saving...');
 
       if (!finalData.trainingLocation) {
@@ -518,6 +520,16 @@ export default function Onboarding() {
       case 4:
         return <LocationStep data={data} onNext={handleStepComplete} onBack={prevStep} />;
       case 5:
+        return (
+          <PainStep
+            data={data}
+            onNext={handleStepComplete}
+            onBack={prevStep}
+            healthConsentGranted={healthConsentGranted ?? false}
+            onRequestConsent={() => setShowHealthConsentModal(true)}
+          />
+        );
+      case 6:
         return <ScreeningTypeStep data={data} onNext={handleStepComplete} onBack={prevStep} />;
       default:
         return null;
