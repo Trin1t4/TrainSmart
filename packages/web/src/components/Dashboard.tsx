@@ -415,13 +415,20 @@ export default function Dashboard() {
 
   async function checkAdminStatus() {
     try {
-      const { data: isUserAdmin } = await isAdmin();
+      const { data: isUserAdmin, error } = await isAdmin();
+      console.log('🔍 Admin check result:', { isUserAdmin, error });
+      if (error) {
+        console.error('❌ Admin check error:', error);
+        return;
+      }
       if (isUserAdmin) {
         setIsAdmin(true);
         console.log('🛡️ User is admin - showing Admin Panel button');
+      } else {
+        console.log('ℹ️ User is not admin (data returned false)');
       }
     } catch (error) {
-      console.log('ℹ️ User is not admin or error checking status');
+      console.error('❌ Admin check exception:', error);
     }
   }
 
