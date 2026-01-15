@@ -19,6 +19,9 @@ import {
   patternToMuscleGroup,
   type ProgressiveWorkoutSession,
   type ProgressiveSetLog,
+  // Program Normalizer Unified
+  normalizeOnLoad,
+  type NormalizedProgram,
 } from '@trainsmart/shared';
 
 export default function Workout() {
@@ -184,6 +187,12 @@ export default function Workout() {
     console.log(`[Workout] Logged ${missedExercises.length} exercises as skipped`);
   }
 
+  /**
+   * Load program from Supabase or localStorage
+   *
+   * REFACTORED: Usa normalizeOnLoad() per gestire automaticamente
+   * tutti i formati (weekly_split, weekly_schedule, exercises[])
+   */
   async function loadProgram() {
     try {
       // ✅ PRIORITIZE SUPABASE: Try cloud data first if user is authenticated
@@ -192,11 +201,12 @@ export default function Workout() {
       if (user) {
         setUserId(user.id); // Save user ID for in-progress check
         console.log('[WORKOUT] User authenticated, loading from Supabase...');
+
         const { data, error } = await supabase
           .from('training_programs')
           .select('*')
           .eq('user_id', user.id)
-          .eq('is_active', true)  // ✅ FIX: is_active (boolean), not 'status'
+          .eq('is_active', true)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -204,35 +214,51 @@ export default function Workout() {
         if (!error && data) {
           console.log('[WORKOUT] ✅ Loaded from Supabase:', data.id);
 
-          // ✅ FIX: Convert Supabase format (weekly_split) → Workout format (weekly_schedule)
-          if (data.weekly_split?.days?.length > 0) {
+          // ✅ USA IL NORMALIZER UNIFICATO
+          // Gestisce automaticamente: weekly_split, weekly_schedule, exercises[]
+          const normalized = normalizeOnLoad(data);
+
+          if (normalized) {
+            // Converti NormalizedProgram → formato Workout page
+            // Il normalizer garantisce sempre weekly_split.days[]
             const formattedProgram = {
-              name: data.name || 'Il Tuo Programma',
-              description: data.notes || '',
-              weekly_schedule: data.weekly_split.days.map((day: any) => ({
-                dayName: day.dayName || day.name || 'Workout',
-                exercises: (day.exercises || [])
-                  .filter((ex: any) => ex && ex.name && ex.pattern) // ✅ Filter undefined
-                  .map((ex: any) => ({
+              id: normalized.id,
+              name: normalized.name || 'Il Tuo Programma',
+              description: normalized.description || '',
+              weekly_schedule: normalized.weekly_split.days.map((day) => ({
+                dayName: day.dayName || `Giorno ${day.dayIndex + 1}`,
+                dayType: day.dayType,
+                muscleGroups: day.muscleGroups,
+                runningSession: day.runningSession,
+                exercises: day.exercises
+                  .filter((ex) => ex && ex.name) // Safety filter
+                  .map((ex) => ({
                     name: ex.name,
+                    pattern: ex.pattern,
                     sets: ex.sets || 3,
                     reps: ex.reps?.toString() || '10',
-                    rest: parseRestToSeconds(ex.rest) || 90,
+                    rest: typeof ex.rest === 'number' ? ex.rest : parseRestToSeconds(ex.rest) || 90,
                     notes: ex.notes || '',
                     type: 'standard',
                     intensity: ex.intensity,
+                    weight: ex.weight,
+                    targetRir: ex.targetRir,
+                    videoUrl: ex.videoUrl,
+                    alternatives: ex.alternatives,
                     baseline: ex.baseline
                   }))
               }))
             };
+
             setProgram(formattedProgram);
-          } else {
-            // Fallback: Old format without weekly_split
-            setProgram({
-              name: data.name || 'Il Tuo Programma',
-              description: data.notes || '',
-              weekly_schedule: generateWeeklySchedule(data)
+            console.log('[WORKOUT] ✅ Program normalized and formatted:', {
+              days: formattedProgram.weekly_schedule.length,
+              totalExercises: formattedProgram.weekly_schedule.reduce(
+                (sum, day) => sum + day.exercises.length, 0
+              )
             });
+          } else {
+            console.warn('[WORKOUT] Normalization returned null');
           }
 
           setLoading(false);
@@ -248,14 +274,42 @@ export default function Workout() {
         console.log('[WORKOUT] ⚠️ Loading from localStorage (fallback)');
         const parsedProgram = JSON.parse(localProgram);
 
-        // Converti formato Dashboard -> formato Workout
-        const formattedProgram = {
-          name: parsedProgram.name || 'Il Tuo Programma',
-          description: parsedProgram.notes || '',
-          weekly_schedule: generateWeeklySchedule(parsedProgram)
-        };
+        // ✅ USA IL NORMALIZER ANCHE PER LOCALSTORAGE
+        const normalized = normalizeOnLoad(parsedProgram);
 
-        setProgram(formattedProgram);
+        if (normalized) {
+          const formattedProgram = {
+            id: normalized.id,
+            name: normalized.name || 'Il Tuo Programma',
+            description: normalized.description || '',
+            weekly_schedule: normalized.weekly_split.days.map((day) => ({
+              dayName: day.dayName || `Giorno ${day.dayIndex + 1}`,
+              dayType: day.dayType,
+              muscleGroups: day.muscleGroups,
+              runningSession: day.runningSession,
+              exercises: day.exercises
+                .filter((ex) => ex && ex.name)
+                .map((ex) => ({
+                  name: ex.name,
+                  pattern: ex.pattern,
+                  sets: ex.sets || 3,
+                  reps: ex.reps?.toString() || '10',
+                  rest: typeof ex.rest === 'number' ? ex.rest : parseRestToSeconds(ex.rest) || 90,
+                  notes: ex.notes || '',
+                  type: 'standard',
+                  intensity: ex.intensity,
+                  weight: ex.weight,
+                  targetRir: ex.targetRir,
+                  videoUrl: ex.videoUrl,
+                  alternatives: ex.alternatives,
+                  baseline: ex.baseline
+                }))
+            }))
+          };
+
+          setProgram(formattedProgram);
+        }
+
         setLoading(false);
         return;
       }
@@ -268,67 +322,7 @@ export default function Workout() {
     }
   }
 
-  function generateWeeklySchedule(dashboardProgram: any) {
-    // Genera una schedule settimanale basata sui dati del Dashboard
-    const daysPerWeek = dashboardProgram.frequency || 3;
-    const exercises = dashboardProgram.exercises || [];
-
-    const schedule = [];
-
-    for (let i = 0; i < daysPerWeek; i++) {
-      const dayName = dashboardProgram.split === 'FULL BODY'
-        ? `Full Body ${i + 1}`
-        : dashboardProgram.split === 'UPPER/LOWER'
-        ? (i % 2 === 0 ? 'Upper Body' : 'Lower Body')
-        : `Day ${i + 1}`;
-
-      // ✅ FIX CRITICO: Filter out null/undefined BEFORE mapping
-      const validExercises = exercises
-        .filter((ex: any) => ex !== null && ex !== undefined)
-        .map((ex: any) => {
-          // ✅ Gestione NUOVO formato oggetti da Dashboard.tsx (baseline-aware)
-          if (typeof ex === 'object' && ex.name) {
-            // Nuovo formato: oggetto con { name, sets, reps, rest, intensity, notes, baseline }
-            return {
-              name: ex.name,
-              sets: ex.sets || 3,
-              reps: ex.reps?.toString() || '10',
-              rest: parseRestToSeconds(ex.rest) || 90,
-              notes: ex.notes || '',
-              type: 'standard',
-              intensity: ex.intensity,
-              baseline: ex.baseline
-            };
-          } else if (typeof ex === 'string') {
-            // Vecchio formato: stringa "Exercise: 3x12-15"
-            const parts = ex.split(':');
-            const name = parts[0].trim();
-            const setsReps = parts[1]?.trim() || '3x10';
-            const [sets, reps] = setsReps.split('x');
-
-            return {
-              name: name,
-              sets: parseInt(sets) || 3,
-              reps: reps || '10',
-              rest: 90,
-              notes: '',
-              type: 'standard'
-            };
-          } else {
-            // Should not reach here after filter, but safety fallback
-            return null;
-          }
-        })
-        .filter((ex: any) => ex !== null); // ✅ Remove any nulls from unknown formats
-
-      schedule.push({
-        dayName: dayName,
-        exercises: validExercises
-      });
-    }
-
-    return schedule;
-  }
+  // NOTE: generateWeeklySchedule() rimossa - ora normalizeOnLoad() gestisce tutti i formati
 
   // Helper: converte rest da formato "2-3min" o "90s" a secondi
   function parseRestToSeconds(rest: string | number): number {
