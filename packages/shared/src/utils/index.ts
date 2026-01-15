@@ -934,3 +934,57 @@ export {
   getCorrectiveExercisesForArea,
   CorrectiveExercisesDCSS
 } from './correctiveExercisesDCSS';
+
+// ============================================================
+// PAIN DETECT 2.0 - Sistema Unificato Fastidio
+// ============================================================
+
+export type {
+  BodyArea as PDBodyArea,
+  DiscomfortIntensity,
+  DiscomfortLevel as PDDiscomfortLevel,
+  DiscomfortReport as PDDiscomfortReport,
+  DiscomfortResponse as PDDiscomfortResponse,
+  DiscomfortTrend,
+  ReportPhase,
+  UserChoice as PDUserChoice,
+  UserOption as PDUserOption,
+  LoadReduction as PDLoadReduction,
+  PostSetResult,
+  ExerciseCheck,
+  ROMModification,
+  SubstitutionResult,
+  RecoveryPhase,
+  RecoveryProgress as PDRecoveryProgress,
+  PainSessionState,
+  ScreeningTrigger,
+  ExerciseParams as PDExerciseParams,
+  AdaptedExerciseParams,
+  UsePainDetectOptions,
+  PainHistoryEntry
+} from './painDetect';
+
+export {
+  // Constants
+  PAIN_THRESHOLDS,
+  LOAD_REDUCTIONS as PD_LOAD_REDUCTIONS,
+  BODY_AREA_LABELS as PD_BODY_AREA_LABELS,
+  DISCLAIMER as PD_DISCLAIMER,
+  // Service functions
+  classifyDiscomfort as pdClassifyDiscomfort,
+  evaluateDiscomfort as pdEvaluateDiscomfort,
+  applyAdaptations,
+  evaluatePostSet as pdEvaluatePostSet,
+  checkExercise as pdCheckExercise,
+  createDiscomfortReport,
+  getLoadReductions,
+  // Substitution functions
+  findSubstitution,
+  isContraindicated as pdIsContraindicated,
+  getContraindicatedExercises,
+  getSafeExercises,
+  findSimilarExercise,
+  generateROMModification,
+  // React Hook
+  usePainDetect
+} from './painDetect';
