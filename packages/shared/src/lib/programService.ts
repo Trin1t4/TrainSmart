@@ -1,6 +1,11 @@
 /**
- * FITNESSFLOW - PROGRAM SERVICE
+ * TRAINSMART - PROGRAM SERVICE (v2 con normalizzazione)
  * Complete service layer for training programs with Supabase cloud sync
+ *
+ * CHANGELOG v2:
+ * - Integrata normalizzazione automatica su TUTTI i metodi di lettura
+ * - Tutti i programmi restituiti sono sempre NormalizedProgram
+ * - Aggiunto prepareForSave() prima dei salvataggi
  *
  * Features:
  * - CRUD operations for training programs
@@ -8,15 +13,20 @@
  * - Offline support with localStorage fallback
  * - Active program management
  * - Program history tracking
- *
- * NOTE: This service uses dependency injection for the Supabase client.
- * Initialize with initProgramService(supabaseClient) before use.
+ * - AUTOMATIC NORMALIZATION on load
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  normalizeOnLoad,
+  normalizeMany,
+  prepareForSave,
+  type NormalizedProgram
+} from '../utils/programNormalizerUnified';
 
 // ===== TYPES =====
 
+// Legacy type per compatibilità (ora usiamo NormalizedProgram)
 export interface TrainingProgram {
   id?: string;
   user_id?: string;
@@ -29,7 +39,7 @@ export interface TrainingProgram {
   frequency: number;
   split: string;
   days_per_week?: number;
-  weekly_split?: any[];
+  weekly_split?: any;
   exercises?: any[];
   total_weeks?: number;
   start_date?: string;
@@ -131,7 +141,7 @@ function validateProgram(program: Partial<TrainingProgram>): { valid: boolean; e
 }
 
 /**
- * Cache program to localStorage
+ * Cache program to localStorage (normalizzato)
  */
 function cacheToLocalStorage(key: string, data: any): void {
   try {
@@ -171,10 +181,11 @@ function getFromLocalStorage(key: string, maxAge: number = CACHE_DURATION): any 
 
 /**
  * CREATE: Save new program to Supabase
+ * Input può essere raw o già normalizzato - viene preparato per il DB
  */
 export async function createProgram(
-  program: TrainingProgram
-): Promise<ProgramServiceResponse<TrainingProgram>> {
+  program: TrainingProgram | NormalizedProgram
+): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Creating program:', program.name);
 
   // Validate
@@ -188,8 +199,11 @@ export async function createProgram(
     if (!userId) {
       // Fallback to localStorage if not authenticated
       console.warn('[ProgramService] No user, saving to localStorage only');
-      cacheToLocalStorage(CACHE_KEY_ACTIVE, program);
-      return { success: true, data: program, fromCache: true };
+      const normalized = normalizeOnLoad(program);
+      if (normalized) {
+        cacheToLocalStorage(CACHE_KEY_ACTIVE, normalized);
+      }
+      return { success: true, data: normalized!, fromCache: true };
     }
 
     // Deactivate all existing programs BEFORE creating new one
@@ -202,20 +216,29 @@ export async function createProgram(
 
     if (deactivateError) {
       console.warn('[ProgramService] Warning: Failed to deactivate old programs:', deactivateError.message);
-      // Continue anyway - not critical
     } else {
       console.log('[ProgramService] Old programs deactivated');
     }
 
-    // Prepare program data
-    const programData = {
-      ...program,
-      user_id: userId,
-      is_active: true, // New programs are active by default
-      status: program.status || 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    // Prepara per il salvataggio (rimuove campi runtime se normalizzato)
+    const isAlreadyNormalized = '_normalized' in program;
+    const programData = isAlreadyNormalized 
+      ? prepareForSave(program as NormalizedProgram)
+      : {
+          ...program,
+          user_id: userId,
+          is_active: true,
+          status: program.status || 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+    // Assicura user_id e is_active
+    programData.user_id = userId;
+    programData.is_active = true;
+    if (!programData.created_at) {
+      programData.created_at = new Date().toISOString();
+    }
 
     // Insert to Supabase
     const { data, error } = await getSupabase()
@@ -226,17 +249,18 @@ export async function createProgram(
 
     if (error) {
       console.error('[ProgramService] Supabase error:', error);
-      // Fallback to localStorage
-      cacheToLocalStorage(CACHE_KEY_ACTIVE, programData);
-      return { success: false, error: error.message, data: programData, fromCache: true };
+      const normalized = normalizeOnLoad(programData);
+      cacheToLocalStorage(CACHE_KEY_ACTIVE, normalized);
+      return { success: false, error: error.message, data: normalized!, fromCache: true };
     }
 
     console.log('[ProgramService] Program created successfully:', data.id);
 
-    // Cache locally for fast access
-    cacheToLocalStorage(CACHE_KEY_ACTIVE, data);
+    // ✅ NORMALIZZA prima di restituire e cachare
+    const normalized = normalizeOnLoad(data)!;
+    cacheToLocalStorage(CACHE_KEY_ACTIVE, normalized);
 
-    return { success: true, data };
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error creating program:', error);
@@ -246,8 +270,9 @@ export async function createProgram(
 
 /**
  * READ: Get active program for current user
+ * ✅ RESTITUISCE SEMPRE NormalizedProgram
  */
-export async function getActiveProgram(): Promise<ProgramServiceResponse<TrainingProgram>> {
+export async function getActiveProgram(): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Getting active program...');
 
   try {
@@ -258,7 +283,9 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
       const cached = getFromLocalStorage(CACHE_KEY_ACTIVE, Infinity);
       if (cached) {
         console.log('[ProgramService] Returning cached program (no user)');
-        return { success: true, data: cached, fromCache: true };
+        // Cache potrebbe essere già normalizzato o no
+        const normalized = normalizeOnLoad(cached);
+        return { success: true, data: normalized!, fromCache: true };
       }
       return { success: false, error: 'No authenticated user and no cached program' };
     }
@@ -267,7 +294,8 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
     const cached = getFromLocalStorage(CACHE_KEY_ACTIVE);
     if (cached) {
       console.log('[ProgramService] Returning cached active program');
-      return { success: true, data: cached, fromCache: true };
+      const normalized = normalizeOnLoad(cached);
+      return { success: true, data: normalized!, fromCache: true };
     }
 
     // Fetch from Supabase
@@ -290,7 +318,9 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
       return { success: false, error: 'No active program found' };
     }
 
-    console.log('[ProgramService] Active program loaded:', data.id);
+    // ✅ NORMALIZZA PRIMA DI RESTITUIRE
+    const normalized = normalizeOnLoad(data)!;
+    console.log(`[ProgramService] Loaded & normalized: ${normalized.id} (was: ${normalized._originalStructure})`);
 
     // Update last_accessed_at
     await getSupabase()
@@ -298,10 +328,10 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
       .update({ last_accessed_at: new Date().toISOString() })
       .eq('id', data.id);
 
-    // Cache for future
-    cacheToLocalStorage(CACHE_KEY_ACTIVE, data);
+    // Cache normalizzato
+    cacheToLocalStorage(CACHE_KEY_ACTIVE, normalized);
 
-    return { success: true, data };
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error getting active program:', error);
@@ -311,8 +341,9 @@ export async function getActiveProgram(): Promise<ProgramServiceResponse<Trainin
 
 /**
  * READ: Get all programs for current user (history)
+ * ✅ RESTITUISCE SEMPRE NormalizedProgram[]
  */
-export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingProgram[]>> {
+export async function getAllPrograms(): Promise<ProgramServiceResponse<NormalizedProgram[]>> {
   console.log('[ProgramService] Getting all programs...');
 
   try {
@@ -321,7 +352,8 @@ export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingP
     if (!userId) {
       const cached = getFromLocalStorage(CACHE_KEY_HISTORY, Infinity);
       if (cached) {
-        return { success: true, data: cached, fromCache: true };
+        const normalized = normalizeMany(cached);
+        return { success: true, data: normalized, fromCache: true };
       }
       return { success: false, error: 'No authenticated user' };
     }
@@ -330,7 +362,8 @@ export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingP
     const cached = getFromLocalStorage(CACHE_KEY_HISTORY);
     if (cached) {
       console.log('[ProgramService] Returning cached program history');
-      return { success: true, data: cached, fromCache: true };
+      const normalized = normalizeMany(cached);
+      return { success: true, data: normalized, fromCache: true };
     }
 
     // Fetch from Supabase
@@ -345,12 +378,14 @@ export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingP
       return { success: false, error: error.message };
     }
 
-    console.log(`[ProgramService] Loaded ${data.length} programs`);
+    // ✅ NORMALIZZA TUTTI
+    const normalized = normalizeMany(data || []);
+    console.log(`[ProgramService] Loaded ${normalized.length} programs (all normalized)`);
 
     // Cache
-    cacheToLocalStorage(CACHE_KEY_HISTORY, data);
+    cacheToLocalStorage(CACHE_KEY_HISTORY, normalized);
 
-    return { success: true, data };
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error getting all programs:', error);
@@ -360,8 +395,9 @@ export async function getAllPrograms(): Promise<ProgramServiceResponse<TrainingP
 
 /**
  * READ: Get program by ID
+ * ✅ RESTITUISCE SEMPRE NormalizedProgram
  */
-export async function getProgramById(programId: string): Promise<ProgramServiceResponse<TrainingProgram>> {
+export async function getProgramById(programId: string): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Getting program by ID:', programId);
 
   try {
@@ -382,7 +418,9 @@ export async function getProgramById(programId: string): Promise<ProgramServiceR
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    // ✅ NORMALIZZA
+    const normalized = normalizeOnLoad(data)!;
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error getting program:', error);
@@ -392,11 +430,12 @@ export async function getProgramById(programId: string): Promise<ProgramServiceR
 
 /**
  * UPDATE: Update existing program
+ * Accetta sia partial updates raw che NormalizedProgram
  */
 export async function updateProgram(
   programId: string,
-  updates: Partial<TrainingProgram>
-): Promise<ProgramServiceResponse<TrainingProgram>> {
+  updates: Partial<TrainingProgram> | Partial<NormalizedProgram>
+): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Updating program:', programId);
 
   try {
@@ -405,12 +444,23 @@ export async function updateProgram(
       return { success: false, error: 'No authenticated user' };
     }
 
+    // Se l'update è un NormalizedProgram completo, prepara per il save
+    const isNormalizedUpdate = '_normalized' in updates;
+    const dbUpdates = isNormalizedUpdate
+      ? prepareForSave(updates as NormalizedProgram)
+      : {
+          ...updates,
+          updated_at: new Date().toISOString()
+        };
+
+    // Rimuovi campi che non devono essere aggiornati direttamente
+    delete (dbUpdates as any)._normalized;
+    delete (dbUpdates as any)._normalizedAt;
+    delete (dbUpdates as any)._originalStructure;
+
     const { data, error } = await getSupabase()
       .from('training_programs')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(dbUpdates)
       .eq('id', programId)
       .eq('user_id', userId)
       .select()
@@ -429,7 +479,9 @@ export async function updateProgram(
       localStorage.removeItem(CACHE_KEY_HISTORY);
     }
 
-    return { success: true, data };
+    // ✅ NORMALIZZA il risultato
+    const normalized = normalizeOnLoad(data)!;
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error updating program:', error);
@@ -479,7 +531,7 @@ export async function deleteProgram(programId: string): Promise<ProgramServiceRe
 /**
  * SPECIAL: Set program as active (deactivates all others)
  */
-export async function setActiveProgram(programId: string): Promise<ProgramServiceResponse<TrainingProgram>> {
+export async function setActiveProgram(programId: string): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Setting active program:', programId);
 
   try {
@@ -513,10 +565,11 @@ export async function setActiveProgram(programId: string): Promise<ProgramServic
       localStorage.removeItem(CACHE_KEY_HISTORY);
     }
 
-    // Cache new active program
-    cacheToLocalStorage(CACHE_KEY_ACTIVE, data);
+    // ✅ NORMALIZZA e cache
+    const normalized = normalizeOnLoad(data)!;
+    cacheToLocalStorage(CACHE_KEY_ACTIVE, normalized);
 
-    return { success: true, data };
+    return { success: true, data: normalized };
 
   } catch (error: any) {
     console.error('[ProgramService] Error setting active program:', error);
@@ -527,7 +580,7 @@ export async function setActiveProgram(programId: string): Promise<ProgramServic
 /**
  * SPECIAL: Mark program as completed
  */
-export async function completeProgram(programId: string): Promise<ProgramServiceResponse<TrainingProgram>> {
+export async function completeProgram(programId: string): Promise<ProgramServiceResponse<NormalizedProgram>> {
   console.log('[ProgramService] Completing program:', programId);
 
   return updateProgram(programId, {
@@ -590,7 +643,10 @@ export async function migrateLocalStorageToSupabase(): Promise<ProgramServiceRes
       return { success: true };
     }
 
-    const program = JSON.parse(localProgram);
+    const parsed = JSON.parse(localProgram);
+    // Potrebbe essere { data, timestamp } o direttamente il programma
+    const program = parsed.data || parsed;
+    
     console.log('[ProgramService] Found localStorage program to migrate:', program.name);
 
     // Create program in Supabase
@@ -601,9 +657,7 @@ export async function migrateLocalStorageToSupabase(): Promise<ProgramServiceRes
     });
 
     if (result.success) {
-      console.log('[ProgramService] Migration successful, clearing localStorage');
-      // Optional: clear localStorage after successful migration
-      // localStorage.removeItem('currentProgram');
+      console.log('[ProgramService] Migration successful');
       return { success: true };
     } else {
       console.error('[ProgramService] Migration failed:', result.error);
@@ -642,3 +696,24 @@ export async function syncProgramsFromCloud(): Promise<ProgramServiceResponse<vo
     return { success: false, error: error.message || 'Unknown error' };
   }
 }
+
+// ===== RE-EXPORT NORMALIZER UTILITIES =====
+// Per comodità, ri-esporta le utility del normalizer
+
+export {
+  normalizeOnLoad,
+  normalizeMany,
+  prepareForSave,
+  type NormalizedProgram,
+} from '../utils/programNormalizerUnified';
+
+export {
+  getAllExercises,
+  getExercisesForDay,
+  getExerciseById,
+  getExerciseByName,
+  updateExerciseInProgram,
+  updateExerciseWeight,
+  isNormalizedProgram,
+  detectProgramStructure,
+} from '../utils/programNormalizerUnified';

@@ -586,16 +586,66 @@ export {
   type WeightedRIRResult,
 } from './fix-09-auto-regulation-improvements';
 
-// Program Normalizer - Unifica i 3 formati programma
-export type { NormalizedDay, NormalizedProgram } from './programNormalizer';
+// ============================================================
+// PROGRAM NORMALIZER UNIFIED (sostituisce programNormalizer.ts e programStructureNormalizer.ts)
+// ============================================================
+
+export type {
+  NormalizedExercise,
+  NormalizedDay,
+  NormalizedRunningSession,
+  NormalizedWeeklySplit,
+  NormalizedProgram,
+  StructureType,
+} from './programNormalizerUnified';
+
 export {
+  // Main functions
   normalizeProgram,
-  isCanonicalFormat,
-  needsNormalization,
+  normalizeOnLoad,
+  normalizeMany,
+  prepareForSave,
+
+  // Detection
+  detectProgramStructure,
+  isNormalizedProgram,
+
+  // Getters
+  getAllExercises,
   getExercisesForDay,
+  getExerciseById,
+  getExerciseByName,
+  getExercisesByPattern,
+  countExercises,
+
+  // Updaters
+  updateExerciseInProgram,
+  updateExerciseWeight,
+
+  // Legacy compatibility (deprecated)
+  needsNormalization,
+  isCanonicalFormat,
   findExerciseByName,
-  updateExerciseWeight
-} from './programNormalizer';
+} from './programNormalizerUnified';
+
+// Legacy aliases for backward compatibility
+// TODO: Remove in v3.0
+export {
+  detectProgramStructure as detectStructureType,
+  isNormalizedProgram as isStructureNormalized,
+  normalizeProgram as normalizeToStructure,
+  updateExerciseInProgram as updateStructureExercise,
+  getExerciseById as getStructureExerciseById,
+  getAllExercises as getAllStructureExercises,
+} from './programNormalizerUnified';
+
+// Type aliases for backward compatibility
+export type {
+  NormalizedExercise as StructureNormalizedExercise,
+  NormalizedDay as StructureNormalizedDay,
+  NormalizedWeeklySplit as StructureNormalizedWeeklySplit,
+  NormalizedProgram as StructureNormalizedProgram,
+} from './programNormalizerUnified';
 
 // Tempo Modifiers (TUT = AGGRAVANTE)
 export type { TempoModifier } from '../data/tempoModifiers';
@@ -627,17 +677,8 @@ export {
   getEducationalMessage
 } from './rirAdjustmentLogic';
 
-// Program Normalizer - Extended functions
-export type { ProgramStructureType } from './programNormalizer';
-export {
-  isNormalizedProgram,
-  detectProgramStructure,
-  getAllExercises,
-  getExerciseById,
-  updateExerciseInProgram,
-  countExercises,
-  getExercisesByPattern
-} from './programNormalizer';
+// Program Normalizer - Extended functions (now in programNormalizerUnified)
+// NOTE: Exports moved to unified section above
 
 // Exercise Progression Engine - Separazione Weighted/Bodyweight
 export type {
@@ -729,25 +770,8 @@ export {
   generateProgramWithSplitLegacy // deprecated - use generateProgramUnified
 } from './unifiedProgramGenerator';
 
-// Program Structure Normalizer (V2) - Unificazione avanzata strutture programma
-// Note: Uses different naming to avoid conflicts with legacy programNormalizer
-export type {
-  NormalizedExercise as StructureNormalizedExercise,
-  NormalizedDay as StructureNormalizedDay,
-  NormalizedRunningSession,
-  NormalizedWeeklySplit,
-  NormalizedProgram as StructureNormalizedProgram,
-  PatternBaseline as StructurePatternBaseline,
-  PainArea as StructurePainArea
-} from './programStructureNormalizer';
-export {
-  detectProgramStructure as detectStructureType,
-  isNormalizedProgram as isStructureNormalized,
-  normalizeProgram as normalizeToStructure,
-  updateExerciseInProgram as updateStructureExercise,
-  getExerciseById as getStructureExerciseById,
-  getAllExercises as getAllStructureExercises
-} from './programStructureNormalizer';
+// Program Structure Normalizer (V2) - REMOVED
+// NOTE: Merged into programNormalizerUnified - see unified section above
 
 // ============================================================
 // DCSS PARADIGM - Discomfort & Recovery System
@@ -987,10 +1011,5 @@ export {
   findSimilarExercise,
   generateROMModification,
   // React Hook
-  usePainDetect,
-  // Direct exports for migrated files compatibility
-  classifyDiscomfort,
-  evaluateDiscomfort,
-  LOAD_REDUCTIONS,
-  BODY_AREA_LABELS
+  usePainDetect
 } from './painDetect';
