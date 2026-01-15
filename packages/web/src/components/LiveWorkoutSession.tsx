@@ -79,6 +79,11 @@ import {
   removeModification,
   getActiveModifications,
   type ExerciseModification,
+  // Program Normalizer Unified
+  normalizeOnLoad,
+  updateExerciseWeight,
+  prepareForSave,
+  type NormalizedProgram,
 } from '@trainsmart/shared';
 
 interface Exercise {
@@ -2398,111 +2403,58 @@ export default function LiveWorkoutSession({
     proceedToNextSet();
   };
 
-  // Persist weight adjustment to the program in Supabase
-  const persistWeightAdjustment = async (exerciseName: string, newWeight: number, percentChange: number) => {
+  /**
+   * Persist weight adjustment to the program in Supabase
+   *
+   * REFACTORED: Usa il normalizer unificato invece di gestire
+   * manualmente 3 strutture diverse (weekly_schedule, weekly_split, exercises[])
+   */
+  const persistWeightAdjustment = async (
+    exerciseName: string,
+    newWeight: number,
+    percentChange: number
+  ) => {
     try {
-      // Fetch current program
-      const { data: program, error: fetchError } = await supabase
+      // 1. Fetch current program (raw dal DB)
+      const { data: rawProgram, error: fetchError } = await supabase
         .from('training_programs')
         .select('*')
         .eq('id', programId)
         .single();
 
-      if (fetchError || !program) {
+      if (fetchError || !rawProgram) {
         throw new Error('Failed to fetch program');
       }
 
-      let updated = false;
-      const updatePayload: any = { updated_at: new Date().toISOString() };
+      // 2. Normalizza (gestisce automaticamente weekly_schedule, weekly_split, exercises[])
+      const program = normalizeOnLoad(rawProgram);
 
-      // Check which structure the program uses: weekly_schedule or weekly_split
-      // Method 1: Try weekly_schedule (legacy/team structure)
-      if (program.weekly_schedule && Array.isArray(program.weekly_schedule)) {
-        const updatedSchedule = program.weekly_schedule.map((day: any) => ({
-          ...day,
-          exercises: day.exercises?.map((ex: any) => {
-            if (ex.name === exerciseName) {
-              updated = true;
-              return {
-                ...ex,
-                weight: newWeight,
-                notes: `${ex.notes || ''} | Auto-adjusted ${percentChange > 0 ? '+' : ''}${percentChange}% (RIR feedback)`.trim()
-              };
-            }
-            return ex;
-          })
-        }));
-
-        if (updated) {
-          updatePayload.weekly_schedule = updatedSchedule;
-        }
+      if (!program) {
+        throw new Error('Failed to normalize program');
       }
 
-      // Method 2: Try weekly_split.days (main app structure)
-      if (!updated && program.weekly_split?.days && Array.isArray(program.weekly_split.days)) {
-        const updatedSplit = {
-          ...program.weekly_split,
-          days: program.weekly_split.days.map((day: any) => ({
-            ...day,
-            exercises: day.exercises?.map((ex: any) => {
-              if (ex.name === exerciseName) {
-                updated = true;
-                return {
-                  ...ex,
-                  weight: typeof newWeight === 'number' ? `${newWeight}kg` : newWeight,
-                  notes: `${ex.notes || ''} | Auto-adjusted ${percentChange > 0 ? '+' : ''}${percentChange}% (RIR feedback)`.trim()
-                };
-              }
-              return ex;
-            })
-          }))
-        };
+      // 3. Aggiorna usando la utility (immutable, gestisce qualsiasi struttura)
+      const updatedProgram = updateExerciseWeight(
+        program,
+        exerciseName,
+        newWeight,
+        `Auto-adjusted ${percentChange > 0 ? '+' : ''}${percentChange}% (RIR feedback)`
+      );
 
-        if (updated) {
-          updatePayload.weekly_split = updatedSplit;
-        }
-      }
+      // 4. Prepara per il salvataggio (rimuove _normalized, _normalizedAt, etc.)
+      const dbPayload = prepareForSave(updatedProgram);
 
-      // Method 3: Try exercises array directly (flat structure)
-      if (!updated && program.exercises && Array.isArray(program.exercises)) {
-        const updatedExercises = program.exercises.map((ex: any) => {
-          if (ex.name === exerciseName) {
-            updated = true;
-            return {
-              ...ex,
-              weight: typeof newWeight === 'number' ? `${newWeight}kg` : newWeight,
-              notes: `${ex.notes || ''} | Auto-adjusted ${percentChange > 0 ? '+' : ''}${percentChange}% (RIR feedback)`.trim()
-            };
-          }
-          return ex;
-        });
-
-        if (updated) {
-          updatePayload.exercises = updatedExercises;
-        }
-      }
-
-      if (!updated) {
-        console.warn(`[RIR Adjustment] Exercise ${exerciseName} not found in program structure`);
-        console.warn('[RIR Adjustment] Program structure:', {
-          hasWeeklySchedule: !!program.weekly_schedule,
-          hasWeeklySplit: !!program.weekly_split?.days,
-          hasExercises: !!program.exercises
-        });
-        return;
-      }
-
-      // Save back to database
+      // 5. Salva nel DB
       const { error: updateError } = await supabase
         .from('training_programs')
-        .update(updatePayload)
+        .update(dbPayload)
         .eq('id', programId);
 
       if (updateError) {
         throw updateError;
       }
 
-      // Also log the adjustment for analytics
+      // 6. Log per analytics
       await supabase.from('program_adjustments').insert({
         user_id: userId,
         program_id: programId,
@@ -2513,20 +2465,24 @@ export default function LiveWorkoutSession({
         volume_change_percent: percentChange,
         exercises_affected: [{
           exercise_name: exerciseName,
-          pattern: currentExercise.pattern,
+          pattern: currentExercise?.pattern,
           avg_rpe: currentRPE,
-          old_weight: currentExercise.weight,
+          old_weight: currentExercise?.weight,
           new_weight: newWeight,
           reason: `RIR ${currentRIR} feedback`
         }],
         applied: true,
         user_accepted: true
+      }).catch(err => {
+        // Non critico - logga ma non blocca
+        console.warn('[RIR Adjustment] Failed to log adjustment:', err);
       });
 
-      // Clear cache to ensure fresh data on next load
+      // 7. Clear cache per forzare refresh
       localStorage.removeItem('currentProgram');
 
-      console.log(`[RIR Adjustment] Successfully persisted: ${exerciseName} → ${newWeight}kg`);
+      console.log(`[RIR Adjustment] ✅ Persisted: ${exerciseName} → ${newWeight}kg (${percentChange > 0 ? '+' : ''}${percentChange}%)`);
+
     } catch (error) {
       console.error('[RIR Adjustment] Error persisting weight adjustment:', error);
       throw error;
