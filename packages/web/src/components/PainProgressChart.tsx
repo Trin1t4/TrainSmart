@@ -1,10 +1,17 @@
 /**
- * PAIN PROGRESS CHART
+ * PAIN PROGRESS CHART - MIGRATO A PAIN DETECT 2.0
+ * 
+ * File: packages/web/src/components/PainProgressChart.tsx
  *
  * Grafico multi-dimensionale per visualizzare:
  * - Dolore nel tempo per ogni zona
  * - Correlazione con: Carico, Reps, ROM, Serie
  * - Progressione/regressione visuale
+ * 
+ * MODIFICHE V2:
+ * - Import tipi da Pain Detect 2.0
+ * - Usa BODY_AREA_LABELS per consistenza
+ * - Aggiunge indicatori soglie DCSS
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -25,14 +32,41 @@ import {
 } from 'recharts';
 import { Activity, TrendingDown, TrendingUp, AlertTriangle, CheckCircle, Info, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { PainLog } from '../lib/painManagementService';
+
+// PAIN DETECT 2.0 imports
+import {
+  PAIN_THRESHOLDS,
+  BODY_AREA_LABELS,
+  classifyDiscomfort,
+  type BodyArea,
+  type DiscomfortIntensity
+} from '../lib/painManagementService';
+
+// Manteniamo PainLog type per compatibilità DB
+interface PainLog {
+  id?: string;
+  user_id: string;
+  program_id?: string;
+  exercise_name: string;
+  session_date?: string;
+  day_name?: string;
+  set_number: number;
+  weight_used?: number;
+  reps_completed: number;
+  rom_percentage?: number;
+  pain_level: number;
+  rpe?: number;
+  pain_location?: string;
+  adaptations?: any[];
+  notes?: string;
+}
 
 interface PainProgressChartProps {
   userId: string;
   className?: string;
 }
 
-// Colori per le diverse zone di dolore
+// Colori per le diverse zone di dolore - allineati con Pain Detect 2.0
 const PAIN_AREA_COLORS: Record<string, string> = {
   knee: '#ef4444',        // red
   lower_back: '#f97316',  // orange
@@ -42,26 +76,25 @@ const PAIN_AREA_COLORS: Record<string, string> = {
   elbow: '#8b5cf6',       // purple
   hip: '#ec4899',         // pink
   neck: '#06b6d4',        // cyan
-  general: '#6b7280',     // gray
+  upper_back: '#14b8a6',  // teal
+  foot: '#6b7280',        // gray
+  general: '#9ca3af',     // gray-400
 };
 
-// Traduzioni zone dolore
-const PAIN_AREA_LABELS: Record<string, string> = {
-  knee: 'Ginocchio',
-  lower_back: 'Schiena Bassa',
-  shoulder: 'Spalla',
-  wrist: 'Polso',
-  ankle: 'Caviglia',
-  elbow: 'Gomito',
-  hip: 'Anca',
-  neck: 'Collo',
+// Usa BODY_AREA_LABELS da Pain Detect 2.0
+const PAIN_AREA_LABELS_IT: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(BODY_AREA_LABELS).map(([key, val]) => [key, val.it])
+  ),
   general: 'Generale',
+  scapula: 'Scapola',
+  thoracic_spine: 'Dorsale'
 };
 
 interface AggregatedPainData {
   date: string;
   formattedDate: string;
-  [key: string]: number | string | undefined; // pain_knee, pain_lower_back, etc.
+  [key: string]: number | string | undefined;
   avgWeight?: number;
   avgReps?: number;
   avgRom?: number;
@@ -107,13 +140,13 @@ export default function PainProgressChart({ userId, className = '' }: PainProgre
 
       setPainLogs(data || []);
 
-      // Auto-seleziona tutte le zone presenti nei dati
-      const uniqueAreas = [...new Set((data || []).map(log => log.pain_location).filter(Boolean))];
-      if (selectedAreas.length === 0 && uniqueAreas.length > 0) {
-        setSelectedAreas(uniqueAreas as string[]);
+      // Auto-select areas with data
+      const areasWithData = [...new Set(data?.map(log => log.pain_location).filter(Boolean))];
+      if (areasWithData.length > 0 && selectedAreas.length === 0) {
+        setSelectedAreas(areasWithData.slice(0, 3) as string[]); // Max 3 initial
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Exception loading pain data:', error);
     } finally {
       setLoading(false);
     }
@@ -121,54 +154,55 @@ export default function PainProgressChart({ userId, className = '' }: PainProgre
 
   // Aggrega dati per data
   const aggregatedData = useMemo(() => {
-    if (painLogs.length === 0) return [];
+    const grouped = new Map<string, PainLog[]>();
 
-    // Raggruppa per data
-    const byDate = new Map<string, PainLog[]>();
     painLogs.forEach(log => {
       const date = log.session_date?.split('T')[0] || '';
-      if (!byDate.has(date)) {
-        byDate.set(date, []);
+      if (!grouped.has(date)) {
+        grouped.set(date, []);
       }
-      byDate.get(date)!.push(log);
+      grouped.get(date)!.push(log);
     });
 
-    // Crea dati aggregati
     const result: AggregatedPainData[] = [];
-    byDate.forEach((logs, date) => {
+
+    grouped.forEach((logs, date) => {
       const dataPoint: AggregatedPainData = {
         date,
-        formattedDate: new Date(date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }),
+        formattedDate: new Date(date).toLocaleDateString('it-IT', {
+          day: '2-digit',
+          month: 'short'
+        })
       };
 
-      // Dolore per zona (media del giorno)
-      const painByArea = new Map<string, number[]>();
+      // Aggrega per area
+      const areaGroups = new Map<string, number[]>();
       logs.forEach(log => {
         const area = log.pain_location || 'general';
-        if (!painByArea.has(area)) {
-          painByArea.set(area, []);
+        if (!areaGroups.has(area)) {
+          areaGroups.set(area, []);
         }
-        painByArea.get(area)!.push(log.pain_level);
+        areaGroups.get(area)!.push(log.pain_level);
       });
 
-      painByArea.forEach((levels, area) => {
-        const avg = levels.reduce((a, b) => a + b, 0) / levels.length;
+      areaGroups.forEach((levels, area) => {
+        const avg = levels.reduce((sum, l) => sum + l, 0) / levels.length;
         dataPoint[`pain_${area}`] = Math.round(avg * 10) / 10;
       });
 
-      // Metriche aggiuntive
-      const weights = logs.filter(l => l.weight_used).map(l => l.weight_used!);
-      const reps = logs.filter(l => l.reps_completed).map(l => l.reps_completed);
-      const roms = logs.filter(l => l.rom_percentage).map(l => l.rom_percentage!);
+      // Metriche correlate
+      const validWeights = logs.filter(l => l.weight_used).map(l => l.weight_used!);
+      const validReps = logs.filter(l => l.reps_completed).map(l => l.reps_completed);
+      const validRom = logs.filter(l => l.rom_percentage).map(l => l.rom_percentage!);
 
-      if (weights.length > 0) {
-        dataPoint.avgWeight = Math.round(weights.reduce((a, b) => a + b, 0) / weights.length);
+      if (validWeights.length > 0) {
+        dataPoint.avgWeight = Math.round(validWeights.reduce((a, b) => a + b, 0) / validWeights.length);
       }
-      if (reps.length > 0) {
-        dataPoint.avgReps = Math.round(reps.reduce((a, b) => a + b, 0) / reps.length);
+      if (validReps.length > 0) {
+        dataPoint.avgReps = Math.round(validReps.reduce((a, b) => a + b, 0) / validReps.length);
       }
-      if (roms.length > 0) {
-        dataPoint.avgRom = Math.round(roms.reduce((a, b) => a + b, 0) / roms.length);
+      if (validRom.length > 0) {
+        dataPoint.avgRom = Math.round(validRom.reduce((a, b) => a + b, 0) / validRom.length);
       }
       dataPoint.totalSets = logs.length;
 
@@ -178,113 +212,122 @@ export default function PainProgressChart({ userId, className = '' }: PainProgre
     return result.sort((a, b) => a.date.localeCompare(b.date));
   }, [painLogs]);
 
-  // Ottieni zone uniche dai dati
-  const uniqueAreas = useMemo(() => {
-    return [...new Set(painLogs.map(log => log.pain_location).filter(Boolean))] as string[];
+  // Calcola statistiche
+  const stats = useMemo(() => {
+    if (painLogs.length === 0) return null;
+
+    const totalLogs = painLogs.length;
+    const avgPain = painLogs.reduce((sum, log) => sum + log.pain_level, 0) / totalLogs;
+    const maxPain = Math.max(...painLogs.map(l => l.pain_level));
+
+    // Trend (primi vs ultimi 50%)
+    const sortedByDate = [...painLogs].sort((a, b) =>
+      (a.session_date || '').localeCompare(b.session_date || '')
+    );
+    const midpoint = Math.floor(sortedByDate.length / 2);
+    const firstHalf = sortedByDate.slice(0, midpoint);
+    const secondHalf = sortedByDate.slice(midpoint);
+
+    const avgFirst = firstHalf.length > 0
+      ? firstHalf.reduce((sum, l) => sum + l.pain_level, 0) / firstHalf.length
+      : 0;
+    const avgSecond = secondHalf.length > 0
+      ? secondHalf.reduce((sum, l) => sum + l.pain_level, 0) / secondHalf.length
+      : 0;
+
+    let trend: 'improving' | 'stable' | 'worsening' = 'stable';
+    if (avgSecond < avgFirst - 0.5) trend = 'improving';
+    else if (avgSecond > avgFirst + 0.5) trend = 'worsening';
+
+    // Sessioni senza dolore significativo (< TOLERABLE_MAX)
+    const painFreeSessions = new Set(
+      painLogs
+        .filter(l => l.pain_level < PAIN_THRESHOLDS.TOLERABLE_MAX)
+        .map(l => l.session_date?.split('T')[0])
+    ).size;
+
+    // Classificazione usando Pain Detect 2.0
+    const classification = classifyDiscomfort(Math.round(avgPain) as DiscomfortIntensity);
+
+    return {
+      totalLogs,
+      avgPain: Math.round(avgPain * 10) / 10,
+      maxPain,
+      trend,
+      painFreeSessions,
+      classification
+    };
   }, [painLogs]);
 
-  // Calcola trend per ogni zona
-  const trends = useMemo(() => {
-    const result: Record<string, { trend: 'up' | 'down' | 'stable'; change: number; current: number }> = {};
+  // Aree disponibili
+  const availableAreas = useMemo(() => {
+    return [...new Set(painLogs.map(l => l.pain_location).filter(Boolean))] as string[];
+  }, [painLogs]);
 
-    uniqueAreas.forEach(area => {
-      const areaLogs = painLogs
-        .filter(l => l.pain_location === area)
-        .sort((a, b) => (a.session_date || '').localeCompare(b.session_date || ''));
-
-      if (areaLogs.length < 2) {
-        result[area] = { trend: 'stable', change: 0, current: areaLogs[0]?.pain_level || 0 };
-        return;
-      }
-
-      // Confronta prima e seconda metà
-      const mid = Math.floor(areaLogs.length / 2);
-      const firstHalf = areaLogs.slice(0, mid);
-      const secondHalf = areaLogs.slice(mid);
-
-      const avgFirst = firstHalf.reduce((sum, l) => sum + l.pain_level, 0) / firstHalf.length;
-      const avgSecond = secondHalf.reduce((sum, l) => sum + l.pain_level, 0) / secondHalf.length;
-
-      const change = avgSecond - avgFirst;
-      const current = areaLogs[areaLogs.length - 1].pain_level;
-
-      result[area] = {
-        trend: change > 0.5 ? 'up' : change < -0.5 ? 'down' : 'stable',
-        change: Math.round(change * 10) / 10,
-        current,
-      };
-    });
-
-    return result;
-  }, [painLogs, uniqueAreas]);
-
-  // Toggle area selezionata
   const toggleArea = (area: string) => {
     setSelectedAreas(prev =>
-      prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]
-    );
-  };
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload || !payload.length) return null;
-
-    return (
-      <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg">
-        <p className="font-medium text-white mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => {
-          const isPain = entry.dataKey.startsWith('pain_');
-          const area = isPain ? entry.dataKey.replace('pain_', '') : null;
-
-          return (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-slate-400">
-                {area ? PAIN_AREA_LABELS[area] || area : entry.name}:
-              </span>
-              <span className="font-medium" style={{ color: entry.color }}>
-                {entry.value}
-                {isPain ? '/10' : entry.dataKey === 'avgRom' ? '%' : entry.dataKey === 'avgWeight' ? 'kg' : ''}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      prev.includes(area)
+        ? prev.filter(a => a !== area)
+        : [...prev, area]
     );
   };
 
   if (loading) {
     return (
-      <div className="bg-slate-800/50 rounded-xl p-6 animate-pulse">
-        <div className="h-6 bg-slate-700 rounded w-1/3 mb-4"></div>
-        <div className="h-64 bg-slate-700 rounded"></div>
+      <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 ${className}`}>
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded"></div>
+        </div>
       </div>
     );
   }
 
-  // Mostra messaggio "nessun dato" MA mantieni i controlli per cambiare time range
-  const hasNoData = painLogs.length === 0;
+  if (painLogs.length === 0) {
+    return (
+      <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 ${className}`}>
+        <div className="text-center py-8">
+          <Activity className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
+            Nessun dato sul fastidio
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            I dati appariranno qui quando segnalerai fastidio durante gli allenamenti.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`bg-slate-800/50 rounded-xl overflow-hidden ${className}`}>
-      {/* Header Collapsible */}
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm ${className}`}>
+      {/* Header */}
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
+        className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <Activity className="w-5 h-5 text-blue-400" />
-          <h3 className="font-semibold text-white">Tracking Dolore & Progressione</h3>
-          {uniqueAreas.length > 0 && (
-            <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
-              {uniqueAreas.length} zone tracciate
-            </span>
-          )}
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+            <Activity className="w-5 h-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+              Monitoraggio Fastidio
+            </h3>
+            {stats && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Media: {stats.avgPain}/10 •
+                {stats.trend === 'improving' && ' 📉 In miglioramento'}
+                {stats.trend === 'stable' && ' ➡️ Stabile'}
+                {stats.trend === 'worsening' && ' 📈 In aumento'}
+              </p>
+            )}
+          </div>
         </div>
-        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+
+        <ChevronDown
+          className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+        />
       </div>
 
       <AnimatePresence>
@@ -294,240 +337,223 @@ export default function PainProgressChart({ userId, className = '' }: PainProgre
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            <div className="px-4 pb-4">
-              {/* Controlli */}
-              <div className="flex flex-wrap gap-4 mb-4">
-                {/* Time Range */}
-                <div className="flex gap-1 bg-slate-700/50 rounded-lg p-1">
-                  {(['7d', '30d', '90d', 'all'] as const).map(range => (
-                    <button
-                      key={range}
-                      onClick={() => setTimeRange(range)}
-                      className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                        timeRange === range
-                          ? 'bg-blue-500 text-white'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {range === 'all' ? 'Tutto' : range}
-                    </button>
-                  ))}
+            {/* Stats Cards */}
+            {stats && (
+              <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">Media</p>
+                  <p className={`text-2xl font-bold ${
+                    stats.avgPain < PAIN_THRESHOLDS.TOLERABLE_MAX ? 'text-green-600' :
+                    stats.avgPain < PAIN_THRESHOLDS.PROFESSIONAL_ADVICE ? 'text-amber-600' :
+                    'text-red-600'
+                  }`}>
+                    {stats.avgPain}/10
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {stats.classification}
+                  </p>
                 </div>
 
-                {/* Toggle Metrics - solo se ci sono dati */}
-                {!hasNoData && (
-                <button
-                  onClick={() => setShowMetrics(!showMetrics)}
-                  className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
-                    showMetrics
-                      ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
-                      : 'border-slate-600 text-slate-400'
-                  }`}
-                >
-                  {showMetrics ? 'Nascondi' : 'Mostra'} Metriche
-                </button>
-                )}
-              </div>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">Massimo</p>
+                  <p className={`text-2xl font-bold ${
+                    stats.maxPain < PAIN_THRESHOLDS.TOLERABLE_MAX ? 'text-green-600' :
+                    stats.maxPain < PAIN_THRESHOLDS.PROFESSIONAL_ADVICE ? 'text-amber-600' :
+                    'text-red-600'
+                  }`}>
+                    {stats.maxPain}/10
+                  </p>
+                </div>
 
-              {/* Area Selector - solo se ci sono dati */}
-              {!hasNoData && uniqueAreas.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {uniqueAreas.map(area => {
-                  const trend = trends[area];
-                  const isSelected = selectedAreas.includes(area);
-                  const color = PAIN_AREA_COLORS[area] || PAIN_AREA_COLORS.general;
-
-                  return (
-                    <button
-                      key={area}
-                      onClick={() => toggleArea(area)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                        isSelected
-                          ? 'bg-slate-700 border-2'
-                          : 'bg-slate-800/50 border border-slate-600 opacity-50'
-                      }`}
-                      style={{ borderColor: isSelected ? color : undefined }}
-                    >
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="text-white">{PAIN_AREA_LABELS[area] || area}</span>
-
-                      {/* Trend indicator */}
-                      {trend && (
-                        <span className={`text-xs ${
-                          trend.trend === 'down' ? 'text-emerald-400' :
-                          trend.trend === 'up' ? 'text-red-400' : 'text-slate-400'
-                        }`}>
-                          {trend.trend === 'down' && <TrendingDown className="w-3 h-3 inline" />}
-                          {trend.trend === 'up' && <TrendingUp className="w-3 h-3 inline" />}
-                          {trend.current}/10
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              )}
-
-              {/* Summary Cards - solo se ci sono dati */}
-              {!hasNoData && uniqueAreas.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                {uniqueAreas.filter(a => selectedAreas.includes(a)).map(area => {
-                  const trend = trends[area];
-                  if (!trend) return null;
-
-                  const color = PAIN_AREA_COLORS[area] || PAIN_AREA_COLORS.general;
-                  const isImproving = trend.trend === 'down';
-                  const isWorsening = trend.trend === 'up';
-
-                  return (
-                    <div
-                      key={area}
-                      className="bg-slate-700/50 rounded-lg p-3 border-l-4"
-                      style={{ borderColor: color }}
-                    >
-                      <p className="text-xs text-slate-400 mb-1">{PAIN_AREA_LABELS[area]}</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-white">{trend.current}</span>
-                        <span className="text-slate-400">/10</span>
-                      </div>
-                      <div className={`text-xs mt-1 flex items-center gap-1 ${
-                        isImproving ? 'text-emerald-400' :
-                        isWorsening ? 'text-red-400' : 'text-slate-400'
-                      }`}>
-                        {isImproving && <TrendingDown className="w-3 h-3" />}
-                        {isWorsening && <TrendingUp className="w-3 h-3" />}
-                        {isImproving && <CheckCircle className="w-3 h-3" />}
-                        {isWorsening && <AlertTriangle className="w-3 h-3" />}
-                        <span>
-                          {isImproving ? `${Math.abs(trend.change)} in meno` :
-                           isWorsening ? `+${trend.change} rispetto all'inizio` :
-                           'Stabile'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              )}
-
-              {/* Main Chart */}
-              <div className="h-72">
-                {hasNoData ? (
-                  <div className="h-full flex flex-col items-center justify-center">
-                    <Info className="w-12 h-12 text-slate-500 mb-3" />
-                    <p className="text-slate-400">Nessun dato nel periodo selezionato</p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {timeRange === '7d' ? 'Prova a selezionare 30d o un periodo più lungo' :
-                       'I dati verranno mostrati dopo i tuoi allenamenti'}
-                    </p>
-                  </div>
-                ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={aggregatedData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey="formattedDate"
-                      stroke="#9ca3af"
-                      tick={{ fill: '#9ca3af', fontSize: 12 }}
-                    />
-                    <YAxis
-                      yAxisId="pain"
-                      domain={[0, 10]}
-                      stroke="#9ca3af"
-                      tick={{ fill: '#9ca3af', fontSize: 12 }}
-                      label={{ value: 'Dolore', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}
-                    />
-                    {showMetrics && (
-                      <YAxis
-                        yAxisId="metrics"
-                        orientation="right"
-                        stroke="#9ca3af"
-                        tick={{ fill: '#9ca3af', fontSize: 12 }}
-                        label={{ value: 'Carico (kg)', angle: 90, position: 'insideRight', fill: '#9ca3af' }}
-                      />
-                    )}
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-
-                    {/* Zona verde (dolore accettabile) */}
-                    <ReferenceLine y={3} yAxisId="pain" stroke="#22c55e" strokeDasharray="5 5" label={{ value: 'Soglia sicura', fill: '#22c55e', fontSize: 10 }} />
-
-                    {/* Zona rossa (dolore alto) */}
-                    <ReferenceLine y={7} yAxisId="pain" stroke="#ef4444" strokeDasharray="5 5" label={{ value: 'Stop', fill: '#ef4444', fontSize: 10 }} />
-
-                    {/* Linee dolore per ogni zona selezionata */}
-                    {selectedAreas.map(area => (
-                      <Line
-                        key={area}
-                        yAxisId="pain"
-                        type="monotone"
-                        dataKey={`pain_${area}`}
-                        name={PAIN_AREA_LABELS[area] || area}
-                        stroke={PAIN_AREA_COLORS[area] || PAIN_AREA_COLORS.general}
-                        strokeWidth={2}
-                        dot={{ fill: PAIN_AREA_COLORS[area] || PAIN_AREA_COLORS.general, strokeWidth: 0 }}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                        connectNulls
-                      />
-                    ))}
-
-                    {/* Metriche aggiuntive */}
-                    {showMetrics && (
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">Trend</p>
+                  <div className="flex items-center gap-1">
+                    {stats.trend === 'improving' && (
                       <>
-                        <Bar
-                          yAxisId="metrics"
-                          dataKey="avgWeight"
-                          name="Peso medio"
-                          fill="#3b82f6"
-                          opacity={0.3}
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Line
-                          yAxisId="metrics"
-                          type="monotone"
-                          dataKey="avgReps"
-                          name="Reps medie"
-                          stroke="#22c55e"
-                          strokeWidth={1}
-                          strokeDasharray="5 5"
-                          dot={false}
-                        />
+                        <TrendingDown className="w-5 h-5 text-green-500" />
+                        <span className="text-green-600 font-medium">Migliora</span>
                       </>
                     )}
-                  </ComposedChart>
-                </ResponsiveContainer>
-                )}
+                    {stats.trend === 'stable' && (
+                      <>
+                        <span className="text-gray-600 font-medium">➡️ Stabile</span>
+                      </>
+                    )}
+                    {stats.trend === 'worsening' && (
+                      <>
+                        <TrendingUp className="w-5 h-5 text-red-500" />
+                        <span className="text-red-600 font-medium">Peggiora</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">Sessioni OK</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {stats.painFreeSessions}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    &lt; {PAIN_THRESHOLDS.TOLERABLE_MAX}/10
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Filters */}
+            <div className="px-4 pb-3 flex flex-wrap gap-2 items-center">
+              {/* Time Range */}
+              <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                {(['7d', '30d', '90d', 'all'] as const).map(range => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeRange(range)}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      timeRange === range
+                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                    }`}
+                  >
+                    {range === '7d' ? '7 gg' : range === '30d' ? '30 gg' : range === '90d' ? '90 gg' : 'Tutto'}
+                  </button>
+                ))}
               </div>
 
-              {/* Legend Info - solo se ci sono dati */}
-              {!hasNoData && (
-              <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-400">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-0.5 bg-emerald-500" style={{ borderStyle: 'dashed', borderWidth: '1px', borderColor: '#22c55e' }}></div>
-                  <span>Soglia sicura (0-3)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-0.5 bg-red-500" style={{ borderStyle: 'dashed', borderWidth: '1px', borderColor: '#ef4444' }}></div>
-                  <span>Zona stop (7+)</span>
-                </div>
-                {showMetrics && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-3 bg-blue-500/30 rounded"></div>
-                      <span>Carico</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-0.5 bg-emerald-500" style={{ borderStyle: 'dashed', borderWidth: '1px', borderColor: '#22c55e' }}></div>
-                      <span>Reps</span>
-                    </div>
-                  </>
-                )}
+              {/* Area Toggles */}
+              <div className="flex flex-wrap gap-1">
+                {availableAreas.map(area => (
+                  <button
+                    key={area}
+                    onClick={() => toggleArea(area)}
+                    className={`px-2 py-1 text-xs rounded-full transition-colors flex items-center gap-1 ${
+                      selectedAreas.includes(area)
+                        ? 'text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: selectedAreas.includes(area)
+                        ? PAIN_AREA_COLORS[area] || '#6b7280'
+                        : undefined
+                    }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: PAIN_AREA_COLORS[area] || '#6b7280' }}
+                    />
+                    {PAIN_AREA_LABELS_IT[area] || area}
+                  </button>
+                ))}
               </div>
-              )}
+
+              {/* Show Metrics Toggle */}
+              <button
+                onClick={() => setShowMetrics(!showMetrics)}
+                className={`ml-auto px-2 py-1 text-xs rounded transition-colors ${
+                  showMetrics
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                }`}
+              >
+                {showMetrics ? '📊 Nascondi Metriche' : '📊 Mostra Metriche'}
+              </button>
+            </div>
+
+            {/* Chart */}
+            <div className="px-4 pb-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={aggregatedData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis
+                    dataKey="formattedDate"
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, 10]}
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    ticks={[0, 2, 4, 6, 8, 10]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(255,255,255,0.95)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (name.startsWith('pain_')) {
+                        const area = name.replace('pain_', '');
+                        return [`${value}/10`, PAIN_AREA_LABELS_IT[area] || area];
+                      }
+                      return [value, name];
+                    }}
+                  />
+                  <Legend />
+
+                  {/* Reference Lines per soglie Pain Detect 2.0 */}
+                  <ReferenceLine
+                    y={PAIN_THRESHOLDS.TOLERABLE_MAX}
+                    stroke="#22c55e"
+                    strokeDasharray="5 5"
+                    label={{ value: 'Tollerabile', fill: '#22c55e', fontSize: 10 }}
+                  />
+                  <ReferenceLine
+                    y={PAIN_THRESHOLDS.PROFESSIONAL_ADVICE}
+                    stroke="#ef4444"
+                    strokeDasharray="5 5"
+                    label={{ value: 'Professionista', fill: '#ef4444', fontSize: 10 }}
+                  />
+
+                  {/* Pain Lines per area selezionata */}
+                  {selectedAreas.map(area => (
+                    <Line
+                      key={area}
+                      type="monotone"
+                      dataKey={`pain_${area}`}
+                      name={`pain_${area}`}
+                      stroke={PAIN_AREA_COLORS[area] || '#6b7280'}
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                      connectNulls
+                    />
+                  ))}
+
+                  {/* Metrics (se abilitati) */}
+                  {showMetrics && aggregatedData.some(d => d.avgWeight) && (
+                    <Bar
+                      dataKey="avgWeight"
+                      name="Peso (kg)"
+                      fill="#3b82f6"
+                      opacity={0.3}
+                      yAxisId="right"
+                    />
+                  )}
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legend Info */}
+            <div className="px-4 pb-4">
+              <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-400">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="mb-1">
+                      <span className="text-green-600">●</span> 0-{PAIN_THRESHOLDS.TOLERABLE_MAX - 1}: Fastidio tollerabile, continua normalmente
+                    </p>
+                    <p className="mb-1">
+                      <span className="text-amber-600">●</span> {PAIN_THRESHOLDS.TOLERABLE_MAX}-{PAIN_THRESHOLDS.PROFESSIONAL_ADVICE - 1}: Fastidio moderato, considera adattamenti
+                    </p>
+                    <p>
+                      <span className="text-red-600">●</span> {PAIN_THRESHOLDS.PROFESSIONAL_ADVICE}+: Consigliato consulto professionista
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

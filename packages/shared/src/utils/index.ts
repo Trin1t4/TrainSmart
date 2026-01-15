@@ -970,7 +970,8 @@ export {
   LOAD_REDUCTIONS as PD_LOAD_REDUCTIONS,
   BODY_AREA_LABELS as PD_BODY_AREA_LABELS,
   DISCLAIMER as PD_DISCLAIMER,
-  // Service functions
+  PAIN_DETECT_DISCLAIMER,
+  // Service functions (with aliases for legacy code)
   classifyDiscomfort as pdClassifyDiscomfort,
   evaluateDiscomfort as pdEvaluateDiscomfort,
   applyAdaptations,
@@ -986,5 +987,10 @@ export {
   findSimilarExercise,
   generateROMModification,
   // React Hook
-  usePainDetect
+  usePainDetect,
+  // Direct exports for migrated files compatibility
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  LOAD_REDUCTIONS,
+  BODY_AREA_LABELS
 } from './painDetect';

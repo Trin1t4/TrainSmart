@@ -298,3 +298,6 @@ export const DISCLAIMER = {
   it: "TrainSmart fornisce suggerimenti basati sulle tue segnalazioni, ma non sostituisce il parere di un professionista sanitario. In caso di dolore persistente o intenso, consulta un medico o fisioterapista.",
   en: "TrainSmart provides suggestions based on your reports, but does not replace professional medical advice. For persistent or severe pain, consult a doctor or physiotherapist.",
 };
+
+/** Alias per compatibilità */
+export const PAIN_DETECT_DISCLAIMER = DISCLAIMER;

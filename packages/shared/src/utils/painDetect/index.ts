@@ -55,6 +55,7 @@ export {
   LOAD_REDUCTIONS,
   BODY_AREA_LABELS,
   DISCLAIMER,
+  PAIN_DETECT_DISCLAIMER,
 } from './painDetectTypes';
 
 // =============================================================================

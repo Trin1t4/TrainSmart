@@ -1,15 +1,31 @@
 /**
- * Pain Management Hook
- * Gestisce la logica completa di pain tracking e progressive deload
- *
- * SCENARIO 1 (Durante workout):
- * Pain ≥5 → Load -20% → Reps -30% → Suspend → (2nd time) → Screening
- *
- * SCENARIO 2 (Pre-workout pain):
- * Gestito da PreWorkoutPainCheck component
+ * PAIN MANAGEMENT HOOK - MIGRATO A PAIN DETECT 2.0
+ * 
+ * File: packages/web/src/hooks/usePainManagement.ts
+ * 
+ * Questo hook è un WRAPPER per compatibilità con codice esistente.
+ * Per nuove implementazioni, usa direttamente usePainDetect.
+ * 
+ * @deprecated Usa usePainDetect da @trainsmart/shared
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import {
+  usePainDetect,
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  PAIN_THRESHOLDS,
+  BODY_AREA_LABELS,
+  type DiscomfortIntensity,
+  type DiscomfortResponse,
+  type BodyArea,
+  type UserChoice,
+  type SessionPainState
+} from '@trainsmart/shared';
+
+// =============================================================================
+// TYPES (Mantenuti per compatibilità)
+// =============================================================================
 
 export type PainArea =
   | 'neck'
@@ -30,33 +46,100 @@ export interface ExercisePainHistory {
   needsScreening: boolean;
   lastPainLevel: number;
   recoveryProtocolActive: boolean;
-  referToPhysio: boolean; // Se recovery fallisce
+  referToPhysio: boolean;
 }
 
 export interface PainAttempt {
   timestamp: string;
   painLevel: number;
   action: 'load_reduction' | 'rep_reduction' | 'suspension' | 'screening_triggered' | 'physio_referral';
-  loadReduction?: number; // Percentuale riduzione (es. -20%)
-  repReduction?: number; // Percentuale riduzione (es. -30%)
+  loadReduction?: number;
+  repReduction?: number;
   notes?: string;
 }
 
-interface PainManagementState {
+interface LegacyPainManagementState {
   exerciseHistory: Map<string, ExercisePainHistory>;
   activeScreeningExercise: string | null;
-  physioReferralNeeded: string[]; // Lista esercizi che necessitano referral
+  physioReferralNeeded: string[];
 }
 
-export function usePainManagement() {
-  const [state, setState] = useState<PainManagementState>({
+// =============================================================================
+// MAPPING HELPERS
+// =============================================================================
+
+/**
+ * Mappa PainArea legacy → BodyArea nuovo sistema
+ */
+function mapLegacyAreaToBodyArea(area: PainArea): BodyArea {
+  const mapping: Record<PainArea, BodyArea> = {
+    neck: 'neck',
+    shoulder: 'shoulder',
+    elbow: 'elbow',
+    wrist: 'wrist',
+    scapula: 'upper_back',
+    thoracic_spine: 'upper_back',
+    lower_back: 'lower_back',
+    hip: 'hip',
+    knee: 'knee',
+    ankle: 'ankle'
+  };
+  return mapping[area] || 'lower_back';
+}
+
+/**
+ * Mappa exercise name → area probabile (euristica)
+ */
+function getPainAreaFromExerciseName(exerciseName: string): PainArea {
+  const name = exerciseName.toLowerCase();
+  
+  if (name.includes('squat') || name.includes('leg press') || name.includes('lunge')) {
+    return 'knee';
+  }
+  if (name.includes('deadlift') || name.includes('row') || name.includes('good morning')) {
+    return 'lower_back';
+  }
+  if (name.includes('press') || name.includes('fly') || name.includes('raise')) {
+    return 'shoulder';
+  }
+  if (name.includes('curl') || name.includes('extension') || name.includes('pushdown')) {
+    return 'elbow';
+  }
+  if (name.includes('pull') || name.includes('chin')) {
+    return 'shoulder';
+  }
+  if (name.includes('hip') || name.includes('thrust') || name.includes('glute')) {
+    return 'hip';
+  }
+  if (name.includes('calf') || name.includes('ankle')) {
+    return 'ankle';
+  }
+  
+  return 'lower_back'; // Default
+}
+
+// =============================================================================
+// HOOK IMPLEMENTATION
+// =============================================================================
+
+/**
+ * @deprecated Usa usePainDetect per nuove implementazioni
+ */
+export function usePainManagement(userId?: string, sessionId?: string) {
+  // Usa il nuovo hook internamente (se userId/sessionId forniti)
+  const painDetect = userId && sessionId 
+    ? usePainDetect(userId, sessionId)
+    : null;
+
+  // State legacy per compatibilità
+  const [legacyState, setLegacyState] = useState<LegacyPainManagementState>({
     exerciseHistory: new Map(),
     activeScreeningExercise: null,
     physioReferralNeeded: []
   });
 
   /**
-   * STEP 1: Riporta dolore durante esercizio
+   * REPORT PAIN - Metodo principale legacy
    * Avvia progressive deload: Load → Reps → Suspend
    */
   const reportPain = useCallback(
@@ -65,162 +148,171 @@ export function usePainManagement() {
       loadReduction?: number;
       repReduction?: number;
       message: string;
+      _painDetectResponse?: DiscomfortResponse;
     } => {
+      const intensity = Math.min(10, Math.max(0, painLevel)) as DiscomfortIntensity;
+      const level = classifyDiscomfort(intensity);
+
+      // Usa il nuovo sistema se disponibile
+      if (painDetect) {
+        const area = mapLegacyAreaToBodyArea(getPainAreaFromExerciseName(exerciseName));
+        const response = painDetect.reportDiscomfort(
+          area,
+          intensity,
+          'during_set',
+          exerciseName,
+          exerciseName
+        );
+
+        // Converti in formato legacy
+        if (level === 'none' || level === 'mild') {
+          return {
+            action: 'continue',
+            message: response.messageIt,
+            _painDetectResponse: response
+          };
+        }
+
+        if (level === 'moderate') {
+          // Check history per escalation
+          const history = legacyState.exerciseHistory.get(exerciseName);
+          const attempts = history?.attempts || [];
+          const loadAttempts = attempts.filter(a => a.action === 'load_reduction').length;
+          const repAttempts = attempts.filter(a => a.action === 'rep_reduction').length;
+
+          // Escalation: Load → Reps → Suspend
+          if (loadAttempts === 0) {
+            updateHistory(exerciseName, painLevel, 'load_reduction', 20);
+            return {
+              action: 'reduce_load',
+              loadReduction: 20,
+              message: `⚠️ Fastidio ${painLevel}/10. Riduciamo il carico del 20%.`,
+              _painDetectResponse: response
+            };
+          }
+
+          if (repAttempts === 0) {
+            updateHistory(exerciseName, painLevel, 'rep_reduction', undefined, 30);
+            return {
+              action: 'reduce_reps',
+              repReduction: 30,
+              message: `⚠️ Fastidio persistente. Riduciamo le ripetizioni del 30%.`,
+              _painDetectResponse: response
+            };
+          }
+
+          // Già provato load e reps → suspend
+          updateHistory(exerciseName, painLevel, 'suspension');
+          return {
+            action: 'suspend',
+            message: `🛑 Sospendiamo l'esercizio per questa sessione.`,
+            _painDetectResponse: response
+          };
+        }
+
+        // Significant/Severe → suspend immediato
+        updateHistory(exerciseName, painLevel, 'suspension');
+        return {
+          action: 'suspend',
+          message: response.messageIt,
+          _painDetectResponse: response
+        };
+      }
+
+      // Fallback senza painDetect hook
       if (painLevel < 5) {
         return {
           action: 'continue',
-          message: 'Dolore lieve. Continua con cautela.'
+          message: 'Fastidio lieve. Continua con cautela.'
         };
       }
 
-      setState((prev) => {
-        const history = prev.exerciseHistory.get(exerciseName) || {
-          exerciseName,
-          attempts: [],
-          suspensionCount: 0,
-          needsScreening: false,
-          lastPainLevel: painLevel,
-          recoveryProtocolActive: false,
-          referToPhysio: false
-        };
-
-        const newHistory = new Map(prev.exerciseHistory);
-
-        // Conta quante azioni progressive abbiamo già fatto
-        const loadReductions = history.attempts.filter(
-          (a) => a.action === 'load_reduction'
-        ).length;
-        const repReductions = history.attempts.filter(
-          (a) => a.action === 'rep_reduction'
-        ).length;
-
-        // PROGRESSIVE DELOAD LOGIC
-        let action: PainAttempt['action'];
-        let loadReduction: number | undefined;
-        let repReduction: number | undefined;
-        let message: string;
-
-        if (loadReductions === 0) {
-          // STEP 1: First time → Reduce Load -20%
-          action = 'load_reduction';
-          loadReduction = -20;
-          message = '🔽 Riduciamo il carico del 20%. Riprova.';
-        } else if (repReductions === 0) {
-          // STEP 2: Still pain → Reduce Reps -30%
-          action = 'rep_reduction';
-          repReduction = -30;
-          message = '🔽 Riduciamo le ripetizioni del 30%. Riprova.';
-        } else {
-          // STEP 3: Still pain → SUSPEND
-          action = 'suspension';
-          const newSuspensionCount = history.suspensionCount + 1;
-          message =
-            newSuspensionCount === 1
-              ? '⏸️ SOSPESO per oggi. Se capita ancora, faremo screening.'
-              : '🔍 2° sospensione! Attiviamo functional screening.';
-
-          history.suspensionCount = newSuspensionCount;
-
-          // 2nd suspension → Screening needed
-          if (newSuspensionCount >= 2) {
-            history.needsScreening = true;
-            action = 'screening_triggered';
-          }
-        }
-
-        history.attempts.push({
-          timestamp: new Date().toISOString(),
-          painLevel,
-          action,
-          loadReduction,
-          repReduction,
-          notes: message
-        });
-
-        history.lastPainLevel = painLevel;
-        newHistory.set(exerciseName, history);
-
-        return {
-          ...prev,
-          exerciseHistory: newHistory,
-          activeScreeningExercise:
-            action === 'screening_triggered' ? exerciseName : prev.activeScreeningExercise
-        };
-      });
-
-      // Return action info per UI
-      const history = state.exerciseHistory.get(exerciseName);
-      const loadReductions = history?.attempts.filter((a) => a.action === 'load_reduction').length || 0;
-      const repReductions = history?.attempts.filter((a) => a.action === 'rep_reduction').length || 0;
-
-      if (loadReductions === 0) {
+      if (painLevel <= 6) {
         return {
           action: 'reduce_load',
-          loadReduction: -20,
-          message: '🔽 Riduciamo il carico del 20%. Riprova.'
+          loadReduction: 20,
+          message: `⚠️ Fastidio ${painLevel}/10. Riduciamo il carico del 20%.`
         };
-      } else if (repReductions === 0) {
-        return {
-          action: 'reduce_reps',
-          repReduction: -30,
-          message: '🔽 Riduciamo le ripetizioni del 30%. Riprova.'
-        };
-      } else {
-        const suspensionCount = (history?.suspensionCount || 0) + 1;
-        if (suspensionCount >= 2) {
-          return {
-            action: 'screening',
-            message: '🔍 2° sospensione! Attiviamo functional screening.'
-          };
-        } else {
-          return {
-            action: 'suspend',
-            message: '⏸️ SOSPESO per oggi. Se capita ancora, faremo screening.'
-          };
+      }
+
+      return {
+        action: 'suspend',
+        message: `🛑 Fastidio ${painLevel}/10. Sospendiamo l'esercizio.`
+      };
+    },
+    [painDetect, legacyState.exerciseHistory]
+  );
+
+  /**
+   * Update exercise history
+   */
+  const updateHistory = useCallback((
+    exerciseName: string,
+    painLevel: number,
+    action: PainAttempt['action'],
+    loadReduction?: number,
+    repReduction?: number
+  ) => {
+    setLegacyState(prev => {
+      const newHistory = new Map(prev.exerciseHistory);
+      const existing = newHistory.get(exerciseName) || {
+        exerciseName,
+        attempts: [],
+        suspensionCount: 0,
+        needsScreening: false,
+        lastPainLevel: 0,
+        recoveryProtocolActive: false,
+        referToPhysio: false
+      };
+
+      const attempt: PainAttempt = {
+        timestamp: new Date().toISOString(),
+        painLevel,
+        action,
+        loadReduction,
+        repReduction
+      };
+
+      existing.attempts.push(attempt);
+      existing.lastPainLevel = painLevel;
+
+      if (action === 'suspension') {
+        existing.suspensionCount++;
+        if (existing.suspensionCount >= PAIN_THRESHOLDS.SUSPENSIONS_FOR_SCREENING) {
+          existing.needsScreening = true;
         }
       }
-    },
-    [state.exerciseHistory]
-  );
+
+      newHistory.set(exerciseName, existing);
+
+      return {
+        ...prev,
+        exerciseHistory: newHistory,
+        activeScreeningExercise: existing.needsScreening ? exerciseName : prev.activeScreeningExercise
+      };
+    });
+  }, []);
 
   /**
    * Check if exercise needs screening
    */
-  const needsScreening = useCallback(
-    (exerciseName: string): boolean => {
-      const history = state.exerciseHistory.get(exerciseName);
-      return history?.needsScreening || false;
-    },
-    [state.exerciseHistory]
-  );
+  const needsScreening = useCallback((exerciseName: string): boolean => {
+    const history = legacyState.exerciseHistory.get(exerciseName);
+    return history?.needsScreening || false;
+  }, [legacyState.exerciseHistory]);
 
   /**
-   * Get pain area from exercise name (basic mapping)
+   * Get pain area from exercise name
    */
   const getPainAreaFromExercise = useCallback((exerciseName: string): PainArea => {
-    const name = exerciseName.toLowerCase();
-
-    // Mapping esercizi → body areas
-    if (name.includes('neck') || name.includes('cervical')) return 'neck';
-    if (name.includes('shoulder') || name.includes('overhead') || name.includes('press')) return 'shoulder';
-    if (name.includes('elbow')) return 'elbow';
-    if (name.includes('wrist')) return 'wrist';
-    if (name.includes('scapula') || name.includes('row')) return 'scapula';
-    if (name.includes('thoracic') || name.includes('upper back')) return 'thoracic_spine';
-    if (name.includes('deadlift') || name.includes('lower back') || name.includes('lumbar')) return 'lower_back';
-    if (name.includes('squat') || name.includes('hip')) return 'hip';
-    if (name.includes('lunge') || name.includes('knee')) return 'knee';
-    if (name.includes('calf') || name.includes('ankle')) return 'ankle';
-
-    // Default fallback
-    return 'lower_back';
+    return getPainAreaFromExerciseName(exerciseName);
   }, []);
 
   /**
    * Mark screening completed for exercise
    */
   const completeScreening = useCallback((exerciseName: string) => {
-    setState((prev) => {
+    setLegacyState(prev => {
       const newHistory = new Map(prev.exerciseHistory);
       const history = newHistory.get(exerciseName);
 
@@ -239,10 +331,10 @@ export function usePainManagement() {
   }, []);
 
   /**
-   * Recovery protocol fallito → Referral fisioterapista
+   * Mark for physio referral
    */
   const markForPhysioReferral = useCallback((exerciseName: string, reason: string) => {
-    setState((prev) => {
+    setLegacyState(prev => {
       const newHistory = new Map(prev.exerciseHistory);
       const history = newHistory.get(exerciseName);
 
@@ -270,23 +362,23 @@ export function usePainManagement() {
    */
   const getExerciseHistory = useCallback(
     (exerciseName: string): ExercisePainHistory | undefined => {
-      return state.exerciseHistory.get(exerciseName);
+      return legacyState.exerciseHistory.get(exerciseName);
     },
-    [state.exerciseHistory]
+    [legacyState.exerciseHistory]
   );
 
   /**
    * Get all exercises needing physio referral
    */
   const getPhysioReferralList = useCallback((): string[] => {
-    return state.physioReferralNeeded;
-  }, [state.physioReferralNeeded]);
+    return legacyState.physioReferralNeeded;
+  }, [legacyState.physioReferralNeeded]);
 
   /**
-   * Reset exercise history (new workout session)
+   * Reset exercise history
    */
   const resetExercise = useCallback((exerciseName: string) => {
-    setState((prev) => {
+    setLegacyState(prev => {
       const newHistory = new Map(prev.exerciseHistory);
       newHistory.delete(exerciseName);
       return {
@@ -297,33 +389,57 @@ export function usePainManagement() {
   }, []);
 
   /**
-   * Clear all history (new program)
+   * Clear all history
    */
   const clearAllHistory = useCallback(() => {
-    setState({
+    setLegacyState({
       exerciseHistory: new Map(),
       activeScreeningExercise: null,
       physioReferralNeeded: []
     });
-  }, []);
+    painDetect?.resetSession();
+  }, [painDetect]);
 
   return {
-    // Actions
+    // Legacy Actions
     reportPain,
     completeScreening,
     markForPhysioReferral,
     resetExercise,
     clearAllHistory,
 
-    // Queries
+    // Legacy Queries
     needsScreening,
     getPainAreaFromExercise,
     getExerciseHistory,
     getPhysioReferralList,
 
-    // State
-    activeScreeningExercise: state.activeScreeningExercise,
-    physioReferralNeeded: state.physioReferralNeeded,
-    exerciseHistory: state.exerciseHistory
+    // Legacy State
+    activeScreeningExercise: legacyState.activeScreeningExercise,
+    physioReferralNeeded: legacyState.physioReferralNeeded,
+    exerciseHistory: legacyState.exerciseHistory,
+
+    // NEW: Accesso diretto al sistema Pain Detect 2.0
+    painDetect,
+
+    // NEW: Costanti esposte
+    PAIN_THRESHOLDS,
+    BODY_AREA_LABELS
   };
 }
+
+// Re-export per uso diretto del nuovo sistema
+export {
+  usePainDetect,
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  PAIN_THRESHOLDS,
+  BODY_AREA_LABELS
+} from '@trainsmart/shared';
+
+export type {
+  DiscomfortIntensity,
+  DiscomfortResponse,
+  BodyArea,
+  UserChoice
+} from '@trainsmart/shared';

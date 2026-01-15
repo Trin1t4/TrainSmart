@@ -1,18 +1,35 @@
 /**
- * PAIN MANAGEMENT SERVICE
- *
- * Sistema intelligente per recupero motorio con feedback dolore real-time:
- * - Traccia dolore per ogni set
- * - Adatta automaticamente carico/reps/ROM
- * - Memorizza soglie sicure
- * - Suggerisce progressioni quando dolore assente
+ * PAIN MANAGEMENT SERVICE - MIGRATO A PAIN DETECT 2.0
+ * 
+ * File: packages/web/src/lib/painManagementService.ts
+ * 
+ * Questo file mantiene la compatibilità con il codice esistente
+ * ma usa internamente il sistema Pain Detect 2.0 unificato.
  */
 
 import { supabase } from './supabaseClient';
 
-// ============================================================================
-// TYPES
-// ============================================================================
+// Import dal nuovo sistema Pain Detect 2.0
+import {
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  applyAdaptations,
+  getLoadReductions,
+  findSubstitution,
+  PAIN_THRESHOLDS,
+  LOAD_REDUCTIONS,
+  BODY_AREA_LABELS,
+  PAIN_DETECT_DISCLAIMER,
+  type DiscomfortIntensity,
+  type DiscomfortResponse,
+  type BodyArea,
+  type UserChoice,
+  type DiscomfortReport
+} from '@trainsmart/shared';
+
+// =============================================================================
+// TYPES (Mantenuti per compatibilità con codice esistente)
+// =============================================================================
 
 export interface PainLog {
   id?: string;
@@ -26,14 +43,14 @@ export interface PainLog {
   reps_completed: number;
   rom_percentage?: number;
   pain_level: number; // 0-10
-  rpe?: number; // 1-10
+  rpe?: number;
   pain_location?: string;
   adaptations?: Adaptation[];
   notes?: string;
 }
 
 export interface Adaptation {
-  type: 'weight_reduced' | 'reps_reduced' | 'rom_reduced' | 'exercise_stopped';
+  type: 'weight_reduced' | 'reps_reduced' | 'rom_reduced' | 'exercise_stopped' | 'exercise_substituted';
   from?: number;
   to?: number;
   reason: string;
@@ -57,22 +74,42 @@ export interface PainThreshold {
   physiotherapist_contacted_date?: string;
 }
 
+/**
+ * Risposta compatibile con il vecchio sistema
+ */
 export interface AdaptationSuggestion {
-  action: 'continue' | 'reduce_weight' | 'reduce_reps' | 'reduce_rom' | 'stop_exercise';
+  action: 'continue' | 'reduce_weight' | 'reduce_reps' | 'reduce_rom' | 'stop_exercise' | 'substitute_exercise';
   message: string;
   new_weight?: number;
   new_reps?: number;
   new_rom?: number;
+  substitute_exercise?: string;
   alert_level: 'success' | 'warning' | 'error';
+  /** Risposta completa dal nuovo sistema Pain Detect 2.0 */
+  _painDetectResponse?: DiscomfortResponse;
 }
 
-// ============================================================================
+export interface PainEvent {
+  area: string;
+  intensity: number;
+  exercise: string;
+  timestamp: string;
+}
+
+// =============================================================================
 // PAIN MANAGEMENT SERVICE
-// ============================================================================
+// =============================================================================
 
 class PainManagementService {
+  // Cache per eventi di dolore della sessione corrente
+  private sessionPainEvents: PainEvent[] = [];
+
+  // =========================================================================
+  // DATABASE OPERATIONS
+  // =========================================================================
+
   /**
-   * Log dolore dopo un set
+   * Log dolore dopo un set (persiste su Supabase)
    */
   async logPain(painLog: PainLog): Promise<{ success: boolean; error?: string }> {
     try {
@@ -98,17 +135,193 @@ class PainManagementService {
         .single();
 
       if (error) {
-        console.error('Error logging pain:', error);
+        console.error('[PainService] Error logging pain:', error);
         return { success: false, error: error.message };
       }
 
-      console.log('✅ Pain logged successfully:', data);
+      console.log('[PainService] ✅ Pain logged:', data.id);
       return { success: true };
     } catch (error) {
-      console.error('Exception logging pain:', error);
+      console.error('[PainService] Exception:', error);
       return { success: false, error: String(error) };
     }
   }
+
+  /**
+   * Registra un evento di dolore nella sessione (in memory)
+   */
+  logPainEvent(event: PainEvent): void {
+    this.sessionPainEvents.push(event);
+    console.log('[PainService] Pain event logged:', event);
+  }
+
+  /**
+   * Ottiene gli eventi di dolore della sessione corrente
+   */
+  getSessionPainEvents(): PainEvent[] {
+    return [...this.sessionPainEvents];
+  }
+
+  /**
+   * Reset degli eventi di sessione (chiamare a inizio nuova sessione)
+   */
+  clearSessionEvents(): void {
+    this.sessionPainEvents = [];
+  }
+
+  // =========================================================================
+  // PAIN DETECT 2.0 - CORE FUNCTIONS
+  // =========================================================================
+
+  /**
+   * SUGGERISCE ADATTAMENTO - USA PAIN DETECT 2.0
+   * 
+   * Mantiene la firma originale per compatibilità ma usa il nuovo sistema.
+   */
+  suggestAdaptation(
+    painLevel: number,
+    currentWeight: number,
+    currentReps: number,
+    currentRom: number,
+    previousAdaptations: Adaptation[],
+    goal?: string
+  ): AdaptationSuggestion {
+    // Normalizza l'intensità
+    const intensity = Math.min(10, Math.max(0, Math.round(painLevel))) as DiscomfortIntensity;
+    const level = classifyDiscomfort(intensity);
+    
+    // Crea un report per usare evaluateDiscomfort
+    const report: DiscomfortReport = {
+      id: `temp_${Date.now()}`,
+      userId: 'temp',
+      sessionId: 'temp',
+      area: 'lower_back' as BodyArea, // Default
+      intensity,
+      phase: 'during_set',
+      timestamp: new Date().toISOString()
+    };
+
+    const response = evaluateDiscomfort(report, {
+      exerciseName: 'Current Exercise',
+      isRecurringIssue: previousAdaptations.length >= 2
+    });
+
+    // ============================================
+    // CONVERTI RISPOSTA PAIN DETECT 2.0 → LEGACY
+    // ============================================
+
+    // NONE o MILD (0-3): Continua
+    if (level === 'none' || level === 'mild') {
+      return {
+        action: 'continue',
+        message: response.messageIt,
+        alert_level: 'success',
+        _painDetectResponse: response
+      };
+    }
+
+    // MODERATE (4-6): Riduci carico
+    if (level === 'moderate') {
+      const reductions = getLoadReductions(intensity);
+      const newWeight = reductions.load > 0 
+        ? Math.round(currentWeight * (1 - reductions.load / 100) / 2.5) * 2.5
+        : currentWeight;
+
+      // Se già adattato 2+ volte, suggerisci sostituzione
+      if (previousAdaptations.length >= 2) {
+        return {
+          action: 'substitute_exercise',
+          message: `⚠️ Fastidio persistente (${painLevel}/10). Considera un esercizio alternativo per questa zona.`,
+          alert_level: 'warning',
+          _painDetectResponse: response
+        };
+      }
+
+      return {
+        action: 'reduce_weight',
+        message: response.messageIt,
+        new_weight: newWeight,
+        alert_level: 'warning',
+        _painDetectResponse: response
+      };
+    }
+
+    // SIGNIFICANT (7-8): Stop o sostituisci
+    if (level === 'significant') {
+      return {
+        action: 'stop_exercise',
+        message: response.messageIt,
+        alert_level: 'error',
+        _painDetectResponse: response
+      };
+    }
+
+    // SEVERE (9-10): Stop assoluto + professionista
+    return {
+      action: 'stop_exercise',
+      message: `⚠️ Fastidio severo (${painLevel}/10). Ti consigliamo di fermarti e consultare un professionista.`,
+      alert_level: 'error',
+      _painDetectResponse: response
+    };
+  }
+
+  /**
+   * Valuta il fastidio usando Pain Detect 2.0 direttamente
+   * NUOVO METODO - usa questo per nuove implementazioni
+   */
+  evaluateDiscomfortV2(
+    area: BodyArea,
+    intensity: DiscomfortIntensity,
+    exerciseName?: string,
+    alternativeAvailable?: string
+  ): DiscomfortResponse {
+    const report: DiscomfortReport = {
+      id: `eval_${Date.now()}`,
+      userId: 'temp',
+      sessionId: 'temp',
+      area,
+      intensity,
+      phase: 'during_set',
+      exerciseName,
+      timestamp: new Date().toISOString()
+    };
+
+    return evaluateDiscomfort(report, {
+      exerciseName,
+      alternativeAvailable
+    });
+  }
+
+  /**
+   * Trova sostituzione per un esercizio
+   */
+  findSubstitute(
+    exerciseName: string,
+    painArea: BodyArea,
+    intensity: DiscomfortIntensity
+  ): { found: boolean; substitute?: string; rationale: string } {
+    const result = findSubstitution(exerciseName, painArea, intensity);
+    return {
+      found: result.found,
+      substitute: result.substitute,
+      rationale: result.rationaleIt
+    };
+  }
+
+  /**
+   * Applica adattamenti a parametri esercizio
+   */
+  applyAdaptationsToExercise(
+    params: { sets: number; reps: number; weight?: number; restSeconds: number },
+    intensity: DiscomfortIntensity,
+    location: 'gym' | 'home' = 'gym'
+  ) {
+    return applyAdaptations(params, intensity, location);
+  }
+
+  // =========================================================================
+  // THRESHOLD MANAGEMENT
+  // =========================================================================
 
   /**
    * Ottieni soglia sicura per esercizio
@@ -123,209 +336,74 @@ class PainManagementService {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching pain threshold:', error);
+        console.error('[PainService] Error fetching threshold:', error);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error('Exception fetching pain threshold:', error);
+      console.error('[PainService] Exception:', error);
       return null;
     }
   }
 
   /**
-   * Suggerisce adattamento basato su livello dolore
-   *
-   * NUOVA LOGICA INTELLIGENTE:
-   * - Dolore 0-3: ✅ Continua normale, considera progressione
-   * - Dolore 4-5: ⚠️ Riduzione carico, mantieni volume
-   *   - FORZA: -20% peso, +2-3 reps (compensi con volume)
-   *   - MASSA/ENDURANCE: -20% peso, mantieni reps
-   * - Dolore 5 persistente (2-3 set): 🔄 Mobility Protocol
-   * - Dolore 6+: 🔄 Exercise Substitution (variante meno stressante)
-   * - Dolore 7-10: ❌ Stop + consiglia fisioterapista
+   * Aggiorna soglia sicura dopo un set
    */
-  suggestAdaptation(
-    painLevel: number,
-    currentWeight: number,
-    currentReps: number,
-    currentRom: number,
-    previousAdaptations: Adaptation[],
-    goal?: string // 'forza', 'massa', 'endurance', etc.
-  ): AdaptationSuggestion {
-    // DOLORE 0-3: OK, continua
-    if (painLevel <= 3) {
-      return {
-        action: 'continue',
-        message: `✅ Dolore minimo (${painLevel}/10). Continua con i parametri attuali.`,
-        alert_level: 'success'
-      };
-    }
-
-    // DOLORE 7-10: STOP immediato + fisioterapista
-    if (painLevel >= 7) {
-      return {
-        action: 'stop_exercise',
-        message: `❌ DOLORE ALTO (${painLevel}/10). SOSPENDI esercizio e contatta fisioterapista.`,
-        alert_level: 'error'
-      };
-    }
-
-    // DOLORE 6: Exercise substitution (variante meno stressante)
-    if (painLevel === 6) {
-      return {
-        action: 'stop_exercise', // Will be handled by LiveWorkout with substitution
-        message: `🔄 Dolore ${painLevel}/10. Passa a variante meno stressante (es: Leg Press invece Squat).`,
-        alert_level: 'warning'
-      };
-    }
-
-    // DOLORE 4-5: Riduzione carico, mantieni volume
-    const hasReducedWeight = previousAdaptations.some(a => a.type === 'weight_reduced');
-    const isForza = goal?.toLowerCase().includes('forza') || goal?.toLowerCase().includes('strength');
-
-    // Step 1: Riduci peso (-20%)
-    if (!hasReducedWeight) {
-      const newWeight = Math.max(0, currentWeight * 0.8);
-
-      if (isForza) {
-        // FORZA: Compensa con volume (+2-3 reps)
-        const newReps = currentReps + 3;
-        return {
-          action: 'reduce_weight',
-          message: `⚠️ Dolore ${painLevel}/10. Riduci carico -20%, aumenta reps a ${newReps} (mantieni volume).`,
-          new_weight: Math.round(newWeight * 10) / 10,
-          new_reps: newReps,
-          alert_level: 'warning'
-        };
-      } else {
-        // MASSA/ENDURANCE: Mantieni reps
-        return {
-          action: 'reduce_weight',
-          message: `⚠️ Dolore ${painLevel}/10. Riduci carico -20%, mantieni ripetizioni.`,
-          new_weight: Math.round(newWeight * 10) / 10,
-          alert_level: 'warning'
-        };
-      }
-    }
-
-    // Step 2: Dolore persiste a 5 → Mobility Protocol
-    if (painLevel === 5 && hasReducedWeight) {
-      return {
-        action: 'stop_exercise', // Will trigger mobility protocol
-        message: `🔄 Dolore persiste a 5/10. Passa a MOBILITY PROTOCOL: mobilità + rinforzo zona specifica.`,
-        alert_level: 'warning'
-      };
-    }
-
-    // Step 3: Dolore scende (4) dopo riduzione → continua con progressione graduale
-    if (painLevel === 4 && hasReducedWeight) {
-      return {
-        action: 'continue',
-        message: `📈 Dolore in diminuzione (4/10). Continua con carichi ridotti. Prossima sessione: +5% peso.`,
-        alert_level: 'success'
-      };
-    }
-
-    // Default: continua monitorando
-    return {
-      action: 'continue',
-      message: `⚠️ Dolore ${painLevel}/10. Continua monitorando. Se persiste, passa a variante.`,
-      alert_level: 'warning'
-    };
-  }
-
-  /**
-   * Calcola progressione suggerita se dolore assente
-   *
-   * Se dolore 0-3 per 2+ sessioni consecutive → aumenta carico/reps
-   */
-  async suggestProgression(
+  async updatePainThreshold(
     userId: string,
     exerciseName: string,
-    currentWeight: number,
-    currentReps: number
-  ): Promise<{ shouldProgress: boolean; suggestion?: string; newWeight?: number; newReps?: number }> {
+    painLevel: number,
+    currentWeight?: number,
+    currentReps?: number,
+    currentRom?: number
+  ): Promise<{ success: boolean }> {
     try {
-      const threshold = await this.getPainThreshold(userId, exerciseName);
+      const existing = await this.getPainThreshold(userId, exerciseName);
+      const now = new Date().toISOString();
 
-      if (!threshold) {
-        return { shouldProgress: false };
-      }
+      const thresholdData = {
+        user_id: userId,
+        exercise_name: exerciseName,
+        last_pain_level: painLevel,
+        last_pain_date: painLevel > 0 ? now : existing?.last_pain_date,
+        last_session_date: now,
+        total_sessions: (existing?.total_sessions || 0) + 1,
+        max_pain_recorded: Math.max(painLevel, existing?.max_pain_recorded || 0),
+        consecutive_pain_free_sessions: painLevel <= 3 
+          ? (existing?.consecutive_pain_free_sessions || 0) + 1 
+          : 0,
+        needs_physiotherapist_contact: painLevel >= PAIN_THRESHOLDS.PROFESSIONAL_ADVICE ||
+          (existing?.consecutive_pain_free_sessions === 0 && (existing?.total_sessions || 0) >= 3),
+        last_safe_weight: painLevel <= 3 ? currentWeight : existing?.last_safe_weight,
+        last_safe_reps: painLevel <= 3 ? currentReps : existing?.last_safe_reps,
+        last_safe_rom: painLevel <= 3 ? currentRom : existing?.last_safe_rom
+      };
 
-      // Se dolore recente, no progressione
-      if (threshold.last_pain_level > 3) {
-        return { shouldProgress: false };
-      }
-
-      // Progressione dopo 2+ sessioni senza dolore
-      if (threshold.consecutive_pain_free_sessions >= 2) {
-        // Aumenta peso del 5-10%
-        const newWeight = Math.round(currentWeight * 1.05 * 10) / 10;
-
-        return {
-          shouldProgress: true,
-          suggestion: `💪 ${threshold.consecutive_pain_free_sessions} sessioni senza dolore! Suggerito aumento carico +5%.`,
-          newWeight: newWeight
-        };
-      }
-
-      return { shouldProgress: false };
-    } catch (error) {
-      console.error('Error calculating progression:', error);
-      return { shouldProgress: false };
-    }
-  }
-
-  /**
-   * Ottieni esercizi che necessitano attenzione fisioterapista
-   */
-  async getExercisesNeedingAttention(userId: string): Promise<PainThreshold[]> {
-    try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('pain_thresholds')
-        .select('*')
-        .eq('user_id', userId)
-        .or('last_pain_level.gte.4,needs_physiotherapist_contact.eq.true')
-        .order('last_pain_date', { ascending: false });
+        .upsert(thresholdData, { onConflict: 'user_id,exercise_name' });
 
       if (error) {
-        console.error('Error fetching exercises needing attention:', error);
-        return [];
+        console.error('[PainService] Error updating threshold:', error);
+        return { success: false };
       }
 
-      return data || [];
+      return { success: true };
     } catch (error) {
-      console.error('Exception fetching exercises needing attention:', error);
-      return [];
+      console.error('[PainService] Exception:', error);
+      return { success: false };
     }
   }
 
-  /**
-   * Marca fisioterapista contattato
-   */
-  async markPhysiotherapistContacted(userId: string, exerciseName: string): Promise<void> {
-    try {
-      await supabase
-        .from('pain_thresholds')
-        .update({
-          needs_physiotherapist_contact: false,
-          physiotherapist_contacted_date: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .eq('exercise_name', exerciseName);
-
-      console.log('✅ Fisioterapista marcato come contattato per', exerciseName);
-    } catch (error) {
-      console.error('Error marking physiotherapist contacted:', error);
-    }
-  }
+  // =========================================================================
+  // HISTORY & RECOVERY
+  // =========================================================================
 
   /**
-   * Ottieni storico dolore per esercizio (per grafici)
+   * Ottieni storico dolore per esercizio
    */
-  async getPainHistory(userId: string, exerciseName: string, limit = 20): Promise<PainLog[]> {
+  async getPainHistory(userId: string, exerciseName: string, limit: number = 10): Promise<PainLog[]> {
     try {
       const { data, error } = await supabase
         .from('pain_logs')
@@ -336,29 +414,25 @@ class PainManagementService {
         .limit(limit);
 
       if (error) {
-        console.error('Error fetching pain history:', error);
+        console.error('[PainService] Error fetching history:', error);
         return [];
       }
 
       return data || [];
     } catch (error) {
-      console.error('Exception fetching pain history:', error);
+      console.error('[PainService] Exception:', error);
       return [];
     }
   }
 
   /**
-   * Detecta dolore persistente multi-sessione
-   *
-   * TRIGGER: 2+ sedute consecutive con dolore 4-6 simile
-   * → Proponi attivazione recovery mode in itinere
+   * Verifica se attivare hybrid recovery mode
    */
   async shouldActivateHybridRecovery(
     userId: string,
     exerciseName: string
   ): Promise<{ shouldActivate: boolean; reason?: string; sessions: number; avgPain: number }> {
     try {
-      // Ottieni ultime 3 sessioni per questo esercizio
       const history = await this.getPainHistory(userId, exerciseName, 10);
 
       if (history.length < 2) {
@@ -368,53 +442,46 @@ class PainManagementService {
       // Raggruppa per sessione (data)
       const sessionGroups = new Map<string, PainLog[]>();
       history.forEach(log => {
-        const date = log.session_date?.split('T')[0]; // Solo data, no ora
+        const date = log.session_date?.split('T')[0];
         if (!date) return;
-
-        if (!sessionGroups.has(date)) {
-          sessionGroups.set(date, []);
-        }
+        if (!sessionGroups.has(date)) sessionGroups.set(date, []);
         sessionGroups.get(date)!.push(log);
       });
 
-      // Prendi ultime 2-3 sessioni distinte
+      // Analizza ultime sessioni
       const recentSessions = Array.from(sessionGroups.values())
         .slice(0, 3)
-        .map(logs => {
-          // Calcola dolore medio per sessione
-          const avgPain = logs.reduce((sum, log) => sum + log.pain_level, 0) / logs.length;
-          const maxPain = Math.max(...logs.map(l => l.pain_level));
-          return { avgPain, maxPain, count: logs.length };
-        });
+        .map(logs => ({
+          avgPain: logs.reduce((sum, log) => sum + log.pain_level, 0) / logs.length,
+          maxPain: Math.max(...logs.map(l => l.pain_level)),
+          count: logs.length
+        }));
 
       if (recentSessions.length < 2) {
         return { shouldActivate: false, sessions: 0, avgPain: 0 };
       }
 
-      // Check: Dolore persistente 4-6 per 2+ sessioni
+      // Check: Dolore moderato persistente (4-6) per 2+ sessioni
       const persistentPainSessions = recentSessions.filter(
-        session => session.avgPain >= 4 && session.avgPain <= 6
+        s => s.avgPain >= 4 && s.avgPain <= 6
       );
 
       if (persistentPainSessions.length >= 2) {
-        const avgPainAcrossSessions =
-          persistentPainSessions.reduce((sum, s) => sum + s.avgPain, 0) / persistentPainSessions.length;
-
+        const avgPain = persistentPainSessions.reduce((sum, s) => sum + s.avgPain, 0) / persistentPainSessions.length;
         return {
           shouldActivate: true,
-          reason: `Dolore persistente ${avgPainAcrossSessions.toFixed(1)}/10 per ${persistentPainSessions.length} sessioni consecutive. Sistema suggerisce recovery mode in itinere per recupero mirato.`,
+          reason: `Fastidio moderato persistente (${avgPain.toFixed(1)}/10) per ${persistentPainSessions.length} sessioni. Ti proponiamo un protocollo di recupero.`,
           sessions: persistentPainSessions.length,
-          avgPain: avgPainAcrossSessions
+          avgPain
         };
       }
 
-      // Check alternativo: Dolore alto (≥7) in 2+ sessioni
-      const highPainSessions = recentSessions.filter(session => session.maxPain >= 7);
-
+      // Check: Dolore alto (≥7) in 2+ sessioni
+      const highPainSessions = recentSessions.filter(s => s.maxPain >= 7);
       if (highPainSessions.length >= 2) {
         return {
           shouldActivate: true,
-          reason: `Dolore alto (≥7/10) per ${highPainSessions.length} sessioni. Recovery mode urgente raccomandato.`,
+          reason: `Fastidio significativo (≥7/10) per ${highPainSessions.length} sessioni. Consigliamo un periodo di recupero e consulto professionale.`,
           sessions: highPainSessions.length,
           avgPain: highPainSessions.reduce((sum, s) => sum + s.maxPain, 0) / highPainSessions.length
         };
@@ -422,108 +489,43 @@ class PainManagementService {
 
       return { shouldActivate: false, sessions: 0, avgPain: 0 };
     } catch (error) {
-      console.error('Error checking hybrid recovery criteria:', error);
+      console.error('[PainService] Exception:', error);
       return { shouldActivate: false, sessions: 0, avgPain: 0 };
     }
   }
 
-  /**
-   * EXERCISE SUBSTITUTIONS - Varianti meno stressanti per dolore 6+
-   * Sostituisce esercizi ad alto carico con varianti biomeccanicamente più sicure
-   */
-  getExerciseSubstitution(exerciseName: string, painArea: string): { name: string; notes: string } | null {
-    const substitutions: Record<string, Record<string, { name: string; notes: string }>> = {
-      // LOWER BODY - Dolore schiena/ginocchio/anca
-      'Back Squat': {
-        lower_back: { name: 'Leg Press', notes: 'Riduce stress lombare, mantieni range controllato' },
-        knee: { name: 'Goblet Squat', notes: 'ROM ridotto, focus su controllo' },
-        hip: { name: 'Box Squat', notes: 'Profondità controllata, riduce stress anca' }
-      },
-      'Deadlift': {
-        lower_back: { name: 'Leg Extension + Leg Curl', notes: 'Isola quadricipiti e femorali, zero stress lombare' },
-        knee: { name: 'RDL leggero', notes: 'ROM parziale, focus su femorali' },
-        hip: { name: 'Hip Thrust', notes: 'Movimento più controllato, meno stress articolare' }
-      },
-      'Stacco': {
-        lower_back: { name: 'Leg Extension + Leg Curl', notes: 'Isola quadricipiti e femorali, zero stress lombare' },
-        knee: { name: 'RDL leggero', notes: 'ROM parziale, focus su femorali' }
-      },
-      'Squat (Bilanciere)': {
-        lower_back: { name: 'Leg Press', notes: 'Riduce stress lombare' },
-        knee: { name: 'Goblet Squat', notes: 'ROM controllato' }
-      },
-
-      // UPPER BODY - Dolore spalla/gomito
-      'Bench Press': {
-        shoulder: { name: 'Push-up su ginocchia', notes: 'Riduce carico, mantieni volume' },
-        elbow: { name: 'Chest Press Manubri', notes: 'ROM più naturale, meno stress articolare' }
-      },
-      'Panca Piana': {
-        shoulder: { name: 'Push-up', notes: 'Carico corporeo, più sicuro' },
-        elbow: { name: 'Chest Press Manubri', notes: 'ROM controllato' }
-      },
-      'Military Press': {
-        shoulder: { name: 'Lateral Raise leggero', notes: 'Isola deltoidi, riduce carico' },
-        elbow: { name: 'Arnold Press seduto', notes: 'ROM più naturale' }
-      },
-      'Pull-up': {
-        shoulder: { name: 'Lat Pulldown', notes: 'Carico controllato' },
-        elbow: { name: 'Band Pull-apart', notes: 'Focus su upper back, zero stress gomiti' }
-      },
-      'Trazioni': {
-        shoulder: { name: 'Lat Pulldown', notes: 'Carico controllato' },
-        elbow: { name: 'Inverted Row', notes: 'Angolo più favorevole' }
-      }
-    };
-
-    const exerciseSubs = substitutions[exerciseName];
-    if (!exerciseSubs) return null;
-
-    return exerciseSubs[painArea] || null;
-  }
+  // =========================================================================
+  // MOBILITY PROTOCOLS
+  // =========================================================================
 
   /**
-   * MOBILITY PROTOCOLS - Per dolore persistente a 5/10
-   * Protocolli specifici per zona: mobilità → rinforzo
+   * Ottieni protocollo mobilità per zona dolente
    */
   getMobilityProtocol(painArea: string): {
     name: string;
-    mobility: { name: string; sets: number; duration: string }[];
-    reinforcement: { name: string; sets: number; reps: number | string }[];
+    mobility: Array<{ name: string; sets: number; duration?: string; reps?: string }>;
+    reinforcement: Array<{ name: string; sets: number; reps: string }>;
   } {
     const protocols: Record<string, any> = {
       lower_back: {
-        name: 'Mobility Protocol - Schiena Bassa',
+        name: 'Mobility Protocol - Lombare',
         mobility: [
           { name: 'Cat-Cow', sets: 2, duration: '60 secondi' },
-          { name: 'Child Pose', sets: 2, duration: '45 secondi' },
-          { name: 'Antero-Retroversione Bacino', sets: 2, duration: '60 secondi' }
+          { name: 'Child\'s Pose', sets: 2, duration: '45 secondi' },
+          { name: 'Thread the Needle', sets: 2, duration: '30 secondi per lato' }
         ],
         reinforcement: [
-          { name: 'Dead Bug', sets: 3, reps: '8-10 per lato' },
-          { name: 'Bird Dog', sets: 3, reps: '6-8 per lato' },
-          { name: 'Plank', sets: 3, reps: '20-30 secondi' }
-        ]
-      },
-      shoulder: {
-        name: 'Mobility Protocol - Spalla',
-        mobility: [
-          { name: 'Circonduzione spalle', sets: 2, duration: '60 secondi' },
-          { name: 'Wall Slides', sets: 2, duration: '10 ripetizioni' },
-          { name: 'Band Pull-Apart', sets: 2, duration: '15 ripetizioni' }
-        ],
-        reinforcement: [
-          { name: 'Scapular Push-up', sets: 3, reps: '8-10' },
-          { name: 'Y-T-W', sets: 3, reps: '6 per lettera' },
-          { name: 'Face Pull leggero', sets: 3, reps: '12-15' }
+          { name: 'Dead Bug', sets: 3, reps: '10 per lato' },
+          { name: 'Bird Dog', sets: 3, reps: '8 per lato' },
+          { name: 'Glute Bridge', sets: 3, reps: '12-15' }
         ]
       },
       knee: {
         name: 'Mobility Protocol - Ginocchio',
         mobility: [
-          { name: 'Foam Roll Quadricipiti', sets: 2, duration: '60 secondi per lato' },
-          { name: 'Flessione/Estensione attiva', sets: 2, duration: '15 ripetizioni' },
-          { name: 'Squat ROM ridotto', sets: 2, duration: '10 ripetizioni controllate' }
+          { name: 'Quad Stretch', sets: 2, duration: '45 secondi per lato' },
+          { name: 'Half Kneeling Hip Flexor Stretch', sets: 2, duration: '45 secondi per lato' },
+          { name: 'Foam Roll Quads/IT Band', sets: 2, duration: '60 secondi per lato' }
         ],
         reinforcement: [
           { name: 'Terminal Knee Extension (TKE)', sets: 3, reps: '12-15' },
@@ -531,17 +533,43 @@ class PainManagementService {
           { name: 'Step-up controllato', sets: 3, reps: '8-10 per lato' }
         ]
       },
+      shoulder: {
+        name: 'Mobility Protocol - Spalla',
+        mobility: [
+          { name: 'Shoulder Circles', sets: 2, duration: '30 secondi per direzione' },
+          { name: 'Wall Slides', sets: 2, reps: '10-12' },
+          { name: 'Cross Body Stretch', sets: 2, duration: '30 secondi per lato' }
+        ],
+        reinforcement: [
+          { name: 'Face Pull', sets: 3, reps: '15-20' },
+          { name: 'External Rotation', sets: 3, reps: '12-15 per lato' },
+          { name: 'Prone Y-T-W', sets: 2, reps: '8 per posizione' }
+        ]
+      },
       hip: {
         name: 'Mobility Protocol - Anca',
         mobility: [
           { name: '90/90 Hip Stretch', sets: 2, duration: '60 secondi per lato' },
           { name: 'Pigeon Pose', sets: 2, duration: '45 secondi per lato' },
-          { name: 'Hip Circle', sets: 2, duration: '10 cerchi per direzione' }
+          { name: 'Hip Circles', sets: 2, duration: '10 cerchi per direzione' }
         ],
         reinforcement: [
           { name: 'Clamshell', sets: 3, reps: '12-15 per lato' },
           { name: 'Fire Hydrant', sets: 3, reps: '10-12 per lato' },
           { name: 'Glute Bridge', sets: 3, reps: '12-15' }
+        ]
+      },
+      ankle: {
+        name: 'Mobility Protocol - Caviglia',
+        mobility: [
+          { name: 'Ankle Circles', sets: 2, duration: '30 secondi per direzione' },
+          { name: 'Calf Stretch (muro)', sets: 2, duration: '45 secondi per lato' },
+          { name: 'Dorsiflexion Mobilization', sets: 2, duration: '30 secondi per lato' }
+        ],
+        reinforcement: [
+          { name: 'Single Leg Calf Raise', sets: 3, reps: '12-15 per lato' },
+          { name: 'Tibialis Anterior Raise', sets: 3, reps: '15-20' },
+          { name: 'Balance Reach', sets: 3, reps: '8 per direzione' }
         ]
       },
       elbow: {
@@ -556,13 +584,91 @@ class PainManagementService {
           { name: 'Reverse Curl', sets: 3, reps: '10-12' },
           { name: 'Wrist Curl', sets: 3, reps: '15-20' }
         ]
+      },
+      wrist: {
+        name: 'Mobility Protocol - Polso',
+        mobility: [
+          { name: 'Wrist Circles', sets: 2, duration: '30 secondi per direzione' },
+          { name: 'Prayer Stretch', sets: 2, duration: '30 secondi' },
+          { name: 'Reverse Prayer Stretch', sets: 2, duration: '30 secondi' }
+        ],
+        reinforcement: [
+          { name: 'Wrist Curl', sets: 3, reps: '15-20' },
+          { name: 'Reverse Wrist Curl', sets: 3, reps: '15-20' },
+          { name: 'Finger Extensions', sets: 3, reps: '15-20' }
+        ]
+      },
+      neck: {
+        name: 'Mobility Protocol - Collo',
+        mobility: [
+          { name: 'Neck Rotations', sets: 2, duration: '30 secondi per direzione' },
+          { name: 'Lateral Neck Stretch', sets: 2, duration: '30 secondi per lato' },
+          { name: 'Chin Tucks', sets: 2, reps: '10-12' }
+        ],
+        reinforcement: [
+          { name: 'Isometric Neck Hold', sets: 3, reps: '10 secondi per direzione' },
+          { name: 'Prone Neck Extension', sets: 3, reps: '10-12' },
+          { name: 'Wall Angels', sets: 3, reps: '10-12' }
+        ]
       }
     };
 
-    return protocols[painArea] || protocols['lower_back']; // Default a lower_back
+    return protocols[painArea] || protocols['lower_back'];
+  }
+
+  // =========================================================================
+  // CONSTANTS & UTILITIES
+  // =========================================================================
+
+  /**
+   * Disclaimer da mostrare all'utente
+   */
+  get disclaimer(): { it: string; en: string } {
+    return PAIN_DETECT_DISCLAIMER;
+  }
+
+  /**
+   * Soglie Pain Detect
+   */
+  get thresholds() {
+    return PAIN_THRESHOLDS;
+  }
+
+  /**
+   * Labels aree del corpo
+   */
+  get bodyAreaLabels() {
+    return BODY_AREA_LABELS;
+  }
+
+  /**
+   * Classifica il livello di fastidio
+   */
+  classifyPain(intensity: number): 'none' | 'mild' | 'moderate' | 'significant' | 'severe' {
+    return classifyDiscomfort(intensity as DiscomfortIntensity);
   }
 }
 
 // Export singleton instance
 export const painManagementService = new PainManagementService();
 export default painManagementService;
+
+// Re-export tipi e costanti dal nuovo sistema per uso diretto
+export {
+  PAIN_THRESHOLDS,
+  LOAD_REDUCTIONS,
+  BODY_AREA_LABELS,
+  PAIN_DETECT_DISCLAIMER,
+  classifyDiscomfort,
+  evaluateDiscomfort,
+  applyAdaptations,
+  findSubstitution,
+  getLoadReductions
+} from '@trainsmart/shared';
+
+export type {
+  DiscomfortIntensity,
+  DiscomfortResponse,
+  BodyArea,
+  UserChoice
+} from '@trainsmart/shared';

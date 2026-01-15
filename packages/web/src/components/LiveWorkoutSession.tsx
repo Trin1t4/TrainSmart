@@ -22,7 +22,15 @@ import { autoRegulationService } from '@trainsmart/shared';
 import { supabase } from '../lib/supabaseClient';
 import { useTranslation } from '../lib/i18n';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
-import painManagementService from '../lib/painManagementService';
+import painManagementService, {
+  classifyDiscomfort,
+  PAIN_THRESHOLDS,
+  BODY_AREA_LABELS,
+  type DiscomfortResponse,
+  type DiscomfortIntensity,
+  type BodyArea,
+  type UserChoice
+} from '../lib/painManagementService';
 import HybridRecoveryModal from './HybridRecoveryModal';
 import VideoUploadModal from './VideoUploadModal';
 import { isExerciseSupportedInternally } from '../lib/videoCorrectionEngine';
@@ -433,6 +441,11 @@ export default function LiveWorkoutSession({
   const [currentPainLevel, setCurrentPainLevel] = useState(0); // 0-10 scale
   const [showPainAlert, setShowPainAlert] = useState(false);
   const [painAdaptations, setPainAdaptations] = useState<any[]>([]);
+
+  // Pain Detect 2.0 state
+  const [painDetectResponse, setPainDetectResponse] = useState<DiscomfortResponse | null>(null);
+  const [showPainOptionsModal, setShowPainOptionsModal] = useState(false);
+  const [pendingPainArea, setPendingPainArea] = useState<BodyArea | null>(null);
 
   // Hybrid Recovery Modal state
   const [showHybridRecoveryModal, setShowHybridRecoveryModal] = useState(false);
@@ -2235,68 +2248,35 @@ export default function LiveWorkoutSession({
       }
     }
 
-    // Check for pain-based adaptation
-    if (currentPainLevel >= 4) {
-      // TODO: Get goal from program data (for now defaulting to 'forza')
-      const userGoal = 'forza'; // This should come from program metadata
+    // Check for pain-based adaptation - PAIN DETECT 2.0
+    if (currentPainLevel >= PAIN_THRESHOLDS.SUGGEST_REDUCTION) {
+      // Determina l'area del corpo dall'esercizio
+      const painArea = determinePainArea(currentExercise.name, painAreas);
 
-      const suggestion = painManagementService.suggestAdaptation(
-        currentPainLevel,
-        currentWeight || 0,
-        currentReps,
-        100,
-        painAdaptations,
-        userGoal
+      // Usa il nuovo sistema Pain Detect 2.0
+      const response = painManagementService.evaluateDiscomfortV2(
+        painArea,
+        currentPainLevel as DiscomfortIntensity,
+        currentExercise.name
       );
 
-      console.log('🩹 Pain adaptation suggested:', suggestion);
+      console.log('🩹 Pain Detect 2.0 response:', response);
 
-      // Show alert with suggestion
-      if (suggestion.action !== 'continue') {
-        setShowPainAlert(true);
-        toast.warning(suggestion.message, {
-          duration: 5000
+      // Se intensità >= 4, mostra modal con opzioni
+      if (currentPainLevel >= 4) {
+        setPainDetectResponse(response);
+        setPendingPainArea(painArea);
+        setShowPainOptionsModal(true);
+
+        // Non procedere automaticamente - aspetta scelta utente
+        return;
+      }
+
+      // Per livelli 1-3, mostra solo toast informativo
+      if (response.showTolerableReminder) {
+        toast.info(response.educationalNoteIt || 'Fastidio lieve, monitorando...', {
+          duration: 3000
         });
-
-        // Apply adaptation automatically for next set
-        if (suggestion.new_weight !== undefined) {
-          console.log(`⚠️ Suggested weight reduction: ${currentWeight}kg → ${suggestion.new_weight}kg`);
-        }
-        if (suggestion.new_reps !== undefined) {
-          console.log(`⚠️ Suggested reps reduction: ${currentReps} → ${suggestion.new_reps}`);
-        }
-
-        // Track adaptation
-        setPainAdaptations([
-          ...painAdaptations,
-          {
-            type: suggestion.action === 'reduce_weight' ? 'weight_reduced' :
-                  suggestion.action === 'reduce_reps' ? 'reps_reduced' :
-                  suggestion.action === 'reduce_rom' ? 'rom_reduced' : 'exercise_stopped',
-            from: currentWeight,
-            to: suggestion.new_weight || currentWeight,
-            reason: `pain_${currentPainLevel}`,
-            timestamp: new Date().toISOString()
-          }
-        ]);
-
-        // If should stop exercise
-        if (suggestion.action === 'stop_exercise') {
-          toast.error('Esercizio sospeso per dolore persistente. Contatta fisioterapista.', {
-            duration: 8000
-          });
-          // Skip to next exercise
-          if (currentExerciseIndex < totalExercises - 1) {
-            setCurrentExerciseIndex(prev => prev + 1);
-            setCurrentSet(1);
-            setShowRPEInput(false);
-            setShowRIRConfirm(false);
-            setActiveTempo(null); // Reset tempo
-            setCurrentPainLevel(0);
-            setPainAdaptations([]);
-            return;
-          }
-        }
       }
     }
 
@@ -2637,6 +2617,169 @@ export default function LiveWorkoutSession({
     setShowExerciseSelector(false);
 
     toast.info(`⏭️ Passato a: ${exercises[exerciseIndex].name}`, { duration: 2000 });
+  };
+
+  // =============================================================================
+  // PAIN DETECT 2.0 HELPERS
+  // =============================================================================
+
+  /**
+   * Determina l'area del corpo basandosi su pain areas segnalate o pattern esercizio
+   */
+  const determinePainArea = (
+    exerciseName: string,
+    areas: Array<{ area: string; intensity: number }>
+  ): BodyArea => {
+    // Se c'è un'area già segnalata, usa quella
+    if (areas.length > 0) {
+      const topArea = areas.reduce((max, curr) =>
+        curr.intensity > max.intensity ? curr : max
+      );
+      return mapToPainDetectArea(topArea.area);
+    }
+
+    // Altrimenti, inferisci dall'esercizio
+    const name = exerciseName.toLowerCase();
+
+    if (name.includes('squat') || name.includes('leg press') || name.includes('lunge') || name.includes('leg extension')) {
+      return 'knee';
+    }
+    if (name.includes('deadlift') || name.includes('row') || name.includes('good morning') || name.includes('hyperextension')) {
+      return 'lower_back';
+    }
+    if (name.includes('press') || name.includes('fly') || name.includes('raise') || name.includes('lateral')) {
+      return 'shoulder';
+    }
+    if (name.includes('curl') || name.includes('extension') || name.includes('pushdown') || name.includes('tricep')) {
+      return 'elbow';
+    }
+    if (name.includes('pull') || name.includes('chin') || name.includes('lat')) {
+      return 'shoulder';
+    }
+    if (name.includes('hip') || name.includes('thrust') || name.includes('glute') || name.includes('abduct')) {
+      return 'hip';
+    }
+    if (name.includes('calf') || name.includes('ankle')) {
+      return 'ankle';
+    }
+
+    return 'lower_back'; // Default
+  };
+
+  const mapToPainDetectArea = (legacyArea: string): BodyArea => {
+    const mapping: Record<string, BodyArea> = {
+      'neck': 'neck',
+      'shoulder': 'shoulder',
+      'elbow': 'elbow',
+      'wrist': 'wrist',
+      'scapula': 'upper_back',
+      'thoracic_spine': 'upper_back',
+      'upper_back': 'upper_back',
+      'lower_back': 'lower_back',
+      'hip': 'hip',
+      'knee': 'knee',
+      'ankle': 'ankle',
+    };
+    return mapping[legacyArea] || 'lower_back';
+  };
+
+  /**
+   * Gestisce la scelta dell'utente dal modal Pain Detect
+   */
+  const handlePainChoice = async (choice: UserChoice) => {
+    if (!painDetectResponse || !currentExercise) return;
+
+    console.log(`🩹 User choice: ${choice}`);
+    setShowPainOptionsModal(false);
+
+    switch (choice) {
+      case 'continue_normal':
+        toast.info('👍 Continui normalmente. Monitora il fastidio.', { duration: 3000 });
+        break;
+
+      case 'continue_adapted':
+        const reduction = painDetectResponse.autoAdaptations?.load || 20;
+        const newWeight = currentWeight ? Math.round(currentWeight * (1 - reduction / 100) / 2.5) * 2.5 : undefined;
+
+        if (newWeight) {
+          toast.warning(`⚠️ Carico ridotto: ${currentWeight}kg → ${newWeight}kg (-${reduction}%)`, {
+            duration: 5000
+          });
+          setAdjustedWeights(prev => ({
+            ...prev,
+            [currentExercise.name]: newWeight
+          }));
+        }
+
+        setPainAdaptations([
+          ...painAdaptations,
+          {
+            type: 'weight_reduced',
+            from: currentWeight,
+            to: newWeight,
+            reason: `pain_${currentPainLevel}`,
+            timestamp: new Date().toISOString()
+          }
+        ]);
+        break;
+
+      case 'substitute_exercise':
+        if (pendingPainArea) {
+          const sub = painManagementService.findSubstitute(
+            currentExercise.name,
+            pendingPainArea,
+            currentPainLevel as DiscomfortIntensity
+          );
+
+          if (sub.found && sub.substitute) {
+            setExercises(prev => prev.map((ex, idx) =>
+              idx === currentExerciseIndex
+                ? { ...ex, name: sub.substitute!, notes: `🔄 Sostituito: ${currentExercise.name}` }
+                : ex
+            ));
+            toast.success(`🔄 ${currentExercise.name} → ${sub.substitute}`, { duration: 5000 });
+          } else {
+            toast.error('Nessuna alternativa disponibile. Considera di saltare.', { duration: 5000 });
+          }
+        }
+        break;
+
+      case 'skip_exercise':
+        toast.info(`⏭️ ${currentExercise.name} saltato`, { duration: 3000 });
+
+        if (currentExerciseIndex < totalExercises - 1) {
+          setCurrentExerciseIndex(prev => prev + 1);
+          setCurrentSet(1);
+          setShowRPEInput(false);
+          setShowRIRConfirm(false);
+          setCurrentPainLevel(0);
+          setPainAdaptations([]);
+        } else {
+          handleWorkoutComplete();
+        }
+        break;
+
+      case 'skip_area':
+        if (pendingPainArea) {
+          toast.warning(`🛑 Tutti gli esercizi per ${BODY_AREA_LABELS[pendingPainArea]?.it || pendingPainArea} saranno saltati`, {
+            duration: 5000
+          });
+          setPainAreas(prev => [
+            ...prev.filter(p => mapToPainDetectArea(p.area) !== pendingPainArea),
+            { area: pendingPainArea, intensity: 10 }
+          ]);
+        }
+        handlePainChoice('skip_exercise');
+        break;
+
+      case 'end_session':
+        toast.info('👋 Sessione terminata. Il recupero è parte dell\'allenamento!', { duration: 5000 });
+        handleWorkoutComplete();
+        break;
+    }
+
+    setPainDetectResponse(null);
+    setPendingPainArea(null);
   };
 
   // Complete entire workout
@@ -4574,6 +4717,107 @@ export default function LiveWorkoutSession({
           onActivate={handleActivateRecovery}
           onSkip={handleSkipExercise}
         />
+      )}
+
+      {/* Pain Detect 2.0 Options Modal */}
+      {showPainOptionsModal && painDetectResponse && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className={`p-4 ${
+              painDetectResponse.level === 'mild' ? 'bg-green-500' :
+              painDetectResponse.level === 'moderate' ? 'bg-amber-500' :
+              'bg-red-500'
+            } text-white`}>
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                {painDetectResponse.level === 'mild' && '💪 Fastidio Lieve'}
+                {painDetectResponse.level === 'moderate' && '⚠️ Fastidio Moderato'}
+                {painDetectResponse.level === 'significant' && '🛑 Fastidio Significativo'}
+                {painDetectResponse.level === 'severe' && '❌ Fastidio Severo'}
+              </h3>
+              <p className="text-sm opacity-90 mt-1">
+                {currentPainLevel}/10 - {currentExercise?.name}
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="p-4">
+              <p className="text-gray-700 dark:text-gray-200 mb-4">
+                {painDetectResponse.messageIt}
+              </p>
+
+              {painDetectResponse.educationalNoteIt && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    💡 {painDetectResponse.educationalNoteIt}
+                  </p>
+                </div>
+              )}
+
+              {painDetectResponse.showTolerableReminder && (
+                <div className="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    ✅ Un fastidio 3-4/10 che non peggiora è generalmente accettabile.
+                  </p>
+                </div>
+              )}
+
+              {/* Options */}
+              <div className="space-y-2">
+                {painDetectResponse.options.map((option) => (
+                  <button
+                    key={option.choice}
+                    onClick={() => handlePainChoice(option.choice)}
+                    className={`
+                      w-full p-3 rounded-xl text-left transition-all
+                      ${option.recommended
+                        ? 'bg-blue-500 text-white hover:bg-blue-600 ring-2 ring-blue-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{option.icon}</span>
+                      <span className="font-medium">{option.labelIt}</span>
+                      {option.recommended && (
+                        <span className="ml-auto text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                          Consigliato
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm mt-1 opacity-80 ml-8">
+                      {option.descriptionIt}
+                    </p>
+                    {option.loadReductionPercent && (
+                      <p className="text-xs mt-1 opacity-60 ml-8">
+                        📉 -{option.loadReductionPercent}% carico
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {painDetectResponse.suggestProfessional && (
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-700">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    ⚕️ {painDetectResponse.professionalMessageIt}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 pb-4">
+              <p className="text-xs text-gray-400 text-center">
+                {painManagementService.disclaimer.it.substring(0, 80)}...
+              </p>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {/* Video Upload Modal */}
