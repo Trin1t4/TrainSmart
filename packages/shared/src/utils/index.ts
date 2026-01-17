@@ -1082,3 +1082,26 @@ export {
   // Aggregated export
   PregnancySafety
 } from './pregnancySafety';
+
+// ============================================================
+// BEGINNER WEIGHT CAPS - Safety Limits for New Lifters
+// ============================================================
+
+export type {
+  Level as BeginnerLevel,
+  WeightCapResult,
+  CapConfiguration
+} from './beginnerWeightCaps';
+
+export {
+  // Core functions
+  applyBeginnerSafetyCap,
+  calculateSafeWeight,
+  getCapExplanationMessage,
+  shouldPromoteFromBeginner,
+  // Constants
+  BEGINNER_ABSOLUTE_CAPS,
+  PATTERN_DEFAULT_CAPS,
+  // Aggregated export
+  BeginnerWeightCaps
+} from './beginnerWeightCaps';
