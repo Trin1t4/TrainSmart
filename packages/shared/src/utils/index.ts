@@ -1105,3 +1105,39 @@ export {
   // Aggregated export
   BeginnerWeightCaps
 } from './beginnerWeightCaps';
+
+// ============================================================
+// TECHNICAL TIPS - Consigli Tecnici con Paywall
+// ============================================================
+
+export type {
+  SubscriptionTier,
+  TechnicalTipsSettings,
+  TipsAccessResult,
+  TechnicalTip,
+  TipFeedback
+} from './technicalTips';
+
+export {
+  // Access control
+  checkTipsAccess,
+  canReceiveTips,
+  TIERS_WITH_TIPS_ACCESS,
+  TIERS_WITHOUT_TIPS_ACCESS,
+  MINIMUM_TIER_FOR_TIPS,
+  MINIMUM_PRICE_FOR_TIPS,
+  // Settings management
+  createDefaultTipsSettings,
+  updateSettingsFromOnboarding,
+  updateSettingsAfterSession1,
+  shouldShowSession1Confirmation,
+  // Tips database & selection
+  TECHNICAL_TIPS_DATABASE,
+  getTipForExercise,
+  getAllTipsForPattern,
+  // Upsell
+  UPSELL_MESSAGES,
+  getUpsellMessage,
+  // Aggregated export
+  TechnicalTips
+} from './technicalTips';
