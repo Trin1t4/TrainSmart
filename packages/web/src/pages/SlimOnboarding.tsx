@@ -203,6 +203,8 @@ export default function SlimOnboarding() {
         .from('user_profiles')
         .upsert({
           user_id: user.id,
+          email: user.email,
+          display_name: data.name,
           onboarding_data: fullOnboardingData,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
@@ -235,7 +237,7 @@ export default function SlimOnboarding() {
   // VALIDATION
   // ============================================================================
 
-  const isStep1Valid = data.name.trim().length >= 2 && data.age >= 14 && data.age <= 100;
+  const isStep1Valid = data.name.trim().length >= 2 && data.age > 0 && data.age >= 14 && data.age <= 100;
   const isStep2Valid = data.goal !== '';
   const isStep3Valid = data.frequency >= 1 && data.frequency <= 7;
 
@@ -318,8 +320,12 @@ export default function SlimOnboarding() {
           type="number"
           min="14"
           max="100"
-          value={data.age}
-          onChange={(e) => updateData({ age: parseInt(e.target.value) || 30 })}
+          value={data.age || ''}
+          onChange={(e) => {
+            const val = e.target.value;
+            updateData({ age: val === '' ? 0 : parseInt(val) });
+          }}
+          placeholder="30"
           className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
         />
       </div>
