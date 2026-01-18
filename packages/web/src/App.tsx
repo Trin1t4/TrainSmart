@@ -36,6 +36,9 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const SlimOnboarding = lazy(() => import("./pages/SlimOnboarding"));
+const OptionalQuizzes = lazy(() => import("./pages/OptionalQuizzes"));
+const FirstSessionAssessment = lazy(() => import("./pages/FirstSessionAssessment"));
 const BodyCompositionScan = lazy(() => import("./pages/BodyCompositionScan"));
 const BiomechanicsQuiz = lazy(() => import("./pages/BiomechanicsQuiz"));
 const BiomechanicsQuizFull = lazy(() => import("./pages/BiomechanicsQuizFull"));
@@ -94,6 +97,9 @@ function App() {
 
               {/* ONBOARDING - Protected */}
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/slim-onboarding" element={<ProtectedRoute><SlimOnboarding /></ProtectedRoute>} />
+              <Route path="/optional-quizzes" element={<ProtectedRoute><OptionalQuizzes /></ProtectedRoute>} />
+              <Route path="/first-session-assessment" element={<ProtectedRoute><FirstSessionAssessment /></ProtectedRoute>} />
 
               {/* PERCORSO PRINCIPALE - Protected */}
               <Route path="/body-scan" element={<ProtectedRoute><BodyCompositionScan /></ProtectedRoute>} />
