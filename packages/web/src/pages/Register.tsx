@@ -80,7 +80,7 @@ export default function Register() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}/slim-onboarding`,
           data: {
             created_at: consentTimestamp,
             consents: {
@@ -123,7 +123,7 @@ export default function Register() {
         // Se la conferma email è disabilitata, vai direttamente all'onboarding
         if (data.user.confirmed_at || data.session) {
           setTimeout(() => {
-            navigate('/onboarding');
+            navigate('/slim-onboarding');
           }, 2000);
         }
       }
@@ -181,7 +181,7 @@ export default function Register() {
                 Vai al Login
               </button>
               <button
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/slim-onboarding')}
                 className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg transition"
               >
                 Inizia Subito

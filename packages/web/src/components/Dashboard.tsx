@@ -529,7 +529,7 @@ export default function Dashboard() {
 
       // 4. REDIRECT
       setTimeout(() => {
-        navigate('/onboarding');
+        navigate('/slim-onboarding');
       }, 1500);
 
     } catch (error) {
@@ -581,9 +581,9 @@ export default function Dashboard() {
       console.log('✅ GOAL RESET COMPLETE!');
       alert('Obiettivo resettato! Verrai reindirizzato per scegliere un nuovo obiettivo.');
 
-      // Redirect to goal selection (step specifico dell'onboarding)
+      // Redirect to goal selection (slim onboarding)
       setTimeout(() => {
-        navigate('/onboarding?step=goal');
+        navigate('/slim-onboarding');
       }, 1000);
 
     } catch (error) {
