@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
 
         <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 md:p-12 border border-slate-700">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Informativa sulla Privacy</h1>
-          <p className="text-slate-400 mb-8">Ultimo aggiornamento: 9 Dicembre 2025</p>
+          <p className="text-slate-400 mb-8">Ultimo aggiornamento: 19 Gennaio 2026</p>
 
           <div className="prose prose-invert prose-slate max-w-none space-y-8">
             {/* Intro */}
@@ -53,6 +53,28 @@ export default function PrivacyPolicy() {
                 <li>Dati di utilizzo dell'app (pagine visitate, funzionalità usate)</li>
                 <li>Dati tecnici (tipo di dispositivo, browser, sistema operativo)</li>
                 <li>Indirizzo IP (anonimizzato)</li>
+              </ul>
+
+              <h3 className="text-lg font-medium text-white mb-2 mt-4">2.3 Permessi dell'App Mobile</h3>
+              <p className="text-slate-300 leading-relaxed mb-2">
+                L'app TrainSmart richiede i seguenti permessi sul tuo dispositivo:
+              </p>
+              <ul className="list-disc list-inside text-slate-300 space-y-2">
+                <li>
+                  <strong className="text-white">Fotocamera (CAMERA):</strong> utilizzata esclusivamente per la funzione
+                  di scansione della composizione corporea (Body Composition Scan) che permette di analizzare le tue
+                  misure corporee tramite foto. Le immagini vengono elaborate localmente e <strong className="text-white">non vengono
+                  mai caricate sui nostri server</strong> né condivise con terzi. Puoi utilizzare l'app senza concedere
+                  questo permesso, rinunciando alla funzionalità di scansione.
+                </li>
+                <li>
+                  <strong className="text-white">Notifiche:</strong> per inviarti promemoria sugli allenamenti e aggiornamenti
+                  sul tuo programma. Puoi disattivare le notifiche in qualsiasi momento dalle impostazioni del dispositivo.
+                </li>
+                <li>
+                  <strong className="text-white">Accesso a Internet:</strong> necessario per sincronizzare i tuoi dati di
+                  allenamento e accedere ai contenuti dell'app.
+                </li>
               </ul>
             </section>
 
