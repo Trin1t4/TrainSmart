@@ -1,26 +1,25 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": "vite",
   "headers": [
     {
-      "source": "/videos/(.*)",
+      "source": "/.well-known/apple-app-site-association",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     },
     {
-      "source": "/exercises/(.*)",
+      "source": "/.well-known/assetlinks.json",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/videos/(.*)", "destination": "/videos/$1" },
-    { "source": "/exercises/(.*)", "destination": "/exercises/$1" },
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/((?!videos|exercises|assets|splash|icons|manifest|sw|workbox|favicon).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/((?!api|.well-known).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "trailingSlash": false
 }

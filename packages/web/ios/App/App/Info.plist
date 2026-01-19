@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- ============================================ -->
+    <!-- BASIC APP INFORMATION -->
+    <!-- ============================================ -->
+    
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    
+    <key>CFBundleDisplayName</key>
+    <string>TrainSmart</string>
+    
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    
+    <key>CFBundleShortVersionString</key>
+    <string>$(MARKETING_VERSION)</string>
+    
+    <key>CFBundleVersion</key>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
+    
+    <!-- ============================================ -->
+    <!-- UI CONFIGURATION -->
+    <!-- ============================================ -->
+    
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>armv7</string>
+    </array>
+    
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    
+    <!-- Status Bar -->
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleLightContent</string>
+    
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <true/>
+    
+    <!-- ============================================ -->
+    <!-- DEEP LINKING / UNIVERSAL LINKS -->
+    <!-- ============================================ -->
+    
+    <!-- Custom URL Scheme -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>me.trainsmart.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>trainsmart</string>
+            </array>
+        </dict>
+    </array>
+    
+    <!-- Universal Links (Associated Domains configured in entitlements) -->
+    
+    <!-- ============================================ -->
+    <!-- PRIVACY DESCRIPTIONS (REQUIRED BY APP STORE) -->
+    <!-- ============================================ -->
+    
+    <!-- Camera - Per video form analysis -->
+    <key>NSCameraUsageDescription</key>
+    <string>TrainSmart usa la fotocamera per registrare video dei tuoi esercizi e analizzare la tua forma tecnica.</string>
+    
+    <!-- Photo Library - Per salvare/caricare video -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>TrainSmart accede alla libreria foto per salvare i video delle correzioni e permetterti di caricare video esistenti.</string>
+    
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>TrainSmart salva i video delle tue correzioni nella libreria foto.</string>
+    
+    <!-- Microphone - Per registrazione video con audio -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>TrainSmart usa il microfono per registrare l'audio insieme ai video degli esercizi.</string>
+    
+    <!-- HealthKit - Per integrazione dati fitness -->
+    <key>NSHealthShareUsageDescription</key>
+    <string>TrainSmart legge i dati di salute per personalizzare il tuo programma di allenamento in base alla tua attività e al tuo recupero.</string>
+    
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>TrainSmart scrive i dati degli allenamenti completati per tenere traccia della tua attività fitness.</string>
+    
+    <!-- Location (se necessario in futuro per gym finder) -->
+    <!-- 
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>TrainSmart usa la tua posizione per trovare palestre nelle vicinanze.</string>
+    -->
+    
+    <!-- Push Notifications -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- NETWORK / SECURITY -->
+    <!-- ============================================ -->
+    
+    <!-- App Transport Security -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <false/>
+        <!-- Exception per localhost durante development -->
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>localhost</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+        </dict>
+    </dict>
+    
+    <!-- Queries URL Schemes (per controllare se app sono installate) -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>instagram</string>
+        <string>twitter</string>
+        <string>fb</string>
+        <string>whatsapp</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- WEB VIEW CONFIGURATION -->
+    <!-- ============================================ -->
+    
+    <key>WKAppBoundDomains</key>
+    <array>
+        <string>trainsmart.me</string>
+        <string>api.trainsmart.me</string>
+        <string>*.supabase.co</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- ITUNES METADATA -->
+    <!-- ============================================ -->
+    
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+    
+</dict>
+</plist>

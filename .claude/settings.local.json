@@ -191,7 +191,8 @@
       "Bash(npx vercel:*)",
       "Bash(git rm:*)",
       "Bash(git mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(unzip:*)"
     ],
     "deny": [],
     "ask": []

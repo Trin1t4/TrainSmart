@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ionic-team/capacitor-assets/main/assets-schema.json",
+  "icon": {
+    "input": "assets/icon.png",
+    "background": "#0f172a"
+  },
+  "iconForeground": {
+    "input": "assets/icon-foreground.png"
+  },
+  "iconBackground": {
+    "input": "assets/icon-background.png"
+  },
+  "splash": {
+    "input": "assets/splash.png",
+    "backgroundColor": "#0f172a"
+  },
+  "splashDark": {
+    "input": "assets/splash-dark.png",
+    "backgroundColor": "#0f172a"
+  },
+  "ios": {
+    "enabled": true
+  },
+  "android": {
+    "enabled": true,
+    "notification": {
+      "input": "assets/notification-icon.png"
+    }
+  }
+}

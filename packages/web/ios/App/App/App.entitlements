@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- ============================================ -->
+    <!-- ASSOCIATED DOMAINS (Universal Links) -->
+    <!-- ============================================ -->
+    
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <!-- Deep linking from trainsmart.me -->
+        <string>applinks:trainsmart.me</string>
+        <string>applinks:www.trainsmart.me</string>
+        <!-- Webcredentials per autofill password -->
+        <string>webcredentials:trainsmart.me</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- PUSH NOTIFICATIONS -->
+    <!-- ============================================ -->
+    
+    <key>aps-environment</key>
+    <string>development</string>
+    <!-- Cambia in 'production' per App Store release -->
+    
+    <!-- ============================================ -->
+    <!-- IN-APP PURCHASE -->
+    <!-- ============================================ -->
+    
+    <key>com.apple.developer.in-app-payments</key>
+    <array>
+        <string>merchant.me.trainsmart.app</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- HEALTHKIT (OPZIONALE - Decommenta se necessario) -->
+    <!-- ============================================ -->
+    
+    <!--
+    <key>com.apple.developer.healthkit</key>
+    <true/>
+    
+    <key>com.apple.developer.healthkit.access</key>
+    <array></array>
+    
+    <key>com.apple.developer.healthkit.background-delivery</key>
+    <true/>
+    -->
+    
+    <!-- ============================================ -->
+    <!-- KEYCHAIN SHARING (per auth persistence) -->
+    <!-- ============================================ -->
+    
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)me.trainsmart.app</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- APP GROUPS (per widget/extensions in futuro) -->
+    <!-- ============================================ -->
+    
+    <!--
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.me.trainsmart.app</string>
+    </array>
+    -->
+    
+</dict>
+</plist>

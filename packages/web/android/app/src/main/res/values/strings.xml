@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TrainSmart</string>
+    <string name="title_activity_main">TrainSmart</string>
+    <string name="package_name">me.trainsmart.app</string>
+    <string name="custom_url_scheme">trainsmart</string>
+    
+    <!-- Notification Channels -->
+    <string name="notification_channel_workout">Workout Reminders</string>
+    <string name="notification_channel_progress">Progress Updates</string>
+    <string name="notification_channel_general">General</string>
+    
+    <!-- Permissions rationale (shown in dialogs) -->
+    <string name="camera_permission_rationale">TrainSmart needs camera access to record your exercise form for analysis.</string>
+    <string name="storage_permission_rationale">TrainSmart needs storage access to save your workout videos.</string>
+    <string name="notification_permission_rationale">Enable notifications to receive workout reminders and progress updates.</string>
+</resources>
