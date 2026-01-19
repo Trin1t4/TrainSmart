@@ -95,15 +95,6 @@ export const CORRECTIVE_EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescriptio
       'Scendi con controllo'
     ]  },
 
-  'Side Plank': {
-    description: 'Stabilità laterale del core. Carica il quadrato dei lombi e gli obliqui.',
-    technique: [
-      'Gomito sotto la spalla',
-      'Corpo rigido e allineato',
-      'Non lasciare cedere il bacino',
-      'Respira normalmente durante la tenuta'
-    ]  },
-
   'Bird Dog': {
     description: 'Stabilità dinamica in posizione quadrupedica. Lavora anti-estensione e anti-rotazione.',
     technique: [

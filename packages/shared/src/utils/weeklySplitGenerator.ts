@@ -412,8 +412,6 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'HSPU al Muro (Solo Eccentrica)': 'HSPU al Muro (Solo Eccentrica)',
   'Trazioni Assistite': 'Trazioni Assistite',
   'Inverted Row Piedi Elevati': 'Rematore Inverso Piedi Elevati',
-  'Inverted Row Facilitato': 'Rematore Inverso Facilitato',
-  'Slider Leg Curl': 'Leg Curl Scorrevole',
   'Ponte Glutei Monopodalico': 'Ponte Glutei Monopodalico'
 };
 
