@@ -194,7 +194,13 @@
       "Bash(tree:*)",
       "Bash(unzip:*)",
       "Bash(npx cap:*)",
-      "Bash(npm run build:android:*)"
+      "Bash(npm run build:android:*)",
+      "Bash(npm run android:open:*)",
+      "Bash(./gradlew assembleRelease:*)",
+      "Bash(set \"JAVA_HOME=C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\")",
+      "Bash(gradlew.bat assembleRelease:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew :app:assembleRelease:*)"
     ],
     "deny": [],
     "ask": []

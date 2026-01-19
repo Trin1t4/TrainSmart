@@ -1,0 +1,875 @@
+-- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:154:9-162:20
+	android:grantUriPermissions
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:158:13-47
+	android:authorities
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:156:13-64
+	android:exported
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:157:13-37
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:155:13-62
+manifest
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:2:1-190:12
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:2:1-190:12
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:2:1-190:12
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:2:1-190:12
+MERGED from [androidx.databinding:viewbinding:8.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\0c563eaa62af36aab7db22815e4eeb16\transformed\jetified-viewbinding-8.2.1\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-app] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\app\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-21:12
+MERGED from [:capacitor-clipboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\clipboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-device] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\device\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-haptics] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\haptics\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
+MERGED from [:capacitor-keyboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\keyboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-26:12
+MERGED from [:capacitor-network] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
+MERGED from [:capacitor-preferences] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\preferences\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-17:12
+MERGED from [:capacitor-share] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-splash-screen] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\splash-screen\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-status-bar] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\status-bar\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:capacitor-android] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\android\capacitor\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e541dcb7e30f260ca4f08ae70c007043\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.google.android.material:material:1.11.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ac7b79d478ed77cc51a12963c945da60\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\949352c4296ee46ea7c8316437145883\transformed\constraintlayout-2.0.1\AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\97381bf13570c02ef296bd3e22c834cd\transformed\appcompat-1.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a264994bf8bf9a3127f0f2a723b006d1\transformed\coordinatorlayout-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b7485f4727f7d6783ef8a4530fd8ab3d\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.android.play:app-update-ktx:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\012ca710d7b4ea3bed536dfd1460f0cb\transformed\jetified-app-update-ktx-2.1.0\AndroidManifest.xml:2:1-14:12
+MERGED from [com.google.android.play:app-update:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d39b84eb3ce618d12ddbdf02c9a84eb3\transformed\jetified-app-update-2.1.0\AndroidManifest.xml:2:1-14:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\00eccb34ec6e0e067362e8dbd3816b5e\transformed\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a392170e31c95826310874240d24c559\transformed\jetified-emoji2-views-helper-1.2.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:17:1-35:12
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:17:1-66:12
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\cd6fa09a9f604fb7e1ca1de113e55c5c\transformed\jetified-firebase-iid-interop-17.1.0\AndroidManifest.xml:2:1-10:12
+MERGED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:16:1-24:12
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:2:1-13:12
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:2:1-24:12
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:2:1-18:12
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:15:1-41:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\8ff3f4f0a1294a75aa8306f9ce2c61cb\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2ce24f77deb15ebf83f85f5c06b3e401\transformed\vectordrawable-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\030aee8e151caf8f08422e0f984d2a45\transformed\webkit-1.9.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.browser:browser:1.7.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7409812e65be58274a8a6831de01a390\transformed\browser-1.7.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b60779d30327747ea96bbafdbabcfea2\transformed\drawerlayout-1.1.1\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\08c87de329d63aa172d634c03fe9783e\transformed\dynamicanimation-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5b247346d7c65ce1473edae48fd06f81\transformed\transition-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\361833471cf78f7a9a180ff5f3c8d38c\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core-ktx:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d868aa70168ac8465fa53b620e2971c0\transformed\jetified-core-ktx-1.12.0\AndroidManifest.xml:2:1-7:12
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\679d8994127ad5afae7a9010281b0347\transformed\jetified-play-services-stats-17.0.2\AndroidManifest.xml:2:1-9:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1685d4f7e4f888460eff3863aaf3c2ff\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b2bd973f7133fe0293727f353afdb839\transformed\loader-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7309b6dee4299771e1727cae96b64ef0\transformed\viewpager-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3405168d4331ac614d50f161743647ff\transformed\recyclerview-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a1c3f8479af61e452eb1e57985a6196e\transformed\customview-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1cbcbb59ffa6fbf3f1e00f3ee1c3b8b6\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5409f9ec73cadd44f47c5c9d35bc2be0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a09bea7ba8742a9aa8503b496f53565d\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\6caad03299cd3296c46abe6adaae30f7\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\588e3536314c1e1a1061fb43004d6929\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\bcce9766ad9aa036f8f04a46a3a7bd49\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\4f19b67076056ef74176a8e82d45497a\transformed\jetified-firebase-installations-interop-17.1.1\AndroidManifest.xml:15:1-19:12
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\de1be4480bfc7f1f227865c406678930\transformed\jetified-play-services-tasks-18.0.2\AndroidManifest.xml:2:1-6:12
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e769111f986d91f680e6a3b320f77001\transformed\jetified-firebase-measurement-connector-19.0.0\AndroidManifest.xml:17:1-25:12
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:16:1-26:12
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\aed58f68397cc807e100189912fe58ab\transformed\fragment-1.6.2\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.activity:activity:1.8.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f6b0daae24b4b12dd593f8d0b1864c8b\transformed\jetified-activity-1.8.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\917e31385254548e80e8e01dca423471\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2f6ed16d37144cc05ece50beb4034a52\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72ea72cfe51be2285831f31253aa96b\transformed\cardview-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1642bc08904d437227bd2574aa342288\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:15:1-33:12
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:15:1-37:12
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:15:1-41:12
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\883bb9d7b81a90a00ed206732f63be56\transformed\jetified-transport-api-3.0.0\AndroidManifest.xml:15:1-22:12
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9c93e3bbe7f70dfe1f5c7c8d79f4df2f\transformed\jetified-firebase-encoders-json-18.0.0\AndroidManifest.xml:15:1-23:12
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72471a7a5b45d6814cfd29239709c55\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [com.google.firebase:firebase-components:17.1.5] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9613fb335e0b0ebf6198b659b25bb877\transformed\jetified-firebase-components-17.1.5\AndroidManifest.xml:15:1-20:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\354e1cea2fc331bd1c90d9df5337094b\transformed\documentfile-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ce4d820f257845e19cd66b16453fc508\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e7dc38d52389eff94a98848847c01b1b\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\842bf64b5d865faab9fed354b577e748\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:17:1-22:12
+MERGED from [org.apache.cordova:framework:10.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3ac0e00c46efec1f978622e6edcebcca\transformed\jetified-framework-10.1.1\AndroidManifest.xml:20:1-27:12
+MERGED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:2:1-21:12
+	package
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:9:5-67
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:8:5-67
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:8:5-67
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:8:5-67
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:8:5-67
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:25:5-67
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:25:5-67
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:9:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:10:5-79
+MERGED from [:capacitor-network] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-79
+MERGED from [:capacitor-network] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-79
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:22:5-79
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:7:5-79
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:7:5-79
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:7:5-79
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:7:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:22:5-79
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:10:22-76
+uses-permission#android.permission.CAMERA
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:13:5-65
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:13:22-62
+uses-feature#android.hardware.camera
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:5-85
+	android:required
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:58-82
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:19-57
+uses-feature#android.hardware.camera.autofocus
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:5-95
+	android:required
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:68-92
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:19-67
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:18:5-71
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:18:22-68
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:5-107
+	android:maxSdkVersion
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:78-104
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:5-108
+	android:maxSdkVersion
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:79-105
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:22-78
+uses-permission#android.permission.READ_MEDIA_IMAGES
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:25:5-76
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:25:22-73
+uses-permission#android.permission.READ_MEDIA_VIDEO
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:26:5-75
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:26:22-72
+uses-permission#android.permission.VIBRATE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:29:5-66
+MERGED from [:capacitor-haptics] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\haptics\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-66
+MERGED from [:capacitor-haptics] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\haptics\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-66
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:29:22-63
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:32:5-77
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:5-77
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:5-77
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:23:5-77
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:23:5-77
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:32:22-74
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:33:5-81
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-81
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-81
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:33:22-78
+uses-permission#android.permission.SCHEDULE_EXACT_ALARM
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:34:5-79
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:34:22-76
+uses-permission#android.permission.WAKE_LOCK
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:37:5-68
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-68
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-68
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:24:5-68
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:24:5-68
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:9:5-68
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:9:5-68
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:37:22-65
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:40:5-77
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:40:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_HEALTH
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:41:5-84
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:41:22-81
+application
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:49:5-164:19
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:49:5-164:19
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:5-19:19
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:5-19:19
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-24:19
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-24:19
+MERGED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-15:19
+MERGED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-15:19
+MERGED from [com.google.android.material:material:1.11.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ac7b79d478ed77cc51a12963c945da60\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
+MERGED from [com.google.android.material:material:1.11.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ac7b79d478ed77cc51a12963c945da60\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\949352c4296ee46ea7c8316437145883\transformed\constraintlayout-2.0.1\AndroidManifest.xml:9:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\949352c4296ee46ea7c8316437145883\transformed\constraintlayout-2.0.1\AndroidManifest.xml:9:5-20
+MERGED from [com.google.android.play:app-update-ktx:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\012ca710d7b4ea3bed536dfd1460f0cb\transformed\jetified-app-update-ktx-2.1.0\AndroidManifest.xml:11:5-12:19
+MERGED from [com.google.android.play:app-update-ktx:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\012ca710d7b4ea3bed536dfd1460f0cb\transformed\jetified-app-update-ktx-2.1.0\AndroidManifest.xml:11:5-12:19
+MERGED from [com.google.android.play:app-update:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d39b84eb3ce618d12ddbdf02c9a84eb3\transformed\jetified-app-update-2.1.0\AndroidManifest.xml:11:5-12:19
+MERGED from [com.google.android.play:app-update:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d39b84eb3ce618d12ddbdf02c9a84eb3\transformed\jetified-app-update-2.1.0\AndroidManifest.xml:11:5-12:19
+MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:23:5-33:19
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:28:5-64:19
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:28:5-64:19
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\cd6fa09a9f604fb7e1ca1de113e55c5c\transformed\jetified-firebase-iid-interop-17.1.0\AndroidManifest.xml:7:5-8:19
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\cd6fa09a9f604fb7e1ca1de113e55c5c\transformed\jetified-firebase-iid-interop-17.1.0\AndroidManifest.xml:7:5-8:19
+MERGED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:19:5-23:19
+MERGED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:19:5-23:19
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:11:5-22:19
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:11:5-22:19
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:8:5-16:19
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:8:5-16:19
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:22:5-39:19
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:22:5-39:19
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\679d8994127ad5afae7a9010281b0347\transformed\jetified-play-services-stats-17.0.2\AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\679d8994127ad5afae7a9010281b0347\transformed\jetified-play-services-stats-17.0.2\AndroidManifest.xml:7:5-20
+MERGED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:28:5-89
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:23:5-33:19
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\de1be4480bfc7f1f227865c406678930\transformed\jetified-play-services-tasks-18.0.2\AndroidManifest.xml:5:5-20
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\de1be4480bfc7f1f227865c406678930\transformed\jetified-play-services-tasks-18.0.2\AndroidManifest.xml:5:5-20
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e769111f986d91f680e6a3b320f77001\transformed\jetified-firebase-measurement-connector-19.0.0\AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e769111f986d91f680e6a3b320f77001\transformed\jetified-firebase-measurement-connector-19.0.0\AndroidManifest.xml:22:5-23:19
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:20:5-24:19
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:20:5-24:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\917e31385254548e80e8e01dca423471\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\917e31385254548e80e8e01dca423471\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:23:5-31:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:23:5-31:19
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:27:5-35:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:25:5-39:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:25:5-39:19
+MERGED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:11:5-19:19
+MERGED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:11:5-19:19
+	android:extractNativeLibs
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+	android:supportsRtl
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:54:9-35
+	android:label
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:52:9-41
+	android:hardwareAccelerated
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:58:9-43
+	android:roundIcon
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:53:9-54
+	android:largeHeap
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:59:9-33
+	android:icon
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:51:9-43
+	android:allowBackup
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:50:9-35
+	android:theme
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:55:9-40
+	android:networkSecurityConfig
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:56:9-69
+	android:usesCleartextTraffic
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:57:9-45
+activity#me.trainsmart.app.MainActivity
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:65:9-122:20
+	android:label
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:68:13-56
+	android:launchMode
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:70:13-44
+	android:windowSoftInputMode
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:72:13-55
+	android:exported
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:71:13-36
+	android:configChanges
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:66:13-129
+	android:theme
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:69:13-62
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:67:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:75:13-78:29
+action#android.intent.action.MAIN
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:76:17-69
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:76:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:77:17-77
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:77:27-74
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:trainsmart
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:84:13-89:29
+action#android.intent.action.VIEW
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:17-69
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:25-66
+category#android.intent.category.DEFAULT
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:17-76
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:27-73
+category#android.intent.category.BROWSABLE
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:17-78
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:27-75
+data
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+	android:host
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+	android:scheme
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+	android:mimeType
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:180:19-41
+	android:pathPrefix
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:111:21-50
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:trainsmart.me+data:host:www.trainsmart.me+data:scheme:https+data:scheme:https
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:95:13-101:29
+	android:autoVerify
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:95:28-53
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:trainsmart.me+data:host:trainsmart.me+data:host:trainsmart.me+data:pathPrefix:/dashboard+data:pathPrefix:/payment+data:pathPrefix:/workout+data:scheme:https+data:scheme:https+data:scheme:https
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:104:13-120:29
+	android:autoVerify
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:104:28-53
+service#com.google.firebase.messaging.FirebaseMessagingService
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:128:9-134:19
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:46:9-53:19
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:46:9-53:19
+	android:exported
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:130:13-37
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:48:13-43
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:129:13-82
+intent-filter#action:name:com.google.firebase.MESSAGING_EVENT
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:131:13-133:29
+action#com.google.firebase.MESSAGING_EVENT
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:17-78
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:25-75
+receiver#com.capacitorjs.plugins.localnotifications.LocalNotificationReceiver
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:140:9-141:40
+	android:exported
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:141:13-37
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:140:19-102
+receiver#com.capacitorjs.plugins.localnotifications.LocalNotificationRestoreReceiver
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:143:9-148:20
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:9-23:20
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:9-23:20
+	android:exported
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:144:13-37
+	android:directBootAware
+		ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:13-43
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:143:19-109
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:145:13-147:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:17-79
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:25-76
+queries
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:170:5-188:15
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-11:15
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-11:15
+intent#action:name:android.intent.action.VIEW+data:scheme:https
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:172:9-175:18
+intent#action:name:android.intent.action.SEND+data:mimeType:*/*
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:178:9-181:18
+action#android.intent.action.SEND
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:179:13-65
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:179:21-62
+package#com.instagram.android
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:184:9-57
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:184:18-54
+package#com.twitter.android
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:185:9-55
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:185:18-52
+package#com.facebook.katana
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:186:9-55
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:186:18-52
+package#com.whatsapp
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:187:9-48
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:187:18-45
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:159:13-161:54
+	android:resource
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:161:17-51
+	android:name
+		ADDED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:160:17-67
+uses-sdk
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+MERGED from [androidx.databinding:viewbinding:8.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\0c563eaa62af36aab7db22815e4eeb16\transformed\jetified-viewbinding-8.2.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.databinding:viewbinding:8.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\0c563eaa62af36aab7db22815e4eeb16\transformed\jetified-viewbinding-8.2.1\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-app] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\app\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-app] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\app\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-clipboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\clipboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-clipboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\clipboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-device] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\device\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-device] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\device\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-haptics] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\haptics\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-haptics] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\haptics\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-keyboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\keyboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-keyboard] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\keyboard\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-network] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-network] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\network\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-preferences] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\preferences\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-preferences] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\preferences\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-share] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-share] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-splash-screen] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\splash-screen\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-splash-screen] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\splash-screen\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-status-bar] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\status-bar\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-status-bar] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\status-bar\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-android] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\android\capacitor\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:capacitor-android] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\android\capacitor\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e541dcb7e30f260ca4f08ae70c007043\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e541dcb7e30f260ca4f08ae70c007043\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.material:material:1.11.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ac7b79d478ed77cc51a12963c945da60\transformed\material-1.11.0\AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.material:material:1.11.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ac7b79d478ed77cc51a12963c945da60\transformed\material-1.11.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\949352c4296ee46ea7c8316437145883\transformed\constraintlayout-2.0.1\AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\949352c4296ee46ea7c8316437145883\transformed\constraintlayout-2.0.1\AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\97381bf13570c02ef296bd3e22c834cd\transformed\appcompat-1.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\97381bf13570c02ef296bd3e22c834cd\transformed\appcompat-1.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a264994bf8bf9a3127f0f2a723b006d1\transformed\coordinatorlayout-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a264994bf8bf9a3127f0f2a723b006d1\transformed\coordinatorlayout-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b7485f4727f7d6783ef8a4530fd8ab3d\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b7485f4727f7d6783ef8a4530fd8ab3d\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.play:app-update-ktx:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\012ca710d7b4ea3bed536dfd1460f0cb\transformed\jetified-app-update-ktx-2.1.0\AndroidManifest.xml:7:5-9:41
+MERGED from [com.google.android.play:app-update-ktx:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\012ca710d7b4ea3bed536dfd1460f0cb\transformed\jetified-app-update-ktx-2.1.0\AndroidManifest.xml:7:5-9:41
+MERGED from [com.google.android.play:app-update:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d39b84eb3ce618d12ddbdf02c9a84eb3\transformed\jetified-app-update-2.1.0\AndroidManifest.xml:7:5-9:41
+MERGED from [com.google.android.play:app-update:2.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d39b84eb3ce618d12ddbdf02c9a84eb3\transformed\jetified-app-update-2.1.0\AndroidManifest.xml:7:5-9:41
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\00eccb34ec6e0e067362e8dbd3816b5e\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\00eccb34ec6e0e067362e8dbd3816b5e\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a392170e31c95826310874240d24c559\transformed\jetified-emoji2-views-helper-1.2.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a392170e31c95826310874240d24c559\transformed\jetified-emoji2-views-helper-1.2.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:21:5-44
+MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:21:5-44
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\cd6fa09a9f604fb7e1ca1de113e55c5c\transformed\jetified-firebase-iid-interop-17.1.0\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-iid-interop:17.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\cd6fa09a9f604fb7e1ca1de113e55c5c\transformed\jetified-firebase-iid-interop-17.1.0\AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:18:5-43
+MERGED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:18:5-43
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:5:5-44
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:19:5-44
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:19:5-44
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\8ff3f4f0a1294a75aa8306f9ce2c61cb\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\8ff3f4f0a1294a75aa8306f9ce2c61cb\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2ce24f77deb15ebf83f85f5c06b3e401\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2ce24f77deb15ebf83f85f5c06b3e401\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\030aee8e151caf8f08422e0f984d2a45\transformed\webkit-1.9.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\030aee8e151caf8f08422e0f984d2a45\transformed\webkit-1.9.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.browser:browser:1.7.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7409812e65be58274a8a6831de01a390\transformed\browser-1.7.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.browser:browser:1.7.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7409812e65be58274a8a6831de01a390\transformed\browser-1.7.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b60779d30327747ea96bbafdbabcfea2\transformed\drawerlayout-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b60779d30327747ea96bbafdbabcfea2\transformed\drawerlayout-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\08c87de329d63aa172d634c03fe9783e\transformed\dynamicanimation-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.dynamicanimation:dynamicanimation:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\08c87de329d63aa172d634c03fe9783e\transformed\dynamicanimation-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5b247346d7c65ce1473edae48fd06f81\transformed\transition-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5b247346d7c65ce1473edae48fd06f81\transformed\transition-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\361833471cf78f7a9a180ff5f3c8d38c\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\361833471cf78f7a9a180ff5f3c8d38c\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-ktx:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d868aa70168ac8465fa53b620e2971c0\transformed\jetified-core-ktx-1.12.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\d868aa70168ac8465fa53b620e2971c0\transformed\jetified-core-ktx-1.12.0\AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\679d8994127ad5afae7a9010281b0347\transformed\jetified-play-services-stats-17.0.2\AndroidManifest.xml:5:5-44
+MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\679d8994127ad5afae7a9010281b0347\transformed\jetified-play-services-stats-17.0.2\AndroidManifest.xml:5:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1685d4f7e4f888460eff3863aaf3c2ff\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1685d4f7e4f888460eff3863aaf3c2ff\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b2bd973f7133fe0293727f353afdb839\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\b2bd973f7133fe0293727f353afdb839\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7309b6dee4299771e1727cae96b64ef0\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\7309b6dee4299771e1727cae96b64ef0\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3405168d4331ac614d50f161743647ff\transformed\recyclerview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3405168d4331ac614d50f161743647ff\transformed\recyclerview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a1c3f8479af61e452eb1e57985a6196e\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a1c3f8479af61e452eb1e57985a6196e\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1cbcbb59ffa6fbf3f1e00f3ee1c3b8b6\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1cbcbb59ffa6fbf3f1e00f3ee1c3b8b6\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5409f9ec73cadd44f47c5c9d35bc2be0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5409f9ec73cadd44f47c5c9d35bc2be0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a09bea7ba8742a9aa8503b496f53565d\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a09bea7ba8742a9aa8503b496f53565d\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\6caad03299cd3296c46abe6adaae30f7\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\6caad03299cd3296c46abe6adaae30f7\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\588e3536314c1e1a1061fb43004d6929\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\588e3536314c1e1a1061fb43004d6929\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\bcce9766ad9aa036f8f04a46a3a7bd49\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\bcce9766ad9aa036f8f04a46a3a7bd49\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\4f19b67076056ef74176a8e82d45497a\transformed\jetified-firebase-installations-interop-17.1.1\AndroidManifest.xml:17:5-44
+MERGED from [com.google.firebase:firebase-installations-interop:17.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\4f19b67076056ef74176a8e82d45497a\transformed\jetified-firebase-installations-interop-17.1.1\AndroidManifest.xml:17:5-44
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\de1be4480bfc7f1f227865c406678930\transformed\jetified-play-services-tasks-18.0.2\AndroidManifest.xml:4:5-43
+MERGED from [com.google.android.gms:play-services-tasks:18.0.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\de1be4480bfc7f1f227865c406678930\transformed\jetified-play-services-tasks-18.0.2\AndroidManifest.xml:4:5-43
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e769111f986d91f680e6a3b320f77001\transformed\jetified-firebase-measurement-connector-19.0.0\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-measurement-connector:19.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e769111f986d91f680e6a3b320f77001\transformed\jetified-firebase-measurement-connector-19.0.0\AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:18:5-43
+MERGED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:18:5-43
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\aed58f68397cc807e100189912fe58ab\transformed\fragment-1.6.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\aed58f68397cc807e100189912fe58ab\transformed\fragment-1.6.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.8.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f6b0daae24b4b12dd593f8d0b1864c8b\transformed\jetified-activity-1.8.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.8.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f6b0daae24b4b12dd593f8d0b1864c8b\transformed\jetified-activity-1.8.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\917e31385254548e80e8e01dca423471\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\917e31385254548e80e8e01dca423471\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:21:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:21:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2f6ed16d37144cc05ece50beb4034a52\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2f6ed16d37144cc05ece50beb4034a52\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72ea72cfe51be2285831f31253aa96b\transformed\cardview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72ea72cfe51be2285831f31253aa96b\transformed\cardview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1642bc08904d437227bd2574aa342288\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\1642bc08904d437227bd2574aa342288\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\883bb9d7b81a90a00ed206732f63be56\transformed\jetified-transport-api-3.0.0\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:3.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\883bb9d7b81a90a00ed206732f63be56\transformed\jetified-transport-api-3.0.0\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9c93e3bbe7f70dfe1f5c7c8d79f4df2f\transformed\jetified-firebase-encoders-json-18.0.0\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9c93e3bbe7f70dfe1f5c7c8d79f4df2f\transformed\jetified-firebase-encoders-json-18.0.0\AndroidManifest.xml:19:5-21:41
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72471a7a5b45d6814cfd29239709c55\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\f72471a7a5b45d6814cfd29239709c55\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
+MERGED from [com.google.firebase:firebase-components:17.1.5] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9613fb335e0b0ebf6198b659b25bb877\transformed\jetified-firebase-components-17.1.5\AndroidManifest.xml:18:5-44
+MERGED from [com.google.firebase:firebase-components:17.1.5] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9613fb335e0b0ebf6198b659b25bb877\transformed\jetified-firebase-components-17.1.5\AndroidManifest.xml:18:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\354e1cea2fc331bd1c90d9df5337094b\transformed\documentfile-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\354e1cea2fc331bd1c90d9df5337094b\transformed\documentfile-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ce4d820f257845e19cd66b16453fc508\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ce4d820f257845e19cd66b16453fc508\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e7dc38d52389eff94a98848847c01b1b\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\e7dc38d52389eff94a98848847c01b1b\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\842bf64b5d865faab9fed354b577e748\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\842bf64b5d865faab9fed354b577e748\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
+MERGED from [org.apache.cordova:framework:10.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3ac0e00c46efec1f978622e6edcebcca\transformed\jetified-framework-10.1.1\AndroidManifest.xml:25:5-44
+MERGED from [org.apache.cordova:framework:10.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\3ac0e00c46efec1f978622e6edcebcca\transformed\jetified-framework-10.1.1\AndroidManifest.xml:25:5-44
+MERGED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:7:5-9:41
+MERGED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:7:5-9:41
+	android:targetSdkVersion
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml
+intent#action:name:android.support.customtabs.action.CustomTabsService
+ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:9-10:18
+action#android.support.customtabs.action.CustomTabsService
+ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:13-90
+	android:name
+		ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:21-87
+activity#com.capacitorjs.plugins.browser.BrowserControllerActivity
+ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:9-18:75
+	android:launchMode
+		ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:13-44
+	android:exported
+		ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:13-37
+	android:theme
+		ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:13-72
+	android:name
+		ADDED from [:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:13-85
+receiver#com.capacitorjs.plugins.localnotifications.TimedNotificationPublisher
+ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:9-106
+	android:name
+		ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:19-103
+receiver#com.capacitorjs.plugins.localnotifications.NotificationDismissReceiver
+ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:9-107
+	android:name
+		ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:19-104
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED+action:name:android.intent.action.LOCKED_BOOT_COMPLETED+action:name:android.intent.action.QUICKBOOT_POWERON
+ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:13-22:29
+action#android.intent.action.LOCKED_BOOT_COMPLETED
+ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:17-86
+	android:name
+		ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:25-83
+action#android.intent.action.QUICKBOOT_POWERON
+ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:17-82
+	android:name
+		ADDED from [:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:25-79
+service#com.capacitorjs.plugins.pushnotifications.MessagingService
+ADDED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:9-14:19
+	android:exported
+		ADDED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:13-37
+	android:name
+		ADDED from [:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:13-86
+provider#androidx.startup.InitializationProvider
+ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\43416ee64972292407cb5f979dce0c3b\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:28:13-31
+	android:authorities
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+	android:exported
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+meta-data#androidx.emoji2.text.EmojiCompatInitializer
+ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+uses-permission#com.google.android.c2dm.permission.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:26:5-82
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:11:5-82
+MERGED from [com.google.android.gms:play-services-cloud-messaging:17.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ab75392e7c9afa9e5b65e0fee2897944\transformed\jetified-play-services-cloud-messaging-17.0.1\AndroidManifest.xml:11:5-82
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:26:22-79
+receiver#com.google.firebase.iid.FirebaseInstanceIdReceiver
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:29:9-40:20
+	android:exported
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:31:13-36
+	android:permission
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:32:13-73
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:30:13-78
+intent-filter#action:name:com.google.android.c2dm.intent.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:33:13-35:29
+action#com.google.android.c2dm.intent.RECEIVE
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:34:17-81
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:34:25-78
+meta-data#com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:37:13-39:40
+	android:value
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:39:17-37
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:38:17-92
+service#com.google.firebase.components.ComponentDiscoveryService
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:54:9-63:19
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:12:9-21:19
+MERGED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:12:9-21:19
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:30:9-38:19
+MERGED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:30:9-38:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:24:9-30:19
+MERGED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:24:9-30:19
+	android:exported
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:56:13-37
+	tools:targetApi
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:34:13-32
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:32:13-43
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:55:13-84
+meta-data#com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:57:13-59:85
+	android:value
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:59:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:58:17-122
+meta-data#com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar
+ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:60:13-62:85
+	android:value
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:62:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:61:17-119
+activity#com.google.android.gms.common.api.GoogleApiActivity
+ADDED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:20:9-22:45
+	android:exported
+		ADDED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:22:19-43
+	android:theme
+		ADDED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:21:19-78
+	android:name
+		ADDED from [com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:20:19-85
+meta-data#com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar
+ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:15:13-17:85
+	android:value
+		ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:17:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:16:17-130
+meta-data#com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar
+ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:18:13-20:85
+	android:value
+		ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:20:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:19:17-127
+meta-data#com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar
+ADDED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:12:13-14:85
+	android:value
+		ADDED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:14:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:13:17-116
+provider#com.google.firebase.provider.FirebaseInitProvider
+ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:23:9-28:39
+	android:authorities
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:25:13-72
+	android:exported
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:27:13-37
+	android:directBootAware
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:26:13-43
+	android:initOrder
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:28:13-36
+	android:name
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:24:13-77
+meta-data#com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar
+ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:35:13-37:85
+	android:value
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:37:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:36:17-109
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+permission#me.trainsmart.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+uses-permission#me.trainsmart.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+meta-data#androidx.lifecycle.ProcessLifecycleInitializer
+ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+meta-data#com.google.android.gms.version
+ADDED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:21:9-23:69
+	android:value
+		ADDED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:23:13-66
+	android:name
+		ADDED from [com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:22:13-58
+meta-data#androidx.profileinstaller.ProfileInstallerInitializer
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+receiver#androidx.profileinstaller.ProfileInstallReceiver
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+	android:enabled
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+	android:permission
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+	android:directBootAware
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+intent-filter#action:name:androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+action#androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+intent-filter#action:name:androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+action#androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+intent-filter#action:name:androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+action#androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+intent-filter#action:name:androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+action#androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+meta-data#com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar
+ADDED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:27:13-29:85
+	android:value
+		ADDED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:29:17-82
+	android:name
+		ADDED from [com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:28:17-115
+service#com.google.android.datatransport.runtime.backends.TransportBackendDiscovery
+ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:28:9-34:19
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:36:9-38:40
+MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:36:9-38:40
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:30:13-37
+	android:name
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:29:13-103
+meta-data#backend:com.google.android.datatransport.cct.CctBackendFactory
+ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:31:13-33:39
+	android:value
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:33:17-36
+	android:name
+		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:32:17-94
+service#com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
+ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:26:9-30:19
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:28:13-37
+	android:permission
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:29:13-69
+	android:name
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:27:13-117
+receiver#com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver
+ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:32:9-34:40
+	android:exported
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:34:13-37
+	android:name
+		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:33:13-132
+activity#com.google.android.play.core.common.PlayCoreDialogWrapperActivity
+ADDED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:14:9-18:65
+	android:stateNotNeeded
+		ADDED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:17:13-42
+	android:exported
+		ADDED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:16:13-37
+	android:theme
+		ADDED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:18:13-62
+	android:name
+		ADDED from [com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:15:13-93

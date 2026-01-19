@@ -4,7 +4,7 @@
     <!-- BASE THEME (Dark) -->
     <!-- ============================================ -->
     
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color (emerald-500) -->
         <item name="colorPrimary">#10B981</item>
         <item name="colorPrimaryVariant">#059669</item>
