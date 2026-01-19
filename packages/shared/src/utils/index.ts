@@ -1169,3 +1169,36 @@ export {
   // Aggregated export
   SeverePainBlock
 } from './severePainBlock';
+
+// ============================================================
+// ONE REP MAX CALCULATOR - Evidence-Based (Reynolds 2006, DiStasio 2014)
+// ============================================================
+
+export type {
+  TestType,
+  OneRMPrediction,
+  TestTypeInfo
+} from './oneRepMaxEvidenceBased';
+
+export {
+  // Main function
+  calculate1RM,
+  // Individual formulas
+  brzycki,
+  epley,
+  mayhew,
+  wathen,
+  lombardi,
+  lander,
+  // Inverse calculations
+  calculate_nRM_from_1RM,
+  generateLoadTable,
+  // Comparison utilities
+  calculateAllFormulas,
+  calculate1RMRange,
+  // Config & recommendations
+  TEST_TYPES,
+  suggestTestType,
+  // Aggregated export
+  OneRepMaxEvidenceBased
+} from './oneRepMaxEvidenceBased';

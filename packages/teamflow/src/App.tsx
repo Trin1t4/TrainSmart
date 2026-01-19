@@ -31,8 +31,6 @@ const CoachSetup = lazy(() => import("./pages/CoachSetup"));
 const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
 const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const BodyCompositionScan = lazy(() => import("./pages/BodyCompositionScan"));
-const BiomechanicsQuiz = lazy(() => import("./pages/BiomechanicsQuiz"));
-const BiomechanicsQuizFull = lazy(() => import("./pages/BiomechanicsQuizFull"));
 const Screening = lazy(() => import("./pages/Screening"));
 const ScreeningFull = lazy(() => import("./pages/ScreeningFull"));
 const Dashboard = lazy(() => import("./components/Dashboard"));
@@ -80,8 +78,6 @@ function App() {
 
               {/* PERCORSO PRINCIPALE - Senza auth per test */}
               <Route path="/body-scan" element={<BodyCompositionScan />} />
-              <Route path="/quiz" element={<BiomechanicsQuiz />} />
-              <Route path="/quiz-full" element={<BiomechanicsQuizFull />} />
               <Route path="/screening" element={<Screening />} />
               <Route path="/screening-full" element={<ScreeningFull />} />
               <Route path="/dashboard" element={<Dashboard />} />
