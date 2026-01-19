@@ -21,6 +21,8 @@ import {
   mapQuickStartGoalToProgram,
 } from './quickStartService';
 
+import { isBodyweightExercise } from './exerciseProgressionEngine';
+
 import type {
   WeeklySplit,
   DayWorkout,
@@ -247,8 +249,9 @@ export function generateConservativeProgram(
         const exerciseInfo = patternExercises[0];
 
         // Calcola peso iniziale se gym e bodyweight disponibile
+        // ⚡ SKIP per esercizi a corpo libero (Push-up, Nordic Curl, etc.)
         let weight: string | undefined;
-        if (quickStartData.location === 'gym' && bodyWeight) {
+        if (quickStartData.location === 'gym' && bodyWeight && !isBodyweightExercise(exerciseInfo.name)) {
           const estimatedWeight = calculateInitialWeight(pattern, bodyWeight, level);
           weight = `${estimatedWeight}kg`;
         }
@@ -404,6 +407,10 @@ export function applyCalibrationToProgram(
     const updatedDays = program.weeklySplit.days.map(day => ({
       ...day,
       exercises: day.exercises.map(ex => {
+        // ⚡ Non applicare pesi a esercizi bodyweight
+        if (isBodyweightExercise(ex.name)) {
+          return ex;
+        }
         const calibratedWeight = weightsDiscovered[ex.name];
         if (calibratedWeight) {
           return {
