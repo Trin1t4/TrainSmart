@@ -5,6 +5,7 @@ interface User {
   id: string;
   email: string;
   username?: string;
+  emailConfirmed: boolean;
 }
 
 export function useAuth() {
@@ -16,10 +17,17 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data }) => {
       const session = (data as any).session;
       if (session?.user) {
+        // Verifica se l'email è confermata
+        const emailConfirmed = !!(
+          session.user.email_confirmed_at ||
+          session.user.confirmed_at
+        );
+
         setUser({
           id: session.user.id,
           email: session.user.email || "",
           username: session.user.user_metadata?.username,
+          emailConfirmed,
         });
       }
       setIsLoading(false);
@@ -30,10 +38,16 @@ export function useAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
+        const emailConfirmed = !!(
+          session.user.email_confirmed_at ||
+          session.user.confirmed_at
+        );
+
         setUser({
           id: session.user.id,
           email: session.user.email || "",
           username: session.user.user_metadata?.username,
+          emailConfirmed,
         });
       } else {
         setUser(null);
@@ -48,5 +62,6 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user,
+    isEmailConfirmed: user?.emailConfirmed ?? false,
   };
 }

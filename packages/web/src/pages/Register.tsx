@@ -119,13 +119,20 @@ export default function Register() {
 
         // Successo!
         setSuccess(true);
-        
-        // Se la conferma email è disabilitata, vai direttamente all'onboarding
-        if (data.user.confirmed_at || data.session) {
+
+        // IMPORTANTE: Richiediamo SEMPRE conferma email per sicurezza
+        // L'utente deve confermare l'email prima di poter accedere
+        // Non navighiamo automaticamente - mostriamo il messaggio di successo
+        console.log('[Register] User registered, waiting for email confirmation');
+
+        // Solo se l'email è già confermata (es. OAuth), vai all'onboarding
+        if (data.user.confirmed_at) {
           setTimeout(() => {
             navigate('/slim-onboarding');
           }, 2000);
         }
+        // Se c'è una session ma email non confermata, NON procedere
+        // L'utente deve confermare l'email prima
       }
 
     } catch (err: any) {
@@ -167,26 +174,24 @@ export default function Register() {
         <div className="max-w-md w-full relative z-10">
           <div className="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-emerald-500 text-center">
             <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-              <CheckCircle className="w-10 h-10 text-emerald-400" />
+              <Mail className="w-10 h-10 text-emerald-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Registrazione Completata! 🎉</h2>
-            <p className="text-slate-300 mb-6">
-              Controlla la tua email per confermare l'account. Se non hai ricevuto l'email, controlla lo spam.
+            <h2 className="text-2xl font-bold text-white mb-4">Controlla la tua Email! 📧</h2>
+            <p className="text-slate-300 mb-4">
+              Ti abbiamo inviato un'email di conferma a <strong className="text-emerald-400">{email}</strong>
             </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition"
-              >
-                Vai al Login
-              </button>
-              <button
-                onClick={() => navigate('/slim-onboarding')}
-                className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg transition"
-              >
-                Inizia Subito
-              </button>
-            </div>
+            <p className="text-slate-400 text-sm mb-6">
+              Clicca sul link nell'email per attivare il tuo account. Se non la trovi, controlla la cartella spam.
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition"
+            >
+              Vai al Login
+            </button>
+            <p className="text-slate-500 text-xs mt-4">
+              Dopo aver confermato l'email, potrai accedere e iniziare il tuo percorso.
+            </p>
           </div>
         </div>
       </div>
