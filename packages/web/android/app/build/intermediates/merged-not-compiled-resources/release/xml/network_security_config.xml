@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- ============================================ -->
+    <!-- BASE CONFIG (Production) -->
+    <!-- ============================================ -->
+    
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- ============================================ -->
+    <!-- DOMAIN CONFIGS -->
+    <!-- ============================================ -->
+    
+    <!-- TrainSmart domains -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">trainsmart.me</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Supabase -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">supabase.co</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Stripe -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">stripe.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- YouTube (for video hosting) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">youtube.com</domain>
+        <domain includeSubdomains="true">googlevideo.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- ============================================ -->
+    <!-- DEBUG CONFIG (Development only) -->
+    <!-- ============================================ -->
+    
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+    
+</network-security-config>

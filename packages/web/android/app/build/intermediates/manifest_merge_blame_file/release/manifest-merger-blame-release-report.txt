@@ -1,0 +1,653 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="me.trainsmart.app"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- ============================================ -->
+12    <!-- PERMISSIONS -->
+13    <!-- ============================================ -->
+14
+15
+16    <!-- Internet (required for web app) -->
+17    <uses-permission android:name="android.permission.INTERNET" />
+17-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:9:5-67
+17-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:9:22-64
+18    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+18-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:10:5-79
+18-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:10:22-76
+19
+20    <!-- Camera (for video form analysis) -->
+21    <uses-permission android:name="android.permission.CAMERA" />
+21-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:13:5-65
+21-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:13:22-62
+22
+23    <uses-feature
+23-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:5-85
+24        android:name="android.hardware.camera"
+24-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:19-57
+25        android:required="false" />
+25-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:14:58-82
+26    <uses-feature
+26-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:5-95
+27        android:name="android.hardware.camera.autofocus"
+27-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:19-67
+28        android:required="false" />
+28-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:15:68-92
+29
+30    <!-- Microphone (for video recording with audio) -->
+31    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+31-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:18:5-71
+31-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:18:22-68
+32
+33    <!-- Storage (for saving videos - Android 12 and below) -->
+34    <uses-permission
+34-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:5-107
+35        android:name="android.permission.READ_EXTERNAL_STORAGE"
+35-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:22-77
+36        android:maxSdkVersion="32" />
+36-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:21:78-104
+37    <uses-permission
+37-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:5-108
+38        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+38-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:22-78
+39        android:maxSdkVersion="32" />
+39-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:22:79-105
+40
+41    <!-- Media (for Android 13+) -->
+42    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+42-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:25:5-76
+42-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:25:22-73
+43    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+43-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:26:5-75
+43-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:26:22-72
+44
+45    <!-- Vibration (for haptic feedback) -->
+46    <uses-permission android:name="android.permission.VIBRATE" />
+46-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:29:5-66
+46-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:29:22-63
+47
+48    <!-- Push Notifications -->
+49    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+49-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:32:5-77
+49-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:32:22-74
+50    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+50-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:33:5-81
+50-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:33:22-78
+51    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+51-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:34:5-79
+51-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:34:22-76
+52
+53    <!-- Wake Lock (for background tasks) -->
+54    <uses-permission android:name="android.permission.WAKE_LOCK" />
+54-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:37:5-68
+54-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:37:22-65
+55
+56    <!-- Foreground Service (for workout tracking) -->
+57    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+57-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:40:5-77
+57-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:40:22-74
+58    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+58-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:41:5-84
+58-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:41:22-81
+59
+60    <!-- ============================================ -->
+61    <!-- QUERIES (for intent resolution on Android 11+) -->
+62    <!-- ============================================ -->
+63
+64    <queries>
+64-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:170:5-188:15
+65
+66        <!-- For checking if browser apps are available -->
+67        <intent>
+67-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:172:9-175:18
+68            <action android:name="android.intent.action.VIEW" />
+68-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:17-69
+68-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:25-66
+69
+70            <data android:scheme="https" />
+70-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+70-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+71        </intent>
+72
+73        <!-- For sharing intents -->
+74        <intent>
+74-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:178:9-181:18
+75            <action android:name="android.intent.action.SEND" />
+75-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:179:13-65
+75-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:179:21-62
+76
+77            <data android:mimeType="*/*" />
+77-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+77-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:180:19-41
+78        </intent>
+79
+80        <!-- For social media apps -->
+81        <package android:name="com.instagram.android" />
+81-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:184:9-57
+81-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:184:18-54
+82        <package android:name="com.twitter.android" />
+82-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:185:9-55
+82-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:185:18-52
+83        <package android:name="com.facebook.katana" />
+83-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:186:9-55
+83-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:186:18-52
+84        <package android:name="com.whatsapp" />
+84-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:187:9-48
+84-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:187:18-45
+85
+86        <intent>
+86-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:8:9-10:18
+87            <action android:name="android.support.customtabs.action.CustomTabsService" />
+87-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:9:13-90
+87-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:9:21-87
+88        </intent>
+89    </queries>
+90
+91    <!-- Required by older versions of Google Play services to create IID tokens -->
+92    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+92-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:26:5-82
+92-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:26:22-79
+93
+94    <permission
+94-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+95        android:name="me.trainsmart.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+95-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+96        android:protectionLevel="signature" />
+96-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+97
+98    <uses-permission android:name="me.trainsmart.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- Google Fit (optional) -->
+98-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+98-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+99    <!--
+100    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+101    <uses-permission android:name="android.permission.BODY_SENSORS" />
+102    -->
+103    <application
+103-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:49:5-164:19
+104        android:allowBackup="true"
+104-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:50:9-35
+105        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+105-->[androidx.core:core:1.12.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\ea1bf13fb1718d0f71c8ba5ef9eca1fc\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+106        android:extractNativeLibs="false"
+107        android:hardwareAccelerated="true"
+107-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:58:9-43
+108        android:icon="@mipmap/ic_launcher"
+108-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:51:9-43
+109        android:label="@string/app_name"
+109-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:52:9-41
+110        android:largeHeap="true"
+110-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:59:9-33
+111        android:networkSecurityConfig="@xml/network_security_config"
+111-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:56:9-69
+112        android:roundIcon="@mipmap/ic_launcher_round"
+112-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:53:9-54
+113        android:supportsRtl="true"
+113-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:54:9-35
+114        android:theme="@style/AppTheme"
+114-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:55:9-40
+115        android:usesCleartextTraffic="false" >
+115-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:57:9-45
+116
+117        <!-- ============================================ -->
+118        <!-- MAIN ACTIVITY -->
+119        <!-- ============================================ -->
+120
+121        <activity
+121-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:65:9-122:20
+122            android:name="me.trainsmart.app.MainActivity"
+122-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:67:13-41
+123            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+123-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:66:13-129
+124            android:exported="true"
+124-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:71:13-36
+125            android:label="@string/title_activity_main"
+125-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:68:13-56
+126            android:launchMode="singleTask"
+126-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:70:13-44
+127            android:theme="@style/AppTheme.NoActionBarLaunch"
+127-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:69:13-62
+128            android:windowSoftInputMode="adjustResize" >
+128-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:72:13-55
+129
+130            <!-- Standard launcher intent -->
+131            <intent-filter>
+131-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:75:13-78:29
+132                <action android:name="android.intent.action.MAIN" />
+132-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:76:17-69
+132-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:76:25-66
+133
+134                <category android:name="android.intent.category.LAUNCHER" />
+134-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:77:17-77
+134-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:77:27-74
+135            </intent-filter>
+136
+137            <!-- ============================================ -->
+138            <!-- DEEP LINKING - Custom URL Scheme -->
+139            <!-- ============================================ -->
+140
+141            <intent-filter>
+141-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:84:13-89:29
+142                <action android:name="android.intent.action.VIEW" />
+142-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:17-69
+142-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:25-66
+143
+144                <category android:name="android.intent.category.DEFAULT" />
+144-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:17-76
+144-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:27-73
+145                <category android:name="android.intent.category.BROWSABLE" />
+145-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:17-78
+145-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:27-75
+146
+147                <data android:scheme="trainsmart" />
+147-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+147-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+148            </intent-filter>
+149
+150            <!-- ============================================ -->
+151            <!-- DEEP LINKING - App Links (verified) -->
+152            <!-- ============================================ -->
+153
+154            <intent-filter android:autoVerify="true" >
+154-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:95:13-101:29
+154-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:95:28-53
+155                <action android:name="android.intent.action.VIEW" />
+155-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:17-69
+155-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:25-66
+156
+157                <category android:name="android.intent.category.DEFAULT" />
+157-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:17-76
+157-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:27-73
+158                <category android:name="android.intent.category.BROWSABLE" />
+158-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:17-78
+158-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:27-75
+159
+160                <data
+160-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+161                    android:host="trainsmart.me"
+161-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+162                    android:scheme="https" />
+162-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+163                <data
+163-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+164                    android:host="www.trainsmart.me"
+164-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+165                    android:scheme="https" />
+165-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+166            </intent-filter>
+167
+168            <!-- Specific deep link paths -->
+169            <intent-filter android:autoVerify="true" >
+169-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:104:13-120:29
+169-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:104:28-53
+170                <action android:name="android.intent.action.VIEW" />
+170-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:17-69
+170-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:85:25-66
+171
+172                <category android:name="android.intent.category.DEFAULT" />
+172-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:17-76
+172-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:86:27-73
+173                <category android:name="android.intent.category.BROWSABLE" />
+173-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:17-78
+173-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:87:27-75
+174
+175                <data
+175-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+176                    android:host="trainsmart.me"
+176-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+177                    android:pathPrefix="/workout"
+177-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:111:21-50
+178                    android:scheme="https" />
+178-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+179                <data
+179-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+180                    android:host="trainsmart.me"
+180-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+181                    android:pathPrefix="/dashboard"
+181-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:111:21-50
+182                    android:scheme="https" />
+182-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+183                <data
+183-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:17-53
+184                    android:host="trainsmart.me"
+184-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:99:46-74
+185                    android:pathPrefix="/payment"
+185-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:111:21-50
+186                    android:scheme="https" />
+186-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:88:23-50
+187            </intent-filter>
+188        </activity>
+189
+190        <!-- ============================================ -->
+191        <!-- PUSH NOTIFICATIONS - Firebase -->
+192        <!-- ============================================ -->
+193
+194        <service
+194-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:128:9-134:19
+195            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+195-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:129:13-82
+196            android:directBootAware="true"
+196-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:48:13-43
+197            android:exported="false" >
+197-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:130:13-37
+198            <intent-filter>
+198-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:131:13-133:29
+199                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+199-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:17-78
+199-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:25-75
+200            </intent-filter>
+201            <intent-filter android:priority="-500" >
+201-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:131:13-133:29
+202                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+202-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:17-78
+202-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:25-75
+203            </intent-filter>
+204        </service>
+205
+206        <!-- ============================================ -->
+207        <!-- LOCAL NOTIFICATIONS -->
+208        <!-- ============================================ -->
+209
+210        <receiver
+210-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:140:9-141:40
+211            android:name="com.capacitorjs.plugins.localnotifications.LocalNotificationReceiver"
+211-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:140:19-102
+212            android:exported="false" />
+212-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:141:13-37
+213        <receiver
+213-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:143:9-148:20
+214            android:name="com.capacitorjs.plugins.localnotifications.LocalNotificationRestoreReceiver"
+214-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:143:19-109
+215            android:directBootAware="true"
+215-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:16:13-43
+216            android:exported="false" >
+216-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:144:13-37
+217            <intent-filter>
+217-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:145:13-147:29
+218                <action android:name="android.intent.action.BOOT_COMPLETED" />
+218-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:17-79
+218-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:25-76
+219            </intent-filter>
+220            <intent-filter>
+220-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:18:13-22:29
+221                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+221-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:19:17-86
+221-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:19:25-83
+222                <action android:name="android.intent.action.BOOT_COMPLETED" />
+222-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:17-79
+222-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:146:25-76
+223                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+223-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:21:17-82
+223-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:21:25-79
+224            </intent-filter>
+225        </receiver>
+226
+227        <!-- ============================================ -->
+228        <!-- FILE PROVIDER (for sharing/camera) -->
+229        <!-- ============================================ -->
+230
+231        <provider
+232            android:name="androidx.core.content.FileProvider"
+232-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:155:13-62
+233            android:authorities="me.trainsmart.app.fileprovider"
+233-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:156:13-64
+234            android:exported="false"
+234-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:157:13-37
+235            android:grantUriPermissions="true" >
+235-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:158:13-47
+236            <meta-data
+236-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:159:13-161:54
+237                android:name="android.support.FILE_PROVIDER_PATHS"
+237-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:160:17-67
+238                android:resource="@xml/file_paths" />
+238-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:161:17-51
+239        </provider>
+240
+241        <activity
+241-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:14:9-18:75
+242            android:name="com.capacitorjs.plugins.browser.BrowserControllerActivity"
+242-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:15:13-85
+243            android:exported="false"
+243-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:16:13-37
+244            android:launchMode="singleTask"
+244-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:17:13-44
+245            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+245-->[:capacitor-browser] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\browser\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:18:13-72
+246
+247        <receiver android:name="com.capacitorjs.plugins.localnotifications.TimedNotificationPublisher" />
+247-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:12:9-106
+247-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:12:19-103
+248        <receiver android:name="com.capacitorjs.plugins.localnotifications.NotificationDismissReceiver" />
+248-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:13:9-107
+248-->[:capacitor-local-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\local-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:13:19-104
+249
+250        <service
+250-->[:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:8:9-14:19
+251            android:name="com.capacitorjs.plugins.pushnotifications.MessagingService"
+251-->[:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:9:13-86
+252            android:exported="false" >
+252-->[:capacitor-push-notifications] C:\Users\dario\OneDrive\Desktop\TrainSmart\node_modules\@capacitor\push-notifications\android\build\intermediates\merged_manifest\release\AndroidManifest.xml:10:13-37
+253            <intent-filter>
+253-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:131:13-133:29
+254                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+254-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:17-78
+254-->C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\AndroidManifest.xml:132:25-75
+255            </intent-filter>
+256        </service>
+257
+258        <provider
+258-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+259            android:name="androidx.startup.InitializationProvider"
+259-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+260            android:authorities="me.trainsmart.app.androidx-startup"
+260-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+261            android:exported="false" >
+261-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+262            <meta-data
+262-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+263                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+263-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+264                android:value="androidx.startup" />
+264-->[androidx.emoji2:emoji2:1.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af44796c1838a9177e17d273d69a9bdc\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+265            <meta-data
+265-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+266                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+266-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+267                android:value="androidx.startup" />
+267-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\78ed336331d35ec418fe8a8964ffb7b1\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+268            <meta-data
+268-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+269                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+269-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+270                android:value="androidx.startup" />
+270-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+271        </provider>
+272
+273        <receiver
+273-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:29:9-40:20
+274            android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"
+274-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:30:13-78
+275            android:exported="true"
+275-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:31:13-36
+276            android:permission="com.google.android.c2dm.permission.SEND" >
+276-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:32:13-73
+277            <intent-filter>
+277-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:33:13-35:29
+278                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+278-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:34:17-81
+278-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:34:25-78
+279            </intent-filter>
+280
+281            <meta-data
+281-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:37:13-39:40
+282                android:name="com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED"
+282-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:38:17-92
+283                android:value="true" />
+283-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:39:17-37
+284        </receiver>
+285
+286        <service
+286-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:54:9-63:19
+287            android:name="com.google.firebase.components.ComponentDiscoveryService"
+287-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:55:13-84
+288            android:directBootAware="true"
+288-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:32:13-43
+289            android:exported="false" >
+289-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:56:13-37
+290            <meta-data
+290-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:57:13-59:85
+291                android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar"
+291-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:58:17-122
+292                android:value="com.google.firebase.components.ComponentRegistrar" />
+292-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:59:17-82
+293            <meta-data
+293-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:60:13-62:85
+294                android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar"
+294-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:61:17-119
+295                android:value="com.google.firebase.components.ComponentRegistrar" />
+295-->[com.google.firebase:firebase-messaging:23.3.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52d56b6f8b3c5267bb1f7c4db29bbbc2\transformed\jetified-firebase-messaging-23.3.1\AndroidManifest.xml:62:17-82
+296            <meta-data
+296-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:15:13-17:85
+297                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar"
+297-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:16:17-130
+298                android:value="com.google.firebase.components.ComponentRegistrar" />
+298-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:17:17-82
+299            <meta-data
+299-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:18:13-20:85
+300                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar"
+300-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:19:17-127
+301                android:value="com.google.firebase.components.ComponentRegistrar" />
+301-->[com.google.firebase:firebase-installations:17.2.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\af1dd4a1c4373a75282cc49592866198\transformed\jetified-firebase-installations-17.2.0\AndroidManifest.xml:20:17-82
+302            <meta-data
+302-->[com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:12:13-14:85
+303                android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar"
+303-->[com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:13:17-116
+304                android:value="com.google.firebase.components.ComponentRegistrar" />
+304-->[com.google.firebase:firebase-common-ktx:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\371436b864f8bf0e4a8fc048cdbb8ed9\transformed\jetified-firebase-common-ktx-20.4.2\AndroidManifest.xml:14:17-82
+305            <meta-data
+305-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:35:13-37:85
+306                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+306-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:36:17-109
+307                android:value="com.google.firebase.components.ComponentRegistrar" />
+307-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:37:17-82
+308            <meta-data
+308-->[com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:27:13-29:85
+309                android:name="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar"
+309-->[com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:28:17-115
+310                android:value="com.google.firebase.components.ComponentRegistrar" />
+310-->[com.google.firebase:firebase-datatransport:18.1.7] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\adb0a29d650685871316bc071d6357b6\transformed\jetified-firebase-datatransport-18.1.7\AndroidManifest.xml:29:17-82
+311        </service>
+312
+313        <activity
+313-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:20:9-22:45
+314            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+314-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:20:19-85
+315            android:exported="false"
+315-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:22:19-43
+316            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+316-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\a28da17b2788a197789e723a520b95c6\transformed\jetified-play-services-base-18.0.1\AndroidManifest.xml:21:19-78
+317
+318        <provider
+318-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:23:9-28:39
+319            android:name="com.google.firebase.provider.FirebaseInitProvider"
+319-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:24:13-77
+320            android:authorities="me.trainsmart.app.firebaseinitprovider"
+320-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:25:13-72
+321            android:directBootAware="true"
+321-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:26:13-43
+322            android:exported="false"
+322-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:27:13-37
+323            android:initOrder="100" />
+323-->[com.google.firebase:firebase-common:20.4.2] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\2e3274e7dede16964dabdea8c1a1600a\transformed\jetified-firebase-common-20.4.2\AndroidManifest.xml:28:13-36
+324
+325        <meta-data
+325-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:21:9-23:69
+326            android:name="com.google.android.gms.version"
+326-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:22:13-58
+327            android:value="@integer/google_play_services_version" />
+327-->[com.google.android.gms:play-services-basement:18.1.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5dc3e016032347555749a41bef5d37c0\transformed\jetified-play-services-basement-18.1.0\AndroidManifest.xml:23:13-66
+328
+329        <receiver
+329-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+330            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+330-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+331            android:directBootAware="false"
+331-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+332            android:enabled="true"
+332-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+333            android:exported="true"
+333-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+334            android:permission="android.permission.DUMP" >
+334-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+335            <intent-filter>
+335-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+336                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+336-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+336-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+337            </intent-filter>
+338            <intent-filter>
+338-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+339                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+339-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+339-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+340            </intent-filter>
+341            <intent-filter>
+341-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+342                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+342-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+342-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+343            </intent-filter>
+344            <intent-filter>
+344-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+345                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+345-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+345-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\38b1eeb49de242d7952f58b77e9978ed\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+346            </intent-filter>
+347        </receiver>
+348
+349        <service
+349-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:28:9-34:19
+350            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+350-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:29:13-103
+351            android:exported="false" >
+351-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:30:13-37
+352            <meta-data
+352-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:31:13-33:39
+353                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+353-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:32:17-94
+354                android:value="cct" />
+354-->[com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\5013ed7d7a51a72c1e749c949f204fe1\transformed\jetified-transport-backend-cct-3.1.8\AndroidManifest.xml:33:17-36
+355        </service>
+356        <service
+356-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:26:9-30:19
+357            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+357-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:27:13-117
+358            android:exported="false"
+358-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:28:13-37
+359            android:permission="android.permission.BIND_JOB_SERVICE" >
+359-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:29:13-69
+360        </service>
+361
+362        <receiver
+362-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:32:9-34:40
+363            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+363-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:33:13-132
+364            android:exported="false" /> <!-- The activities will be merged into the manifest of the hosting app. -->
+364-->[com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\9973df6e4298e625602fd4501dc540ee\transformed\jetified-transport-runtime-3.1.8\AndroidManifest.xml:34:13-37
+365        <activity
+365-->[com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:14:9-18:65
+366            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+366-->[com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:15:13-93
+367            android:exported="false"
+367-->[com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:16:13-37
+368            android:stateNotNeeded="true"
+368-->[com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:17:13-42
+369            android:theme="@style/Theme.PlayCore.Transparent" />
+369-->[com.google.android.play:core-common:2.0.3] C:\Users\dario\.gradle\caches\9.0-milestone-1\transforms\52b2ca9634d63844c41a40ca99ec2b39\transformed\jetified-core-common-2.0.3\AndroidManifest.xml:18:13-62
+370    </application>
+371
+372</manifest>
