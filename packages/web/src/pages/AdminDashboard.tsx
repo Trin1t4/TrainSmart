@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LineChart,
   Line,
@@ -28,6 +28,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { isAdmin as checkIsAdmin, getAdminDashboardData, type AdminDashboardData } from '@trainsmart/shared';
+import { supabase } from '../lib/supabaseClient';
+import { RefreshCw, AlertTriangle, X, Trash2 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -36,9 +38,62 @@ export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Reset modal state
+  const [resetModal, setResetModal] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userEmail: string;
+    isResetting: boolean;
+  }>({ isOpen: false, userId: '', userEmail: '', isResetting: false });
+
   useEffect(() => {
     checkAdminAndLoadData();
   }, []);
+
+  // Reset user program function
+  async function resetUserProgram(userId: string) {
+    setResetModal(prev => ({ ...prev, isResetting: true }));
+
+    try {
+      // 1. Delete all training programs for this user
+      const { error: programError } = await supabase
+        .from('training_programs')
+        .delete()
+        .eq('user_id', userId);
+
+      if (programError) {
+        console.error('[AdminDashboard] Error deleting programs:', programError);
+        throw programError;
+      }
+
+      // 2. Reset onboarding_completed flag in user_profiles
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({
+          onboarding_completed: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (profileError) {
+        console.error('[AdminDashboard] Error updating profile:', profileError);
+        // Non-blocking: profile update is optional
+      }
+
+      console.log(`[AdminDashboard] ✅ Program reset for user ${userId}`);
+
+      // Close modal and refresh data
+      setResetModal({ isOpen: false, userId: '', userEmail: '', isResetting: false });
+
+      // Refresh dashboard data
+      await checkAdminAndLoadData();
+
+    } catch (err: any) {
+      console.error('[AdminDashboard] Reset error:', err);
+      alert('Errore durante il reset: ' + (err.message || 'Errore sconosciuto'));
+      setResetModal(prev => ({ ...prev, isResetting: false }));
+    }
+  }
 
   async function checkAdminAndLoadData() {
     try {
@@ -333,6 +388,7 @@ export default function AdminDashboard() {
                   <th className="pb-2">Programmi</th>
                   <th className="pb-2">Workout</th>
                   <th className="pb-2">Stato</th>
+                  <th className="pb-2">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -355,6 +411,26 @@ export default function AdminDashboard() {
                         {user.is_active ? 'Attivo' : 'Inattivo'}
                       </span>
                     </td>
+                    <td className="py-3">
+                      <button
+                        onClick={() => setResetModal({
+                          isOpen: true,
+                          userId: user.user_id,
+                          userEmail: user.email,
+                          isResetting: false
+                        })}
+                        disabled={user.total_programs_created === 0}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                          user.total_programs_created > 0
+                            ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-800'
+                            : 'bg-gray-700/30 text-gray-500 cursor-not-allowed'
+                        }`}
+                        title={user.total_programs_created === 0 ? 'Nessun programma da resettare' : 'Reset programma'}
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        Reset
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -362,6 +438,77 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      <AnimatePresence>
+        {resetModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => !resetModal.isResetting && setResetModal({ isOpen: false, userId: '', userEmail: '', isResetting: false })}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gray-800 rounded-xl p-6 max-w-md w-full border border-gray-700 shadow-xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Reset Programma</h3>
+                  <p className="text-gray-400 text-sm">Questa azione è irreversibile</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
+                <p className="text-gray-300 text-sm">
+                  Stai per eliminare <strong>tutti i programmi</strong> dell'utente:
+                </p>
+                <p className="text-white font-mono text-sm mt-2 bg-gray-700/50 px-3 py-2 rounded">
+                  {resetModal.userEmail}
+                </p>
+                <p className="text-amber-400 text-xs mt-3 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  L'utente dovrà rifare l'onboarding per generare un nuovo programma.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setResetModal({ isOpen: false, userId: '', userEmail: '', isResetting: false })}
+                  disabled={resetModal.isResetting}
+                  className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition disabled:opacity-50"
+                >
+                  Annulla
+                </button>
+                <button
+                  onClick={() => resetUserProgram(resetModal.userId)}
+                  disabled={resetModal.isResetting}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {resetModal.isResetting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Resettando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Conferma Reset
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
