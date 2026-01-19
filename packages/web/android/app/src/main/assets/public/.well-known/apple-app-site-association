@@ -1,0 +1,45 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.me.trainsmart.app",
+        "paths": [
+          "/",
+          "/dashboard",
+          "/dashboard/*",
+          "/workout",
+          "/workout/*",
+          "/workout-session",
+          "/workout-session/*",
+          "/profile",
+          "/profile/*",
+          "/stats",
+          "/stats/*",
+          "/payment-success",
+          "/payment-success/*",
+          "/video-feedback/*",
+          "/community",
+          "/community/*",
+          "/achievements",
+          "/achievements/*",
+          "/slim-onboarding",
+          "/slim-onboarding/*",
+          "/pricing",
+          "/pricing/*",
+          "NOT /api/*",
+          "NOT /login",
+          "NOT /register"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.me.trainsmart.app"
+    ]
+  },
+  "appclips": {
+    "apps": []
+  }
+}

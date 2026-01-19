@@ -192,7 +192,9 @@
       "Bash(git rm:*)",
       "Bash(git mv:*)",
       "Bash(tree:*)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(npx cap:*)",
+      "Bash(npm run build:android:*)"
     ],
     "deny": [],
     "ask": []
