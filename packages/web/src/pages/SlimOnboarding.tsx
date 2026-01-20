@@ -39,6 +39,7 @@ interface SlimOnboardingData {
 
   // Step 3: Dove e quanto
   location: 'gym' | 'home';
+  trainingType: 'bodyweight' | 'equipment' | 'machines'; // Tipo allenamento
   frequency: number;
   painAreas: PainEntry[];
   equipment?: Record<string, boolean>;
@@ -48,6 +49,7 @@ interface SlimOnboardingData {
 // CONSTANTS
 // ============================================================================
 
+// Goal standard fitness/sport
 const GOALS = [
   { value: 'forza', label: 'Forza', icon: '💪', desc: 'Diventa più forte' },
   { value: 'ipertrofia', label: 'Massa', icon: '🏋️', desc: 'Costruisci muscoli' },
@@ -56,6 +58,14 @@ const GOALS = [
   { value: 'resistenza', label: 'Resistenza', icon: '🏃', desc: 'Aumenta il fiato' },
   { value: 'prestazioni_sportive', label: 'Sport', icon: '🎯', desc: 'Migliora nello sport' },
   { value: 'benessere', label: 'Benessere', icon: '🧘', desc: 'Stai meglio' },
+];
+
+// Goal speciali con disclaimer medici
+const SPECIAL_GOALS = [
+  { value: 'motor_recovery', label: 'Recupero Motorio', icon: '🩹', desc: 'Post-infortunio o riabilitazione', disclaimer: 'recovery' },
+  { value: 'pre_partum', label: 'Gravidanza', icon: '🤰', desc: 'Allenamento in gravidanza', disclaimer: 'pregnancy' },
+  { value: 'post_partum', label: 'Post-Parto', icon: '👶', desc: 'Ripresa dopo il parto', disclaimer: 'pregnancy' },
+  { value: 'disabilita', label: 'Esigenze Speciali', icon: '♿', desc: 'Adattamenti personalizzati', disclaimer: 'disability' },
 ];
 
 const PAIN_AREAS: Array<{ value: PainArea; label: string; icon: string }> = [
@@ -102,6 +112,7 @@ export default function SlimOnboarding() {
     weight: undefined,
     goal: '',
     location: 'gym',
+    trainingType: 'equipment', // Default: pesi liberi
     frequency: 3,
     painAreas: [],
     equipment: {},
@@ -191,7 +202,7 @@ export default function SlimOnboarding() {
         goal: data.goal,
         goals: [data.goal],
         trainingLocation: data.location,
-        trainingType: data.location === 'home' ? 'bodyweight' : 'equipment',
+        trainingType: data.trainingType,
         frequency: data.frequency,
         painAreas: data.painAreas,
         equipment: data.equipment,
@@ -348,42 +359,121 @@ export default function SlimOnboarding() {
     </motion.div>
   );
 
-  const renderStep2 = () => (
-    <motion.div
-      key="step2"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
-    >
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Target className="w-8 h-8 text-blue-400" />
-        </div>
-        <h2 className="text-2xl font-bold text-white">Qual è il tuo obiettivo?</h2>
-        <p className="text-slate-400 mt-2">Scegli il tuo focus principale</p>
-      </div>
+  // Disclaimer messages per goal speciali
+  const getSpecialGoalDisclaimer = (disclaimer: string) => {
+    switch (disclaimer) {
+      case 'recovery':
+        return {
+          title: '⚠️ Nota importante sul recupero motorio',
+          message: 'Questo programma supporta il recupero ma NON sostituisce la fisioterapia o il parere medico. Se sei in riabilitazione, consulta sempre il tuo specialista prima di iniziare.'
+        };
+      case 'pregnancy':
+        return {
+          title: '⚠️ Nota importante per la gravidanza',
+          message: 'Prima di iniziare qualsiasi programma di allenamento in gravidanza o post-parto, è fondamentale ottenere il nulla osta dal tuo ginecologo o ostetrica.'
+        };
+      case 'disability':
+        return {
+          title: '⚠️ Adattamenti personalizzati',
+          message: 'Il programma verrà adattato alle tue esigenze specifiche. Ti consigliamo di consultare il tuo medico o specialista per personalizzazioni ottimali.'
+        };
+      default:
+        return null;
+    }
+  };
 
-      <div className="grid grid-cols-2 gap-3">
-        {GOALS.map(goal => (
-          <button
-            key={goal.value}
-            type="button"
-            onClick={() => updateData({ goal: goal.value })}
-            className={`p-4 rounded-lg border-2 transition-all text-left ${
-              data.goal === goal.value
-                ? 'border-blue-500 bg-blue-500/20 text-white'
-                : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-            }`}
-          >
-            <div className="text-2xl mb-2">{goal.icon}</div>
-            <div className="font-semibold">{goal.label}</div>
-            <div className="text-xs text-slate-400 mt-1">{goal.desc}</div>
-          </button>
-        ))}
-      </div>
-    </motion.div>
-  );
+  const renderStep2 = () => {
+    const selectedSpecialGoal = SPECIAL_GOALS.find(g => g.value === data.goal);
+    const disclaimerInfo = selectedSpecialGoal ? getSpecialGoalDisclaimer(selectedSpecialGoal.disclaimer) : null;
+
+    return (
+      <motion.div
+        key="step2"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="space-y-6"
+      >
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Target className="w-8 h-8 text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">Qual è il tuo obiettivo?</h2>
+          <p className="text-slate-400 mt-2">Scegli il tuo focus principale</p>
+        </div>
+
+        {/* Goal standard */}
+        <div className="grid grid-cols-2 gap-3">
+          {GOALS.map(goal => (
+            <button
+              key={goal.value}
+              type="button"
+              onClick={() => updateData({ goal: goal.value })}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                data.goal === goal.value
+                  ? 'border-blue-500 bg-blue-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <div className="text-2xl mb-2">{goal.icon}</div>
+              <div className="font-semibold">{goal.label}</div>
+              <div className="text-xs text-slate-400 mt-1">{goal.desc}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-3 bg-slate-800 text-slate-400">Esigenze speciali</span>
+          </div>
+        </div>
+
+        {/* Goal speciali */}
+        <div className="grid grid-cols-2 gap-3">
+          {SPECIAL_GOALS.map(goal => (
+            <button
+              key={goal.value}
+              type="button"
+              onClick={() => updateData({ goal: goal.value })}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                data.goal === goal.value
+                  ? 'border-amber-500 bg-amber-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <div className="text-2xl mb-2">{goal.icon}</div>
+              <div className="font-semibold">{goal.label}</div>
+              <div className="text-xs text-slate-400 mt-1">{goal.desc}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Disclaimer per goal speciali */}
+        <AnimatePresence>
+          {disclaimerInfo && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-amber-300 mb-1">{disclaimerInfo.title}</h4>
+                  <p className="text-sm text-slate-300">{disclaimerInfo.message}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  };
 
   const renderStep3 = () => (
     <motion.div
@@ -410,7 +500,7 @@ export default function SlimOnboarding() {
           <button
             type="button"
             onClick={() => {
-              updateData({ location: 'gym' });
+              updateData({ location: 'gym', trainingType: 'equipment' });
               setShowEquipment(false);
             }}
             className={`p-4 rounded-lg border-2 transition-all ${
@@ -425,7 +515,7 @@ export default function SlimOnboarding() {
           <button
             type="button"
             onClick={() => {
-              updateData({ location: 'home' });
+              updateData({ location: 'home', trainingType: 'bodyweight' });
               setShowEquipment(true);
             }}
             className={`p-4 rounded-lg border-2 transition-all ${
@@ -439,6 +529,50 @@ export default function SlimOnboarding() {
           </button>
         </div>
       </div>
+
+      {/* Training Type (solo per palestra) */}
+      <AnimatePresence>
+        {data.location === 'gym' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-slate-800/50 rounded-lg p-4 border border-slate-700"
+          >
+            <label className="block text-sm font-medium text-slate-300 mb-3">
+              Come preferisci allenarti?
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => updateData({ trainingType: 'equipment' })}
+                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  data.trainingType === 'equipment'
+                    ? 'border-orange-500 bg-orange-500/20 text-white'
+                    : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                }`}
+              >
+                <div className="text-2xl mb-2">🏋️</div>
+                <div className="font-semibold">Pesi Liberi</div>
+                <div className="text-xs text-slate-400 mt-1">Bilanciere, manubri</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateData({ trainingType: 'machines' })}
+                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  data.trainingType === 'machines'
+                    ? 'border-blue-500 bg-blue-500/20 text-white'
+                    : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                }`}
+              >
+                <div className="text-2xl mb-2">🔧</div>
+                <div className="font-semibold">Macchine</div>
+                <div className="text-xs text-slate-400 mt-1">Guidate, più sicure</div>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Equipment (solo per casa) */}
       <AnimatePresence>

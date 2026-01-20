@@ -173,8 +173,18 @@ export {
   findFreeWeightAlternative,
   markSuggestionShown,
   recordSuggestionResponse,
+  // Nuove funzioni per transizione automatica e tracking
+  updatePreferencesToFreeWeights,
+  hasCompletedTransition,
+  recordExercisePerformance,
+  getTransitionProgress,
+  getAllTransitionProgress,
+  calculateSuggestedWeight,
+  comparePerformance,
   type RecoveryConditions,
   type FreeWeightSuggestion,
+  type ExerciseProgressRecord,
+  type MachineToFreeWeightProgress,
 } from './freeWeightSuggestionService';
 
 // Skip Tracking Service
