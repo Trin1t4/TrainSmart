@@ -728,6 +728,13 @@ export {
   getIntensityForGoal,
   getVolumeRecommendation,
   migrateGoalValue,
+  // Multi-goal support
+  normalizeGoal,
+  normalizeGoals,
+  areGoalsCompatible,
+  combineGoalConfigs,
+  getSuggestedCombinations,
+  // deprecated
   mapGoal, // deprecated - use toProgramGoal
   GOAL_CONFIGS,
   GOAL_MAP, // deprecated - use toCanonicalGoal
@@ -992,6 +999,7 @@ export {
   // Constants
   PAIN_THRESHOLDS,
   LOAD_REDUCTIONS as PD_LOAD_REDUCTIONS,
+  LOAD_REDUCTIONS, // Direct export for backward compatibility
   BODY_AREA_LABELS as PD_BODY_AREA_LABELS,
   DISCLAIMER as PD_DISCLAIMER,
   PAIN_DETECT_DISCLAIMER,

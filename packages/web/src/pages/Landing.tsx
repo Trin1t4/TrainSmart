@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import VideoMosaicBackground from '../components/VideoMosaicBackground';
+import { DCSSPhilosophySection } from '../components/landing';
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -335,53 +336,7 @@ export default function Landing() {
       </section>
 
       {/* ===== PHILOSOPHY SECTION - DCSS ===== */}
-      <section className="py-16 bg-gradient-to-r from-emerald-900/20 to-slate-800/20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-2 mb-6">
-              <Quote className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-emerald-400 font-medium">La Nostra Filosofia</span>
-            </div>
-
-            <blockquote className="text-2xl md:text-3xl font-medium text-white mb-6 leading-relaxed">
-              "Non esiste una tecnica <span className="text-red-400 line-through">'perfetta'</span> universale."
-            </blockquote>
-
-            <p className="text-lg text-slate-300 mb-6 max-w-2xl mx-auto">
-              La tecnica ottimale dipende dalle <span className="text-emerald-400 font-medium">proporzioni individuali</span>:
-              rapporto femore/torso/tibia, lunghezza braccia, mobilità articolare, struttura del bacino.
-            </p>
-
-            <p className="text-slate-400 mb-8">
-              — <span className="text-white font-medium">Paolo Evangelista</span>, DCSS (Didattica e Correzione degli esercizi per lo Strength & Conditioning)
-            </p>
-
-            {/* Gerarchia delle correzioni */}
-            <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
-              <div className="bg-slate-800/60 rounded-xl p-4 border border-red-500/30">
-                <div className="text-3xl font-bold text-red-400 mb-1">1°</div>
-                <div className="text-white font-semibold mb-1">Sicurezza</div>
-                <p className="text-slate-400 text-sm">Colonna neutrale, articolazioni protette, range of motion corretto</p>
-              </div>
-              <div className="bg-slate-800/60 rounded-xl p-4 border border-yellow-500/30">
-                <div className="text-3xl font-bold text-yellow-400 mb-1">2°</div>
-                <div className="text-white font-semibold mb-1">Efficienza</div>
-                <p className="text-slate-400 text-sm">Percorso ottimale, timing corretto, attivazione muscolare</p>
-              </div>
-              <div className="bg-slate-800/60 rounded-xl p-4 border border-emerald-500/30">
-                <div className="text-3xl font-bold text-emerald-400 mb-1">3°</div>
-                <div className="text-white font-semibold mb-1">Ottimizzazione</div>
-                <p className="text-slate-400 text-sm">Adattamenti individuali alle tue proporzioni uniche</p>
-              </div>
-            </div>
-
-            <p className="text-slate-500 max-w-2xl mx-auto text-sm">
-              TrainSmart analizza il TUO corpo e adatta i criteri di valutazione a TE, non a un modello standardizzato.
-              Quello che è "sbagliato" per uno può essere perfetto per un altro.
-            </p>
-          </div>
-        </div>
-      </section>
+      <DCSSPhilosophySection />
 
       {/* ===== HOW IT WORKS ===== */}
       <section className="py-20 bg-slate-800/30">

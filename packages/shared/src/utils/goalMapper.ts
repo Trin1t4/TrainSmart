@@ -595,6 +595,148 @@ export function migrateGoalValue(oldValue: string): {
 }
 
 // ============================================================================
+// MULTI-GOAL SUPPORT
+// ============================================================================
+
+/**
+ * Alias per toCanonicalGoal - per retrocompatibilità
+ */
+export function normalizeGoal(goal: string | Goal | null | undefined): CanonicalGoal {
+  return toCanonicalGoal(goal);
+}
+
+/**
+ * Normalizza un array di goals al formato canonico
+ * Rimuove duplicati e invalid goals
+ */
+export function normalizeGoals(goals: (string | Goal | null | undefined)[]): CanonicalGoal[] {
+  if (!goals || !Array.isArray(goals)) return ['hypertrophy'];
+
+  const normalized = goals
+    .filter(g => g != null && g !== '')
+    .map(g => toCanonicalGoal(g))
+    .filter((g, i, arr) => arr.indexOf(g) === i); // rimuovi duplicati
+
+  return normalized.length > 0 ? normalized : ['hypertrophy'];
+}
+
+/**
+ * Verifica se due goals sono compatibili tra loro
+ * Goals speciali (pregnancy, disability, recovery) non sono compatibili con goals fitness intensi
+ */
+export function areGoalsCompatible(goal1: string | Goal, goal2: string | Goal): boolean {
+  const c1 = toCanonicalGoal(goal1);
+  const c2 = toCanonicalGoal(goal2);
+
+  const config1 = GOAL_CONFIGS[c1];
+  const config2 = GOAL_CONFIGS[c2];
+
+  // Goals speciali non compatibili con fitness ad alta intensità
+  const specialGoals: CanonicalGoal[] = ['prenatal', 'postnatal', 'disability', 'motor_recovery'];
+  const highIntensityGoals: CanonicalGoal[] = ['strength', 'sport_performance'];
+
+  if (specialGoals.includes(c1) && highIntensityGoals.includes(c2)) return false;
+  if (specialGoals.includes(c2) && highIntensityGoals.includes(c1)) return false;
+
+  // Goals della stessa categoria sono sempre compatibili
+  if (config1.category === config2.category) return true;
+
+  // Fitness + Sport sono compatibili
+  if (['fitness', 'sport'].includes(config1.category) && ['fitness', 'sport'].includes(config2.category)) {
+    return true;
+  }
+
+  // Health può combinarsi con fitness (es: wellness + hypertrophy leggera)
+  if (config1.category === 'health' || config2.category === 'health') {
+    // Ma non con goals ad alta intensità
+    if (highIntensityGoals.includes(c1) || highIntensityGoals.includes(c2)) return false;
+    return true;
+  }
+
+  return true;
+}
+
+/**
+ * Combina le configurazioni di più goals in una configurazione media
+ * Utile per programmi multi-obiettivo
+ */
+export function combineGoalConfigs(goals: (string | Goal)[]): GoalConfig {
+  const canonicalGoals = normalizeGoals(goals);
+
+  // Se un solo goal, ritorna la sua config
+  if (canonicalGoals.length === 1) {
+    return GOAL_CONFIGS[canonicalGoals[0]];
+  }
+
+  const configs = canonicalGoals.map(g => GOAL_CONFIGS[g]);
+  const n = configs.length;
+
+  // Media ponderata dei parametri
+  const avgPrimaryRep = Math.round(configs.reduce((sum, c) => sum + c.primaryRep, 0) / n);
+  const avgRepRange: [number, number] = [
+    Math.round(configs.reduce((sum, c) => sum + c.repRange[0], 0) / n),
+    Math.round(configs.reduce((sum, c) => sum + c.repRange[1], 0) / n)
+  ];
+  const avgRestSeconds: [number, number] = [
+    Math.round(configs.reduce((sum, c) => sum + c.restSeconds[0], 0) / n),
+    Math.round(configs.reduce((sum, c) => sum + c.restSeconds[1], 0) / n)
+  ];
+  const avgSets = Math.round(configs.reduce((sum, c) => sum + c.sets, 0) / n);
+  const avgRIR = Math.round(configs.reduce((sum, c) => sum + c.targetRIR, 0) / n);
+  const avgIntensity = Math.round(configs.reduce((sum, c) => sum + c.intensity, 0) / n);
+  const avgVolumeMult = configs.reduce((sum, c) => sum + c.volumeMultiplier, 0) / n;
+
+  // DUP bias medio
+  const avgDupBias = {
+    heavy: configs.reduce((sum, c) => sum + c.dupBias.heavy, 0) / n,
+    moderate: configs.reduce((sum, c) => sum + c.dupBias.moderate, 0) / n,
+    volume: configs.reduce((sum, c) => sum + c.dupBias.volume, 0) / n
+  };
+
+  // Safety: se anche uno solo richiede medical clearance, tutti lo richiedono
+  const requiresMedical = configs.some(c => c.requiresMedicalClearance);
+  // Heavy days permessi solo se TUTTI i goals li permettono
+  const allowHeavy = configs.every(c => c.allowHeavyDays);
+  // Max intensity beginner: il più conservativo
+  const maxIntBeginner = configs.some(c => c.maxIntensityBeginner === 'volume') ? 'volume' : 'moderate';
+
+  // Usa il primo goal come "primario" per i metadati
+  const primaryConfig = configs[0];
+
+  return {
+    canonical: primaryConfig.canonical,
+    database: primaryConfig.database,
+    program: primaryConfig.program,
+    displayKey: `goals.combined.${canonicalGoals.join('_')}`,
+    icon: primaryConfig.icon,
+    color: primaryConfig.color,
+    category: primaryConfig.category,
+    primaryRep: avgPrimaryRep,
+    repRange: avgRepRange,
+    restSeconds: avgRestSeconds,
+    sets: avgSets,
+    targetRIR: avgRIR,
+    intensity: avgIntensity,
+    volumeMultiplier: avgVolumeMult,
+    dupBias: avgDupBias,
+    allowHeavyDays: allowHeavy,
+    maxIntensityBeginner: maxIntBeginner,
+    requiresMedicalClearance: requiresMedical
+  };
+}
+
+/**
+ * Ottieni suggerimenti di goal compatibili con quello dato
+ */
+export function getSuggestedCombinations(goal: string | Goal): CanonicalGoal[] {
+  const canonical = toCanonicalGoal(goal);
+
+  return getAllGoals().filter(g =>
+    g !== canonical && areGoalsCompatible(canonical, g)
+  );
+}
+
+// ============================================================================
 // BACKWARD COMPATIBILITY - Deprecati ma mantenuti per transizione
 // ============================================================================
 
@@ -637,6 +779,12 @@ export default {
   isValidGoal,
   getAllGoals,
   getGoalsByCategory,
+  // Multi-goal support
+  normalizeGoal,
+  normalizeGoals,
+  areGoalsCompatible,
+  combineGoalConfigs,
+  getSuggestedCombinations,
   GOAL_CONFIGS,
   GOAL_ALIASES
 };
