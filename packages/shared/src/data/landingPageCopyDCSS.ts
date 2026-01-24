@@ -38,8 +38,8 @@ export const VALUE_PROP_COPY = {
     en: "Not another app with pre-made programs. A system that understands YOUR body and adapts training to YOU."
   },
   supporting: {
-    it: "Perché quello che funziona per uno potrebbe non funzionare per un altro. E quello che è 'sbagliato' per uno può essere perfetto per te.",
-    en: "Because what works for one person might not work for another. And what's 'wrong' for one can be perfect for you."
+    it: "Perché quello che funziona per uno potrebbe non funzionare per un altro. E quello che sembra inadatto per uno può essere ottimale per te.",
+    en: "Because what works for one person might not work for another. And what seems unsuitable for one can be optimal for you."
   }
 };
 
@@ -131,8 +131,8 @@ export const BIOMECHANICS_COPY = {
     source: "DCSS"
   },
   note: {
-    it: "Quello che sembra 'sbagliato' per uno può essere perfetto per un altro. TrainSmart analizza TE, non un modello standardizzato.",
-    en: "What looks 'wrong' for one can be perfect for another. TrainSmart analyzes YOU, not a standardized model."
+    it: "Quello che sembra inadatto per uno può essere ottimale per un altro. TrainSmart analizza TE, non un modello standardizzato.",
+    en: "What seems unsuitable for one can be optimal for another. TrainSmart analyzes YOU, not a standardized model."
   }
 };
 
@@ -199,8 +199,8 @@ export const HIERARCHY_COPY = {
         en: "Efficiency"
       },
       description: {
-        it: "Percorso ottimale del carico, timing corretto, attivazione muscolare mirata.",
-        en: "Optimal load path, correct timing, targeted muscle activation."
+        it: "Percorso ottimale del carico, timing adeguato, attivazione muscolare mirata.",
+        en: "Optimal load path, appropriate timing, targeted muscle activation."
       }
     },
     {

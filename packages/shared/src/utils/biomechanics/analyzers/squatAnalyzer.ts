@@ -39,14 +39,19 @@ import {
 
 // ============================================
 // RANGE DI SICUREZZA SQUAT
+// NOTA DCSS: Questi range sono INDICATIVI, non assoluti.
+// La tecnica ottimale dipende dalle proporzioni individuali:
+// - Femori lunghi → torso più inclinato è NORMALE
+// - Caviglie rigide → ginocchia avanzano meno
+// - Struttura anca → profondità varia
 // ============================================
 
 export const SQUAT_SAFE_RANGES = {
-  knee: { min: 70, max: 170 },          // Sotto 70° = stress rotula
-  hip: { min: 40, max: 170 },           // Varia con proporzioni
-  ankle: { min: 25, max: 45 },          // Limitato da mobilità
-  torso: { min: 20, max: 65 },          // Femori lunghi = più inclinato
-  kneeValgus: { min: -8, max: 8 }       // Oltre = rischio LCA
+  knee: { min: 70, max: 170 },          // Range indicativo - varia con struttura
+  hip: { min: 40, max: 170 },           // Varia significativamente con proporzioni
+  ankle: { min: 25, max: 45 },          // Dipende da mobilità individuale
+  torso: { min: 20, max: 75 },          // ESTESO: femori lunghi richiedono più inclinazione
+  kneeValgus: { min: -10, max: 10 }     // Range ampliato - leggero valgus dinamico può essere normale
 };
 
 // ============================================
@@ -64,11 +69,11 @@ export const SQUAT_SAFETY_CHECKS: SafetyCheck[] = [
   {
     code: 'KNEE_VALGUS',
     severity: 'HIGH',
-    description: 'Ginocchia che collassano verso l\'interno',
-    correction: 'Spingi le ginocchia fuori attivamente, in linea con le punte dei piedi. Rinforza glutei con band work.',
+    description: 'Ginocchia che tendono verso l\'interno - da monitorare',
+    correction: 'Potresti provare a spingere le ginocchia fuori, seguendo la direzione delle punte. Un leggero movimento dinamico può essere normale per alcune strutture.',
     check: (frame) => {
       const valgus = frame.angles.kneeValgus || 0;
-      return Math.abs(valgus) > 10;
+      return Math.abs(valgus) > 12; // Soglia aumentata per tollerare variazioni individuali
     }
   },
   {
@@ -91,11 +96,12 @@ export const SQUAT_SAFETY_CHECKS: SafetyCheck[] = [
   {
     code: 'EXCESSIVE_FORWARD_LEAN',
     severity: 'MEDIUM',
-    description: 'Inclinazione del torso eccessiva',
-    correction: 'Petto alto, core attivo. Se persiste con torso lungo, potrebbe essere il peso troppo pesante.',
+    description: 'Inclinazione del torso marcata - valutare in base alle proporzioni',
+    correction: 'Con femori lunghi, un\'inclinazione maggiore è biomeccanicamente normale. Valuta se mantieni il controllo e la colonna neutra.',
     check: (frame, morphotype) => {
       const torso = frame.angles.torso || 0;
-      const threshold = morphotype?.type === 'LONG_FEMUR' ? 65 : 55;
+      // Soglie più permissive che tengono conto delle proporzioni
+      const threshold = morphotype?.type === 'LONG_FEMUR' ? 75 : 65;
       return torso > threshold;
     }
   }
@@ -109,7 +115,7 @@ export const SQUAT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
   {
     code: 'BAR_PATH_FORWARD',
     description: 'Bilanciere si sposta in avanti durante il movimento',
-    correction: 'Mantieni il peso sui talloni/mesopiede. Il bilanciere deve rimanere sopra il mesopiede.',
+    correction: 'Potresti sperimentare con la distribuzione del peso sui talloni/mesopiede. Per molti, il bilanciere sopra il mesopiede risulta più stabile.',
     check: (frames, morphotype) => {
       // Verifica se il bar path devia troppo in avanti
       const deviations = frames
@@ -126,7 +132,7 @@ export const SQUAT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
   {
     code: 'HIPS_RISE_FIRST',
     description: 'Le anche salgono prima delle spalle (good morning squat)',
-    correction: 'Guida con il petto. Pensa a "spingere la schiena contro il bilanciere" mentre sali.',
+    correction: 'Potresti provare a guidare con il petto, pensando a "spingere la schiena contro il bilanciere". Valuta se funziona per la tua struttura.',
     check: (frames) => {
       // Cerca pattern dove l'angolo del torso aumenta durante la fase concentrica
       const concentricFrames = frames.filter(f => f.phase === 'CONCENTRIC');

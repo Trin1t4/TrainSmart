@@ -35,17 +35,21 @@ import {
 
 // ============================================
 // RANGE DI SICUREZZA STACCO
+// NOTA DCSS: Questi range sono INDICATIVI e variano con:
+// - Lunghezza braccia e femori
+// - Mobilità anca e caviglia
+// - Stile (conventional vs sumo)
 // ============================================
 
 export const DEADLIFT_SAFE_RANGES = {
-  // Setup
-  hipStart: { conventional: { min: 70, max: 110 }, sumo: { min: 60, max: 100 } },
-  kneeStart: { conventional: { min: 100, max: 140 }, sumo: { min: 90, max: 130 } },
+  // Setup - range ampliati per variazioni individuali
+  hipStart: { conventional: { min: 60, max: 120 }, sumo: { min: 50, max: 110 } },
+  kneeStart: { conventional: { min: 90, max: 150 }, sumo: { min: 80, max: 140 } },
 
   // Durante il movimento
-  lumbarFlexion: { max: 15 },  // Mai arrotondare
-  shoulderPosition: 'above_or_forward', // Mai dietro la barra
-  barDistance: { max: 5 } // cm dalla tibia
+  lumbarFlexion: { max: 20 },  // Preferibile neutro, ma leggera flessione toracica può essere tollerata
+  shoulderPosition: 'above_or_forward', // Generalmente più efficiente
+  barDistance: { max: 8 } // cm dalla tibia - varia con proporzioni
 };
 
 // ============================================
@@ -56,29 +60,29 @@ export const DEADLIFT_SAFETY_CHECKS: SafetyCheck[] = [
   {
     code: 'LOWER_BACK_ROUND',
     severity: 'HIGH',
-    description: 'Schiena che si arrotonda (perdita lordosi lombare)',
-    correction: 'Setup con petto alto, "mostra il logo della maglietta". Se persiste, riduci il carico.',
+    description: 'Flessione lombare marcata - da valutare',
+    correction: 'Potresti provare il cue "petto alto" o "mostra il logo". Una leggera flessione toracica può essere tollerata, ma monitora le sensazioni.',
     check: (frame) => {
       const lumbar = frame.angles.lumbar || 0;
-      return lumbar > 15 || frame.spineNeutral === false;
+      return lumbar > 20 || frame.spineNeutral === false; // Soglia aumentata
     }
   },
   {
     code: 'BAR_DRIFT_FORWARD',
     severity: 'MEDIUM',
     description: 'Bilanciere si allontana dal corpo',
-    correction: 'Trascina il bilanciere sulle tibie e cosce. Deve restare attaccato al corpo.',
+    correction: 'Per molti, tenere il bilanciere vicino al corpo risulta più efficiente. Prova a pensare di "trascinare" la barra sulle gambe.',
     check: (frame) => {
       const barPath = frame.barPath;
       if (!barPath) return false;
-      return barPath.deviationFromVertical > 5; // cm
+      return barPath.deviationFromVertical > 8; // Soglia aumentata
     }
   },
   {
     code: 'SHOULDERS_BEHIND_BAR',
     severity: 'HIGH',
-    description: 'Spalle dietro la barra nel setup - inefficiente e pericoloso',
-    correction: 'Nel setup, le spalle devono essere sopra o leggermente davanti alla barra.',
+    description: 'Spalle dietro la barra nel setup - spesso meno efficiente',
+    correction: 'Per la maggior parte delle strutture, spalle sopra o leggermente davanti alla barra risulta più efficiente. Sperimenta cosa funziona per te.',
     check: (frame) => {
       // Le spalle sono troppo indietro se il torso è troppo verticale con ginocchia flesse
       if (frame.phase !== 'SETUP') return false;
@@ -118,8 +122,8 @@ export const DEADLIFT_SAFETY_CHECKS: SafetyCheck[] = [
 export const DEADLIFT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
   {
     code: 'HIPS_TOO_LOW',
-    description: 'Setup con anche troppo basse - stai "squattando" lo stacco',
-    correction: 'Le anche devono essere più alte delle ginocchia nel setup. Pensa "hip hinge", non squat.',
+    description: 'Setup con anche molto basse - valutare in base alle proporzioni',
+    correction: 'Per molti, anche più alte delle ginocchia nel setup funziona meglio. Con braccia corte potresti aver bisogno di anche più basse. Sperimenta.',
     check: (frames, morphotype) => {
       const setupFrame = frames.find(f => f.phase === 'SETUP');
       if (!setupFrame) return false;
@@ -145,8 +149,8 @@ export const DEADLIFT_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
   },
   {
     code: 'HIPS_RISE_FIRST',
-    description: 'Le anche salgono prima delle spalle - perdita di leverage',
-    correction: 'Mantieni l\'angolo del torso costante all\'inizio. Spalle e anche salgono insieme.',
+    description: 'Le anche salgono prima delle spalle - potenziale perdita di leverage',
+    correction: 'Potresti provare a far salire spalle e anche insieme. Alcuni sollevano meglio con leggero anticipo anche - valuta cosa funziona per te.',
     check: (frames) => {
       const startFrames = frames.filter(f =>
         f.phase === 'CONCENTRIC' && (f.angles.knee || 180) > 130

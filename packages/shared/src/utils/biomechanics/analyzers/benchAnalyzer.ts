@@ -24,13 +24,16 @@ import {
 
 // ============================================
 // RANGE DI SICUREZZA PANCA
+// NOTA DCSS: Questi sono range indicativi, non assoluti.
+// La tecnica ottimale varia in base a proporzioni individuali,
+// mobilità articolare e struttura scheletrica.
 // ============================================
 
 export const BENCH_SAFE_RANGES = {
-  elbow: { min: 70, max: 180 },              // ROM completo
-  shoulderAbduction: { min: 45, max: 75 },   // >75° = impingement risk
-  wrist: { neutral: true },                   // Flesso = stress polso
-  arch: { present: true }                     // Arco lombare per leg drive
+  elbow: { min: 70, max: 180 },              // ROM completo (varia con lunghezza braccia)
+  shoulderAbduction: { min: 45, max: 75 },   // Range indicativo - dipende da struttura spalle
+  wrist: { neutral: true },                   // Preferibile neutro, ma varia con presa
+  arch: { present: true }                     // Arco lombare per leg drive (entità varia)
 };
 
 // ============================================
@@ -41,8 +44,8 @@ export const BENCH_SAFETY_CHECKS: SafetyCheck[] = [
   {
     code: 'SHOULDER_IMPINGEMENT_RISK',
     severity: 'HIGH',
-    description: 'Gomiti troppo larghi (>75° dal torso) - rischio impingement spalla',
-    correction: 'Tieni i gomiti a 45-75° rispetto al torso. Non fare la "T" con il corpo.',
+    description: 'Gomiti molto larghi (>75° dal torso) - potenziale stress spalla',
+    correction: 'Potresti provare a ridurre l\'angolo dei gomiti (45-75° funziona per molti). Sperimenta cosa funziona per la tua struttura.',
     check: (frame) => {
       const abduction = frame.angles.shoulderAbduction || 0;
       return abduction > 80;
@@ -51,8 +54,8 @@ export const BENCH_SAFETY_CHECKS: SafetyCheck[] = [
   {
     code: 'ELBOW_FLARE_90',
     severity: 'HIGH',
-    description: 'Gomiti a 90° dal corpo - massimo stress sulla spalla',
-    correction: 'Forma una freccia (↑) con il corpo, non una T. Gomiti a 45-60°.',
+    description: 'Gomiti a 90° dal corpo - spesso aumenta stress sulla spalla',
+    correction: 'La forma a freccia (↑) tende a essere più confortevole per molti. Prova gomiti a 45-60° e valuta le sensazioni.',
     check: (frame) => {
       const abduction = frame.angles.shoulderAbduction || 0;
       return abduction > 85 && abduction < 95;
@@ -108,8 +111,8 @@ export const BENCH_SAFETY_CHECKS: SafetyCheck[] = [
 export const BENCH_EFFICIENCY_CHECKS: EfficiencyCheck[] = [
   {
     code: 'BAR_PATH_TOO_STRAIGHT',
-    description: 'Traiettoria troppo verticale - inefficiente',
-    correction: 'La barra deve fare una leggera curva: giù verso il petto basso, su verso lockout sopra le spalle.',
+    description: 'Traiettoria molto verticale - potrebbe essere meno efficiente',
+    correction: 'Per molti, una leggera curva (J rovesciata) risulta più efficiente: giù verso il petto basso, su verso lockout sopra le spalle.',
     check: (frames) => {
       const barPaths = frames.filter(f => f.barPath).map(f => f.barPath!);
       if (barPaths.length < 5) return false;
@@ -276,7 +279,7 @@ export function analyzeBenchStickingPoint(frames: FrameAnalysis[]): StickingPoin
       angleAtSticking: elbowAngle,
       diagnosis: {
         muscular: ['Pettorali deboli in allungamento', 'Deltoidi anteriori carenti'],
-        technical: ['Mancanza di leg drive', 'Touch point sbagliato', 'Perdita di tensione']
+        technical: ['Mancanza di leg drive', 'Touch point da verificare', 'Perdita di tensione']
       },
       recommendations: {
         accessories: ['Spoto press (pausa 2-3")', 'Dumbbell press', 'Floor press'],
@@ -293,7 +296,7 @@ export function analyzeBenchStickingPoint(frames: FrameAnalysis[]): StickingPoin
       angleAtSticking: elbowAngle,
       diagnosis: {
         muscular: ['Tricipiti deboli', 'Deltoidi anteriori carenti'],
-        technical: ['Gomiti che flare out', 'Bar path scorretto']
+        technical: ['Gomiti che flare out', 'Bar path da ottimizzare']
       },
       recommendations: {
         accessories: ['Close grip bench', 'Pin press (altezza sticking)', 'JM press', 'Dip'],

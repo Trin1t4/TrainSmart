@@ -813,7 +813,7 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
       'Piedi larghezza spalle, punte leggermente fuori',
       'Scendi il più basso possibile',
       'Mantieni talloni a terra e busto eretto',
-      'Score: 3=perfetto | 2=con rialzo talloni | 1=non completa | 0=dolore'
+      'Score: 3=completo | 2=con rialzo talloni | 1=non completa | 0=fastidio'
     ]
   },
 

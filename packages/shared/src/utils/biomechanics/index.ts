@@ -377,11 +377,11 @@ export const CAMERA_SETUP_INSTRUCTIONS = {
   distance: '2-3_METERS',
   instructions: [
     'Posiziona il telefono dietro di te, leggermente di lato (45°)',
-    'La camera deve vedere sia la schiena che il fianco',
-    'Altezza: circa all\'altezza dei fianchi (1 metro)',
-    'Distanza: 2-3 metri (devi stare tutto nell\'inquadratura)',
-    'Usa un treppiede o appoggia il telefono su una superficie stabile',
-    'Assicurati che ci sia buona illuminazione (no controluce)'
+    'Inquadra sia la schiena che il fianco per una visione completa',
+    'Altezza consigliata: circa all\'altezza dei fianchi (1 metro)',
+    'Distanza consigliata: 2-3 metri (tutto il corpo nell\'inquadratura)',
+    'Un treppiede o superficie stabile migliora la qualità',
+    'Una buona illuminazione (no controluce) aiuta l\'analisi'
   ]
 };
 

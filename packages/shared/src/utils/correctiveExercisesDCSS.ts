@@ -297,8 +297,8 @@ export const LOWER_BACK_CORRECTIVES: Record<string, CorrectiveProtocol> = {
     description: 'For those reporting discomfort with twisting movements',
     descriptionIt: 'Per chi segnala fastidio con movimenti di torsione',
     approach: 'stability',
-    educationalNote: 'Rotation sensitivity often means the THORACIC spine is stiff, so the LUMBAR spine has to rotate more. Improving thoracic mobility can help. Rotation is a normal movement - we\'re building your tolerance to it.',
-    educationalNoteIt: 'La sensibilità alla rotazione spesso significa che la colonna TORACICA è rigida, quindi la LOMBARE deve ruotare di più. Migliorare la mobilità toracica può aiutare. La rotazione è un movimento normale - stiamo costruendo la tua tolleranza.',
+    educationalNote: 'Rotation sensitivity often means the THORACIC spine is stiff, so the LUMBAR spine compensates with more rotation. Improving thoracic mobility can help. Rotation is a normal movement - we\'re building your tolerance to it.',
+    educationalNoteIt: 'La sensibilità alla rotazione spesso significa che la colonna TORACICA è rigida, quindi la LOMBARE compensa ruotando di più. Migliorare la mobilità toracica può aiutare. La rotazione è un movimento normale - stiamo costruendo la tua tolleranza.',
     exercises: [
       {
         name: 'Thoracic Rotation (Quadruped)',
@@ -393,8 +393,8 @@ export const LOWER_BACK_CORRECTIVES: Record<string, CorrectiveProtocol> = {
     description: 'For those who feel weak or unstable in the lower back',
     descriptionIt: 'Per chi si sente debole o instabile nella bassa schiena',
     approach: 'strength',
-    educationalNote: 'Feeling unstable doesn\'t mean your spine is fragile. It often means you need to build strength and confidence in these positions. Your spine is designed to move and handle load - we\'ll build your capacity.',
-    educationalNoteIt: 'Sentirsi instabili non significa che la colonna sia fragile. Spesso significa che devi costruire forza e confidenza in queste posizioni. La tua colonna è progettata per muoversi e gestire carico - costruiremo la tua capacità.',
+    educationalNote: 'Feeling unstable doesn\'t mean your spine is fragile. It often means there\'s an opportunity to build strength and confidence in these positions. Your spine is designed to move and handle load - we\'ll build your capacity.',
+    educationalNoteIt: 'Sentirsi instabili non significa che la colonna sia fragile. Spesso indica un\'opportunità per costruire forza e confidenza in queste posizioni. La tua colonna è progettata per muoversi e gestire carico - costruiremo la tua capacità.',
     exercises: [
       {
         name: 'Bird Dog',
