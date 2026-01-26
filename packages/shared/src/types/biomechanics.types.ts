@@ -207,52 +207,139 @@ export interface StickingPointAnalysis {
 }
 
 // ============================================
-// ESERCIZI SUPPORTATI
+// ESERCIZI SUPPORTATI (106 ESERCIZI)
 // ============================================
 
 export type SupportedExercise =
-  // Compound principali
+  // LOWER PUSH (15)
   | 'BACK_SQUAT'
   | 'FRONT_SQUAT'
+  | 'BULGARIAN_SPLIT_SQUAT'
+  | 'GOBLET_SQUAT'
+  | 'PISTOL_SQUAT'
+  | 'LUNGES'
+  | 'STEP_UP'
+  | 'LEG_PRESS'
+  | 'HACK_SQUAT'
+  | 'LEG_EXTENSION'
+  | 'SMITH_SQUAT'
+  | 'SKATER_SQUAT'
+  | 'SISSY_SQUAT'
+  | 'BODYWEIGHT_SQUAT'
+  | 'PENDULUM_SQUAT'
+
+  // LOWER PULL (14)
   | 'DEADLIFT_CONVENTIONAL'
   | 'DEADLIFT_SUMO'
-  | 'BENCH_PRESS'
-  | 'OVERHEAD_PRESS'
+  | 'ROMANIAN_DEADLIFT'
+  | 'TRAP_BAR_DEADLIFT'
+  | 'HIP_THRUST'
+  | 'GLUTE_BRIDGE'
+  | 'NORDIC_CURL'
+  | 'GOOD_MORNING'
+  | 'LEG_CURL_LYING'
+  | 'LEG_CURL_SEATED'
+  | 'BACK_EXTENSION'
+  | 'SINGLE_LEG_RDL'
+  | 'KETTLEBELL_SWING'
+  | 'HIP_THRUST_MACHINE'
 
-  // Tirate
+  // HORIZONTAL PUSH (16)
+  | 'BENCH_PRESS'
+  | 'INCLINE_BENCH_PRESS'
+  | 'DECLINE_BENCH_PRESS'
+  | 'DUMBBELL_BENCH_PRESS'
+  | 'PUSH_UP'
+  | 'DIAMOND_PUSH_UP'
+  | 'ARCHER_PUSH_UP'
+  | 'DECLINE_PUSH_UP'
+  | 'INCLINE_PUSH_UP'
+  | 'DIPS_CHEST'
+  | 'DIPS_TRICEPS'
+  | 'CHEST_PRESS_MACHINE'
+  | 'CABLE_FLY'
+  | 'PEC_DECK'
+  | 'SVEND_PRESS'
+  | 'LANDMINE_PRESS'
+
+  // HORIZONTAL PULL (12)
   | 'BARBELL_ROW'
   | 'DUMBBELL_ROW'
+  | 'T_BAR_ROW'
+  | 'INVERTED_ROW'
+  | 'CABLE_ROW'
+  | 'CHEST_SUPPORTED_ROW'
+  | 'FACE_PULL'
+  | 'SEATED_ROW_MACHINE'
+  | 'HIGH_ROW'
+  | 'LOW_ROW_MACHINE'
+  | 'MEADOWS_ROW'
+  | 'PENDLAY_ROW'
+
+  // VERTICAL PULL (10)
   | 'PULL_UP'
   | 'CHIN_UP'
   | 'LAT_PULLDOWN'
+  | 'ASSISTED_PULL_UP'
+  | 'NEGATIVE_PULL_UP'
+  | 'WIDE_GRIP_PULLDOWN'
+  | 'NEUTRAL_GRIP_PULLDOWN'
+  | 'STRAIGHT_ARM_PULLDOWN'
+  | 'PULLOVER'
+  | 'ROPE_CLIMB'
 
-  // Hip hinge
-  | 'ROMANIAN_DEADLIFT'
-  | 'GOOD_MORNING'
-  | 'HIP_THRUST'
+  // VERTICAL PUSH (12)
+  | 'OVERHEAD_PRESS'
+  | 'DUMBBELL_SHOULDER_PRESS'
+  | 'ARNOLD_PRESS'
+  | 'PIKE_PUSH_UP'
+  | 'HANDSTAND_PUSH_UP'
+  | 'PUSH_PRESS'
+  | 'SHOULDER_PRESS_MACHINE'
+  | 'LATERAL_RAISE'
+  | 'LATERAL_RAISE_MACHINE'
+  | 'FRONT_RAISE'
+  | 'REAR_DELT_FLY'
+  | 'REAR_DELT_MACHINE'
 
-  // Unilaterali
+  // CORE (15)
+  | 'PLANK'
+  | 'SIDE_PLANK'
+  | 'DEAD_BUG'
+  | 'BIRD_DOG'
+  | 'HANGING_LEG_RAISE'
+  | 'PALLOF_PRESS'
+  | 'AB_WHEEL_ROLLOUT'
+  | 'HOLLOW_BODY'
+  | 'V_UPS'
+  | 'RUSSIAN_TWIST'
+  | 'WOODCHOP'
+  | 'CABLE_CRUNCH'
+  | 'SIT_UP'
+  | 'CRUNCH'
+  | 'LEG_LOWER'
+
+  // ACCESSORY (12)
+  | 'BICEP_CURL'
+  | 'TRICEP_PUSHDOWN'
+  | 'SKULL_CRUSHERS'
+  | 'HAMMER_CURL'
+  | 'PREACHER_CURL'
+  | 'CALF_RAISE'
+  | 'SHRUGS'
+  | 'FOREARM_CURL'
+  | 'WRIST_EXTENSION'
+  | 'NECK_CURL'
+  | 'HIP_ADDUCTION'
+  | 'HIP_ABDUCTION'
+
+  // Legacy aliases for backward compatibility
   | 'LUNGE_FORWARD'
   | 'LUNGE_REVERSE'
-  | 'BULGARIAN_SPLIT_SQUAT'
-  | 'STEP_UP'
   | 'LATERAL_LUNGE'
-
-  // Corpo libero
-  | 'PUSH_UP'
   | 'DIP'
-  | 'PISTOL_SQUAT'
-  | 'SKATER_SQUAT'
-  | 'ARCHER_PUSH_UP'
-  | 'INVERTED_ROW'
-
-  // Macchine
-  | 'LEG_PRESS'
-  | 'LEG_EXTENSION'
   | 'LEG_CURL'
-  | 'CABLE_ROW'
-  | 'CHEST_PRESS'
-  | 'SHOULDER_PRESS_MACHINE';
+  | 'CHEST_PRESS';
 
 // ============================================
 // RISULTATO ANALISI

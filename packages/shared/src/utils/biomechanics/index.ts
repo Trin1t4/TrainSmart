@@ -2,11 +2,22 @@
  * Biomechanics Engine
  * Sistema di analisi video basato sui principi DCSS di Paolo Evangelista
  *
+ * 106 esercizi con analisi biomeccanica completa
  * Esporta tutti i moduli per l'analisi biomeccanica degli esercizi
  */
 
 // Core utilities
 export * from './core';
+
+// Exercise definition types
+export * from './exerciseDefinitionTypes';
+
+// Exercise metadata (106 exercises)
+export * from './exerciseMetadata';
+
+// Exercise definitions with error detection (Part 1 & 2)
+export * from './exerciseDefinitions';
+export * from './exerciseDefinitionsPart2';
 
 // Analyzers
 export * from './analyzers/squatAnalyzer';
