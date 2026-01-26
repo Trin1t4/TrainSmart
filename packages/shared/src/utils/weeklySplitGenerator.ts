@@ -411,7 +411,6 @@ const EXERCISE_NAMES_IT: Record<string, string> = {
   'HSPU al Muro (ROM parziale)': 'HSPU al Muro (ROM Parziale)',
   'HSPU al Muro (Solo Eccentrica)': 'HSPU al Muro (Solo Eccentrica)',
   'Trazioni Assistite': 'Trazioni Assistite',
-  'Inverted Row Piedi Elevati': 'Rematore Inverso Piedi Elevati',
   'Ponte Glutei Monopodalico': 'Ponte Glutei Monopodalico'
 };
 
@@ -1808,6 +1807,76 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
 }
 
 /**
+ * 2x SETTIMANA - FULL BODY SPLIT
+ * Ideale per: Principianti, chi ha poco tempo, mantenimento
+ *
+ * Ogni sessione copre tutti i pattern principali
+ * DUP applicato tra i 2 giorni
+ */
+function generate2DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
+  const { baselines, level, goal, painAreas } = options;
+
+  const days: DayWorkout[] = [
+    {
+      dayNumber: 1,
+      dayName: 'Giorno 1 - Full Body A',
+      focus: 'Tutti i pattern - Focus Compound',
+      exercises: []
+    },
+    {
+      dayNumber: 2,
+      dayName: 'Giorno 2 - Full Body B',
+      focus: 'Tutti i pattern - Varianti',
+      exercises: []
+    }
+  ];
+
+  // DAY A: FULL BODY (tutti i 7 pattern)
+  // DUP: Mix di intensità per massimizzare stimolo con soli 2 giorni
+  days[0].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 0, options, getIntensityForPattern('lower_push', 0, 0, goal, 2)),
+    createExercise('lower_pull', baselines.lower_pull, 0, options, getIntensityForPattern('lower_pull', 1, 0, goal, 2)),
+    createExercise('horizontal_push', baselines.horizontal_push, 0, options, getIntensityForPattern('horizontal_push', 2, 0, goal, 2)),
+    createHorizontalPullExercise(0, options, getIntensityForPattern('horizontal_pull', 3, 0, goal, 2), baselines.vertical_pull),
+    createExercise('vertical_push', baselines.vertical_push, 0, options, getIntensityForPattern('vertical_push', 4, 0, goal, 2)),
+    createExercise('vertical_pull', baselines.vertical_pull, 0, options, getIntensityForPattern('vertical_pull', 5, 0, goal, 2)),
+    createExercise('core', baselines.core, 0, options, getIntensityForPattern('core', 6, 0, goal, 2))
+  ]);
+
+  // DAY B: FULL BODY (tutti i 7 pattern, rotazione intensità)
+  // DUP: Intensità complementari rispetto a Day A
+  days[1].exercises = sortExercisesByIntensity([
+    createExercise('lower_push', baselines.lower_push, 1, options, getIntensityForPattern('lower_push', 0, 1, goal, 2)),
+    createExercise('lower_pull', baselines.lower_pull, 1, options, getIntensityForPattern('lower_pull', 1, 1, goal, 2)),
+    createExercise('horizontal_push', baselines.horizontal_push, 1, options, getIntensityForPattern('horizontal_push', 2, 1, goal, 2)),
+    createHorizontalPullExercise(1, options, getIntensityForPattern('horizontal_pull', 3, 1, goal, 2), baselines.vertical_pull),
+    createExercise('vertical_push', baselines.vertical_push, 1, options, getIntensityForPattern('vertical_push', 4, 1, goal, 2)),
+    createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1, goal, 2)),
+    createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1, goal, 2))
+  ]);
+
+  // Aggiungi correttivi se necessario
+  const correctives = generateCorrectiveExercises(painAreas, goal);
+  days.forEach(day => day.exercises.push(...correctives));
+
+  // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
+  days.forEach(day => {
+    day.exercises = day.exercises.filter(ex => ex && ex.name && ex.pattern);
+  });
+
+  // APPLICA MUSCULAR FOCUS se presente
+  if (options.muscularFocus) {
+    days.forEach(day => applyMuscularFocus(day, options.muscularFocus!, options));
+  }
+
+  return {
+    splitName: 'Full Body 2x Settimana',
+    description: 'Allenamento total body completo 2 volte a settimana. Ideale per principianti o chi ha poco tempo.',
+    days
+  };
+}
+
+/**
  * 4x SETTIMANA - UPPER/LOWER SPLIT
  * Ideale per: Intermediate Athletes, Muscle Gain, Strength Focus
  *
@@ -2705,7 +2774,9 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
 
   let split: WeeklySplit;
 
-  if (frequency <= 3) {
+  if (frequency === 2) {
+    split = generate2DayFullBody(options);
+  } else if (frequency === 3) {
     split = generate3DayFullBody(options);
   } else if (frequency === 4) {
     split = generate4DayUpperLower(options);
