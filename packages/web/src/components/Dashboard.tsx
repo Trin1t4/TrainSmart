@@ -136,6 +136,9 @@ export default function Dashboard() {
     loadCompletedSessions();
   }, []);
 
+  // ✅ AUTO-GENERATE: Flag per tracciare se abbiamo già provato a generare
+  const [autoGenerateTriggered, setAutoGenerateTriggered] = useState(false);
+
   // Load user email for feature gating
   async function loadUserEmail() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -701,14 +704,18 @@ export default function Dashboard() {
       // USA I DATI SALVATI DA SCREENING
       const { onboarding, quiz, screening } = dataStatus;
 
-      if (!screening || !screening.level) {
-        alert('⚠️ Completa prima lo screening per determinare il tuo livello!');
-        navigate('/screening');
+      // ✅ Se non c'è onboarding, non possiamo generare
+      if (!onboarding) {
+        alert('⚠️ Completa prima l\'onboarding!');
+        navigate('/onboarding');
         return;
       }
 
+      // ✅ Se non c'è screening, usa "beginner" come default (SlimOnboarding flow)
+      const screeningLevel = screening?.level || 'beginner';
+
       // ✅ Beta tester can override the screening level
-      const userLevel = fitnessLevelOverride || screening.level;
+      const userLevel = fitnessLevelOverride || screeningLevel;
 
       // ✅ GOAL: Keep original Italian values for Supabase
       // Database constraint expects Italian values
@@ -716,14 +723,14 @@ export default function Dashboard() {
       const mappedGoal = originalGoal; // No mapping - use Italian directly
 
       console.group('🎯 PROGRAM GENERATION');
-      console.log('Level from Screening:', screening.level);
+      console.log('Level from Screening:', screening?.level || 'N/A (default: beginner)');
       console.log('Level Override (Beta):', fitnessLevelOverride);
       console.log('Final Level:', userLevel);
       console.log('Screening Scores:', {
-        final: screening.finalScore,
+        final: screening?.finalScore || 'N/A',
         quiz: quiz?.score,
-        practical: screening.practicalScore,
-        physical: screening.physicalScore
+        practical: screening?.practicalScore || 'N/A',
+        physical: screening?.physicalScore || 'N/A'
       });
       console.log('Goal:', originalGoal, '→', mappedGoal);
       console.groupEnd();
@@ -766,10 +773,10 @@ export default function Dashboard() {
         available_equipment: onboarding?.equipment || {},
         metadata: {
           screeningScores: {
-            final: screening.finalScore,
-            quiz: quiz?.score,
-            practical: screening.practicalScore,
-            physical: screening.physicalScore
+            final: screening?.finalScore || null,
+            quiz: quiz?.score || null,
+            practical: screening?.practicalScore || null,
+            physical: screening?.physicalScore || null
           }
         }
       });
@@ -894,6 +901,27 @@ export default function Dashboard() {
       setGeneratingProgram(false);
     }
   }, [program, dataStatus, fitnessLevelOverride, queryClient, refetchProgram, createProgram]);
+
+  // ✅ AUTO-GENERATE PROGRAM: Se onboarding completato ma nessun programma, genera automaticamente
+  useEffect(() => {
+    // Condizioni per auto-generare:
+    // 1. Onboarding completato (dataStatus.onboarding presente)
+    // 2. Nessun programma esistente
+    // 3. Non in fase di caricamento
+    // 4. Non abbiamo già provato a generare
+    // 5. Non stiamo già generando
+    if (
+      dataStatus.onboarding &&
+      !program &&
+      !programLoading &&
+      !autoGenerateTriggered &&
+      !generatingProgram
+    ) {
+      console.log('🚀 Auto-generating program after onboarding...');
+      setAutoGenerateTriggered(true);
+      handleGenerateProgram();
+    }
+  }, [dataStatus.onboarding, program, programLoading, autoGenerateTriggered, generatingProgram, handleGenerateProgram]);
 
   // ===== ADD RUNNING TO EXISTING PROGRAM =====
   const handleAddRunning = useCallback(async (runningPrefs: {
@@ -1645,10 +1673,26 @@ export default function Dashboard() {
                   onClick={() => {
                     // Navigate to screening based on screeningType
                     const screeningType = dataStatus.onboarding?.screeningType;
+                    const onboardingData = dataStatus.onboarding;
+
+                    // FIX: Passa userData nello state della navigazione
+                    // Questo garantisce che trainingLocation sia corretto anche se localStorage non è sincronizzato
+                    const navigationState = {
+                      userData: {
+                        trainingLocation: onboardingData?.trainingLocation,
+                        trainingType: onboardingData?.trainingType,
+                        equipment: onboardingData?.equipment,
+                        personalInfo: onboardingData?.personalInfo,
+                        goal: onboardingData?.goal
+                      }
+                    };
+
+                    console.log('[Dashboard] Starting screening with userData:', navigationState.userData);
+
                     if (screeningType === 'thorough') {
-                      navigate('/screening-full');
+                      navigate('/screening-full', { state: navigationState });
                     } else {
-                      navigate('/screening');
+                      navigate('/screening', { state: navigationState });
                     }
                   }}
                   className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/20"

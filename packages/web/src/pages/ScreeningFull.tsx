@@ -50,16 +50,34 @@ export default function ScreeningFull() {
       }
       setUserId(currentUserId);
 
-      const localData = localStorage.getItem('onboarding_data');
-      if (localData) {
-        const parsedData = JSON.parse(localData);
-        setUserData(parsedData);
-        console.log('[SCREENING-FULL] Loaded onboarding data:', parsedData);
-        console.log('[SCREENING-FULL] Training location:', parsedData.trainingLocation);
-      } else {
-        console.warn('[SCREENING-FULL] No onboarding_data found in localStorage');
-      }
+      // 1. Prima prova navigation state (priorità) - passato da Dashboard
+      const navUserData = location.state?.userData;
 
+      // 2. Poi localStorage come fallback
+      const localData = localStorage.getItem('onboarding_data');
+      const storedOnboarding = localData ? JSON.parse(localData) : null;
+
+      // 3. Merge: navigation state ha priorità su localStorage
+      const finalUserData = {
+        // Base da localStorage
+        ...storedOnboarding,
+        // Override da navigation state se presente
+        ...(navUserData && {
+          trainingLocation: navUserData.trainingLocation || storedOnboarding?.trainingLocation,
+          trainingType: navUserData.trainingType || storedOnboarding?.trainingType,
+          equipment: navUserData.equipment || storedOnboarding?.equipment,
+          personalInfo: navUserData.personalInfo || storedOnboarding?.personalInfo,
+          goal: navUserData.goal || storedOnboarding?.goal
+        })
+      };
+
+      console.log('[SCREENING-FULL] ✅ userData resolved:', {
+        fromNavState: !!navUserData,
+        trainingLocation: finalUserData.trainingLocation,
+        trainingType: finalUserData.trainingType
+      });
+
+      setUserData(finalUserData);
       setLoading(false);
     } catch (error) {
       console.error('[SCREENING-FULL] Error:', error);

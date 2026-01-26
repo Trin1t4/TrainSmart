@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Info, Check, Timer, RotateCw, X, ZoomIn, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
@@ -262,9 +262,45 @@ const GYM_PATTERNS_MACHINES = GYM_PATTERNS_WITH_CHOICE.map(p => ({
 export default function ScreeningFlow({ onComplete, userData, userId }) {
   const { t } = useTranslation();
 
-  // Determina modalità test in base a location e trainingType
-  const isGymMode = userData?.trainingLocation === 'gym' &&
-                    (userData?.trainingType === 'equipment' || userData?.trainingType === 'machines');
+  // FIX: Garantisci che userData abbia sempre trainingLocation con fallback a localStorage
+  const effectiveUserData = useMemo(() => {
+    // Se userData ha già trainingLocation, usalo
+    if (userData?.trainingLocation) {
+      console.log('[ScreeningFlow] Using passed userData:', userData.trainingLocation);
+      return userData;
+    }
+
+    // Fallback: recupera da localStorage
+    try {
+      const stored = localStorage.getItem('onboarding_data');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        console.log('[ScreeningFlow] Fallback to localStorage:', parsed.trainingLocation);
+        return {
+          ...userData,
+          trainingLocation: parsed.trainingLocation || 'home',
+          trainingType: parsed.trainingType || 'bodyweight',
+          equipment: parsed.equipment || {},
+          personalInfo: parsed.personalInfo
+        };
+      }
+    } catch (e) {
+      console.error('[ScreeningFlow] Error reading localStorage:', e);
+    }
+
+    // Ultimate fallback: assume home/bodyweight (più sicuro - non richiede attrezzatura)
+    console.warn('[ScreeningFlow] No userData found, defaulting to home/bodyweight');
+    return {
+      ...userData,
+      trainingLocation: 'home',
+      trainingType: 'bodyweight',
+      equipment: {}
+    };
+  }, [userData]);
+
+  // Determina modalità test in base a location e trainingType (usa effectiveUserData)
+  const isGymMode = effectiveUserData?.trainingLocation === 'gym' &&
+                    (effectiveUserData?.trainingType === 'equipment' || effectiveUserData?.trainingType === 'machines');
 
   // Seleziona il set di pattern corretto
   let MOVEMENT_PATTERNS;
@@ -295,7 +331,7 @@ export default function ScreeningFlow({ onComplete, userData, userId }) {
   const pattern = MOVEMENT_PATTERNS[currentPattern];
   const progress = ((currentPattern + 1) / MOVEMENT_PATTERNS.length) * 100;
 
-  console.log('[SCREENING] Mode:', testType, '| Location:', userData?.trainingLocation, '| TrainingType:', userData?.trainingType);
+  console.log('[SCREENING] Mode:', testType, '| Location:', effectiveUserData?.trainingLocation, '| TrainingType:', effectiveUserData?.trainingType);
 
   // Funzione per tornare indietro
   const handleBack = () => {
