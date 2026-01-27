@@ -125,6 +125,15 @@ export default function OptionalQuizzes() {
   const saveMaximals = async (maximals: UserMaximals) => {
     if (!user) return;
 
+    // Always save to localStorage as primary storage
+    try {
+      localStorage.setItem(`maximals_${user.id}`, JSON.stringify(maximals));
+      console.log('[OPTIONAL_QUIZZES] Maximals saved to localStorage');
+    } catch (e) {
+      console.warn('[OPTIONAL_QUIZZES] Failed to save maximals to localStorage:', e);
+    }
+
+    // Try to save to Supabase (column may not exist yet)
     const { error } = await supabase
       .from('user_profiles')
       .update({
@@ -134,11 +143,12 @@ export default function OptionalQuizzes() {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('[OPTIONAL_QUIZZES] Error saving maximals:', error);
-      throw error;
+      console.warn('[OPTIONAL_QUIZZES] Could not save maximals to Supabase (column may not exist yet), localStorage fallback used:', error.message);
+      // Don't throw - localStorage fallback is sufficient
+      return;
     }
 
-    console.log('[OPTIONAL_QUIZZES] Maximals saved');
+    console.log('[OPTIONAL_QUIZZES] Maximals saved to Supabase');
   };
 
   const handleSkipQuiz = () => {
