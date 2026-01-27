@@ -59,9 +59,20 @@ export function useCurrentProgram() {
         throw error;
       }
 
-      // No program found is valid - user just hasn't created one yet
+      // No program found in Supabase - check localStorage fallback
       if (!data) {
-        console.log('[useCurrentProgram] No active program found for user');
+        console.log('[useCurrentProgram] No active program in Supabase, checking localStorage...');
+        try {
+          const localProgram = localStorage.getItem('currentProgram');
+          if (localProgram) {
+            const parsed = JSON.parse(localProgram);
+            console.log('[useCurrentProgram] Found program in localStorage fallback:', parsed?.name);
+            const normalized = normalizeProgram(parsed) as NormalizedProgram;
+            return normalized;
+          }
+        } catch (e) {
+          console.warn('[useCurrentProgram] Failed to parse localStorage fallback:', e);
+        }
         return null;
       }
 

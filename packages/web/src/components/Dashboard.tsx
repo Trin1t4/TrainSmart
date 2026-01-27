@@ -577,8 +577,7 @@ export default function Dashboard() {
         localStorage.removeItem('generatedProgram');
 
         // Clear React Query cache for programs
-        queryClient.invalidateQueries({ queryKey: ['program'] });
-        queryClient.invalidateQueries({ queryKey: ['programs'] });
+        queryClient.invalidateQueries({ queryKey: programKeys.all });
       }
 
       console.log('✅ GOAL RESET COMPLETE!');
@@ -697,32 +696,31 @@ export default function Dashboard() {
     setShowResetModal(false);
   }
 
-  const handleGenerateProgram = useCallback(async () => {
+  const handleGenerateProgram = useCallback(async (): Promise<boolean> => {
     try {
       setGeneratingProgram(true);
 
       // USA I DATI SALVATI DA SCREENING
       const { onboarding, quiz, screening } = dataStatus;
 
-      // ✅ Se non c'è onboarding, non possiamo generare
+      // Se non c'è onboarding, non possiamo generare
       if (!onboarding) {
-        alert('⚠️ Completa prima l\'onboarding!');
+        alert('Completa prima l\'onboarding!');
         navigate('/onboarding');
-        return;
+        return false;
       }
 
-      // ✅ Se non c'è screening, usa "beginner" come default (SlimOnboarding flow)
+      // Se non c'è screening, usa "beginner" come default (SlimOnboarding flow)
       const screeningLevel = screening?.level || 'beginner';
 
-      // ✅ Beta tester can override the screening level
+      // Beta tester can override the screening level
       const userLevel = fitnessLevelOverride || screeningLevel;
 
-      // ✅ GOAL: Keep original Italian values for Supabase
-      // Database constraint expects Italian values
+      // GOAL: Keep original Italian values for Supabase
       const originalGoal = onboarding?.goal || 'ipertrofia';
-      const mappedGoal = originalGoal; // No mapping - use Italian directly
+      const mappedGoal = originalGoal;
 
-      console.group('🎯 PROGRAM GENERATION');
+      console.group('PROGRAM GENERATION');
       console.log('Level from Screening:', screening?.level || 'N/A (default: beginner)');
       console.log('Level Override (Beta):', fitnessLevelOverride);
       console.log('Final Level:', userLevel);
@@ -738,7 +736,7 @@ export default function Dashboard() {
       // Genera localmente
       const generatedProgram = generateLocalProgram(userLevel, mappedGoal, onboarding);
 
-      console.log('📦 Generated program structure:', {
+      console.log('Generated program structure:', {
         name: generatedProgram.name,
         split: generatedProgram.split,
         hasWeeklySplit: !!generatedProgram.weeklySplit,
@@ -750,8 +748,8 @@ export default function Dashboard() {
         frequency: generatedProgram.frequency
       });
 
-      // NEW: Salva su Supabase (con fallback localStorage)
-      console.log('💾 Saving program to Supabase...');
+      // Salva su Supabase (con fallback localStorage)
+      console.log('Saving program to Supabase...');
       const saveResult = await createProgram({
         name: generatedProgram.name,
         description: `Programma ${userLevel} per ${mappedGoal}`,
@@ -782,52 +780,54 @@ export default function Dashboard() {
       });
 
       if (saveResult.success) {
-        console.log('✅ Program saved to Supabase:', saveResult.data?.id);
+        console.log('Program saved to Supabase:', saveResult.data?.id);
 
-        // ✅ CLEANUP: Remove stale localStorage since we have fresh Supabase data
+        // CLEANUP: Remove stale localStorage since we have fresh Supabase data
         if (!saveResult.fromCache) {
-          console.log('🧹 Clearing stale localStorage cache (using Supabase as source of truth)');
+          console.log('Clearing stale localStorage cache (using Supabase as source of truth)');
           localStorage.removeItem('currentProgram');
         }
 
-        // ✅ React Query: Invalidate and WAIT for refetch to complete
-        console.log('🔄 Invalidating cache and waiting for refetch...');
+        // React Query: Invalidate and WAIT for refetch to complete
+        console.log('Invalidating cache and waiting for refetch...');
         await queryClient.invalidateQueries({ queryKey: programKeys.all });
 
-        // ✅ CRITICAL FIX: Wait for React Query to complete the refetch
-        // This ensures `program` data is available before proceeding
+        // Wait for React Query to complete the refetch
         const refetchResult = await refetchProgram();
 
-        console.log('✅ Refetch complete, program data:', {
+        console.log('Refetch complete, program data:', {
           hasData: !!refetchResult.data,
           programId: refetchResult.data?.id,
           programName: refetchResult.data?.name
         });
 
-        // ✅ VERIFICATION: Check if program is now available
+        // VERIFICATION: Check if program is now available
         if (refetchResult.data) {
           alert(t('dashboard.generate.success_message').replace('{{level}}', userLevel.toUpperCase()).replace('{{goal}}', mappedGoal.toUpperCase()));
-
-          // ✅ Scroll to top to show the new program (now guaranteed to be rendered)
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          console.error('❌ CRITICAL: Refetch succeeded but no program data returned');
+          console.error('CRITICAL: Refetch succeeded but no program data returned');
           alert(t('dashboard.error.program_not_recovered'));
         }
+        return true;
       } else {
-        console.warn('⚠️ Failed to save to Supabase, using localStorage:', saveResult.error);
+        console.warn('Failed to save to Supabase, using localStorage:', saveResult.error);
         // Fallback to localStorage
         localStorage.setItem('currentProgram', JSON.stringify(generatedProgram));
         alert(`${t('dashboard.error.saved_locally')}\n\n${saveResult.error || t('dashboard.error.cloud_sync')}`);
+        return false;
       }
 
-    } catch (error) {
-      console.error('❌ Error:', error);
-      alert(t('dashboard.generate.error_message'));
+    } catch (error: any) {
+      console.error('Error generating program:', error);
+      // Show the actual error message if it's from validation
+      const errorMsg = error?.message || t('dashboard.generate.error_message');
+      alert(errorMsg);
+      return false;
     } finally {
       setGeneratingProgram(false);
     }
-  }, [dataStatus, navigate, queryClient, t]);
+  }, [dataStatus, navigate, queryClient, t, fitnessLevelOverride, refetchProgram]);
 
   // ===== REGENERATE PROGRAM WITH EXISTING RUNNING PREFS =====
   const handleRegenerateWithRunning = useCallback(async () => {
@@ -902,7 +902,7 @@ export default function Dashboard() {
     }
   }, [program, dataStatus, fitnessLevelOverride, queryClient, refetchProgram, createProgram]);
 
-  // ✅ AUTO-GENERATE PROGRAM: Se onboarding completato ma nessun programma, genera automaticamente
+  // AUTO-GENERATE PROGRAM: Se onboarding completato ma nessun programma, genera automaticamente
   useEffect(() => {
     // Condizioni per auto-generare:
     // 1. Onboarding completato (dataStatus.onboarding presente)
@@ -917,9 +917,15 @@ export default function Dashboard() {
       !autoGenerateTriggered &&
       !generatingProgram
     ) {
-      console.log('🚀 Auto-generating program after onboarding...');
+      console.log('Auto-generating program after onboarding...');
       setAutoGenerateTriggered(true);
-      handleGenerateProgram();
+      handleGenerateProgram().then((success) => {
+        if (!success) {
+          // Reset flag to allow retry on next render cycle
+          console.warn('Auto-generate failed, allowing retry...');
+          setAutoGenerateTriggered(false);
+        }
+      });
     }
   }, [dataStatus.onboarding, program, programLoading, autoGenerateTriggered, generatingProgram, handleGenerateProgram]);
 
@@ -1186,13 +1192,19 @@ export default function Dashboard() {
       sportRole,
       legsGoalType,
       gender,
-      runningPrefs, // ✅ Passa le preferenze running
-      userAge: onboarding?.personalInfo?.age || 30, // ✅ Passa età per zone HR accurate
-      // ✅ SAFETY: Passa dati screening granulari per intensity caps
+      runningPrefs,
+      userAge: onboarding?.personalInfo?.age || 30,
       quizScore,
       practicalScore,
       discrepancyType
     });
+
+    // ✅ FIX: Controlla se la generazione è stata bloccata dalla validazione
+    if (program?.error || program?.blocked) {
+      console.error('[generateLocalProgram] Generazione bloccata dalla validazione:', program.errors || program.message);
+      throw new Error(program.message || 'Generazione programma bloccata dalla validazione. ' +
+        (program.errors?.map((e: any) => e.message).join('; ') || ''));
+    }
 
     // Aggiungi campi richiesti dal formato esistente
     return {
@@ -2119,7 +2131,7 @@ export default function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={handleGenerateProgram}
-                    disabled={generatingProgram || !dataStatus.screening}
+                    disabled={generatingProgram || !dataStatus.onboarding}
                     className="w-full bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 disabled:shadow-none text-sm md:text-base"
                   >
                     {generatingProgram ? (
