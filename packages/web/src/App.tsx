@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { LanguageProvider } from './lib/i18n';
+import { ThemeProvider } from './lib/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -35,8 +36,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const SlimOnboarding = lazy(() => import("./pages/SlimOnboarding"));
+const Onboarding = lazy(() => import("./pages/SlimOnboarding"));
 const OptionalQuizzes = lazy(() => import("./pages/OptionalQuizzes"));
 const FirstSessionAssessment = lazy(() => import("./pages/FirstSessionAssessment"));
 const BodyCompositionScan = lazy(() => import("./pages/BodyCompositionScan"));
@@ -61,10 +61,10 @@ const About = lazy(() => import('./pages/About'));
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+  <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-      <p className="text-slate-400 mt-4">Loading...</p>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      <p className="text-muted-foreground mt-4">Loading...</p>
     </div>
   </div>
 );
@@ -73,11 +73,16 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <BrowserRouter>
-            <Toaster position="top-right" richColors />
-            <BetaBanner />
-            <ResponsiveLayout>
+        <ThemeProvider>
+          <LanguageProvider>
+            <BrowserRouter>
+              {/* Skip link for keyboard navigation - WCAG 2.4.1 */}
+              <a href="#main-content" className="skip-link">
+                Salta al contenuto principale
+              </a>
+              <Toaster position="top-right" richColors />
+              <BetaBanner />
+              <ResponsiveLayout>
               <Suspense fallback={<PageLoader />}>
               <Routes>
               <Route path="/" element={<Landing />} />
@@ -97,7 +102,6 @@ function App() {
 
               {/* ONBOARDING - Protected */}
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-              <Route path="/slim-onboarding" element={<ProtectedRoute><SlimOnboarding /></ProtectedRoute>} />
               <Route path="/optional-quizzes" element={<ProtectedRoute><OptionalQuizzes /></ProtectedRoute>} />
               <Route path="/first-session-assessment" element={<ProtectedRoute><FirstSessionAssessment /></ProtectedRoute>} />
 
@@ -138,12 +142,13 @@ function App() {
               </Routes>
             </Suspense>
           </ResponsiveLayout>
-          {/* Cookie Banner - GDPR Compliance */}
-          <CookieBanner />
-          {/* PWA Install Prompt */}
-          <InstallPWA />
-          </BrowserRouter>
-        </LanguageProvider>
+            {/* Cookie Banner - GDPR Compliance */}
+            <CookieBanner />
+            {/* PWA Install Prompt */}
+            <InstallPWA />
+            </BrowserRouter>
+          </LanguageProvider>
+        </ThemeProvider>
         {/* React Query DevTools - solo in development */}
         <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
       </QueryClientProvider>

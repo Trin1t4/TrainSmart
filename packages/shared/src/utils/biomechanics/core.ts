@@ -540,15 +540,73 @@ export function isSpineNeutral(landmarks: PoseLandmarks): boolean {
 
 /**
  * Verifica se i talloni sono a terra
+ *
+ * NOTA: Questa funzione è soggetta a falsi positivi a causa di:
+ * - Rumore nei landmark dei piedi (bassa visibilità)
+ * - Prospettiva della camera (vista laterale/45°)
+ * - Variazioni naturali nella posizione del piede
+ *
+ * Per ridurre i falsi positivi:
+ * 1. Usiamo una soglia più alta (0.04 invece di 0.02)
+ * 2. Verifichiamo la visibilità dei landmark
+ * 3. Usiamo anche la caviglia come riferimento aggiuntivo
  */
 export function areHeelsDown(landmarks: PoseLandmarks): boolean {
-  // Confronta la y del tallone con la y della punta del piede
-  // Se il tallone è significativamente più alto, i talloni si sono alzati
+  // Verifica visibilità minima dei landmark dei piedi
+  const MIN_VISIBILITY = 0.5;
+  const leftFootVisible = landmarks.left_heel.visibility > MIN_VISIBILITY &&
+                          landmarks.left_foot_index.visibility > MIN_VISIBILITY;
+  const rightFootVisible = landmarks.right_heel.visibility > MIN_VISIBILITY &&
+                           landmarks.right_foot_index.visibility > MIN_VISIBILITY;
 
-  const leftHeelHigher = landmarks.left_heel.y < landmarks.left_foot_index.y - 0.02;
-  const rightHeelHigher = landmarks.right_heel.y < landmarks.right_foot_index.y - 0.02;
+  // Se i piedi non sono ben visibili, assumiamo talloni a terra (evita falsi positivi)
+  if (!leftFootVisible && !rightFootVisible) {
+    return true;
+  }
 
-  return !leftHeelHigher && !rightHeelHigher;
+  // Soglia aumentata per ridurre sensibilità al rumore
+  // 0.04 = 4% dell'altezza frame, circa 43 pixel a 1080p
+  const THRESHOLD = 0.04;
+
+  // Metodo primario: confronto tallone vs punta del piede
+  // In coordinate MediaPipe: Y cresce verso il basso
+  // Tallone alzato = heel.y < foot_index.y (tallone più in alto)
+  let leftHeelUp = false;
+  let rightHeelUp = false;
+
+  if (leftFootVisible) {
+    const leftDelta = landmarks.left_foot_index.y - landmarks.left_heel.y;
+    leftHeelUp = leftDelta > THRESHOLD;
+  }
+
+  if (rightFootVisible) {
+    const rightDelta = landmarks.right_foot_index.y - landmarks.right_heel.y;
+    rightHeelUp = rightDelta > THRESHOLD;
+  }
+
+  // Metodo secondario: confronto tallone vs caviglia
+  // Se il tallone è significativamente più alto della caviglia, è alzato
+  // Questo è più robusto perché la caviglia ha maggiore visibilità
+  const ANKLE_THRESHOLD = 0.02;
+
+  if (leftFootVisible && landmarks.left_ankle.visibility > MIN_VISIBILITY) {
+    const heelAboveAnkle = landmarks.left_ankle.y - landmarks.left_heel.y;
+    // Il tallone dovrebbe essere SOTTO la caviglia (heel.y > ankle.y)
+    // Se heel.y < ankle.y di molto, il tallone è alzato
+    if (heelAboveAnkle > ANKLE_THRESHOLD) {
+      leftHeelUp = true;
+    }
+  }
+
+  if (rightFootVisible && landmarks.right_ankle.visibility > MIN_VISIBILITY) {
+    const heelAboveAnkle = landmarks.right_ankle.y - landmarks.right_heel.y;
+    if (heelAboveAnkle > ANKLE_THRESHOLD) {
+      rightHeelUp = true;
+    }
+  }
+
+  // Entrambi i talloni devono essere giù
+  return !leftHeelUp && !rightHeelUp;
 }
 
 // ============================================

@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSmart - Test Analisi Squat</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #00d4aa; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .panel {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #0f3460;
+    }
+    .panel h2 { color: #00d4aa; margin-bottom: 15px; font-size: 1.2rem; }
+    video { width: 100%; border-radius: 8px; background: #000; }
+    canvas { width: 100%; border-radius: 8px; background: #000; }
+    .upload-zone {
+      border: 2px dashed #0f3460;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover { border-color: #00d4aa; background: rgba(0,212,170,0.1); }
+    .upload-zone input { display: none; }
+    button {
+      background: #00d4aa;
+      color: #1a1a2e;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 15px;
+    }
+    button:hover { background: #00b894; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    .progress {
+      background: #0f3460;
+      border-radius: 8px;
+      height: 24px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background: linear-gradient(90deg, #00d4aa, #00b894);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #1a1a2e;
+    }
+    .log {
+      background: #0f3460;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+    .log-entry { margin: 5px 0; }
+    .log-entry.info { color: #00d4aa; }
+    .log-entry.warn { color: #ffc107; }
+    .log-entry.error { color: #e74c3c; }
+    .log-entry.success { color: #2ecc71; }
+    .result-card {
+      background: #0f3460;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .result-card h3 { color: #00d4aa; margin-bottom: 10px; }
+    .score-display {
+      text-align: center;
+      padding: 20px;
+    }
+    .score-number {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #00d4aa;
+    }
+    .score-stars { font-size: 1.5rem; margin-top: 10px; }
+    .issue {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border-left: 4px solid;
+    }
+    .issue.high { background: rgba(231,76,60,0.2); border-color: #e74c3c; }
+    .issue.medium { background: rgba(241,196,15,0.2); border-color: #f1c40f; }
+    .issue.low { background: rgba(46,204,113,0.2); border-color: #2ecc71; }
+    .issue-title { font-weight: bold; margin-bottom: 5px; }
+    .issue-desc { font-size: 0.9rem; opacity: 0.9; }
+    .strength {
+      padding: 8px;
+      margin: 5px 0;
+      background: rgba(46,204,113,0.2);
+      border-radius: 6px;
+      border-left: 4px solid #2ecc71;
+    }
+    .recommendation {
+      padding: 8px;
+      margin: 5px 0;
+      background: rgba(0,212,170,0.1);
+      border-radius: 6px;
+    }
+    .landmark-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    .video-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+    .hidden { display: none; }
+    .frame-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .angles-display {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .load-rec {
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+    .load-rec.increase { background: rgba(46,204,113,0.3); color: #2ecc71; }
+    .load-rec.maintain { background: rgba(52,152,219,0.3); color: #3498db; }
+    .load-rec.decrease { background: rgba(231,76,60,0.3); color: #e74c3c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TrainSmart - Test Analisi Biomeccanica Squat</h1>
+
+    <div class="grid">
+      <!-- Left Panel: Video -->
+      <div class="panel">
+        <h2>Video</h2>
+
+        <div id="uploadZone" class="upload-zone">
+          <input type="file" id="videoInput" accept="video/*">
+          <p>Clicca o trascina il video qui</p>
+          <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 10px;">Formati supportati: MP4, MOV, WebM</p>
+        </div>
+
+        <div id="videoContainer" class="video-container hidden">
+          <video id="videoPlayer" controls></video>
+          <canvas id="overlayCanvas" class="landmark-overlay"></canvas>
+          <div id="frameInfo" class="frame-info hidden">Frame: 0/0</div>
+          <div id="anglesDisplay" class="angles-display hidden">
+            <div>Ginocchio: --</div>
+            <div>Anca: --</div>
+            <div>Torso: --</div>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" disabled>Analizza Video</button>
+
+        <div class="progress hidden" id="progressContainer">
+          <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <div class="log" id="logPanel">
+          <div class="log-entry info">Carica un video per iniziare...</div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Results -->
+      <div class="panel">
+        <h2>Risultati Analisi</h2>
+
+        <div id="resultsPlaceholder" style="text-align: center; padding: 40px; opacity: 0.5;">
+          <p>I risultati appariranno qui dopo l'analisi</p>
+        </div>
+
+        <div id="resultsContainer" class="hidden">
+          <!-- Score -->
+          <div class="result-card">
+            <div class="score-display">
+              <div class="score-number" id="scoreValue">--</div>
+              <div id="scoreStars" class="score-stars"></div>
+              <div id="loadRecommendation" class="load-rec maintain">Carico: --</div>
+            </div>
+          </div>
+
+          <!-- Issues -->
+          <div class="result-card">
+            <h3>Problemi Rilevati</h3>
+            <div id="issuesList"></div>
+          </div>
+
+          <!-- Strengths -->
+          <div class="result-card">
+            <h3>Punti di Forza</h3>
+            <div id="strengthsList"></div>
+          </div>
+
+          <!-- Sticking Point -->
+          <div class="result-card" id="stickingPointCard" class="hidden">
+            <h3>Sticking Point</h3>
+            <div id="stickingPointInfo"></div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="result-card">
+            <h3>Raccomandazioni Immediate</h3>
+            <div id="immediateRecs"></div>
+          </div>
+
+          <div class="result-card">
+            <h3>Esercizi Accessori</h3>
+            <div id="accessoryRecs"></div>
+          </div>
+
+          <div class="result-card">
+            <h3>Lavoro sulla Mobilita</h3>
+            <div id="mobilityRecs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MediaPipe Pose -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+  <script>
+    // ============================================
+    // BIOMECHANICS UTILITIES (from core.ts)
+    // ============================================
+
+    function distance2D(p1, p2) {
+      return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+
+    function midpoint(p1, p2) {
+      return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2, z: ((p1.z || 0) + (p2.z || 0)) / 2 };
+    }
+
+    function calculateAngle(p1, p2, p3) {
+      const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+      const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+      const dot = v1.x * v2.x + v1.y * v2.y;
+      const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+      const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+      if (mag1 === 0 || mag2 === 0) return 180;
+      const cosAngle = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+      return Math.acos(cosAngle) * (180 / Math.PI);
+    }
+
+    function angleFromVertical(p1, p2) {
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      return Math.abs(Math.atan2(dx, -dy) * (180 / Math.PI));
+    }
+
+    function getKneeAngle(landmarks, side) {
+      const hip = side === 'left' ? landmarks.left_hip : landmarks.right_hip;
+      const knee = side === 'left' ? landmarks.left_knee : landmarks.right_knee;
+      const ankle = side === 'left' ? landmarks.left_ankle : landmarks.right_ankle;
+      return calculateAngle(hip, knee, ankle);
+    }
+
+    function getHipAngle(landmarks, side) {
+      const shoulder = side === 'left' ? landmarks.left_shoulder : landmarks.right_shoulder;
+      const hip = side === 'left' ? landmarks.left_hip : landmarks.right_hip;
+      const knee = side === 'left' ? landmarks.left_knee : landmarks.right_knee;
+      return calculateAngle(shoulder, hip, knee);
+    }
+
+    function getTorsoAngle(landmarks) {
+      const hipMid = midpoint(landmarks.left_hip, landmarks.right_hip);
+      const shoulderMid = midpoint(landmarks.left_shoulder, landmarks.right_shoulder);
+      return angleFromVertical(hipMid, shoulderMid);
+    }
+
+    function getKneeValgus(landmarks, side) {
+      const hip = side === 'left' ? landmarks.left_hip : landmarks.right_hip;
+      const knee = side === 'left' ? landmarks.left_knee : landmarks.right_knee;
+      const ankle = side === 'left' ? landmarks.left_ankle : landmarks.right_ankle;
+      const idealKneeX = (hip.x + ankle.x) / 2;
+      const deviation = (knee.x - idealKneeX) * 100;
+      return side === 'left' ? deviation : -deviation;
+    }
+
+    function isSpineNeutral(landmarks) {
+      const torsoAngle = getTorsoAngle(landmarks);
+      return torsoAngle < 70;
+    }
+
+    function areHeelsDown(landmarks) {
+      // Verifica visibilita minima dei landmark dei piedi
+      const MIN_VISIBILITY = 0.5;
+      const leftFootVisible = landmarks.left_heel.visibility > MIN_VISIBILITY &&
+                              landmarks.left_foot_index.visibility > MIN_VISIBILITY;
+      const rightFootVisible = landmarks.right_heel.visibility > MIN_VISIBILITY &&
+                               landmarks.right_foot_index.visibility > MIN_VISIBILITY;
+
+      // Se i piedi non sono ben visibili, assumiamo talloni a terra (evita falsi positivi)
+      if (!leftFootVisible && !rightFootVisible) {
+        return true;
+      }
+
+      // Soglia aumentata: 0.04 = 4% dell'altezza frame
+      const THRESHOLD = 0.04;
+
+      let leftHeelUp = false;
+      let rightHeelUp = false;
+
+      // Confronto tallone vs punta del piede
+      // Y cresce verso il basso: tallone alzato = heel.y < foot_index.y
+      if (leftFootVisible) {
+        const leftDelta = landmarks.left_foot_index.y - landmarks.left_heel.y;
+        leftHeelUp = leftDelta > THRESHOLD;
+      }
+
+      if (rightFootVisible) {
+        const rightDelta = landmarks.right_foot_index.y - landmarks.right_heel.y;
+        rightHeelUp = rightDelta > THRESHOLD;
+      }
+
+      // Confronto secondario: tallone vs caviglia
+      const ANKLE_THRESHOLD = 0.02;
+
+      if (leftFootVisible && landmarks.left_ankle.visibility > MIN_VISIBILITY) {
+        const heelAboveAnkle = landmarks.left_ankle.y - landmarks.left_heel.y;
+        if (heelAboveAnkle > ANKLE_THRESHOLD) leftHeelUp = true;
+      }
+
+      if (rightFootVisible && landmarks.right_ankle.visibility > MIN_VISIBILITY) {
+        const heelAboveAnkle = landmarks.right_ankle.y - landmarks.right_heel.y;
+        if (heelAboveAnkle > ANKLE_THRESHOLD) rightHeelUp = true;
+      }
+
+      return !leftHeelUp && !rightHeelUp;
+    }
+
+    // ============================================
+    // LANDMARK CONVERSION
+    // ============================================
+
+    const MP_LANDMARKS = {
+      NOSE: 0, LEFT_EYE: 2, RIGHT_EYE: 5, LEFT_EAR: 7, RIGHT_EAR: 8,
+      LEFT_SHOULDER: 11, RIGHT_SHOULDER: 12, LEFT_ELBOW: 13, RIGHT_ELBOW: 14,
+      LEFT_WRIST: 15, RIGHT_WRIST: 16, LEFT_HIP: 23, RIGHT_HIP: 24,
+      LEFT_KNEE: 25, RIGHT_KNEE: 26, LEFT_ANKLE: 27, RIGHT_ANKLE: 28,
+      LEFT_HEEL: 29, RIGHT_HEEL: 30, LEFT_FOOT_INDEX: 31, RIGHT_FOOT_INDEX: 32
+    };
+
+    function convertLandmarks(mpLandmarks) {
+      const get = (idx) => ({
+        x: mpLandmarks[idx]?.x || 0,
+        y: mpLandmarks[idx]?.y || 0,
+        z: mpLandmarks[idx]?.z || 0,
+        visibility: mpLandmarks[idx]?.visibility || 0
+      });
+
+      return {
+        nose: get(MP_LANDMARKS.NOSE),
+        left_eye: get(MP_LANDMARKS.LEFT_EYE),
+        right_eye: get(MP_LANDMARKS.RIGHT_EYE),
+        left_ear: get(MP_LANDMARKS.LEFT_EAR),
+        right_ear: get(MP_LANDMARKS.RIGHT_EAR),
+        left_shoulder: get(MP_LANDMARKS.LEFT_SHOULDER),
+        right_shoulder: get(MP_LANDMARKS.RIGHT_SHOULDER),
+        left_elbow: get(MP_LANDMARKS.LEFT_ELBOW),
+        right_elbow: get(MP_LANDMARKS.RIGHT_ELBOW),
+        left_wrist: get(MP_LANDMARKS.LEFT_WRIST),
+        right_wrist: get(MP_LANDMARKS.RIGHT_WRIST),
+        left_hip: get(MP_LANDMARKS.LEFT_HIP),
+        right_hip: get(MP_LANDMARKS.RIGHT_HIP),
+        left_knee: get(MP_LANDMARKS.LEFT_KNEE),
+        right_knee: get(MP_LANDMARKS.RIGHT_KNEE),
+        left_ankle: get(MP_LANDMARKS.LEFT_ANKLE),
+        right_ankle: get(MP_LANDMARKS.RIGHT_ANKLE),
+        left_heel: get(MP_LANDMARKS.LEFT_HEEL),
+        right_heel: get(MP_LANDMARKS.RIGHT_HEEL),
+        left_foot_index: get(MP_LANDMARKS.LEFT_FOOT_INDEX),
+        right_foot_index: get(MP_LANDMARKS.RIGHT_FOOT_INDEX)
+      };
+    }
+
+    // ============================================
+    // SQUAT ANALYZER (from squatAnalyzer.ts)
+    // ============================================
+
+    const SQUAT_SAFE_RANGES = {
+      knee: { min: 70, max: 170 },
+      hip: { min: 40, max: 170 },
+      torso: { min: 20, max: 75 },
+      kneeValgus: { min: -10, max: 10 }
+    };
+
+    function analyzeSquatFrame(landmarks, frameNumber, timestamp, phase) {
+      const kneeAngle = (getKneeAngle(landmarks, 'left') + getKneeAngle(landmarks, 'right')) / 2;
+      const hipAngle = (getHipAngle(landmarks, 'left') + getHipAngle(landmarks, 'right')) / 2;
+      const torsoAngle = getTorsoAngle(landmarks);
+      const kneeValgus = (getKneeValgus(landmarks, 'left') + getKneeValgus(landmarks, 'right')) / 2;
+      const spineNeutral = isSpineNeutral(landmarks);
+      const heelContact = areHeelsDown(landmarks);
+
+      const issues = [];
+
+      // Safety checks
+      if (!spineNeutral) {
+        issues.push({
+          type: 'SAFETY', code: 'SPINE_FLEXION', severity: 'HIGH',
+          description: 'Perdita di neutralita lombare (butt wink)',
+          correction: 'Fermati prima del punto dove perdi la curva. Lavora su mobilita anca e caviglia.'
+        });
+      }
+
+      if (Math.abs(kneeValgus) > 12) {
+        issues.push({
+          type: 'SAFETY', code: 'KNEE_VALGUS', severity: 'HIGH',
+          description: 'Ginocchia che tendono verso l\'interno',
+          correction: 'Spingi le ginocchia fuori, seguendo la direzione delle punte.'
+        });
+      }
+
+      if (!heelContact) {
+        issues.push({
+          type: 'SAFETY', code: 'HEEL_RISE', severity: 'MEDIUM',
+          description: 'Talloni che si alzano dal pavimento',
+          correction: 'Migliora mobilita caviglia o usa scarpe con tacco.'
+        });
+      }
+
+      if (torsoAngle > 65) {
+        issues.push({
+          type: 'SAFETY', code: 'EXCESSIVE_FORWARD_LEAN', severity: 'MEDIUM',
+          description: 'Inclinazione del torso marcata - valutare in base alle proporzioni',
+          correction: 'Con femori lunghi, un\'inclinazione maggiore e biomeccanicamente normale.'
+        });
+      }
+
+      return {
+        frameNumber, timestamp, phase,
+        angles: { knee: kneeAngle, hip: hipAngle, torso: torsoAngle, kneeValgus },
+        spineNeutral, heelContact, issues
+      };
+    }
+
+    function detectPhase(frames, currentIdx) {
+      if (currentIdx < 2) return 'STARTING';
+
+      const currentKnee = frames[currentIdx].angles.knee;
+      const prevKnee = frames[currentIdx - 1].angles.knee;
+      const prevPrevKnee = frames[currentIdx - 2]?.angles.knee || prevKnee;
+
+      // Minimo locale = BOTTOM
+      if (currentKnee <= prevKnee && currentKnee <= 100) {
+        if (prevKnee >= prevPrevKnee) return 'BOTTOM';
+      }
+
+      if (currentKnee < prevKnee) return 'ECCENTRIC';
+      if (currentKnee > prevKnee) return 'CONCENTRIC';
+
+      return 'HOLDING';
+    }
+
+    function analyzeFullSquat(allFrames) {
+      const allIssues = [];
+      const issueCounts = {};
+
+      for (const frame of allFrames) {
+        for (const issue of frame.issues) {
+          issueCounts[issue.code] = (issueCounts[issue.code] || 0) + 1;
+          if (!allIssues.find(i => i.code === issue.code)) {
+            allIssues.push(issue);
+          }
+        }
+      }
+
+      // Efficiency checks
+      const bottomFrame = allFrames.reduce((min, f) =>
+        (f.angles.knee < (min?.angles.knee || 180)) ? f : min, null);
+
+      if (bottomFrame && bottomFrame.angles.hip > 100) {
+        allIssues.push({
+          type: 'EFFICIENCY', code: 'INSUFFICIENT_DEPTH', severity: 'MEDIUM',
+          description: 'Profondita insufficiente - anca non sotto il ginocchio',
+          correction: 'Scendi fino a quando la piega dell\'anca e sotto il ginocchio.'
+        });
+      }
+
+      // Good morning squat check
+      const concentricFrames = allFrames.filter(f => f.phase === 'CONCENTRIC');
+      if (concentricFrames.length >= 3) {
+        const firstTorso = concentricFrames[0].angles.torso;
+        const midTorso = concentricFrames[Math.floor(concentricFrames.length / 2)].angles.torso;
+        if (midTorso > firstTorso + 10) {
+          allIssues.push({
+            type: 'EFFICIENCY', code: 'HIPS_RISE_FIRST', severity: 'MEDIUM',
+            description: 'Le anche salgono prima delle spalle (good morning squat)',
+            correction: 'Guida con il petto, "spingi la schiena contro il bilanciere".'
+          });
+        }
+      }
+
+      // Sort and dedupe
+      const uniqueIssues = allIssues.filter((issue, idx, arr) =>
+        arr.findIndex(i => i.code === issue.code) === idx);
+
+      const sortedIssues = uniqueIssues.sort((a, b) => {
+        const typeOrder = { SAFETY: 0, EFFICIENCY: 1 };
+        const sevOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+        return (typeOrder[a.type] - typeOrder[b.type]) || (sevOrder[a.severity] - sevOrder[b.severity]);
+      });
+
+      // Strengths
+      const strengths = [];
+      if (bottomFrame && bottomFrame.angles.hip < 90) {
+        strengths.push('Ottima profondita raggiunta');
+      }
+      if (!issueCounts['SPINE_FLEXION']) {
+        strengths.push('Spine neutrale mantenuta durante tutto il movimento');
+      }
+      if (!issueCounts['HEEL_RISE']) {
+        strengths.push('Peso ben distribuito sul piede');
+      }
+      if (!issueCounts['KNEE_VALGUS']) {
+        strengths.push('Ginocchia stabili e allineate');
+      }
+
+      // Sticking point
+      let stickingPoint = { detected: false };
+      if (bottomFrame) {
+        const knee = bottomFrame.angles.knee;
+        if (knee < 100) {
+          stickingPoint = {
+            detected: true, position: 'BOTTOM',
+            diagnosis: 'Quadricipiti deboli in allungamento',
+            accessories: ['Pause squat 3s', 'Pin squat dal bottom']
+          };
+        } else if (knee < 140) {
+          stickingPoint = {
+            detected: true, position: 'MID_RANGE',
+            diagnosis: 'Glutei deboli nel mid-range',
+            accessories: ['Hip thrust', 'Good morning', 'Box squat']
+          };
+        }
+      }
+
+      // Recommendations
+      const immediate = [];
+      const accessories = [];
+      const mobility = [];
+
+      for (const issue of sortedIssues.slice(0, 2)) {
+        switch (issue.code) {
+          case 'KNEE_VALGUS':
+            immediate.push('Usa una banda elastica sopra le ginocchia per feedback tattile');
+            accessories.push('Clamshell 2x15 per lato', 'Lateral band walk 2x20');
+            break;
+          case 'SPINE_FLEXION':
+            immediate.push('Riduci la profondita fino a mantenere la curva lombare');
+            mobility.push('90/90 hip stretch', 'Goblet squat hold 3x30s');
+            break;
+          case 'HEEL_RISE':
+            immediate.push('Prova con rialzo sotto i talloni o scarpe da squat');
+            mobility.push('Ankle dorsiflexion stretch', 'Calf foam rolling');
+            break;
+          case 'HIPS_RISE_FIRST':
+            immediate.push('Pensa "petto alto" mentre sali');
+            accessories.push('Front squat', 'Tempo squat 3-1-1');
+            break;
+          case 'EXCESSIVE_FORWARD_LEAN':
+            immediate.push('Core attivo, respira nel diaframma prima di ogni rep');
+            accessories.push('Front squat', 'Goblet squat');
+            break;
+        }
+      }
+
+      // Score
+      let score = 10;
+      for (const issue of sortedIssues.slice(0, 3)) {
+        if (issue.type === 'SAFETY') {
+          score -= issue.severity === 'HIGH' ? 2 : 1.5;
+        } else {
+          score -= issue.severity === 'HIGH' ? 1.5 : 1;
+        }
+      }
+      score += Math.min(strengths.length * 0.3, 1);
+      score = Math.max(1, Math.min(10, Math.round(score * 10) / 10));
+
+      // Load recommendation
+      const highIssues = sortedIssues.filter(i => i.severity === 'HIGH').length;
+      const mediumIssues = sortedIssues.filter(i => i.severity === 'MEDIUM').length;
+      let loadRec = 'maintain';
+      if (highIssues >= 2) loadRec = 'decrease_20_percent';
+      else if (highIssues >= 1) loadRec = 'decrease_10_percent';
+      else if (mediumIssues >= 2) loadRec = 'decrease_10_percent';
+      else if (score >= 8 && sortedIssues.length === 0) loadRec = 'increase_5_percent';
+
+      return {
+        issues: sortedIssues.slice(0, 5),
+        strengths,
+        stickingPoint,
+        recommendations: {
+          immediate: [...new Set(immediate)].slice(0, 3),
+          accessories: [...new Set(accessories)].slice(0, 4),
+          mobility: [...new Set(mobility)].slice(0, 2)
+        },
+        overallScore: score,
+        loadRecommendation: loadRec
+      };
+    }
+
+    // ============================================
+    // UI LOGIC
+    // ============================================
+
+    let videoFile = null;
+    let pose = null;
+    let frameSequence = [];
+
+    const uploadZone = document.getElementById('uploadZone');
+    const videoInput = document.getElementById('videoInput');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const logPanel = document.getElementById('logPanel');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logPanel.appendChild(entry);
+      logPanel.scrollTop = logPanel.scrollHeight;
+    }
+
+    uploadZone.addEventListener('click', () => videoInput.click());
+    uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#00d4aa'; });
+    uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#0f3460'; });
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = '#0f3460';
+      if (e.dataTransfer.files.length) handleVideoFile(e.dataTransfer.files[0]);
+    });
+
+    videoInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleVideoFile(e.target.files[0]);
+    });
+
+    function handleVideoFile(file) {
+      videoFile = file;
+      log(`Video caricato: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+
+      uploadZone.classList.add('hidden');
+      videoContainer.classList.remove('hidden');
+
+      const url = URL.createObjectURL(file);
+      videoPlayer.src = url;
+      videoPlayer.load();
+
+      videoPlayer.onloadedmetadata = () => {
+        log(`Durata: ${videoPlayer.duration.toFixed(1)}s, Risoluzione: ${videoPlayer.videoWidth}x${videoPlayer.videoHeight}`);
+        overlayCanvas.width = videoPlayer.videoWidth;
+        overlayCanvas.height = videoPlayer.videoHeight;
+        analyzeBtn.disabled = false;
+      };
+    }
+
+    analyzeBtn.addEventListener('click', startAnalysis);
+
+    async function startAnalysis() {
+      analyzeBtn.disabled = true;
+      progressContainer.classList.remove('hidden');
+      resultsPlaceholder.classList.add('hidden');
+      frameSequence = [];
+
+      log('Inizializzazione MediaPipe Pose...', 'info');
+
+      // Initialize MediaPipe
+      pose = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+
+      pose.setOptions({
+        modelComplexity: 2,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      let currentResults = null;
+      pose.onResults((results) => { currentResults = results; });
+
+      try {
+        await pose.initialize();
+        log('MediaPipe Pose inizializzato!', 'success');
+      } catch (err) {
+        log(`Errore inizializzazione: ${err.message}`, 'error');
+        analyzeBtn.disabled = false;
+        return;
+      }
+
+      // Analyze frames
+      const duration = videoPlayer.duration;
+      const targetFps = 10;
+      const totalFrames = Math.floor(duration * targetFps);
+      const frameInterval = 1 / targetFps;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = videoPlayer.videoWidth;
+      canvas.height = videoPlayer.videoHeight;
+      const ctx = canvas.getContext('2d');
+
+      log(`Analisi di ${totalFrames} frame a ${targetFps} FPS...`, 'info');
+
+      const rawFrames = [];
+
+      for (let i = 0; i < totalFrames; i++) {
+        const currentTime = i * frameInterval;
+        videoPlayer.currentTime = currentTime;
+
+        await new Promise(resolve => {
+          const onSeeked = () => {
+            videoPlayer.removeEventListener('seeked', onSeeked);
+            resolve();
+          };
+          videoPlayer.addEventListener('seeked', onSeeked);
+        });
+
+        ctx.drawImage(videoPlayer, 0, 0);
+
+        currentResults = null;
+        await pose.send({ image: canvas });
+
+        // Wait for results
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        if (currentResults && currentResults.poseLandmarks) {
+          const landmarks = convertLandmarks(currentResults.poseLandmarks);
+          rawFrames.push({ landmarks, timestamp: currentTime, frameNumber: i });
+        }
+
+        const pct = Math.round(((i + 1) / totalFrames) * 100);
+        progressBar.style.width = `${pct}%`;
+        progressBar.textContent = `${pct}%`;
+
+        if (i % 10 === 0) {
+          log(`Frame ${i + 1}/${totalFrames} analizzato`, 'info');
+        }
+      }
+
+      log(`Estrazione completata: ${rawFrames.length}/${totalFrames} frame validi`, 'success');
+
+      if (rawFrames.length < totalFrames * 0.5) {
+        log('Troppi frame non validi. Assicurati di essere completamente inquadrato.', 'error');
+        analyzeBtn.disabled = false;
+        return;
+      }
+
+      // Analyze each frame
+      log('Analisi biomeccanica in corso...', 'info');
+
+      for (let i = 0; i < rawFrames.length; i++) {
+        const { landmarks, timestamp, frameNumber } = rawFrames[i];
+        const frame = analyzeSquatFrame(landmarks, frameNumber, timestamp, 'UNKNOWN');
+        frameSequence.push(frame);
+      }
+
+      // Detect phases
+      for (let i = 0; i < frameSequence.length; i++) {
+        frameSequence[i].phase = detectPhase(frameSequence, i);
+      }
+
+      // Full analysis
+      log('Generazione report...', 'info');
+      const results = analyzeFullSquat(frameSequence);
+
+      displayResults(results);
+      log('Analisi completata!', 'success');
+
+      analyzeBtn.disabled = false;
+      progressContainer.classList.add('hidden');
+    }
+
+    function displayResults(results) {
+      resultsContainer.classList.remove('hidden');
+
+      // Score
+      document.getElementById('scoreValue').textContent = results.overallScore.toFixed(1);
+      const stars = '★'.repeat(Math.round(results.overallScore)) + '☆'.repeat(10 - Math.round(results.overallScore));
+      document.getElementById('scoreStars').textContent = stars;
+
+      // Load recommendation
+      const loadRec = document.getElementById('loadRecommendation');
+      const loadLabels = {
+        'increase_5_percent': 'Puoi aumentare del 5%',
+        'maintain': 'Mantieni il carico attuale',
+        'decrease_10_percent': 'Riduci del 10%',
+        'decrease_20_percent': 'Riduci del 20%'
+      };
+      loadRec.textContent = loadLabels[results.loadRecommendation] || results.loadRecommendation;
+      loadRec.className = 'load-rec ' + (results.loadRecommendation.includes('increase') ? 'increase' :
+        results.loadRecommendation.includes('decrease') ? 'decrease' : 'maintain');
+
+      // Issues
+      const issuesList = document.getElementById('issuesList');
+      issuesList.innerHTML = results.issues.length ? '' : '<p style="opacity:0.7">Nessun problema rilevato!</p>';
+      for (const issue of results.issues) {
+        const div = document.createElement('div');
+        div.className = `issue ${issue.severity.toLowerCase()}`;
+        div.innerHTML = `
+          <div class="issue-title">${issue.code.replace(/_/g, ' ')}</div>
+          <div class="issue-desc">${issue.description}</div>
+          <div class="issue-desc" style="margin-top:5px;font-style:italic">${issue.correction}</div>
+        `;
+        issuesList.appendChild(div);
+      }
+
+      // Strengths
+      const strengthsList = document.getElementById('strengthsList');
+      strengthsList.innerHTML = results.strengths.length ? '' : '<p style="opacity:0.7">Continua cosi!</p>';
+      for (const s of results.strengths) {
+        const div = document.createElement('div');
+        div.className = 'strength';
+        div.textContent = s;
+        strengthsList.appendChild(div);
+      }
+
+      // Sticking point
+      const spCard = document.getElementById('stickingPointCard');
+      const spInfo = document.getElementById('stickingPointInfo');
+      if (results.stickingPoint.detected) {
+        spCard.classList.remove('hidden');
+        spInfo.innerHTML = `
+          <p><strong>Posizione:</strong> ${results.stickingPoint.position}</p>
+          <p><strong>Diagnosi:</strong> ${results.stickingPoint.diagnosis}</p>
+          <p><strong>Accessori consigliati:</strong> ${results.stickingPoint.accessories?.join(', ')}</p>
+        `;
+      } else {
+        spCard.classList.add('hidden');
+      }
+
+      // Recommendations
+      const immediateRecs = document.getElementById('immediateRecs');
+      immediateRecs.innerHTML = results.recommendations.immediate.length ? '' : '<p style="opacity:0.7">Nessuna raccomandazione immediata</p>';
+      for (const r of results.recommendations.immediate) {
+        const div = document.createElement('div');
+        div.className = 'recommendation';
+        div.textContent = r;
+        immediateRecs.appendChild(div);
+      }
+
+      const accessoryRecs = document.getElementById('accessoryRecs');
+      accessoryRecs.innerHTML = results.recommendations.accessories.length ? '' : '<p style="opacity:0.7">Nessun esercizio accessorio</p>';
+      for (const r of results.recommendations.accessories) {
+        const div = document.createElement('div');
+        div.className = 'recommendation';
+        div.textContent = r;
+        accessoryRecs.appendChild(div);
+      }
+
+      const mobilityRecs = document.getElementById('mobilityRecs');
+      mobilityRecs.innerHTML = results.recommendations.mobility.length ? '' : '<p style="opacity:0.7">Nessun lavoro sulla mobilita</p>';
+      for (const r of results.recommendations.mobility) {
+        const div = document.createElement('div');
+        div.className = 'recommendation';
+        div.textContent = r;
+        mobilityRecs.appendChild(div);
+      }
+    }
+  </script>
+</body>
+</html>

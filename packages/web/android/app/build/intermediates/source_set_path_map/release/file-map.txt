@@ -51,7 +51,6 @@ me.trainsmart.app-pngs-49 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\we
 me.trainsmart.app-resValues-50 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\generated\res\resValues\release
 me.trainsmart.app-packageReleaseResources-51 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
 me.trainsmart.app-packageReleaseResources-52 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
-me.trainsmart.app-merged-not-compiled-resources-53 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\intermediates\merged-not-compiled-resources\release
-me.trainsmart.app-merged_res-54 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\intermediates\merged_res\release
-me.trainsmart.app-main-55 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\res
-me.trainsmart.app-release-56 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\release\res
+me.trainsmart.app-merged_res-53 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\build\intermediates\merged_res\release
+me.trainsmart.app-main-54 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\main\res
+me.trainsmart.app-release-55 C:\Users\dario\OneDrive\Desktop\TrainSmart\packages\web\android\app\src\release\res

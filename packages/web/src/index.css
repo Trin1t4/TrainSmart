@@ -23,9 +23,11 @@ html {
   overscroll-behavior: none;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Smooth scrolling - respects reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Hide scrollbar but keep functionality */
@@ -56,27 +58,105 @@ html {
 }
 
 @layer base {
+  /* ============================================
+     LIGHT THEME (default in :root)
+     ============================================ */
   :root {
+    /* Core colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    /* Card/Surface colors */
+    --card: 0 0% 98%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    /* Brand colors */
+    --primary: 160 84% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted colors */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent colors */
+    --accent: 217 91% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive/Error */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 220 13% 84%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 28%;
+    --radius: 0.5rem;
+
+    /* Focus ring - WCAG 2.4.7 compliant */
+    --focus-ring: 217 91% 50%;
+    --focus-ring-offset: 0 0% 100%;
+
+    /* Semantic status colors */
+    --success: 142 76% 30%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 42%;
+    --info-foreground: 0 0% 100%;
+  }
+
+  /* ============================================
+     DARK THEME
+     ============================================ */
+  .dark {
+    /* Core colors */
     --background: 222.2 47.4% 11.2%;
     --foreground: 0 0% 100%;
+
+    /* Card/Surface colors */
     --card: 217.2 32.6% 17.5%;
     --card-foreground: 0 0% 100%;
     --popover: 217.2 32.6% 17.5%;
     --popover-foreground: 0 0% 100%;
+
+    /* Brand colors */
     --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
     --secondary: 215 20.2% 65.1%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted colors */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+
+    /* Accent colors */
     --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
+
+    /* Destructive/Error */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 20.2% 65.1%;
+
+    /* UI elements */
+    --border: 215 20.2% 35%;
     --input: 217.2 32.6% 17.5%;
     --ring: 160 84% 39%;
-    --radius: 0.5rem;
+
+    /* Focus ring - WCAG 2.4.7 compliant */
+    --focus-ring: 160 84% 45%;
+    --focus-ring-offset: 222.2 47.4% 11.2%;
+
+    /* Semantic status colors */
+    --success: 142 76% 46%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 58%;
+    --info-foreground: 0 0% 100%;
   }
 }
 
@@ -92,4 +172,84 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+/* ============================================
+   WCAG 2.2 ACCESSIBILITY UTILITIES
+   ============================================ */
+
+/* Reduced motion support - WCAG 2.3.3 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link for keyboard navigation - WCAG 2.4.1 */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 0.75rem 1.5rem;
+  z-index: 100;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@layer utilities {
+  /* Focus indicators - WCAG 2.4.7 (Focus Visible) + 2.4.11 (Focus Not Obscured) */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: hsl(var(--focus-ring));
+    --tw-ring-offset-color: hsl(var(--focus-ring-offset));
+  }
+
+  /* Enhanced focus for high contrast needs - AAA level */
+  .focus-visible-ring-strong {
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2;
+    --tw-ring-color: hsl(var(--focus-ring));
+    --tw-ring-offset-color: hsl(var(--focus-ring-offset));
+  }
+
+  /* Touch target minimum 44x44px - WCAG 2.5.8 */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Touch target with padding for inline elements */
+  .touch-target-padding {
+    @apply p-3;
+  }
+
+  /* Ensure interactive elements have visible focus */
+  .interactive {
+    @apply focus-visible-ring touch-target transition-colors;
+  }
 }

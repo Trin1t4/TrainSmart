@@ -73,7 +73,7 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
   // Mobile layout
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background">
       {/* Mobile Header */}
       {shouldShowNav && headerConfig && (
         <MobileHeader {...headerConfig} />
@@ -81,9 +81,12 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
       {/* Main Content with padding for header and bottom nav */}
       <main
+        id="main-content"
+        tabIndex={-1}
         className={`
           ${shouldShowNav && headerConfig ? 'pt-14' : ''}
           ${shouldShowNav ? 'pb-20' : ''}
+          focus:outline-none
         `}
       >
         {children}

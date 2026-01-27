@@ -54,7 +54,10 @@ export default function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 safe-area-bottom">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border safe-area-bottom"
+      aria-label="Navigazione principale"
+    >
       <div className="flex items-center justify-around h-16 px-2">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item);
@@ -65,23 +68,25 @@ export default function BottomNavigation() {
               key={item.path}
               onClick={() => navigate(item.path)}
               whileTap={{ scale: 0.9 }}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-2 px-1 rounded-xl transition-colors ${
+              className={`flex flex-col items-center justify-center flex-1 h-full py-2 px-1 rounded-xl transition-colors touch-target focus-visible-ring ${
                 active
-                  ? 'text-emerald-400'
-                  : 'text-slate-400 hover:text-slate-300'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
+              aria-current={active ? 'page' : undefined}
+              aria-label={t(item.labelKey) || item.labelKey.split('.').pop()}
             >
               <div className="relative">
-                <Icon className={`w-6 h-6 ${active ? 'text-emerald-400' : ''}`} />
+                <Icon className={`w-6 h-6 ${active ? 'text-primary' : ''}`} aria-hidden="true" />
                 {active && (
                   <motion.div
                     layoutId="bottomNavIndicator"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}
               </div>
-              <span className={`text-xs mt-1 font-medium ${active ? 'text-emerald-400' : ''}`}>
+              <span className={`text-xs mt-1 font-medium ${active ? 'text-primary' : ''}`} aria-hidden="true">
                 {t(item.labelKey) || item.labelKey.split('.').pop()}
               </span>
             </motion.button>

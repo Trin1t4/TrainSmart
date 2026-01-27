@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Menu, Bell, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import ThemeToggle from './ThemeToggle';
 
 interface MobileHeaderProps {
   title?: string;
@@ -9,6 +10,7 @@ interface MobileHeaderProps {
   showMenu?: boolean;
   showNotifications?: boolean;
   showProfile?: boolean;
+  showThemeToggle?: boolean;
   onMenuClick?: () => void;
   rightContent?: React.ReactNode;
   transparent?: boolean;
@@ -20,6 +22,7 @@ export default function MobileHeader({
   showMenu = false,
   showNotifications = false,
   showProfile = false,
+  showThemeToggle = true,
   onMenuClick,
   rightContent,
   transparent = false
@@ -32,7 +35,7 @@ export default function MobileHeader({
       className={`fixed top-0 left-0 right-0 z-40 safe-area-top ${
         transparent
           ? 'bg-transparent'
-          : 'bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50'
+          : 'bg-background/95 backdrop-blur-xl border-b border-border'
       }`}
     >
       <div className="flex items-center justify-between h-14 px-4">
@@ -42,25 +45,27 @@ export default function MobileHeader({
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate(-1)}
-              className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+              className="p-2.5 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors touch-target focus-visible-ring"
+              aria-label="Torna indietro"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-6 h-6" aria-hidden="true" />
             </motion.button>
           )}
           {showMenu && (
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onMenuClick}
-              className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+              className="p-2.5 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors touch-target focus-visible-ring"
+              aria-label="Apri menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6" aria-hidden="true" />
             </motion.button>
           )}
         </div>
 
         {/* Title */}
         {title && (
-          <h1 className="text-lg font-display font-bold text-white truncate max-w-[200px]">
+          <h1 className="text-lg font-display font-bold text-foreground truncate max-w-[200px]">
             {title}
           </h1>
         )}
@@ -69,14 +74,19 @@ export default function MobileHeader({
         <div className="flex items-center gap-1 min-w-[48px] justify-end">
           {rightContent}
 
+          {showThemeToggle && (
+            <ThemeToggle compact />
+          )}
+
           {showNotifications && (
             <motion.button
               whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors relative"
+              className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors relative touch-target focus-visible-ring"
+              aria-label="Notifiche"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5" aria-hidden="true" />
               {hasNotifications && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" aria-label="Nuove notifiche" />
               )}
             </motion.button>
           )}
@@ -85,9 +95,10 @@ export default function MobileHeader({
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/profile')}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+              className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors touch-target focus-visible-ring"
+              aria-label="Vai al profilo"
             >
-              <User className="w-5 h-5" />
+              <User className="w-5 h-5" aria-hidden="true" />
             </motion.button>
           )}
         </div>

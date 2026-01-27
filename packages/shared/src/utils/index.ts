@@ -918,16 +918,24 @@ export {
   RIRCalibration
 } from './rirCalibration';
 
-// Progressive Overload (Linear/Double/Wave Periodization)
+// Progressive Overload (Linear/Double/Wave Periodization + Video Integration)
 export type {
   ProgressionStrategy,
   ProgressionConfig,
   ProgressionResult as OverloadProgressionResult,
   WeeklyPlan,
-  ExerciseProgressionHistory
+  ExerciseProgressionHistory,
+  // Video Integration Types
+  VideoLoadRecommendation,
+  VideoProgressionResult
 } from './progressiveOverload';
 export {
   calculateNextWeight,
+  // Video Integration Functions
+  calculateNextWeightWithVideo,
+  applyVideoRecommendation,
+  generateProgressionPlanWithVideo,
+  // Base Functions
   generateProgressionPlan,
   analyzeProgressionHistory,
   calculateE1RM,

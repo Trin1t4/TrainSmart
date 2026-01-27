@@ -19,6 +19,25 @@
 
 export type ProgressionStrategy = 'linear' | 'double' | 'wave' | 'autoregulated';
 
+/**
+ * Raccomandazione carico dalla Video Analysis
+ */
+export type VideoLoadRecommendation =
+  | 'increase_5_percent'
+  | 'maintain'
+  | 'decrease_10_percent'
+  | 'decrease_20_percent';
+
+/**
+ * Risultato dell'applicazione della raccomandazione video
+ */
+export interface VideoProgressionResult extends ProgressionResult {
+  videoApplied: boolean;
+  videoRecommendation?: VideoLoadRecommendation;
+  videoScore?: number;
+  originalWeight?: number;  // Peso prima dell'override video
+}
+
 export interface ProgressionConfig {
   strategy: ProgressionStrategy;
   weeklyIncrementPercent: number;
@@ -441,18 +460,221 @@ export function analyzeProgressionHistory(
 }
 
 // ============================================================================
+// VIDEO ANALYSIS INTEGRATION
+// ============================================================================
+
+/**
+ * Percentuali di modifica per ogni raccomandazione video
+ */
+const VIDEO_RECOMMENDATION_MODIFIERS: Record<VideoLoadRecommendation, number> = {
+  'increase_5_percent': 1.05,    // +5%
+  'maintain': 1.0,               // Nessuna modifica
+  'decrease_10_percent': 0.90,   // -10%
+  'decrease_20_percent': 0.80    // -20%
+};
+
+/**
+ * Messaggi per l'utente in base alla raccomandazione
+ */
+const VIDEO_RECOMMENDATION_MESSAGES: Record<VideoLoadRecommendation, string> = {
+  'increase_5_percent': '🎥✅ Video Analysis: Tecnica eccellente! Puoi aumentare il carico',
+  'maintain': '🎥 Video Analysis: Tecnica corretta, mantieni il carico attuale',
+  'decrease_10_percent': '🎥⚠️ Video Analysis: Problemi tecnici rilevati, riduci il carico del 10%',
+  'decrease_20_percent': '🎥🚨 Video Analysis: Problemi significativi, riduci il carico del 20%'
+};
+
+/**
+ * Applica la raccomandazione della Video Analysis al peso
+ *
+ * @param currentWeight - Peso attuale in kg
+ * @param videoRecommendation - Raccomandazione dalla video analysis
+ * @param minIncrement - Incremento minimo (default 2.5kg)
+ * @returns Nuovo peso arrotondato
+ */
+export function applyVideoRecommendation(
+  currentWeight: number,
+  videoRecommendation: VideoLoadRecommendation,
+  minIncrement: number = 2.5
+): number {
+  const modifier = VIDEO_RECOMMENDATION_MODIFIERS[videoRecommendation];
+  const newWeight = currentWeight * modifier;
+  return roundToNearestIncrement(newWeight, minIncrement);
+}
+
+/**
+ * Calcola il peso per la prossima sessione integrando il feedback della Video Analysis
+ *
+ * PRIORITÀ:
+ * 1. Se video dice DECREASE → OVERRIDE obbligatorio (sicurezza)
+ * 2. Se video dice INCREASE → Bonus aggiuntivo alla progressione
+ * 3. Se video dice MAINTAIN → Usa progressione normale
+ *
+ * @param currentWeight - Peso attuale in kg
+ * @param completedReps - Reps completate nell'ultima sessione
+ * @param targetReps - Reps target
+ * @param level - Livello utente ('beginner' | 'intermediate' | 'advanced')
+ * @param weekNumber - Numero settimana nel programma
+ * @param exerciseName - Nome esercizio
+ * @param pattern - Pattern movimento (opzionale)
+ * @param videoRecommendation - Raccomandazione dalla video analysis (opzionale)
+ * @param videoScore - Score tecnica 1-10 dalla video analysis (opzionale)
+ */
+export function calculateNextWeightWithVideo(
+  currentWeight: number,
+  completedReps: number,
+  targetReps: number,
+  level: string,
+  weekNumber: number,
+  exerciseName: string = '',
+  pattern?: string,
+  videoRecommendation?: VideoLoadRecommendation,
+  videoScore?: number
+): VideoProgressionResult {
+  // 1. Calcola progressione base (senza video)
+  const baseResult = calculateNextWeight(
+    currentWeight,
+    completedReps,
+    targetReps,
+    level,
+    weekNumber,
+    exerciseName,
+    pattern
+  );
+
+  // Se non c'è raccomandazione video, ritorna risultato base
+  if (!videoRecommendation) {
+    return {
+      ...baseResult,
+      videoApplied: false
+    };
+  }
+
+  const exerciseType = getExerciseType(exerciseName, pattern);
+  const minIncrement = EXERCISE_TYPE_MODIFIERS[exerciseType]?.minWeightIncrementKg || 2.5;
+
+  // 2. CASO DECREASE: Override obbligatorio per sicurezza
+  if (videoRecommendation === 'decrease_10_percent' || videoRecommendation === 'decrease_20_percent') {
+    const videoWeight = applyVideoRecommendation(currentWeight, videoRecommendation, minIncrement);
+    const percentChange = ((videoWeight - currentWeight) / currentWeight) * 100;
+
+    return {
+      newWeight: videoWeight,
+      weightChange: videoWeight - currentWeight,
+      percentChange,
+      reason: VIDEO_RECOMMENDATION_MESSAGES[videoRecommendation],
+      isDeload: true,  // Tratta come deload
+      videoApplied: true,
+      videoRecommendation,
+      videoScore,
+      originalWeight: baseResult.newWeight,
+      nextTarget: {
+        sets: 3,
+        reps: `${targetReps}`,
+        weight: videoWeight
+      }
+    };
+  }
+
+  // 3. CASO INCREASE: Applica bonus +5% alla progressione calcolata
+  if (videoRecommendation === 'increase_5_percent') {
+    // Applica +5% al peso calcolato dalla progressione base
+    const videoWeight = roundToNearestIncrement(
+      baseResult.newWeight * 1.05,
+      minIncrement
+    );
+    const percentChange = ((videoWeight - currentWeight) / currentWeight) * 100;
+
+    return {
+      newWeight: videoWeight,
+      weightChange: videoWeight - currentWeight,
+      percentChange,
+      reason: `${baseResult.reason} + ${VIDEO_RECOMMENDATION_MESSAGES[videoRecommendation]}`,
+      isDeload: false,
+      videoApplied: true,
+      videoRecommendation,
+      videoScore,
+      originalWeight: baseResult.newWeight,
+      nextTarget: {
+        sets: baseResult.nextTarget?.sets || 3,
+        reps: baseResult.nextTarget?.reps || `${targetReps}`,
+        weight: videoWeight
+      }
+    };
+  }
+
+  // 4. CASO MAINTAIN: Usa progressione normale
+  return {
+    ...baseResult,
+    videoApplied: true,
+    videoRecommendation,
+    videoScore,
+    reason: `${baseResult.reason} (${VIDEO_RECOMMENDATION_MESSAGES[videoRecommendation]})`
+  };
+}
+
+/**
+ * Genera piano di progressione con supporto video analysis
+ */
+export function generateProgressionPlanWithVideo(
+  startingWeight: number,
+  level: string,
+  weeks: number,
+  exerciseName: string = '',
+  pattern?: string,
+  videoRecommendations?: Map<number, { recommendation: VideoLoadRecommendation; score: number }>
+): WeeklyPlan[] {
+  const plan: WeeklyPlan[] = [];
+  let currentWeight = startingWeight;
+
+  for (let week = 1; week <= weeks; week++) {
+    const videoData = videoRecommendations?.get(week);
+
+    const result = calculateNextWeightWithVideo(
+      currentWeight,
+      10,
+      10,
+      level,
+      week,
+      exerciseName,
+      pattern,
+      videoData?.recommendation,
+      videoData?.score
+    );
+
+    plan.push({
+      week,
+      targetWeight: result.newWeight,
+      targetReps: result.nextTarget?.reps || '8-12',
+      note: result.reason,
+      isDeload: result.isDeload
+    });
+
+    if (!result.isDeload) {
+      currentWeight = result.newWeight;
+    }
+  }
+
+  return plan;
+}
+
+// ============================================================================
 // UTILITY EXPORTS
 // ============================================================================
 
 export const ProgressiveOverload = {
   calculateNextWeight,
+  calculateNextWeightWithVideo,
+  applyVideoRecommendation,
   generateProgressionPlan,
+  generateProgressionPlanWithVideo,
   analyzeProgressionHistory,
   calculateE1RM,
   weightForReps,
   roundToNearestIncrement,
   PROGRESSION_CONFIG,
-  EXERCISE_TYPE_MODIFIERS
+  EXERCISE_TYPE_MODIFIERS,
+  VIDEO_RECOMMENDATION_MODIFIERS,
+  VIDEO_RECOMMENDATION_MESSAGES
 };
 
 export default ProgressiveOverload;

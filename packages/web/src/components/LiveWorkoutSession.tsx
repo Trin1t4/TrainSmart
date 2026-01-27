@@ -84,6 +84,13 @@ import {
   updateExerciseWeight,
   prepareForSave,
   type NormalizedProgram,
+  // Video Analysis Integration
+  getSuggestedWeightForExercise,
+  getVideoCorrectiveExercisesFromVideo,
+  addVideoCorrectiveExercisesToProgram,
+  type SuggestedWeight,
+  type VideoCorrectiveExercise,
+  type VideoCorrectiveData,
 } from '@trainsmart/shared';
 
 interface Exercise {
@@ -497,6 +504,12 @@ export default function LiveWorkoutSession({
     weightAdjustment?: number; // Percentage adjustment for next session (+5 = increase 5%, -5 = decrease 5%)
   } | null>(null);
 
+  // Video Analysis Weight Suggestion state
+  const [videoSuggestedWeight, setVideoSuggestedWeight] = useState<SuggestedWeight | null>(null);
+  const [videoCorrectiveData, setVideoCorrectiveData] = useState<VideoCorrectiveData | null>(null);
+  const [showCorrectivesModal, setShowCorrectivesModal] = useState(false);
+  const [isLoadingVideoSuggestion, setIsLoadingVideoSuggestion] = useState(false);
+
   const currentExercise = exercises[currentExerciseIndex];
   const totalExercises = exercises.length;
   const targetReps = typeof currentExercise?.reps === 'number'
@@ -626,6 +639,52 @@ export default function LiveWorkoutSession({
       }
     }
   }, [recoveryData, availableTime, userGoal, initialExercises, workoutStartTime]);
+
+  // Fetch video-based weight suggestion when exercise changes
+  useEffect(() => {
+    const fetchVideoSuggestion = async () => {
+      if (!currentExercise || !userId) return;
+
+      // Only fetch for non-bodyweight exercises
+      if (isBodyweightExercise(currentExercise.name)) {
+        setVideoSuggestedWeight(null);
+        setVideoCorrectiveData(null);
+        return;
+      }
+
+      setIsLoadingVideoSuggestion(true);
+      try {
+        // Fetch weight suggestion from video analysis
+        const suggestion = await getSuggestedWeightForExercise(
+          userId,
+          currentExercise.name,
+          currentExercise.pattern,
+          1 // weekNumber
+        );
+        setVideoSuggestedWeight(suggestion);
+
+        // Also fetch corrective exercises if there's video data
+        if (suggestion?.videoApplied) {
+          const correctives = await getVideoCorrectiveExercisesFromVideo(
+            userId,
+            currentExercise.name,
+            30 // last 30 days
+          );
+          setVideoCorrectiveData(correctives);
+        } else {
+          setVideoCorrectiveData(null);
+        }
+      } catch (error) {
+        console.error('Error fetching video suggestion:', error);
+        setVideoSuggestedWeight(null);
+        setVideoCorrectiveData(null);
+      } finally {
+        setIsLoadingVideoSuggestion(false);
+      }
+    };
+
+    fetchVideoSuggestion();
+  }, [currentExerciseIndex, currentExercise?.name, userId]);
 
   // Auto-start workout when recoveryData is provided (bypassing internal pre-workout)
   useEffect(() => {
@@ -4014,7 +4073,28 @@ export default function LiveWorkoutSession({
             {currentExercise.pattern !== 'core' && !isBodyweightExercise(currentExercise.name) && (
               <div>
                 <label className="block text-slate-300 text-sm mb-2">
-                  Peso (kg){currentExercise.weight && <span className="text-amber-400 font-bold"> - Suggerito: {currentExercise.weight}</span>}
+                  Peso (kg)
+                  {/* Video-based suggestion takes priority */}
+                  {videoSuggestedWeight?.videoApplied ? (
+                    <span className="ml-2">
+                      <span className="text-purple-400 font-bold">
+                        📹 Video: {videoSuggestedWeight.suggestedWeight}kg
+                      </span>
+                      {videoSuggestedWeight.videoRecommendation === 'increase_5_percent' && (
+                        <span className="text-emerald-400 text-xs ml-1">(+5%)</span>
+                      )}
+                      {videoSuggestedWeight.videoRecommendation?.includes('decrease') && (
+                        <span className="text-orange-400 text-xs ml-1">
+                          ({videoSuggestedWeight.videoRecommendation.replace('decrease_', '-').replace('_percent', '%')})
+                        </span>
+                      )}
+                    </span>
+                  ) : currentExercise.weight ? (
+                    <span className="text-amber-400 font-bold"> - Suggerito: {currentExercise.weight}</span>
+                  ) : null}
+                  {isLoadingVideoSuggestion && (
+                    <span className="text-slate-500 text-xs ml-2">Caricamento...</span>
+                  )}
                 </label>
                 <input
                   type="number"
@@ -4022,8 +4102,19 @@ export default function LiveWorkoutSession({
                   value={currentWeight || ''}
                   onChange={(e) => setCurrentWeight(parseFloat(e.target.value) || 0)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
-                  placeholder={currentExercise.weight || "0"}
+                  placeholder={videoSuggestedWeight?.suggestedWeight?.toString() || currentExercise.weight || "0"}
                 />
+                {/* Show corrective exercises button if available */}
+                {videoCorrectiveData && videoCorrectiveData.correctiveExercises.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCorrectivesModal(true)}
+                    className="mt-2 w-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-sm py-2 px-3 rounded-lg hover:bg-purple-500/20 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Info className="w-4 h-4" />
+                    {videoCorrectiveData.correctiveExercises.length} esercizi correttivi disponibili
+                  </button>
+                )}
               </div>
             )}
 
@@ -5077,6 +5168,154 @@ export default function LiveWorkoutSession({
                   Ignora
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Corrective Exercises Modal */}
+      <AnimatePresence>
+        {showCorrectivesModal && videoCorrectiveData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCorrectivesModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-gradient-to-b from-purple-900/50 to-slate-800 rounded-2xl p-6 max-w-lg w-full border border-purple-500/30 shadow-2xl max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  📹 Esercizi Correttivi
+                </h3>
+                <button
+                  onClick={() => setShowCorrectivesModal(false)}
+                  className="p-1 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+
+              <p className="text-slate-400 text-sm mb-4">
+                Dall'analisi video di <span className="text-purple-300 font-semibold">{videoCorrectiveData.exerciseName}</span>,
+                ecco gli esercizi consigliati per migliorare la tecnica:
+              </p>
+
+              {/* Issues detected */}
+              {videoCorrectiveData.issues.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-slate-500 text-xs uppercase mb-2">Problemi rilevati:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {videoCorrectiveData.issues.map((issue, idx) => (
+                      <span
+                        key={idx}
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          issue.severity === 'high' ? 'bg-red-500/20 text-red-300' :
+                          issue.severity === 'medium' ? 'bg-amber-500/20 text-amber-300' :
+                          'bg-slate-600/50 text-slate-300'
+                        }`}
+                      >
+                        {issue.name.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Corrective exercises */}
+              <div className="space-y-3 mb-4">
+                <p className="text-slate-500 text-xs uppercase">Esercizi correttivi:</p>
+                {videoCorrectiveData.correctiveExercises.map((exercise, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-700/50 border border-slate-600 rounded-xl p-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-white font-semibold">{exercise.name}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        exercise.type === 'activation' ? 'bg-emerald-500/20 text-emerald-300' :
+                        exercise.type === 'mobility' ? 'bg-blue-500/20 text-blue-300' :
+                        'bg-purple-500/20 text-purple-300'
+                      }`}>
+                        {exercise.type}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-sm mt-1">
+                      {exercise.sets}×{exercise.reps}
+                    </p>
+                    {exercise.notes && (
+                      <p className="text-slate-500 text-xs mt-1">{exercise.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobility drills */}
+              {videoCorrectiveData.mobilityDrills.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-slate-500 text-xs uppercase mb-2">Mobilità:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {videoCorrectiveData.mobilityDrills.map((drill, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-blue-500/10 text-blue-300 px-2 py-1 rounded-full"
+                      >
+                        {drill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={async () => {
+                    if (!programId) {
+                      toast.error('Nessun programma attivo');
+                      return;
+                    }
+                    try {
+                      const result = await addVideoCorrectiveExercisesToProgram(
+                        userId,
+                        programId,
+                        videoCorrectiveData.correctiveExercises,
+                        'warmup'
+                      );
+                      if (result.success) {
+                        toast.success('Esercizi aggiunti!', {
+                          description: result.message
+                        });
+                        setShowCorrectivesModal(false);
+                      } else {
+                        toast.error('Errore', { description: result.message });
+                      }
+                    } catch (error) {
+                      toast.error('Errore durante l\'aggiunta');
+                    }
+                  }}
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Aggiungi al Warmup
+                </button>
+                <button
+                  onClick={() => setShowCorrectivesModal(false)}
+                  className="py-3 px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors"
+                >
+                  Dopo
+                </button>
+              </div>
+
+              <p className="text-slate-500 text-xs text-center mt-3">
+                Gli esercizi verranno aggiunti come riscaldamento a tutte le sessioni
+              </p>
             </motion.div>
           </motion.div>
         )}

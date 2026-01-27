@@ -220,9 +220,25 @@ export {
   getWorkoutSets,
   hasInProgressWorkout,
   getWorkoutResumeSummary,
+  // Video Analysis Integration
+  getLatestVideoAnalysis,
+  getLastCompletedWeight,
+  getUserTrainingLevel,
+  getSuggestedWeightForExercise,
+  getSuggestedWeightsForWorkout,
+  applyVideoRecommendationToExercise,
+  // Corrective Exercises from Video
+  getVideoCorrectiveExercisesFromVideo,
+  addVideoCorrectiveExercisesToProgram,
+  getAllVideoRecommendations,
+  // Types
   type WorkoutSession as ProgressiveWorkoutSession,
   type SetLog as ProgressiveSetLog,
   type StartWorkoutInput,
+  type VideoCorrection,
+  type SuggestedWeight,
+  type VideoCorrectiveExercise,
+  type VideoCorrectiveData,
 } from './progressiveWorkoutService';
 export { default as progressiveWorkoutService } from './progressiveWorkoutService';
 

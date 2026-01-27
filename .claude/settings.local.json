@@ -200,7 +200,20 @@
       "Bash(set \"JAVA_HOME=C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\")",
       "Bash(gradlew.bat assembleRelease:*)",
       "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew:*)",
-      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew :app:assembleRelease:*)"
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew :app:assembleRelease:*)",
+      "Bash(Where-Object { $_FullName -notlike \"*\\\\.gradle*\" -and $_FullName -notlike \"*cache*\" })",
+      "Bash(Select-Object FullName, Length, LastWriteTime)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(keytool:*)",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/keytool\" -genkey -v -keystore \"/c/Users/dario/OneDrive/Desktop/TrainSmart/packages/web/android/trainsmart-release.keystore\" -alias trainsmart -keyalg RSA -keysize 2048 -validity 10000 -storepass trainsmart123 -keypass trainsmart123 -dname \"CN=TrainSmart, OU=TrainSmart, O=TrainSmart, L=Italy, ST=Italy, C=IT\")",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
+      "Bash(./gradlew clean:*)",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/keytool\" -genkey -v -keystore \"/c/Users/dario/OneDrive/Desktop/TrainSmart/trainsmart.keystore\" -alias trainsmart -keyalg RSA -keysize 2048 -validity 9125 -storepass TrainSmart2024 -keypass TrainSmart2024 -dname \"CN=TrainSmart, OU=TrainSmart, O=TrainSmart, L=Italy, ST=Italy, C=IT\")",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/keytool\" -list -v -keystore \"/c/Users/dario/OneDrive/Desktop/TrainSmart/trainsmart.keystore\" -storepass TrainSmart2024)",
+      "Bash(gh repo edit:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(python:*)",
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []

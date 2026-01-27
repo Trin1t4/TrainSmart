@@ -1,1 +1,0 @@
-function e(n){return Math.round(208-.7*n)}function r(n){return{min:Math.round(n*.6),max:Math.round(n*.7)}}function t(n){return n.canRun5Min?n.canRun20Min?n.canRun30Min?"advanced":"intermediate":"beginner":"sedentary"}export{t as d,e,r as g};
