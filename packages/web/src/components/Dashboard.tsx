@@ -46,6 +46,7 @@ import { useCurrentProgram, useUserPrograms, useCreateProgram, programKeys } fro
 import VideoMosaicBackground from './VideoMosaicBackground';
 import { useAppStore } from '../store/useAppStore';
 import AddRunningModal from './AddRunningModal';
+import QuickActionsGrid from './QuickActionsGrid';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -1725,101 +1726,25 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Status Cards - horizontal scroll on mobile, grid on desktop */}
-        <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8 overflow-x-auto pb-2 md:pb-0 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
-          >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
-                  {dataStatus.onboarding ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
-                  Onboarding
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                <p className="text-xs md:text-sm text-slate-400 font-medium">
-                  {dataStatus.onboarding ? (
-                    <>Goal: <span className="text-emerald-400">{dataStatus.onboarding.goal}</span></>
-                  ) : 'Non completato'}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
-          >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
-                  {completedSessions && completedSessions.total > 0
-                    ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
-                    : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
-                  }
-                  {t('dashboard.sessions') || 'Sessioni'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                {completedSessions ? (
-                  <div className="space-y-1">
-                    <p className="text-xs md:text-sm text-slate-400 font-medium">
-                      {t('dashboard.total') || 'Totale'}: <span className="text-emerald-400 font-bold">{completedSessions.total}</span>
-                    </p>
-                    {completedSessions.thisWeek > 0 && (
-                      <p className="text-xs text-slate-500">
-                        {t('dashboard.thisWeek') || 'Questa settimana'}: <span className="text-emerald-400">{completedSessions.thisWeek}</span>
-                      </p>
-                    )}
-                    {completedSessions.lastWorkoutDate && (
-                      <p className="text-xs text-slate-500">
-                        {(() => {
-                          const days = Math.floor((Date.now() - new Date(completedSessions.lastWorkoutDate).getTime()) / (1000 * 60 * 60 * 24));
-                          if (days === 0) return '🔥 Oggi';
-                          if (days === 1) return 'Ieri';
-                          return `${days}g fa`;
-                        })()}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs md:text-sm text-slate-400 font-medium">
-                    {t('common.loading') || 'Caricamento...'}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="min-w-[200px] md:min-w-0 flex-shrink-0 md:flex-shrink"
-          >
-            <Card className="bg-slate-800/60 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-emerald-500/5 hover:shadow-emerald-500/10 transition-all duration-300 h-full">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-base md:text-lg font-display flex items-center gap-2">
-                  {dataStatus.screening ? <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" /> : <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />}
-                  Screening
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                <p className="text-xs md:text-sm text-slate-400 font-medium">
-                  {dataStatus.screening ? (
-                    <>Level: <span className="text-emerald-400 font-bold">{dataStatus.screening.level?.toUpperCase()}</span></>
-                  ) : 'Non completato'}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+        {/* Quick Actions Grid - Griglia di azioni rapide */}
+        <QuickActionsGrid
+          hasProgram={hasProgram}
+          hasRunning={!!dataStatus.onboarding?.running?.enabled}
+          completedToday={completedSessions?.lastWorkoutDate
+            ? Math.floor((Date.now() - new Date(completedSessions.lastWorkoutDate).getTime()) / (1000 * 60 * 60 * 24)) === 0
+            : false
+          }
+          weeklyProgress={program?.weekly_split?.days ? {
+            completed: completedSessions?.thisWeek || 0,
+            total: program.weekly_split.days.length
+          } : undefined}
+          onStartWorkout={() => {
+            if (hasProgram) {
+              setShowProgramModal(true);
+            }
+          }}
+          onViewProgram={() => navigate('/workout')}
+        />
 
         {/* Deload Week Notification */}
         {retestSchedule && retestSchedule.phase === 'deload' && retestSchedule.deloadConfig && !showRetestDismissed && hasProgram && (
