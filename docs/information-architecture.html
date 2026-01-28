@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainSmart - Information Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.entry { background: #6366f1; }
+        .legend-dot.navbar { background: #10b981; }
+        .legend-dot.hamburger { background: #f59e0b; }
+        .legend-dot.cta { background: #ef4444; }
+
+        /* ===== TREE STYLES ===== */
+        .tree-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow-x: auto;
+            padding-bottom: 40px;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        /* Tree Level */
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+            padding: 30px 0;
+        }
+
+        .tree-level::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: #333;
+        }
+
+        .tree-level:first-child::before {
+            display: none;
+        }
+
+        /* Level Label */
+        .level-label {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.7rem;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Tree Node */
+        .tree-node {
+            position: relative;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .tree-node::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: #333;
+        }
+
+        .tree-level:first-child .tree-node::before {
+            display: none;
+        }
+
+        /* Node Box */
+        .node-box {
+            background: #1a1a24;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 16px 20px;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .node-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .node-box.entry {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #1e1e3a 0%, #1a1a24 100%);
+        }
+
+        .node-box.navbar {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #0f2922 0%, #1a1a24 100%);
+        }
+
+        .node-box.cta {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #2a1515 0%, #1a1a24 100%);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .node-box.hamburger {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #2a2210 0%, #1a1a24 100%);
+        }
+
+        .node-box.disabled {
+            opacity: 0.4;
+            border-style: dashed;
+        }
+
+        .node-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .node-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .node-path {
+            font-size: 0.7rem;
+            color: #666;
+            font-family: monospace;
+        }
+
+        /* Connector Lines */
+        .connector-line {
+            position: absolute;
+            background: #333;
+        }
+
+        .connector-horizontal {
+            height: 2px;
+            top: -30px;
+        }
+
+        /* Group wrapper for children */
+        .tree-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tree-children {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            position: relative;
+            padding-top: 30px;
+        }
+
+        .tree-children::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: #333;
+        }
+
+        /* Horizontal line connecting siblings */
+        .tree-children::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            height: 2px;
+            background: #333;
+        }
+
+        /* Section Dividers */
+        .section-divider {
+            width: 100%;
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 20px 0;
+            border-top: 1px solid #222;
+            text-align: center;
+        }
+
+        .section-divider h2 {
+            font-size: 1.4rem;
+            color: #10b981;
+            margin-bottom: 8px;
+        }
+
+        .section-divider p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Header/Navbar Preview */
+        .ui-preview {
+            max-width: 400px;
+            margin: 40px auto;
+            background: #1a1a24;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 2px solid #333;
+        }
+
+        .phone-header {
+            background: #252535;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .phone-header-icon {
+            width: 36px;
+            height: 36px;
+            background: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .phone-header-title {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .phone-content {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 0.9rem;
+        }
+
+        .phone-navbar {
+            background: #252535;
+            padding: 8px 12px 20px;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #333;
+        }
+
+        .navbar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .navbar-item.active {
+            color: #10b981;
+        }
+
+        .navbar-item.cta-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            transform: translateY(-12px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .navbar-item .icon {
+            font-size: 1.3rem;
+        }
+
+        /* Comparison Tables */
+        .comparison-section {
+            max-width: 1000px;
+            margin: 60px auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #222;
+        }
+
+        .comparison-table th {
+            background: #1a1a24;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .comparison-table tr:hover td {
+            background: #1a1a24;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge.primary { background: #10b981; color: #000; }
+        .badge.secondary { background: #333; }
+        .badge.danger { background: #ef4444; }
+        .badge.warning { background: #f59e0b; color: #000; }
+
+        /* Notes */
+        .note-box {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #1a1a24;
+            border-left: 4px solid #10b981;
+            padding: 20px 24px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .note-box h4 {
+            color: #10b981;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .note-box ul {
+            margin-left: 20px;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .note-box li {
+            margin: 6px 0;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .tree-level {
+                flex-wrap: wrap;
+            }
+            .level-label {
+                display: none;
+            }
+            .legend {
+                gap: 15px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: #444;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>TrainSmart</h1>
+    <p class="subtitle">Information Architecture - Mappa Visuale</p>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot entry"></div>
+            <span>Entry Points (pubblico)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot navbar"></div>
+            <span>Bottom Navbar</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot cta"></div>
+            <span>CTA Principale</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot hamburger"></div>
+            <span>Menu Hamburger</span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN TREE ===== -->
+    <div class="tree-container">
+        <div class="tree">
+
+            <!-- LEVEL 0: ROOT -->
+            <div class="tree-level">
+                <div class="tree-node">
+                    <div class="node-box" style="background: linear-gradient(135deg, #10b981, #059669); border-color: #10b981;">
+                        <div class="node-icon">💪</div>
+                        <div class="node-title" style="color: #000;">TrainSmart</div>
+                        <div class="node-path" style="color: rgba(0,0,0,0.5);">App Root</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEVEL 1: ENTRY vs AUTHENTICATED -->
+            <div class="tree-level" style="gap: 100px;">
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box entry">
+                            <div class="node-icon">🌐</div>
+                            <div class="node-title">Pubblico</div>
+                            <div class="node-path">Non autenticato</div>
+                        </div>
+                    </div>
+                    <!-- Children of Pubblico -->
+                    <div class="tree-children" style="gap: 12px;">
+                        <div class="tree-node">
+                            <div class="node-box entry" style="min-width: 100px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">🏠</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Landing</div>
+                                <div class="node-path">/</div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="node-box entry" style="min-width: 100px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">🔑</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Login</div>
+                                <div class="node-path">/login</div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="node-box entry" style="min-width: 100px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">✍️</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Registrati</div>
+                                <div class="node-path">/register</div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="node-box entry" style="min-width: 100px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">💰</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Pricing</div>
+                                <div class="node-path">/pricing</div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="node-box entry" style="min-width: 100px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">🎮</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Demo</div>
+                                <div class="node-path">/demo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box navbar">
+                            <div class="node-icon">🔐</div>
+                            <div class="node-title">Autenticato</div>
+                            <div class="node-path">Protected Routes</div>
+                        </div>
+                    </div>
+                    <!-- Children of Autenticato -->
+                    <div class="tree-children" style="gap: 12px;">
+                        <div class="tree-node">
+                            <div class="node-box hamburger" style="min-width: 120px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">📝</div>
+                                <div class="node-title" style="font-size: 0.8rem;">Onboarding</div>
+                                <div class="node-path">/onboarding</div>
+                            </div>
+                        </div>
+                        <div class="tree-node">
+                            <div class="node-box navbar" style="min-width: 120px; padding: 12px;">
+                                <div class="node-icon" style="font-size: 1.2rem;">📱</div>
+                                <div class="node-title" style="font-size: 0.8rem;">App Core</div>
+                                <div class="node-path">Bottom Navbar</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM NAVBAR TREE ===== -->
+    <div class="section-divider">
+        <h2>Bottom Navbar</h2>
+        <p>Le 5 sezioni principali accessibili dalla barra di navigazione</p>
+    </div>
+
+    <div class="tree-container">
+        <div class="tree">
+            <div class="tree-level" style="gap: 20px;">
+                <div class="tree-node">
+                    <div class="node-box navbar">
+                        <div class="node-icon">🏠</div>
+                        <div class="node-title">Home</div>
+                        <div class="node-path">/dashboard</div>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="node-box navbar">
+                        <div class="node-icon">📋</div>
+                        <div class="node-title">Programma</div>
+                        <div class="node-path">/workout</div>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="node-box cta">
+                        <div class="node-icon">▶️</div>
+                        <div class="node-title" style="font-size: 1.1rem;">ALLENATI</div>
+                        <div class="node-path">/workout-session</div>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="node-box navbar">
+                        <div class="node-icon">📊</div>
+                        <div class="node-title">Stats</div>
+                        <div class="node-path">/stats</div>
+                    </div>
+                </div>
+                <div class="tree-node">
+                    <div class="node-box navbar">
+                        <div class="node-icon">👤</div>
+                        <div class="node-title">Profilo</div>
+                        <div class="node-path">/profile</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HAMBURGER MENU TREE ===== -->
+    <div class="section-divider">
+        <h2>Menu Hamburger</h2>
+        <p>Sezioni secondarie accessibili dal menu laterale</p>
+    </div>
+
+    <div class="tree-container">
+        <div class="tree">
+
+            <!-- Hamburger Root -->
+            <div class="tree-level">
+                <div class="tree-node">
+                    <div class="node-box hamburger">
+                        <div class="node-icon">☰</div>
+                        <div class="node-title">Menu</div>
+                        <div class="node-path">Hamburger</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hamburger Categories -->
+            <div class="tree-level" style="gap: 60px;">
+
+                <!-- Allenamento -->
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box hamburger">
+                            <div class="node-icon">🏋️</div>
+                            <div class="node-title">Allenamento</div>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="flex-direction: column; gap: 8px; padding-top: 20px;">
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">📅 Calendario</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">🎯 Obiettivi</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">🏆 Personal Records</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">📹 Video Feedback</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment -->
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box hamburger">
+                            <div class="node-icon">🔬</div>
+                            <div class="node-title">Assessment</div>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="flex-direction: column; gap: 8px; padding-top: 20px;">
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">🔬 Screening</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">📝 Quiz Tecnica</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">💪 Test Progressioni</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">😴 Recovery Check</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community (Disabled) -->
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box hamburger disabled">
+                            <div class="node-icon">👥</div>
+                            <div class="node-title">Community</div>
+                            <div class="node-path" style="color: #f59e0b;">Coming Soon</div>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="flex-direction: column; gap: 8px; padding-top: 20px;">
+                        <div class="node-box hamburger disabled" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">👥 Feed</span>
+                        </div>
+                        <div class="node-box hamburger disabled" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">🏅 Achievements</span>
+                        </div>
+                        <div class="node-box hamburger disabled" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">📈 Leaderboard</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account -->
+                <div class="tree-group">
+                    <div class="tree-node">
+                        <div class="node-box hamburger">
+                            <div class="node-icon">⚙️</div>
+                            <div class="node-title">Account</div>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="flex-direction: column; gap: 8px; padding-top: 20px;">
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">⚙️ Impostazioni</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">💳 Abbonamento</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">📧 Contattaci</span>
+                        </div>
+                        <div class="node-box hamburger" style="padding: 10px 16px;">
+                            <span style="font-size: 0.85rem;">🚪 Esci</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MOBILE PREVIEW ===== -->
+    <div class="section-divider">
+        <h2>Preview Mobile</h2>
+        <p>Anteprima del layout header + navbar proposto</p>
+    </div>
+
+    <div class="ui-preview">
+        <div class="phone-header">
+            <div class="phone-header-icon">☰</div>
+            <div class="phone-header-title">TrainSmart</div>
+            <div class="phone-header-icon">?</div>
+        </div>
+        <div class="phone-content">
+            [ Contenuto Pagina ]
+        </div>
+        <div class="phone-navbar">
+            <div class="navbar-item active">
+                <span class="icon">🏠</span>
+                <span>Home</span>
+            </div>
+            <div class="navbar-item">
+                <span class="icon">📋</span>
+                <span>Programma</span>
+            </div>
+            <div class="navbar-item cta-button">
+                <span class="icon">▶️</span>
+                <span>ALLENATI</span>
+            </div>
+            <div class="navbar-item">
+                <span class="icon">📊</span>
+                <span>Stats</span>
+            </div>
+            <div class="navbar-item">
+                <span class="icon">👤</span>
+                <span>Profilo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== USER FLOW ===== -->
+    <div class="section-divider">
+        <h2>User Flow Principale</h2>
+        <p>Il percorso tipico dell'utente dalla registrazione all'allenamento</p>
+    </div>
+
+    <div class="tree-container">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 20px;">
+            <div class="node-box entry" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">1</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Landing</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">→</div>
+            <div class="node-box entry" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">2</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Registrazione</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">→</div>
+            <div class="node-box hamburger" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">3</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Onboarding</div>
+                <div style="font-size: 0.7rem; color: #888;">90 sec</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">→</div>
+            <div class="node-box navbar" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">4</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Dashboard</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">→</div>
+            <div class="node-box cta" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">5</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">ALLENATI</div>
+                <div style="font-size: 0.7rem; color: #fca5a5;">CTA</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">→</div>
+            <div class="node-box navbar" style="text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">6</div>
+                <div style="font-weight: 600; font-size: 0.85rem;">Stats</div>
+            </div>
+            <div style="color: #333; font-size: 1.5rem;">↺</div>
+        </div>
+    </div>
+
+    <!-- ===== CONFRONTO NAVBAR ===== -->
+    <div class="comparison-section">
+        <h2 style="color: #10b981; margin-bottom: 20px;">Confronto: Navbar Attuale vs Proposta</h2>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Posizione</th>
+                    <th>Attuale</th>
+                    <th>Proposta</th>
+                    <th>Motivazione</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1 (sx)</td>
+                    <td>Home</td>
+                    <td>Home</td>
+                    <td><span class="badge secondary">Invariato</span></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Workout</td>
+                    <td>Programma</td>
+                    <td>Rinominato per chiarezza</td>
+                </tr>
+                <tr>
+                    <td><strong>3 (centro)</strong></td>
+                    <td style="color: #ef4444;">Community</td>
+                    <td style="color: #10b981;"><strong>▶️ ALLENATI</strong></td>
+                    <td><span class="badge primary">CTA principale</span></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Stats</td>
+                    <td>Stats</td>
+                    <td><span class="badge secondary">Invariato</span></td>
+                </tr>
+                <tr>
+                    <td>5 (dx)</td>
+                    <td>Profile</td>
+                    <td>Profilo</td>
+                    <td><span class="badge secondary">Invariato</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== NOTES ===== -->
+    <div class="note-box">
+        <h4>Perché questo layout?</h4>
+        <ul>
+            <li><strong>Home a sinistra</strong>: Convenzione iOS/Android, punto di riferimento</li>
+            <li><strong>ALLENATI al centro</strong>: L'azione principale dell'app, sempre visibile e prominente</li>
+            <li><strong>Profilo a destra</strong>: Convenzione standard (Instagram, TikTok, etc.)</li>
+            <li><strong>Community nel hamburger</strong>: A zero utenti, non merita spazio nella navbar principale</li>
+        </ul>
+    </div>
+
+    <div class="note-box" style="border-color: #f59e0b;">
+        <h4 style="color: #f59e0b;">Header Proposto</h4>
+        <ul>
+            <li><strong>Hamburger (sx)</strong>: Apre drawer con menu secondario</li>
+            <li><strong>Centro</strong>: Logo TrainSmart o titolo pagina corrente</li>
+            <li><strong>Aiuto (dx)</strong>: Pannello aiuto contestuale / FAQ / Contatta supporto</li>
+        </ul>
+    </div>
+
+    <footer>
+        TrainSmart Information Architecture v2.0 - Generato il 28 Gennaio 2026
+    </footer>
+
+</body>
+</html>

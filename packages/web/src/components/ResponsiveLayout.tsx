@@ -14,44 +14,34 @@ const PAGES_WITHOUT_NAV = [
   '/login',
   '/register',
   '/onboarding',
+  '/optional-quizzes',
+  '/first-session-assessment',
   '/quiz',
+  '/quiz-full',
   '/screening',
+  '/screening-full',
   '/body-scan',
   '/workout-session', // Full-screen workout mode
   '/video-feedback',
+  '/pricing',
+  '/privacy-policy',
+  '/terms-of-service',
+  '/cookie-policy',
+  '/demo',
+  '/payment-success',
+  '/admin',
 ];
 
-// Configurazione header per pagina
-const PAGE_HEADER_CONFIG: Record<string, {
-  title?: string;
-  showBack?: boolean;
-  showMenu?: boolean;
-  showNotifications?: boolean;
-  showProfile?: boolean;
-}> = {
-  '/dashboard': {
-    title: 'Dashboard',
-    showMenu: false,
-    showNotifications: true,
-    showProfile: true,
-  },
-  '/workout': {
-    title: 'Allenamento',
-    showBack: true,
-    showNotifications: false,
-  },
-  '/stats': {
-    title: 'Statistiche',
-    showBack: false,
-  },
-  '/profile': {
-    title: 'Profilo',
-    showBack: false,
-  },
-  '/settings': {
-    title: 'Impostazioni',
-    showBack: true,
-  },
+// Titoli custom per alcune pagine
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'TrainSmart',
+  '/workout': 'Programma',
+  '/stats': 'Statistiche',
+  '/profile': 'Profilo',
+  '/settings': 'Impostazioni',
+  '/community': 'Community',
+  '/achievements': 'Achievements',
+  '/recovery-screening': 'Recovery',
 };
 
 export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
@@ -63,8 +53,8 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
     location.pathname === path || location.pathname.startsWith(path + '/')
   );
 
-  // Get header config for current page
-  const headerConfig = PAGE_HEADER_CONFIG[location.pathname];
+  // Get page title
+  const pageTitle = PAGE_TITLES[location.pathname];
 
   if (!isMobile) {
     // Desktop: render children without mobile navigation
@@ -74,9 +64,12 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   // Mobile layout
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile Header */}
-      {shouldShowNav && headerConfig && (
-        <MobileHeader {...headerConfig} />
+      {/* Mobile Header - sempre visibile quando c'è la nav */}
+      {shouldShowNav && (
+        <MobileHeader
+          title={pageTitle}
+          showLogo={!pageTitle || pageTitle === 'TrainSmart'}
+        />
       )}
 
       {/* Main Content with padding for header and bottom nav */}
@@ -84,7 +77,7 @@ export default function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         id="main-content"
         tabIndex={-1}
         className={`
-          ${shouldShowNav && headerConfig ? 'pt-14' : ''}
+          ${shouldShowNav ? 'pt-14' : ''}
           ${shouldShowNav ? 'pb-20' : ''}
           focus:outline-none
         `}

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Dumbbell, User, BarChart3, Users } from 'lucide-react';
+import { Home, ClipboardList, Play, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../lib/i18n';
 
@@ -7,7 +7,8 @@ interface NavItem {
   path: string;
   icon: React.ComponentType<{ className?: string }>;
   labelKey: string;
-  matchPaths?: string[]; // Additional paths that should highlight this tab
+  matchPaths?: string[];
+  isCTA?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -19,15 +20,16 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     path: '/workout',
-    icon: Dumbbell,
-    labelKey: 'nav.workout',
-    matchPaths: ['/workout', '/workout-session']
+    icon: ClipboardList,
+    labelKey: 'nav.program',
+    matchPaths: ['/workout']
   },
   {
-    path: '/community',
-    icon: Users,
-    labelKey: 'nav.community',
-    matchPaths: ['/community', '/achievements']
+    path: '/workout-session',
+    icon: Play,
+    labelKey: 'nav.train',
+    matchPaths: ['/workout-session'],
+    isCTA: true
   },
   {
     path: '/stats',
@@ -63,6 +65,27 @@ export default function BottomNavigation() {
           const active = isActive(item);
           const Icon = item.icon;
 
+          // CTA Button (central)
+          if (item.isCTA) {
+            return (
+              <motion.button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center justify-center -mt-4"
+                aria-label={t(item.labelKey) || 'Allenati'}
+              >
+                <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-3 shadow-lg shadow-primary/30">
+                  <Icon className="w-6 h-6 text-primary-foreground" aria-hidden="true" />
+                </div>
+                <span className="text-xs mt-1 font-semibold text-primary">
+                  {t(item.labelKey) || 'Allenati'}
+                </span>
+              </motion.button>
+            );
+          }
+
+          // Regular nav item
           return (
             <motion.button
               key={item.path}

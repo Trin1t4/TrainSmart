@@ -22,9 +22,9 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-full px-4 py-2 mb-6">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
-              <span className="text-sm text-red-400 font-medium">Basta infortuni evitabili</span>
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-2 mb-6">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-emerald-400 font-medium">Allenati senza pensieri</span>
             </div>
 
             {/* Logo/Icon */}
