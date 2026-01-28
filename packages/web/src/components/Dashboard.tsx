@@ -1084,7 +1084,7 @@ export default function Dashboard() {
     const finalLevel = betaOverrides.fitnessLevel || level;
     const finalGoal = betaOverrides.goal || goal;
     const finalLocation = betaOverrides.location || onboarding?.trainingLocation || 'gym';
-    const finalFrequency = betaOverrides.frequency || onboarding?.activityLevel?.weeklyFrequency || 3;
+    const finalFrequency = betaOverrides.frequency || onboarding?.frequency || onboarding?.activityLevel?.weeklyFrequency || 3;
     const finalSessionDuration = betaOverrides.sessionDuration || onboarding?.activityLevel?.sessionDuration;
 
     const trainingType = onboarding?.trainingType || 'bodyweight';
