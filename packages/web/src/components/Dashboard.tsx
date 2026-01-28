@@ -1726,24 +1726,19 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Quick Actions Grid - Griglia di azioni rapide */}
+        {/* Quick Actions Grid - Griglia monitoraggio progressi */}
         <QuickActionsGrid
-          hasProgram={hasProgram}
-          hasRunning={!!dataStatus.onboarding?.running?.enabled}
-          completedToday={completedSessions?.lastWorkoutDate
-            ? Math.floor((Date.now() - new Date(completedSessions.lastWorkoutDate).getTime()) / (1000 * 60 * 60 * 24)) === 0
-            : false
-          }
-          weeklyProgress={program?.weekly_split?.days ? {
-            completed: completedSessions?.thisWeek || 0,
-            total: program.weekly_split.days.length
-          } : undefined}
-          onStartWorkout={() => {
-            if (hasProgram) {
-              setShowProgramModal(true);
-            }
-          }}
-          onViewProgram={() => navigate('/workout')}
+          painAreas={dataStatus.onboarding?.painAreas?.length || 0}
+          hasPainImprovement={false}
+          strengthProgress={analytics.progression}
+          volumeProgress={Math.round((analytics.weeklyVolume / 100) * 10)}
+          totalWorkouts={completedSessions?.total || 0}
+          personalRecords={0}
+          latestPR={undefined}
+          onPainClick={() => navigate('/stats#pain')}
+          onProgressClick={() => navigate('/stats#progress')}
+          onDatabaseClick={() => navigate('/stats#history')}
+          onRecordsClick={() => navigate('/stats#records')}
         />
 
         {/* Deload Week Notification */}
