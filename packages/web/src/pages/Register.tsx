@@ -80,7 +80,7 @@ export default function Register() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/slim-onboarding`,
+          emailRedirectTo: `${window.location.origin}/onboarding`,
           data: {
             created_at: consentTimestamp,
             consents: {
@@ -128,7 +128,7 @@ export default function Register() {
         // Solo se l'email è già confermata (es. OAuth), vai all'onboarding
         if (data.user.confirmed_at) {
           setTimeout(() => {
-            navigate('/slim-onboarding');
+            navigate('/onboarding');
           }, 2000);
         }
         // Se c'è una session ma email non confermata, NON procedere

@@ -85,8 +85,8 @@ export default function Login() {
           window.location.href = "/dashboard";
         } else {
           // Nuovo utente → onboarding
-          console.log('[LOGIN] 🆕 New user → slim-onboarding');
-          window.location.href = "/slim-onboarding";
+          console.log('[LOGIN] 🆕 New user → onboarding');
+          window.location.href = "/onboarding";
         }
       } catch (err) {
         console.error('[LOGIN] Error:', err);
