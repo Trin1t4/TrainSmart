@@ -1752,7 +1752,8 @@ export default function Dashboard() {
                   if (missingOnboardingParts.includes('onboarding')) {
                     navigate('/onboarding');
                   }
-                  // Se manca interesse corsa o integrazione, vai direttamente ai quiz opzionali
+                  // ⚠️ IMPORTANTE: NON MODIFICARE - Deve andare DIRETTAMENTE a /optional-quizzes
+                  // Non passare per /onboarding altrimenti l'utente deve rifare tutto il flusso
                   else if (missingOnboardingParts.includes('running_interest') || missingOnboardingParts.includes('running_integration')) {
                     navigate('/optional-quizzes');
                   }
