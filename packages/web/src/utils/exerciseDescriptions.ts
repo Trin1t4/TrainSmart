@@ -14,6 +14,7 @@
  */
 
 import { CORRECTIVE_EXERCISE_DESCRIPTIONS } from './correctiveExerciseDescriptions';
+import { getTechnicalDescription } from './technicalExerciseDescriptions';
 
 export interface ExerciseDescription {
   description: string;
@@ -544,15 +545,15 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
 
 /**
  * Ottieni descrizione per un esercizio
- * Ritorna una descrizione di default se non trovata
+ * Cerca in ordine: EXERCISE_DESCRIPTIONS → technicalExerciseDescriptions → default
  */
 export function getExerciseDescription(exerciseName: string): ExerciseDescription {
-  // Cerca match esatto
+  // 1. Cerca match esatto in EXERCISE_DESCRIPTIONS
   if (EXERCISE_DESCRIPTIONS[exerciseName]) {
     return EXERCISE_DESCRIPTIONS[exerciseName];
   }
 
-  // Cerca match parziale (case-insensitive)
+  // 2. Cerca match parziale in EXERCISE_DESCRIPTIONS (case-insensitive)
   const lowerName = exerciseName.toLowerCase();
   for (const [key, value] of Object.entries(EXERCISE_DESCRIPTIONS)) {
     if (key.toLowerCase().includes(lowerName) || lowerName.includes(key.toLowerCase())) {
@@ -560,7 +561,33 @@ export function getExerciseDescription(exerciseName: string): ExerciseDescriptio
     }
   }
 
-  // Default DCSS-style
+  // 3. Cerca in technicalExerciseDescriptions (database esteso)
+  const techDescription = getTechnicalDescription(exerciseName);
+  if (techDescription) {
+    // Converti TechnicalExerciseDescription in ExerciseDescription
+    const primaryMuscles = techDescription.biomechanics?.primaryMuscles?.map(m => m.muscle).join(', ') || '';
+
+    return {
+      description: techDescription.nameIT +
+        (primaryMuscles ? `. Muscoli principali: ${primaryMuscles}.` : '.'),
+      technique: techDescription.coachingCues?.setup && techDescription.coachingCues?.execution
+        ? [
+            ...techDescription.coachingCues.setup.slice(0, 2),
+            ...techDescription.coachingCues.execution.slice(0, 2)
+          ]
+        : [
+            'Esegui il movimento con controllo',
+            'Concentrati sulla contrazione muscolare',
+            'Respira in modo naturale'
+          ],
+      dcssNote: techDescription.setup?.breathingPattern
+        ? `Respirazione: ${techDescription.setup.breathingPattern}`
+        : (techDescription.dcssVariability?.acceptableVariations?.[0] || 'La tecnica varia in base alle tue proporzioni individuali.'),
+      commonVariations: techDescription.dcssVariability?.acceptableVariations
+    };
+  }
+
+  // 4. Default DCSS-style (fallback finale)
   return {
     description: 'Esegui l\'esercizio con controllo, concentrandoti sul muscolo target.',
     technique: [
