@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSmart - Flusso Codice per Obiettivo</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-darker: #0a0c10;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --red: #f85149;
+      --orange: #d29922;
+      --yellow: #e3b341;
+      --green: #3fb950;
+      --blue: #58a6ff;
+      --purple: #a371f7;
+      --pink: #db61a2;
+      --cyan: #39c5cf;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-darker);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      z-index: 100;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-card);
+    }
+
+    .nav-btn.active {
+      border-color: var(--blue);
+      background: rgba(88, 166, 255, 0.1);
+    }
+
+    /* Main content */
+    .main {
+      padding: 6rem 2rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Goal Section */
+    .goal-section {
+      display: none;
+    }
+
+    .goal-section.active {
+      display: block;
+    }
+
+    /* Header */
+    .goal-header {
+      text-align: center;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.1;
+    }
+
+    .goal-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .goal-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .goal-aliases {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Flow container */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Arrow */
+    .arrow {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+
+    .arrow::before {
+      content: '';
+      width: 3px;
+      height: 40px;
+      background: var(--border);
+    }
+
+    .arrow::after {
+      content: '▼';
+      position: absolute;
+      margin-top: 32px;
+      color: var(--border);
+      font-size: 10px;
+    }
+
+    /* Step card */
+    .step {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .step-number {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--purple);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .step-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .step-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* File */
+    .file {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      border-left: 3px solid var(--blue);
+    }
+
+    .file-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .file-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--cyan);
+    }
+
+    .file-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .file-line {
+      font-size: 0.7rem;
+      color: var(--yellow);
+      font-family: monospace;
+    }
+
+    /* Code block */
+    .code {
+      background: var(--bg-darker);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+    }
+
+    .code .fn { color: var(--green); }
+    .code .str { color: var(--yellow); }
+    .code .num { color: var(--orange); }
+    .code .key { color: var(--purple); }
+    .code .comment { color: var(--text-muted); }
+
+    /* Params table */
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+
+    .params-table th,
+    .params-table td {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .params-table th {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .params-table .label {
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .heavy { background: rgba(248, 81, 73, 0.2); color: #fca5a5; }
+    .moderate { background: rgba(210, 153, 34, 0.2); color: #fcd34d; }
+    .volume { background: rgba(63, 185, 80, 0.2); color: #86efac; }
+
+    /* DUP visual */
+    .dup-grid {
+      display: grid;
+      grid-template-columns: 150px repeat(auto-fit, minmax(80px, 1fr));
+      gap: 4px;
+      margin: 1rem 0;
+    }
+
+    .dup-cell {
+      padding: 0.5rem;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .dup-header {
+      background: rgba(255,255,255,0.05);
+      font-weight: 700;
+    }
+
+    .dup-pattern {
+      text-align: left;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .dup-h { background: var(--red); color: white; }
+    .dup-m { background: var(--orange); color: black; }
+    .dup-v { background: var(--green); color: black; }
+
+    /* Specific colors per goal */
+    .goal-forza .goal-header { background: linear-gradient(135deg, rgba(248, 81, 73, 0.2), rgba(248, 81, 73, 0.05)); }
+    .goal-forza .step-number { background: var(--red); }
+
+    .goal-ipertrofia .goal-header { background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(163, 113, 247, 0.05)); }
+    .goal-ipertrofia .step-number { background: var(--purple); }
+
+    .goal-dimagrimento .goal-header { background: linear-gradient(135deg, rgba(63, 185, 80, 0.2), rgba(63, 185, 80, 0.05)); }
+    .goal-dimagrimento .step-number { background: var(--green); }
+
+    .goal-resistenza .goal-header { background: linear-gradient(135deg, rgba(57, 197, 207, 0.2), rgba(57, 197, 207, 0.05)); }
+    .goal-resistenza .step-number { background: var(--cyan); }
+
+    .goal-benessere .goal-header { background: linear-gradient(135deg, rgba(227, 179, 65, 0.2), rgba(227, 179, 65, 0.05)); }
+    .goal-benessere .step-number { background: var(--yellow); }
+
+    .goal-sport .goal-header { background: linear-gradient(135deg, rgba(210, 153, 34, 0.2), rgba(210, 153, 34, 0.05)); }
+    .goal-sport .step-number { background: var(--orange); }
+
+    .goal-gravidanza .goal-header { background: linear-gradient(135deg, rgba(219, 97, 162, 0.2), rgba(219, 97, 162, 0.05)); }
+    .goal-gravidanza .step-number { background: var(--pink); }
+
+    .goal-recovery .goal-header { background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(88, 166, 255, 0.05)); }
+    .goal-recovery .step-number { background: var(--blue); }
+
+    /* Info box */
+    .info-box {
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .info-box-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Warning box */
+    .warning-box {
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .warning-box-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Branch visual */
+    .branches {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .branch {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .branch-title {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .branch-content {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Summary card */
+    .summary {
+      background: var(--bg-darker);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .summary-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .summary-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+    }
+
+    .summary-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .summary-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-btn active" data-goal="forza">💪 Forza</button>
+  <button class="nav-btn" data-goal="ipertrofia">🏋️ Ipertrofia</button>
+  <button class="nav-btn" data-goal="dimagrimento">🔥 Dimagrimento</button>
+  <button class="nav-btn" data-goal="resistenza">🏃 Resistenza</button>
+  <button class="nav-btn" data-goal="benessere">🧘 Benessere</button>
+  <button class="nav-btn" data-goal="sport">⚽ Sport</button>
+  <button class="nav-btn" data-goal="gravidanza">🤰 Gravidanza</button>
+  <button class="nav-btn" data-goal="recovery">🔄 Recovery</button>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- FORZA -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-forza active" id="forza">
+  <div class="goal-header">
+    <div class="goal-icon">💪</div>
+    <div class="goal-title">FORZA</div>
+    <div class="goal-aliases">Alias: "forza", "strength"</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-number">STEP 1</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Utente seleziona "Forza"</div>
+          <div class="step-subtitle">GoalStep.tsx riceve la selezione</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">components/onboarding/GoalStep.tsx</div>
+          <div class="file-desc">UI selezione goal</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">onNext</span>({
+  <span class="key">goal</span>: <span class="str">'forza'</span>,
+  <span class="key">goals</span>: [<span class="str">'forza'</span>]
+})
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-number">STEP 2</div>
+      <div class="step-header">
+        <div class="step-icon">🔄</div>
+        <div>
+          <div class="step-title">Normalizzazione Goal</div>
+          <div class="step-subtitle">Il goal viene normalizzato in formato canonico</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/goalMapper.ts</div>
+          <div class="file-desc">toCanonicalGoal(), getGoalConfig()</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">toCanonicalGoal</span>(<span class="str">'forza'</span>) <span class="comment">// → 'strength'</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'Forza'</span>) <span class="comment">// → 'strength' (case insensitive)</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'strength'</span>) <span class="comment">// → 'strength'</span>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Goal Config per Forza</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Focus: Massimizzare 1RM</li>
+          <li>Superset: DISABILITATI (serve recupero completo)</li>
+          <li>Progression: Wave loading</li>
+          <li>Rest periods: 3-5 minuti</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">⚡</div>
+        <div>
+          <div class="step-title">DUP Distribution</div>
+          <div class="step-subtitle">getIntensityForPattern() determina Heavy/Moderate/Volume</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/weeklySplitGenerator.ts</div>
+          <div class="file-desc">getIntensityForPattern() - linea 648</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">⚡ DUP per FORZA - Frequenza 3</div>
+      </div>
+
+      <div class="dup-grid">
+        <div class="dup-cell dup-header">Pattern</div>
+        <div class="dup-cell dup-header">G1</div>
+        <div class="dup-cell dup-header">G2</div>
+        <div class="dup-cell dup-header">G3</div>
+
+        <div class="dup-cell dup-pattern">🦵 Squat</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-m">MOD</div>
+
+        <div class="dup-cell dup-pattern">🦵 Stacco</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+        <div class="dup-cell dup-m">MOD</div>
+
+        <div class="dup-cell dup-pattern">💪 Panca</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-m">MOD</div>
+
+        <div class="dup-cell dup-pattern">💪 Row</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+
+        <div class="dup-cell dup-pattern">🙌 Military</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+
+        <div class="dup-cell dup-pattern">🙌 Lat</div>
+        <div class="dup-cell dup-m">MOD</div>
+        <div class="dup-cell dup-h">HEAVY</div>
+        <div class="dup-cell dup-m">MOD</div>
+
+        <div class="dup-cell dup-pattern">🎯 Core</div>
+        <div class="dup-cell dup-v">VOL</div>
+        <div class="dup-cell dup-v">VOL</div>
+        <div class="dup-cell dup-v">VOL</div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-number">STEP 4</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+          <div class="step-subtitle">Calcolo sets/reps/rest SPECIFICO per FORZA</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">calculateVolumeWeighted() - linea 2638</div>
+          <div class="file-line">if (goalLower === 'forza' || goalLower === 'strength')</div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div class="warning-box-header">⚠️ FORZA usa range FISSI (non baseline)</div>
+        <div style="font-size: 0.85rem;">
+          Per evitare che tutti i giorni abbiano le stesse reps, FORZA ignora il baseline e usa valori fissi per dayType.
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>4×5 @ 80-85%</td>
+            <td>5×4 @ 85-92%</td>
+            <td>6×3 @ 85-92%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>4×6 @ 75-80%</td>
+            <td>4×5 @ 75-80%</td>
+            <td>5×5 @ 75-80%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>3×10 @ 70-75%</td>
+            <td>4×8 @ 70-75%</td>
+            <td>4×8 @ 70-75%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code">
+<span class="comment">// FORZA - Heavy Day</span>
+<span class="key">sets</span> = level === <span class="str">'beginner'</span> ? <span class="num">4</span> : level === <span class="str">'intermediate'</span> ? <span class="num">5</span> : <span class="num">6</span>;
+<span class="key">reps</span> = level === <span class="str">'beginner'</span> ? <span class="num">5</span> : level === <span class="str">'intermediate'</span> ? <span class="num">4</span> : <span class="num">3</span>;
+<span class="key">rest</span> = <span class="str">'3-5min'</span>;
+<span class="key">intensity</span> = level === <span class="str">'beginner'</span> ? <span class="str">'80-85%'</span> : <span class="str">'85-92%'</span>;
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-number">STEP 5</div>
+      <div class="step-header">
+        <div class="step-icon">🔧</div>
+        <div>
+          <div class="step-title">Logiche Specifiche FORZA</div>
+          <div class="step-subtitle">File aggiuntivi che entrano in gioco</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → shouldUseSupersets()</div>
+          <div class="file-desc">Ritorna FALSE per forza (no superset)</div>
+          <div class="file-line">if (['strength', 'forza'].includes(normalizedGoal)) return { use: false }</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → getProgressionType()</div>
+          <div class="file-desc">Ritorna 'wave' per forza</div>
+          <div class="file-line">if (goal === 'strength' || goal === 'forza') return 'wave';</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → INTENSIFICATION_TECHNIQUES</div>
+          <div class="file-desc">Cluster sets, Rest-pause (solo advanced)</div>
+          <div class="file-line">if (['strength', 'forza'].includes(goalLower) && level === 'advanced')</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo FORZA</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">3-5</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">5-6</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">8-10</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">3-5min</div>
+        <div class="summary-label">Rest Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">❌</div>
+        <div class="summary-label">Superset</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">Wave</div>
+        <div class="summary-label">Progression</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- IPERTROFIA -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-ipertrofia" id="ipertrofia">
+  <div class="goal-header">
+    <div class="goal-icon">🏋️</div>
+    <div class="goal-title">IPERTROFIA</div>
+    <div class="goal-aliases">Alias: "massa", "massa muscolare", "muscle_gain", "ipertrofia", "hypertrophy"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Utente seleziona "Ipertrofia"</div>
+          <div class="step-subtitle">GoalStep.tsx riceve la selezione</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">components/onboarding/GoalStep.tsx</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">onNext</span>({
+  <span class="key">goal</span>: <span class="str">'ipertrofia'</span>,
+  <span class="key">goals</span>: [<span class="str">'ipertrofia'</span>]
+})
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 2</div>
+      <div class="step-header">
+        <div class="step-icon">🔄</div>
+        <div>
+          <div class="step-title">Normalizzazione Goal</div>
+          <div class="step-subtitle">Supporta molti alias italiani e inglesi</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/goalMapper.ts</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">toCanonicalGoal</span>(<span class="str">'ipertrofia'</span>) <span class="comment">// → 'hypertrophy'</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'massa'</span>) <span class="comment">// → 'hypertrophy'</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'muscle_gain'</span>) <span class="comment">// → 'hypertrophy'</span>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Goal Config per Ipertrofia</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Focus: Massimizzare volume e TUT (Time Under Tension)</li>
+          <li>Superset: ABILITATI (antagonisti per volume)</li>
+          <li>Progression: Double progression</li>
+          <li>Rest periods: 60-120 secondi</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">⚡</div>
+        <div>
+          <div class="step-title">DUP Distribution</div>
+          <div class="step-subtitle">Stessa distribuzione, parametri diversi</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/weeklySplitGenerator.ts</div>
+          <div class="file-desc">getIntensityForPattern() - stessa logica DUP</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Nota</div>
+        <div style="font-size: 0.85rem;">
+          La distribuzione DUP (Heavy/Moderate/Volume) è la STESSA per tutti i goal.<br>
+          Cambia solo COME vengono calcolati i parametri (sets/reps/rest).
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 4</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+          <div class="step-subtitle">Parametri SPECIFICI per IPERTROFIA</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">calculateVolumeWeighted() - linea 2684</div>
+          <div class="file-line">if (goalLower === 'massa' || goalLower === 'ipertrofia' || ...)</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">💡 IPERTROFIA usa workingReps dal baseline</div>
+        <div style="font-size: 0.85rem;">
+          A differenza di FORZA, ipertrofia calcola le reps dal baseline dell'utente (75% del max).
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>3×6-8 @ 80-85%</td>
+            <td>4×6-8 @ 80-85%</td>
+            <td>5×6-8 @ 80-85%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>3×8-12 @ 70-80%</td>
+            <td>4×8-12 @ 70-80%</td>
+            <td>5×8-12 @ 70-80%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>4×10-15 @ 65-70%</td>
+            <td>5×10-15 @ 65-70%</td>
+            <td>6×10-15 @ 65-70%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code">
+<span class="comment">// IPERTROFIA - Volume Day (esempio)</span>
+<span class="key">sets</span> = level === <span class="str">'beginner'</span> ? <span class="num">4</span> : level === <span class="str">'intermediate'</span> ? <span class="num">5</span> : <span class="num">6</span>;
+<span class="key">reps</span> = Math.<span class="fn">max</span>(<span class="num">10</span>, Math.<span class="fn">min</span>(workingReps, <span class="num">15</span>));
+<span class="key">rest</span> = <span class="str">'60-75s'</span>;
+<span class="key">intensity</span> = <span class="str">'65-70%'</span>;
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 5</div>
+      <div class="step-header">
+        <div class="step-icon">🔧</div>
+        <div>
+          <div class="step-title">Logiche Specifiche IPERTROFIA</div>
+          <div class="step-subtitle">File aggiuntivi attivati</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → shouldUseSupersets()</div>
+          <div class="file-desc">Ritorna TRUE - superset antagonisti per volume</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → INTENSIFICATION_TECHNIQUES</div>
+          <div class="file-desc">Rest-pause, Drop sets, Mechanical drop sets</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → TUT_TECHNIQUES</div>
+          <div class="file-desc">Eccentric focus, Isometric holds</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo IPERTROFIA</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">6-8</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">8-12</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">10-15</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">60-120s</div>
+        <div class="summary-label">Rest</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">✅</div>
+        <div class="summary-label">Superset</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">Double</div>
+        <div class="summary-label">Progression</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- DIMAGRIMENTO -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-dimagrimento" id="dimagrimento">
+  <div class="goal-header">
+    <div class="goal-icon">🔥</div>
+    <div class="goal-title">DIMAGRIMENTO</div>
+    <div class="goal-aliases">Alias: "fat_loss", "tonificazione", "dimagrimento", "definizione"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1-2</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Selezione e Normalizzazione</div>
+          <div class="step-subtitle">GoalStep.tsx → goalMapper.ts</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">toCanonicalGoal</span>(<span class="str">'dimagrimento'</span>) <span class="comment">// → 'fat_loss'</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'tonificazione'</span>) <span class="comment">// → 'fat_loss'</span>
+<span class="fn">toCanonicalGoal</span>(<span class="str">'definizione'</span>) <span class="comment">// → 'fat_loss'</span>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Goal Config per Dimagrimento</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Focus: Massimizzare densità e dispendio calorico</li>
+          <li>Superset: ABILITATI (antagonisti per efficienza metabolica)</li>
+          <li>Rest periods: 45-90 secondi (corti)</li>
+          <li>Reps: più alte per consumo calorico</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+          <div class="step-subtitle">Parametri SPECIFICI per DIMAGRIMENTO</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">Linea 2706</div>
+          <div class="file-line">if (goalLower === 'fat_loss' || goalLower === 'tonificazione' || ...)</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>3×8-10 @ 75-80%</td>
+            <td>4×8-10 @ 75-80%</td>
+            <td>4×8-10 @ 75-80%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>3×10-12 @ 70-75%</td>
+            <td>4×10-12 @ 70-75%</td>
+            <td>4×10-12 @ 70-75%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>4×12-15 @ 60-70%</td>
+            <td>5×12-15 @ 60-70%</td>
+            <td>5×12-15 @ 60-70%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code">
+<span class="comment">// DIMAGRIMENTO - Volume Day</span>
+<span class="key">rest</span> = <span class="str">'45-60s'</span>; <span class="comment">// Rest CORTI per densità</span>
+<span class="key">notes</span> = <span class="str">'Volume - Consumo calorico'</span>;
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 4</div>
+      <div class="step-header">
+        <div class="step-icon">🔧</div>
+        <div>
+          <div class="step-title">Logiche Specifiche</div>
+          <div class="step-subtitle">Superset antagonisti per efficienza</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → shouldUseSupersets()</div>
+          <div class="file-desc">Ritorna { use: true, type: 'antagonist' }</div>
+          <div class="file-line">if (['fat_loss', 'dimagrimento', 'toning', 'tonificazione'].includes(normalizedGoal))</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo DIMAGRIMENTO</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">8-10</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">10-12</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">12-15</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">45-90s</div>
+        <div class="summary-label">Rest</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">✅</div>
+        <div class="summary-label">Superset</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">Lineare</div>
+        <div class="summary-label">Progression</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- RESISTENZA -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-resistenza" id="resistenza">
+  <div class="goal-header">
+    <div class="goal-icon">🏃</div>
+    <div class="goal-title">RESISTENZA</div>
+    <div class="goal-aliases">Alias: "endurance", "resistenza"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1-2</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Selezione e Normalizzazione</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">toCanonicalGoal</span>(<span class="str">'resistenza'</span>) <span class="comment">// → 'endurance'</span>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Goal Config per Resistenza</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Focus: Capacità aerobica e resistenza muscolare</li>
+          <li>Reps: ALTE (12-20+)</li>
+          <li>Rest: CORTI (30-60s)</li>
+          <li>Intensità: BASSA (55-70%)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">Linea 2728</div>
+          <div class="file-line">if (goalLower === 'endurance' || goalLower === 'resistenza')</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>3×12-15 @ 65-70%</td>
+            <td>4×12-15 @ 65-70%</td>
+            <td>4×12-15 @ 65-70%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>3×12-18 @ 60-70%</td>
+            <td>4×12-18 @ 60-70%</td>
+            <td>4×12-18 @ 60-70%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>3×15-20 @ 55-65%</td>
+            <td>4×15-20 @ 55-65%</td>
+            <td>5×15-20 @ 55-65%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo RESISTENZA</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">12-15</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">12-18</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">15-20</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">30-60s</div>
+        <div class="summary-label">Rest</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- BENESSERE -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-benessere" id="benessere">
+  <div class="goal-header">
+    <div class="goal-icon">🧘</div>
+    <div class="goal-title">BENESSERE</div>
+    <div class="goal-aliases">Alias: "general_fitness", "benessere"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1-2</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Selezione e Normalizzazione</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">ℹ️ Goal Config per Benessere</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Focus: Bilanciamento tra forza, resistenza e mobilità</li>
+          <li>Range MEDI per tutto</li>
+          <li>Approccio conservativo e sicuro</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">Linea 2750</div>
+          <div class="file-line">if (goalLower === 'general_fitness' || goalLower === 'benessere')</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>Beginner</th>
+            <th>Intermediate</th>
+            <th>Advanced</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>3×6-10 @ 75-80%</td>
+            <td>4×6-10 @ 75-80%</td>
+            <td>4×6-10 @ 75-80%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>3×8-12 @ 70-78%</td>
+            <td>4×8-12 @ 70-78%</td>
+            <td>4×8-12 @ 70-78%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>3×10-15 @ 65-75%</td>
+            <td>4×10-15 @ 65-75%</td>
+            <td>4×10-15 @ 65-75%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo BENESSERE</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">6-10</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">8-12</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">10-15</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">60-90s</div>
+        <div class="summary-label">Rest</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- SPORT -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-sport" id="sport">
+  <div class="goal-header">
+    <div class="goal-icon">⚽</div>
+    <div class="goal-title">SPORT PERFORMANCE</div>
+    <div class="goal-aliases">Alias: "sport_performance", "prestazioni_sportive"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1</div>
+      <div class="step-header">
+        <div class="step-icon">🎯</div>
+        <div>
+          <div class="step-title">Selezione Sport</div>
+          <div class="step-subtitle">Richiede selezione sport specifico</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">components/onboarding/GoalStep.tsx</div>
+          <div class="file-desc">Mostra selector sport + ruolo + fase stagionale</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">onNext</span>({
+  <span class="key">goal</span>: <span class="str">'prestazioni_sportive'</span>,
+  <span class="key">sport</span>: <span class="str">'calcio'</span>,
+  <span class="key">sportRole</span>: <span class="str">'centrocampista'</span>,
+  <span class="key">seasonPhase</span>: <span class="str">'pre_season'</span>
+})
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 2</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">calculateVolumeWeighted()</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">Linea 2772</div>
+          <div class="file-line">if (goalLower === 'sport_performance' || goalLower === 'prestazioni_sportive')</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Day Type</th>
+            <th>All Levels</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="heavy">
+            <td class="label">🔴 HEAVY</td>
+            <td>4×4-6 @ 80-85%</td>
+          </tr>
+          <tr class="moderate">
+            <td class="label">🟠 MODERATE</td>
+            <td>4×6-10 @ 70-80%</td>
+          </tr>
+          <tr class="volume">
+            <td class="label">🟢 VOLUME</td>
+            <td>4×10-15 @ 65-75%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo SPORT</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--red);">4-6</div>
+        <div class="summary-label">Reps Heavy</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--orange);">6-10</div>
+        <div class="summary-label">Reps Moderate</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" style="color: var(--green);">10-15</div>
+        <div class="summary-label">Reps Volume</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">90-120s</div>
+        <div class="summary-label">Rest</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- GRAVIDANZA -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-gravidanza" id="gravidanza">
+  <div class="goal-header">
+    <div class="goal-icon">🤰</div>
+    <div class="goal-title">GRAVIDANZA</div>
+    <div class="goal-aliases">Alias: "pregnancy", "gravidanza"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1</div>
+      <div class="step-header">
+        <div class="step-icon">⚠️</div>
+        <div>
+          <div class="step-title">Goal Speciale - Safety First</div>
+          <div class="step-subtitle">Attiva file di sicurezza aggiuntivi</div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div class="warning-box-header">⚠️ Popolazione Speciale</div>
+        <div style="font-size: 0.85rem;">
+          Il goal GRAVIDANZA attiva logiche di sicurezza specifiche che limitano intensità e esercizi.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 2</div>
+      <div class="step-header">
+        <div class="step-icon">🛡️</div>
+        <div>
+          <div class="step-title">Safety Caps Attivati</div>
+          <div class="step-subtitle">File aggiuntivi che entrano in gioco</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">packages/shared/src/utils/pregnancySafety.ts</div>
+          <div class="file-desc">File SPECIFICO per gravidanza</div>
+          <div class="file-line">filterExerciseForPregnancy(), applyPregnancyIntensityCap()</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">weeklySplitGenerator.ts → createExercise()</div>
+          <div class="file-desc">Applica cap PRIMA di altri calcoli</div>
+          <div class="file-line">if (isPregnancyGoal(goal)) { effectiveDayType = applyPregnancyIntensityCap() }</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-header">🛡️ Gravidanza - Caps Applicati</div>
+        <ul style="font-size: 0.85rem; margin-left: 1rem;">
+          <li>Heavy → Moderate (niente heavy)</li>
+          <li>Intensità max: 65%</li>
+          <li>Esercizi supini eliminati (2° trimestre+)</li>
+          <li>Core modificato (no crunch classici)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 3</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">Parametri Fissi</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → calculateVolumeWeighted()</div>
+          <div class="file-desc">Linea 2801</div>
+          <div class="file-line">if (goalLower === 'pregnancy' || goalLower === 'gravidanza')</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Parametro</th>
+            <th>Valore</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Sets</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td class="label">Reps</td>
+            <td>10-15</td>
+          </tr>
+          <tr>
+            <td class="label">Intensità</td>
+            <td>50-65%</td>
+          </tr>
+          <tr>
+            <td class="label">Rest</td>
+            <td>90-120s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo GRAVIDANZA</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value">3</div>
+        <div class="summary-label">Sets</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">10-15</div>
+        <div class="summary-label">Reps</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">50-65%</div>
+        <div class="summary-label">Intensità MAX</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">❌</div>
+        <div class="summary-label">Heavy Day</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MOTOR RECOVERY -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<section class="goal-section goal-recovery" id="recovery">
+  <div class="goal-header">
+    <div class="goal-icon">🔄</div>
+    <div class="goal-title">MOTOR RECOVERY</div>
+    <div class="goal-aliases">Alias: "motor_recovery", "recupero_motorio"</div>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-number">STEP 1</div>
+      <div class="step-header">
+        <div class="step-icon">⚠️</div>
+        <div>
+          <div class="step-title">Goal Speciale - Redirect Screening</div>
+          <div class="step-subtitle">Flusso diverso dagli altri goal</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">Onboarding.tsx → handleStepComplete()</div>
+          <div class="file-desc">Redirect a /recovery-screening invece di /quiz</div>
+          <div class="file-line">if (data.goal === 'motor_recovery') navigate('/recovery-screening');</div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div class="warning-box-header">⚠️ Flusso Speciale</div>
+        <div style="font-size: 0.85rem;">
+          Motor Recovery ha uno screening dedicato che valuta limitazioni specifiche.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="step">
+      <div class="step-number">STEP 2</div>
+      <div class="step-header">
+        <div class="step-icon">📊</div>
+        <div>
+          <div class="step-title">Parametri Conservativi</div>
+        </div>
+      </div>
+
+      <div class="file">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">programGenerator.ts → calculateVolumeWeighted()</div>
+          <div class="file-desc">Linea 2794</div>
+          <div class="file-line">if (goalLower === 'motor_recovery' || goalLower === 'recupero_motorio')</div>
+        </div>
+      </div>
+
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th class="label">Parametro</th>
+            <th>Valore</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Sets</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td class="label">Reps</td>
+            <td>8-12</td>
+          </tr>
+          <tr>
+            <td class="label">Intensità</td>
+            <td>60-70%</td>
+          </tr>
+          <tr>
+            <td class="label">Rest</td>
+            <td>90-120s</td>
+          </tr>
+          <tr>
+            <td class="label">Note</td>
+            <td>Recupero motorio - Focus tecnica</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="summary">
+    <div class="summary-title">📋 Riepilogo MOTOR RECOVERY</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value">3</div>
+        <div class="summary-label">Sets</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">8-12</div>
+        <div class="summary-label">Reps</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">60-70%</div>
+        <div class="summary-label">Intensità</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value">Tecnica</div>
+        <div class="summary-label">Focus</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+  // Navigation
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update buttons
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Update sections
+      const goalId = btn.dataset.goal;
+      document.querySelectorAll('.goal-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(goalId).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

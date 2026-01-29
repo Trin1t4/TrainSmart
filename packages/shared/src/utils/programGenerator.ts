@@ -795,9 +795,13 @@ export const ADAPTIVE_PROGRESSION = {
 
   // Logica di selezione progressione
   selectProgression: (level: string, goal: string, experience: number) => {
+    const goalLower = (goal || '').toLowerCase();
     if (level === 'beginner') return 'linear';
-    if (goal === 'strength' || goal === 'forza') return 'wave';
-    if (goal === 'muscle_gain' || goal === 'ipertrofia') return 'double_progression';
+    if (goalLower === 'strength' || goalLower === 'forza') return 'wave';
+    if (goalLower === 'muscle_gain' || goalLower === 'ipertrofia' || goalLower === 'massa' || goalLower === 'hypertrophy') return 'double_progression';
+    if (goalLower === 'fat_loss' || goalLower === 'dimagrimento' || goalLower === 'tonificazione' || goalLower === 'toning') return 'linear';
+    if (goalLower === 'endurance' || goalLower === 'resistenza') return 'linear';
+    if (goalLower === 'wellness' || goalLower === 'benessere' || goalLower === 'general_fitness') return 'linear';
     if (experience > 24) return 'autoregulated'; // 24+ mesi
     return 'double_progression';
   }
@@ -3289,11 +3293,13 @@ interface MetabolicCircuitOutput {
  * Determina se usare circuito metabolico e in che modalità
  */
 function determineCircuitMode(goal: string, userPreferences?: any): { mode: 'finisher' | 'standalone' | 'none'; position: string } {
-  if (goal === 'fat_loss' || goal === 'dimagrimento') {
+  const goalLower = (goal || '').toLowerCase();
+
+  if (goalLower === 'fat_loss' || goalLower === 'dimagrimento' || goalLower === 'definizione') {
     return { mode: 'standalone', position: 'main' };
   }
 
-  if (goal === 'toning' || goal === 'tonificazione') {
+  if (goalLower === 'toning' || goalLower === 'tonificazione') {
     return { mode: 'finisher', position: 'end' };
   }
 
@@ -3447,8 +3453,9 @@ export function generateMetabolicCircuit(input: MetabolicCircuitInput): Metaboli
 
   const mode = circuitMode.mode;
 
-  // 2. Configurazione da GOAL_CONFIGS
-  const goalConfig = GOAL_CONFIGS[goal] || GOAL_CONFIGS.fat_loss;
+  // 2. Configurazione da GOAL_CONFIGS (normalizza goal per lookup)
+  const goalKeyLookup = (goal || 'fat_loss').toLowerCase();
+  const goalConfig = GOAL_CONFIGS[goalKeyLookup] || GOAL_CONFIGS.fat_loss;
   const config = goalConfig.metabolicCircuit || goalConfig.metabolicFinisher || {
     rpeTarget: 8,
     timeoutMax: { beginner: 45, intermediate: 60, advanced: 75 },
@@ -3911,14 +3918,17 @@ export function generateProgramAPI(input: any): any {
 
   console.log('[PROGRAM] ENTRY POINT:', { level, frequency, location, goal, sportRole });
 
+  // Normalizza goal per confronti sicuri
+  const goalLowerBranch = (goal || '').toLowerCase();
+
   // RAMO 1: MOTOR RECOVERY
-  if (goal === 'motor_recovery' || goal === 'rehabilitation' || goal === 'recupero_motorio') {
+  if (goalLowerBranch === 'motor_recovery' || goalLowerBranch === 'rehabilitation' || goalLowerBranch === 'recupero_motorio') {
     console.log('[PROGRAM] BRANCHING → MOTOR RECOVERY');
     return generateMotorRecoveryProgram({ level, painAreas, location, goal });
   }
 
   // RAMO 2: PERFORMANCE
-  if (goal === 'performance' || goal === 'sport_performance') {
+  if (goalLowerBranch === 'performance' || goalLowerBranch === 'sport_performance' || goalLowerBranch === 'prestazioni_sportive') {
     console.log('[PROGRAM] BRANCHING → PERFORMANCE');
     return generatePerformanceProgram({
       level,
@@ -4322,13 +4332,24 @@ function generateStandardProgram(input: any): any {
 
   const includesDeload = level === 'intermediate' || level === 'advanced';
   const deloadFrequency = includesDeload ? 4 : undefined;
-  const requiresEndCycleTest = goal === 'strength' || goal === 'muscle_gain' || goal === 'performance';
 
-  let totalWeeks = 4;
-  if (goal === 'strength') totalWeeks = 8;
-  else if (goal === 'muscle_gain') totalWeeks = 12;
-  else if (goal === 'performance') totalWeeks = 8;
-  else if (goal === 'toning' || goal === 'tonificazione') totalWeeks = 8;
+  // Normalizza goal per confronti sicuri
+  const goalLowerForWeeks = (goal || '').toLowerCase();
+  const requiresEndCycleTest = ['strength', 'forza', 'muscle_gain', 'ipertrofia', 'massa', 'hypertrophy', 'performance', 'sport_performance'].includes(goalLowerForWeeks);
+
+  // totalWeeks per TUTTI i goal
+  let totalWeeks = 8; // default ragionevole
+  if (goalLowerForWeeks === 'strength' || goalLowerForWeeks === 'forza') totalWeeks = 8;
+  else if (goalLowerForWeeks === 'muscle_gain' || goalLowerForWeeks === 'ipertrofia' || goalLowerForWeeks === 'massa' || goalLowerForWeeks === 'hypertrophy') totalWeeks = 12;
+  else if (goalLowerForWeeks === 'fat_loss' || goalLowerForWeeks === 'dimagrimento' || goalLowerForWeeks === 'definizione') totalWeeks = 8;
+  else if (goalLowerForWeeks === 'toning' || goalLowerForWeeks === 'tonificazione') totalWeeks = 8;
+  else if (goalLowerForWeeks === 'endurance' || goalLowerForWeeks === 'resistenza') totalWeeks = 6;
+  else if (goalLowerForWeeks === 'wellness' || goalLowerForWeeks === 'benessere' || goalLowerForWeeks === 'general_fitness') totalWeeks = 6;
+  else if (goalLowerForWeeks === 'performance' || goalLowerForWeeks === 'sport_performance' || goalLowerForWeeks === 'prestazioni_sportive') totalWeeks = 8;
+  else if (goalLowerForWeeks === 'motor_recovery' || goalLowerForWeeks === 'recupero_motorio') totalWeeks = 6;
+  else if (goalLowerForWeeks === 'pregnancy' || goalLowerForWeeks === 'gravidanza') totalWeeks = 6;
+  else if (goalLowerForWeeks === 'post_partum' || goalLowerForWeeks === 'postpartum' || goalLowerForWeeks === 'postnatal') totalWeeks = 8;
+  else if (goalLowerForWeeks === 'disability' || goalLowerForWeeks === 'disabilita') totalWeeks = 6;
 
   return {
     name: `Programma ${split.toUpperCase()} - ${level}`,
@@ -4360,21 +4381,23 @@ function generateWeeklyScheduleAPI(
 ): any[] {
   const schedule: any[] = [];
   const baseLoad = getBaseLoads(assessments || []);
-  const goalConfig = GOAL_CONFIGS[goal] || GOAL_CONFIGS.muscle_gain;
+  // Normalizza goal per lookup sicuro
+  const goalLowerAPI = (goal || 'muscle_gain').toLowerCase();
+  const goalConfig = GOAL_CONFIGS[goalLowerAPI] || GOAL_CONFIGS.muscle_gain;
   const config = LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG] || LEVEL_CONFIG.intermediate;
 
   const safeExercise = (name: string): string => {
     // Gravidanza: controlli più restrittivi
-    if (goal === 'pregnancy' || goal === 'gravidanza') {
+    if (goalLowerAPI === 'pregnancy' || goalLowerAPI === 'gravidanza') {
       return isExerciseSafeForPregnancy(name) ? name : getPregnancySafeAlternative(name);
     }
     // Post-partum: stessi controlli della gravidanza (fase delicata)
-    if (goal === 'post_partum' || goal === 'postpartum') {
+    if (goalLowerAPI === 'post_partum' || goalLowerAPI === 'postpartum' || goalLowerAPI === 'postnatal') {
       return isExerciseSafeForPregnancy(name) ? name : getPregnancySafeAlternative(name);
     }
     // Disabilità e recupero motorio: evita esercizi complessi e ad impatto
-    if (goal === 'disability' || goal === 'disabilita' ||
-        goal === 'motor_recovery' || goal === 'recupero_motorio') {
+    if (goalLowerAPI === 'disability' || goalLowerAPI === 'disabilita' ||
+        goalLowerAPI === 'motor_recovery' || goalLowerAPI === 'recupero_motorio') {
       return isExerciseSafeForDisability(name, disabilityType) ? name : getDisabilitySafeAlternative(name);
     }
     return name;

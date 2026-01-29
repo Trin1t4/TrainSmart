@@ -371,7 +371,8 @@ function validateFrequency(
   }
 
   // Goal specifici richiedono frequenze specifiche
-  if (goal === 'gravidanza' && frequency > 3) {
+  const goalLowerVal = (goal || '').toLowerCase();
+  if ((goalLowerVal === 'gravidanza' || goalLowerVal === 'pregnancy') && frequency > 3) {
     warnings.push({
       code: 'PREGNANCY_FREQUENCY',
       field: 'frequency',

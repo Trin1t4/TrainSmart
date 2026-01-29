@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSmart - Albero Genealogico del Codice</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-hover: #1f2937;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --line: #3b82f6;
+      --red: #f85149;
+      --orange: #d29922;
+      --yellow: #e3b341;
+      --green: #3fb950;
+      --blue: #58a6ff;
+      --purple: #a371f7;
+      --pink: #db61a2;
+      --cyan: #39c5cf;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+    }
+
+    /* Tree container */
+    .genealogy-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Vertical connector */
+    .v-connector {
+      width: 3px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--line), var(--line));
+      position: relative;
+    }
+
+    .v-connector::after {
+      content: '▼';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--line);
+      font-size: 12px;
+    }
+
+    /* Main node */
+    .node {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 800px;
+      width: 100%;
+      position: relative;
+    }
+
+    .node-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .node-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .node-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .node-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Phase badge */
+    .phase-badge {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--purple);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Files list */
+    .files-section {
+      margin-top: 1rem;
+    }
+
+    .files-header {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .file-item:hover {
+      background: var(--bg-hover);
+      transform: translateX(4px);
+    }
+
+    .file-icon {
+      font-size: 1.25rem;
+    }
+
+    .file-info {
+      flex: 1;
+    }
+
+    .file-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--cyan);
+    }
+
+    .file-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .file-line {
+      font-size: 0.7rem;
+      color: var(--yellow);
+      font-family: monospace;
+    }
+
+    /* Branches */
+    .branches {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .branch {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .branch-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .branch-icon {
+      font-size: 1.25rem;
+    }
+
+    .branch-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .branch-content {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .branch-file {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--green);
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    /* User action */
+    .user-action {
+      background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1));
+      border: 1px dashed var(--blue);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-action-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .user-action-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Trigger indicator */
+    .trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: var(--purple);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    /* Data flow */
+    .data-flow {
+      background: rgba(57, 197, 207, 0.1);
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .data-flow-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cyan);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .data-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      font-size: 0.8rem;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+    }
+
+    .data-key {
+      color: var(--text-muted);
+    }
+
+    .data-value {
+      font-family: monospace;
+      color: var(--yellow);
+    }
+
+    /* Colors per phase */
+    .phase-onboarding { border-color: var(--blue); }
+    .phase-onboarding .node-icon { background: rgba(88, 166, 255, 0.2); }
+    .phase-onboarding .phase-badge { background: var(--blue); }
+
+    .phase-screening { border-color: var(--purple); }
+    .phase-screening .node-icon { background: rgba(163, 113, 247, 0.2); }
+    .phase-screening .phase-badge { background: var(--purple); }
+
+    .phase-generation { border-color: var(--green); }
+    .phase-generation .node-icon { background: rgba(63, 185, 80, 0.2); }
+    .phase-generation .phase-badge { background: var(--green); }
+
+    .phase-core { border-color: var(--red); }
+    .phase-core .node-icon { background: rgba(248, 81, 73, 0.2); }
+    .phase-core .phase-badge { background: var(--red); }
+
+    .phase-output { border-color: var(--orange); }
+    .phase-output .node-icon { background: rgba(210, 153, 34, 0.2); }
+    .phase-output .phase-badge { background: var(--orange); }
+
+    /* File border colors */
+    .file-active { border-left-color: var(--green); }
+    .file-import { border-left-color: var(--blue); }
+    .file-util { border-left-color: var(--purple); }
+    .file-storage { border-left-color: var(--orange); }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    /* Horizontal split */
+    .h-split {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .h-split > .node {
+      flex: 1;
+    }
+
+    /* H connector */
+    .h-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 800px;
+      position: relative;
+      height: 60px;
+    }
+
+    .h-connector-line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--line);
+    }
+
+    .h-connector-down {
+      position: absolute;
+      width: 3px;
+      height: 30px;
+      background: var(--line);
+    }
+
+    .h-connector-down.left { left: 25%; top: 50%; }
+    .h-connector-down.right { right: 25%; top: 50%; }
+    .h-connector-down.center { left: 50%; top: 50%; transform: translateX(-50%); }
+
+    /* Nested tree */
+    .nested-tree {
+      margin-left: 2rem;
+      padding-left: 1rem;
+      border-left: 2px dashed var(--border);
+    }
+
+    .nested-item {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      position: relative;
+    }
+
+    .nested-item::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      width: 1rem;
+      height: 2px;
+      background: var(--border);
+    }
+
+    .nested-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nested-file {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      margin-top: 0.25rem;
+    }
+
+    /* Function call */
+    .fn-call {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin: 0.5rem 0;
+      color: var(--yellow);
+    }
+
+    .fn-call .fn-name {
+      color: var(--green);
+    }
+
+    .fn-call .fn-params {
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌳 Albero Genealogico del Codice</h1>
+<p class="subtitle">Come i file entrano in gioco durante il flusso utente</p>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-color" style="background: var(--green);"></div>
+    <span>File Attivo (esegue)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: var(--blue);"></div>
+    <span>File Importato</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: var(--purple);"></div>
+    <span>Utility/Helper</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: var(--orange);"></div>
+    <span>Storage (localStorage/Supabase)</span>
+  </div>
+</div>
+
+<div class="genealogy-tree">
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- PHASE 1: ONBOARDING START -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-onboarding">
+    <div class="phase-badge">FASE 1</div>
+    <div class="node-header">
+      <div class="node-icon">🚀</div>
+      <div>
+        <div class="node-title">Utente Avvia Onboarding</div>
+        <div class="node-subtitle">L'utente arriva per la prima volta o resetta il profilo</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Naviga a /onboarding o viene redirectato automaticamente</div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/teamflow/src/pages/Onboarding.tsx</div>
+          <div class="file-desc">Componente principale che orchestra tutti gli step</div>
+          <div class="file-line">277 linee • Entry point onboarding</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- STEP: LOCATION SELECTION -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-onboarding">
+    <div class="phase-badge">STEP 5</div>
+    <div class="node-header">
+      <div class="node-icon">📍</div>
+      <div>
+        <div class="node-title">Selezione Location</div>
+        <div class="node-subtitle">L'utente sceglie dove si allenerà</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Seleziona: <strong>🏋️ Palestra</strong> | <strong>🏠 Casa</strong> | <strong>🏠🏋️ Home Gym</strong></div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/onboarding/LocationStep.tsx</div>
+          <div class="file-desc">UI per selezione location e attrezzatura</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">🏋️</span>
+          <span class="branch-title">Se "Palestra"</span>
+        </div>
+        <div class="branch-content">
+          <code>trainingLocation = 'gym'</code><br>
+          <code>trainingType = 'equipment'</code><br>
+          → Accesso a: pesi, macchine, cavi
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">🏠</span>
+          <span class="branch-title">Se "Casa"</span>
+        </div>
+        <div class="branch-content">
+          <code>trainingLocation = 'home'</code><br>
+          → Mostra selezione attrezzatura<br>
+          → <code>trainingType</code> dipende da equipment
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">🏠🏋️</span>
+          <span class="branch-title">Se "Home Gym"</span>
+        </div>
+        <div class="branch-content">
+          <code>trainingLocation = 'home_gym'</code><br>
+          <code>trainingType = 'equipment'</code><br>
+          → Accesso completo
+        </div>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="data-flow-header">💾 Dati Salvati</div>
+      <div class="data-item">
+        <span class="data-key">trainingLocation</span>
+        <span class="data-value">'gym' | 'home' | 'home_gym'</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">trainingType</span>
+        <span class="data-value">'bodyweight' | 'equipment'</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">equipment</span>
+        <span class="data-value">{ pullupBar, dumbbell, barbell, ... }</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- STEP: FREQUENCY SELECTION -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-onboarding">
+    <div class="phase-badge">STEP 6</div>
+    <div class="node-header">
+      <div class="node-icon">📅</div>
+      <div>
+        <div class="node-title">Selezione Frequenza</div>
+        <div class="node-subtitle">Quanti giorni a settimana e durata sessione</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Seleziona: <strong>2-7 giorni/settimana</strong> e <strong>30-90 min/sessione</strong></div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/onboarding/ActivityStep.tsx</div>
+          <div class="file-desc">UI per selezione frequenza e durata</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">2️⃣</span>
+          <span class="branch-title">2 giorni</span>
+        </div>
+        <div class="branch-content">
+          → Split: Full Body A/B<br>
+          → DUP: 3 heavy per giorno
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">3️⃣</span>
+          <span class="branch-title">3 giorni</span>
+        </div>
+        <div class="branch-content">
+          → Split: Full Body A/B/C<br>
+          → DUP: 2 heavy per giorno
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">4️⃣</span>
+          <span class="branch-title">4+ giorni</span>
+        </div>
+        <div class="branch-content">
+          → Split: Upper/Lower o PPL<br>
+          → DUP: 1 heavy per giorno
+        </div>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="data-flow-header">💾 Dati Salvati</div>
+      <div class="data-item">
+        <span class="data-key">weeklyFrequency</span>
+        <span class="data-value">2 | 3 | 4 | 5 | 6 | 7</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">sessionDuration</span>
+        <span class="data-value">30 | 45 | 60 | 75 | 90</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- STEP: GOAL SELECTION -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-onboarding">
+    <div class="phase-badge">STEP 7</div>
+    <div class="node-header">
+      <div class="node-icon">🎯</div>
+      <div>
+        <div class="node-title">Selezione Obiettivo</div>
+        <div class="node-subtitle">L'utente sceglie il suo goal principale</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Seleziona obiettivo: Forza, Ipertrofia, Dimagrimento, ecc.</div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/onboarding/GoalStep.tsx</div>
+          <div class="file-desc">UI per selezione goal (sport, ruolo, fase)</div>
+        </div>
+      </div>
+
+      <div class="file-item file-import">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/utils/goalMapper.ts</div>
+          <div class="file-desc">Normalizzazione goal (IT↔EN, alias)</div>
+          <div class="file-line">→ toCanonicalGoal(), getGoalConfig()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">💪</span>
+          <span class="branch-title">Forza</span>
+        </div>
+        <div class="branch-content">
+          <code>goal = 'forza'</code><br>
+          → Reps basse (3-6)<br>
+          → Rest lunghi (3-5min)
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">🏋️</span>
+          <span class="branch-title">Ipertrofia</span>
+        </div>
+        <div class="branch-content">
+          <code>goal = 'ipertrofia'</code><br>
+          → Reps medie (6-12)<br>
+          → Rest moderati (60-90s)
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-header">
+          <span class="branch-icon">🔥</span>
+          <span class="branch-title">Dimagrimento</span>
+        </div>
+        <div class="branch-content">
+          <code>goal = 'fat_loss'</code><br>
+          → Reps alte (10-15)<br>
+          → Rest corti (45-60s)
+        </div>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="data-flow-header">💾 Dati Salvati</div>
+      <div class="data-item">
+        <span class="data-key">goal</span>
+        <span class="data-value">'forza' | 'ipertrofia' | 'fat_loss' | ...</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">sport</span>
+        <span class="data-value">(opzionale) 'calcio' | 'basket' | ...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- ONBOARDING COMPLETE - SAVE -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-onboarding">
+    <div class="phase-badge">SALVATAGGIO</div>
+    <div class="node-header">
+      <div class="node-icon">💾</div>
+      <div>
+        <div class="node-title">Onboarding Completato</div>
+        <div class="node-subtitle">Salvataggio dati e redirect a Screening</div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">Onboarding.tsx → handleStepComplete()</div>
+          <div class="file-desc">Salva tutti i dati raccolti</div>
+          <div class="file-line">Linee 95-144</div>
+        </div>
+      </div>
+
+      <div class="file-item file-storage">
+        <span class="file-icon">💿</span>
+        <div class="file-info">
+          <div class="file-name">localStorage['onboarding_data']</div>
+          <div class="file-desc">Salvataggio locale per accesso rapido</div>
+        </div>
+      </div>
+
+      <div class="file-item file-storage">
+        <span class="file-icon">☁️</span>
+        <div class="file-info">
+          <div class="file-name">Supabase: user_profiles</div>
+          <div class="file-desc">Persistenza cloud (onboarding_data JSONB)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fn-call">
+      <span class="fn-name">localStorage.setItem</span>(<span class="fn-params">'onboarding_data', JSON.stringify(data)</span>)
+    </div>
+    <div class="fn-call">
+      <span class="fn-name">supabase.from('user_profiles').upsert</span>(<span class="fn-params">{ user_id, onboarding_data }</span>)
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- PHASE 2: SCREENING -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-screening">
+    <div class="phase-badge">FASE 2</div>
+    <div class="node-header">
+      <div class="node-icon">🎯</div>
+      <div>
+        <div class="node-title">Screening / Assessment</div>
+        <div class="node-subtitle">Test pratici per determinare baseline e livello</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Esegue test per ogni pattern: Squat, Deadlift, Bench, Pull-up, ecc.</div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/web/src/pages/Screening.tsx</div>
+          <div class="file-desc">Pagina principale screening</div>
+          <div class="file-line">130 linee • Carica onboarding_data</div>
+        </div>
+      </div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/ScreeningFlow.tsx</div>
+          <div class="file-desc">Flusso test pattern per pattern</div>
+          <div class="file-line">600+ linee • Core testing logic</div>
+        </div>
+      </div>
+
+      <div class="file-item file-import">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/assessment/WarmupGuide.tsx</div>
+          <div class="file-desc">Guida warmup pre-test (se necessario)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="data-flow-header">💾 Output Screening</div>
+      <div class="data-item">
+        <span class="data-key">baselines.lower_push</span>
+        <span class="data-value">{ weight: 80, reps: 8, rm1: 100 }</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">baselines.lower_pull</span>
+        <span class="data-value">{ weight: 100, reps: 6, rm1: 120 }</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">baselines.horizontal_push</span>
+        <span class="data-value">{ weight: 60, reps: 10, rm1: 80 }</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">quizScore</span>
+        <span class="data-value">0-100 (conoscenza teorica)</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">practicalScore</span>
+        <span class="data-value">0-100 (performance pratica)</span>
+      </div>
+    </div>
+
+    <div class="file-item file-storage" style="margin-top: 1rem;">
+      <span class="file-icon">💿</span>
+      <div class="file-info">
+        <div class="file-name">localStorage['screening_data']</div>
+        <div class="file-desc">Salvataggio baselines e scores</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- PHASE 3: DASHBOARD - PROGRAM GENERATION TRIGGER -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-generation">
+    <div class="phase-badge">FASE 3</div>
+    <div class="node-header">
+      <div class="node-icon">📊</div>
+      <div>
+        <div class="node-title">Dashboard - Generazione Programma</div>
+        <div class="node-subtitle">Trigger della generazione scheda</div>
+      </div>
+    </div>
+
+    <div class="user-action">
+      <div class="user-action-header">👤 Azione Utente</div>
+      <div class="user-action-desc">Click su <strong>"Genera Programma"</strong> o auto-generazione se primo accesso</div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/web/src/components/Dashboard.tsx</div>
+          <div class="file-desc">Dashboard principale - orchestratore</div>
+          <div class="file-line">3000+ linee • generateLocalProgram() linea 1150</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fn-call">
+      <span class="fn-name">generateLocalProgram</span>() → {<br>
+      &nbsp;&nbsp;// 1. Carica onboarding_data da localStorage<br>
+      &nbsp;&nbsp;// 2. Carica screening_data da localStorage<br>
+      &nbsp;&nbsp;// 3. Chiama funzioni shared<br>
+      }
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- CORE: INFERENCE + VALIDATION -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-core">
+    <div class="phase-badge">CORE 1</div>
+    <div class="node-header">
+      <div class="node-icon">🔧</div>
+      <div>
+        <div class="node-title">Inferenza Baselines Mancanti</div>
+        <div class="node-subtitle">Se alcuni pattern non sono stati testati, vengono inferiti</div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/lib/baselineInferenceService.ts</div>
+          <div class="file-desc">Inferisce baselines da pattern correlati</div>
+          <div class="file-line">400+ linee • inferMissingBaselines() linea 200</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fn-call">
+      <span class="fn-name">inferMissingBaselines</span>(<span class="fn-params">rawBaselines, userBodyweight, level</span>)<br>
+      // vertical_pull ← horizontal_push × 0.80<br>
+      // horizontal_pull ← vertical_pull × 0.85
+    </div>
+
+    <div class="files-section" style="margin-top: 1rem;">
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/utils/validators.ts</div>
+          <div class="file-desc">Validazione e normalizzazione pain areas</div>
+          <div class="file-line">→ validateAndNormalizePainAreas()</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- CORE: PROGRAM GENERATOR -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-core">
+    <div class="phase-badge">CORE 2</div>
+    <div class="node-header">
+      <div class="node-icon">⚙️</div>
+      <div>
+        <div class="node-title">generateProgramWithSplit()</div>
+        <div class="node-subtitle">Funzione principale di generazione</div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Attivati</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/utils/programGenerator.ts</div>
+          <div class="file-desc">Generatore principale programmi</div>
+          <div class="file-line">3500+ linee • generateProgramWithSplit() linea 3533</div>
+        </div>
+      </div>
+
+      <div class="file-item file-import">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/utils/programValidation.ts</div>
+          <div class="file-desc">Validazione input e runtime adaptation</div>
+          <div class="file-line">→ validateProgramInput(), adaptWorkoutToRuntime()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fn-call">
+      <span class="fn-name">generateProgramWithSplit</span>({<br>
+      &nbsp;&nbsp;level, goal, location, frequency,<br>
+      &nbsp;&nbsp;baselines, painAreas, equipment, ...<br>
+      })
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- CORE: WEEKLY SPLIT GENERATOR - THE HEART -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-core" style="border-width: 3px;">
+    <div class="phase-badge">⭐ CUORE</div>
+    <div class="node-header">
+      <div class="node-icon">🫀</div>
+      <div>
+        <div class="node-title">generateWeeklySplit()</div>
+        <div class="node-subtitle">IL CUORE - Genera la struttura settimanale con tutti gli esercizi</div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Principale</div>
+
+      <div class="file-item file-active" style="border-left-width: 5px;">
+        <span class="file-icon">🫀</span>
+        <div class="file-info">
+          <div class="file-name">packages/shared/src/utils/weeklySplitGenerator.ts</div>
+          <div class="file-desc">CUORE della generazione - 3000 linee di logica</div>
+          <div class="file-line">getIntensityForPattern() linea 648 • createExercise() linea 2174</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 File Importati da weeklySplitGenerator</div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">📊</span>
+        <div class="file-info">
+          <div class="file-name">programGenerator.ts → calculateVolume()</div>
+          <div class="file-desc">Calcola sets/reps/rest per goal e dayType</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🩹</span>
+        <div class="file-info">
+          <div class="file-name">painManagement.ts</div>
+          <div class="file-desc">isExerciseConflicting(), applyPainDeload(), findSafeAlternative()</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🔄</span>
+        <div class="file-info">
+          <div class="file-name">locationAdapter.ts</div>
+          <div class="file-desc">adaptExercisesForLocation() - GYM ↔ HOME conversion</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">📝</span>
+        <div class="file-info">
+          <div class="file-name">exerciseVariants.ts</div>
+          <div class="file-desc">getVariantForPattern(), getProgressedBodyweightVariant()</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🔀</span>
+        <div class="file-info">
+          <div class="file-name">exerciseMapping.ts</div>
+          <div class="file-desc">convertToMachineVariant() - se macchine disponibili</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">⬆️</span>
+        <div class="file-info">
+          <div class="file-name">exerciseProgression.ts</div>
+          <div class="file-desc">getUpgradedExercise() - progressione bodyweight</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🎯</span>
+        <div class="file-info">
+          <div class="file-name">goalMapper.ts</div>
+          <div class="file-desc">toCanonicalGoal(), getGoalConfig()</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🛡️</span>
+        <div class="file-info">
+          <div class="file-name">safetyCaps.ts</div>
+          <div class="file-desc">calculateSafetyLimits(), applySafetyCapSimple()</div>
+        </div>
+      </div>
+
+      <div class="file-item file-util">
+        <span class="file-icon">🤰</span>
+        <div class="file-info">
+          <div class="file-name">pregnancySafety.ts</div>
+          <div class="file-desc">filterExerciseForPregnancy(), applyPregnancyIntensityCap()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nested-tree" style="margin-top: 1rem;">
+      <div class="files-header">🌳 Flusso Interno</div>
+
+      <div class="nested-item">
+        <div class="nested-title">1️⃣ Seleziona Split Template</div>
+        <div class="nested-file">frequency → UPP | ULPPL | Upper/Lower</div>
+      </div>
+
+      <div class="nested-item">
+        <div class="nested-title">2️⃣ Per ogni giorno: getIntensityForPattern()</div>
+        <div class="nested-file">pattern + dayIndex + frequency → 'heavy' | 'moderate' | 'volume'</div>
+      </div>
+
+      <div class="nested-item">
+        <div class="nested-title">3️⃣ createExercise(pattern, baseline, dayType)</div>
+        <div class="nested-file">→ calculateVolume() → { sets, reps, rest, intensity }</div>
+      </div>
+
+      <div class="nested-item">
+        <div class="nested-title">4️⃣ applyPainDeload(exercise, painAreas)</div>
+        <div class="nested-file">Se conflitto → riduce carico o sostituisce</div>
+      </div>
+
+      <div class="nested-item">
+        <div class="nested-title">5️⃣ adaptExercisesForLocation(exercises, location)</div>
+        <div class="nested-file">Se home → converte varianti bodyweight</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-connector"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- OUTPUT -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <div class="node phase-output">
+    <div class="phase-badge">OUTPUT</div>
+    <div class="node-header">
+      <div class="node-icon">✅</div>
+      <div>
+        <div class="node-title">Programma Generato</div>
+        <div class="node-subtitle">Salvataggio e visualizzazione</div>
+      </div>
+    </div>
+
+    <div class="files-section">
+      <div class="files-header">📂 Output Structure</div>
+
+      <div class="file-item file-storage">
+        <span class="file-icon">💿</span>
+        <div class="file-info">
+          <div class="file-name">localStorage['program_data']</div>
+          <div class="file-desc">Cache locale per accesso rapido</div>
+        </div>
+      </div>
+
+      <div class="file-item file-storage">
+        <span class="file-icon">☁️</span>
+        <div class="file-info">
+          <div class="file-name">Supabase: programs</div>
+          <div class="file-desc">Persistenza cloud (program_data JSONB)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-flow">
+      <div class="data-flow-header">📦 Struttura Output</div>
+      <div class="data-item">
+        <span class="data-key">weeks[]</span>
+        <span class="data-value">Array di 8 settimane</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">weeks[n].days[]</span>
+        <span class="data-value">DayWorkout[] per ogni giorno</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">days[n].exercises[]</span>
+        <span class="data-value">Exercise[] con sets/reps/rest</span>
+      </div>
+      <div class="data-item">
+        <span class="data-key">exercise.dayType</span>
+        <span class="data-value">'heavy' | 'moderate' | 'volume'</span>
+      </div>
+    </div>
+
+    <div class="files-section" style="margin-top: 1rem;">
+      <div class="files-header">📂 Visualizzazione UI</div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/WeeklySplitView.tsx</div>
+          <div class="file-desc">Visualizza la scheda settimanale</div>
+        </div>
+      </div>
+
+      <div class="file-item file-active">
+        <span class="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name">components/LiveWorkoutSession.tsx</div>
+          <div class="file-desc">Sessione workout live</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.85rem;">
+  TrainSmart © 2024 - Albero Genealogico del Codice v1.0<br>
+  <span style="color: var(--cyan);">docs/code-flow-genealogy.html</span>
+</footer>
+
+</body>
+</html>

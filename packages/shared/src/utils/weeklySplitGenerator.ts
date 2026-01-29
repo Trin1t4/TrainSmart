@@ -2694,16 +2694,23 @@ function adaptWorkoutToTimeLimit(
       if (match) restSeconds = parseInt(match[1]);
     }
 
+    // Normalizza goal per confronti sicuri
+    const goalLowerCheck = (goal || '').toLowerCase();
+
     // Identifica tipo di lavoro
-    if (goal === 'forza' || goal === 'strength') {
+    if (goalLowerCheck === 'forza' || goalLowerCheck === 'strength') {
       // FORZA: basse reps (≤6), alto rest (≥120s), alta intensità (≥80%)
       return reps <= 6 || restSeconds >= 120 || intensityStr.includes('85') || intensityStr.includes('90');
     }
-    else if (goal === 'massa' || goal === 'ipertrofia' || goal === 'hypertrophy') {
+    else if (goalLowerCheck === 'massa' || goalLowerCheck === 'ipertrofia' || goalLowerCheck === 'hypertrophy' || goalLowerCheck === 'muscle_gain' || goalLowerCheck === 'massa muscolare') {
       // IPERTROFIA: reps moderate (8-15), rest medio (60-120s)
       return reps >= 8 && reps <= 15 && restSeconds >= 60 && restSeconds <= 120;
     }
-    else if (goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'resistenza' || goal === 'endurance') {
+    else if (goalLowerCheck === 'fat_loss' || goalLowerCheck === 'tonificazione' || goalLowerCheck === 'dimagrimento' || goalLowerCheck === 'definizione' || goalLowerCheck === 'toning') {
+      // DIMAGRIMENTO: reps medio-alte (10-15), rest breve (≤75s)
+      return reps >= 10 || restSeconds <= 75;
+    }
+    else if (goalLowerCheck === 'resistenza' || goalLowerCheck === 'endurance') {
       // RESISTENZA: alte reps (≥12), rest breve (≤60s)
       return reps >= 12 || restSeconds <= 60;
     }
