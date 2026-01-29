@@ -13,10 +13,6 @@ import WorkoutLogger from './WorkoutLogger';
 import LiveWorkoutSession from './LiveWorkoutSession';
 import RunningSessionView, { RunningCompletionData } from './RunningSessionView';
 import { RecoveryScreening, RecoveryData } from '../pages/RecoveryScreening';
-import PainTrackingChart from './PainTrackingChart';
-import StrengthProgressChart from './StrengthProgressChart';
-import ScientificProgressPanel from './ScientificProgressPanel';
-import AllTimePersonalRecords from './AllTimePersonalRecords';
 import DeloadSuggestionModal from './DeloadSuggestionModal';
 import RetestNotification from './RetestNotification';
 import DeloadWeekNotification from './DeloadWeekNotification';
@@ -46,6 +42,7 @@ import { useCurrentProgram, useUserPrograms, useCreateProgram, programKeys } fro
 import VideoMosaicBackground from './VideoMosaicBackground';
 import { useAppStore } from '../store/useAppStore';
 import AddRunningModal from './AddRunningModal';
+import QuickActionsGrid from './QuickActionsGrid';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -1772,6 +1769,21 @@ export default function Dashboard() {
           </motion.div>
         )}
 
+        {/* Quick Actions Grid - Griglia monitoraggio progressi */}
+        <QuickActionsGrid
+          painAreas={dataStatus.onboarding?.painAreas?.length || 0}
+          hasPainImprovement={false}
+          strengthProgress={analytics.progression}
+          volumeProgress={Math.round((analytics.weeklyVolume / 100) * 10)}
+          totalWorkouts={completedSessions?.total || 0}
+          personalRecords={0}
+          latestPR={undefined}
+          onPainClick={() => navigate('/stats#pain')}
+          onProgressClick={() => navigate('/stats#progress')}
+          onDatabaseClick={() => navigate('/stats#history')}
+          onRecordsClick={() => navigate('/stats#records')}
+        />
+
         {/* Deload Week Notification */}
         {retestSchedule && retestSchedule.phase === 'deload' && retestSchedule.deloadConfig && !showRetestDismissed && hasProgram && (
           <DeloadWeekNotification
@@ -1931,27 +1943,6 @@ export default function Dashboard() {
               setCycleScreeningDismissed(true);
             }}
           />
-        )}
-
-        {/* Pain & Progress Charts - Separated */}
-        {hasProgram && (program?.user_id || dataStatus.screening?.userId) && (
-          <div className="space-y-4 mb-6 md:mb-8">
-            {/* Grafico Dolore - Separato */}
-            <PainTrackingChart userId={program?.user_id || dataStatus.screening?.userId || ''} />
-
-            {/* Grafico Progressione Forza - Separato */}
-            <StrengthProgressChart userId={program?.user_id || dataStatus.screening?.userId || ''} />
-
-            {/* Pannello Progressi Scientifici - Singolo Esercizio */}
-            <ScientificProgressPanel
-              userId={program?.user_id || dataStatus.screening?.userId || ''}
-              userWeight={dataStatus.screening?.weight || 75}
-              userGender={dataStatus.screening?.gender === 'female' ? 'F' : 'M'}
-            />
-
-            {/* Tutti i Personal Records - Vista Riassuntiva */}
-            <AllTimePersonalRecords userId={program?.user_id || dataStatus.screening?.userId || ''} />
-          </div>
         )}
 
         {/* Main Program Card */}
