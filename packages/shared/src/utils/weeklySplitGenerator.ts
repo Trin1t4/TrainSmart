@@ -541,35 +541,77 @@ function enrichExercisesWithWeights(
 }
 
 /**
- * ============================================================================
- * DUP INTRA-GIORNATA (Daily Undulating Periodization)
- * ============================================================================
- *
- * FILOSOFIA: Ogni giorno contiene MIX di stimoli (heavy/moderate/volume)
- * distribuiti su pattern DIVERSI con ROTAZIONE tra giorni.
- *
- * - Ordine per sforzo: prima HEAVY, poi MODERATE, poi VOLUME
- * - Rotazione: ogni pattern cambia tipo tra un giorno e l'altro
- * - Adattamento per obiettivo: più heavy per forza, più volume per ipertrofia
- * - Adattamento per frequenza: 2gg meno varietà, 4+gg più varietà
+ * ╔══════════════════════════════════════════════════════════════════════════════╗
+ * ║                    DUP - DAILY UNDULATING PERIODIZATION                      ║
+ * ║                         🔒 LOGICA SCOLPITA NELLA PIETRA 🔒                    ║
+ * ╠══════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                              ║
+ * ║  PRINCIPIO FONDAMENTALE:                                                     ║
+ * ║  - NON fare un giorno intero con carichi pesanti → affatica troppo il SNC    ║
+ * ║  - Ogni giorno ha un MIX di intensità distribuite tra gli esercizi          ║
+ * ║  - Tutti i 6 compound devono avere il loro momento HEAVY ogni settimana     ║
+ * ║                                                                              ║
+ * ╠══════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                              ║
+ * ║  📅 FREQUENZA 2 (2 giorni/settimana)                                         ║
+ * ║  ────────────────────────────────────                                        ║
+ * ║  → 3 heavy per giorno (bilanciati push/pull/lower)                          ║
+ * ║                                                                              ║
+ * ║  GIORNO 1: Squat + Panca + Lat ──────────────────────────────→ HEAVY        ║
+ * ║            Stacco, Military, Row, Core ──────────────────────→ MODERATE     ║
+ * ║                                                                              ║
+ * ║  GIORNO 2: Stacco + Military + Row ──────────────────────────→ HEAVY        ║
+ * ║            Squat, Panca, Lat, Core ──────────────────────────→ MODERATE     ║
+ * ║                                                                              ║
+ * ╠══════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                              ║
+ * ║  📅 FREQUENZA 3 (3 giorni/settimana)                                         ║
+ * ║  ────────────────────────────────────                                        ║
+ * ║  → 2 heavy per giorno (1 lower + 1 upper, oppure 2 upper)                   ║
+ * ║                                                                              ║
+ * ║  GIORNO 1: Squat + Panca ────────────────────────────────────→ HEAVY        ║
+ * ║            Stacco, Military, Lat, Row, Core ─────────────────→ MODERATE     ║
+ * ║                                                                              ║
+ * ║  GIORNO 2: Stacco + Lat ─────────────────────────────────────→ HEAVY        ║
+ * ║            Squat, Panca, Military, Row, Core ────────────────→ MODERATE     ║
+ * ║                                                                              ║
+ * ║  GIORNO 3: Military + Row ───────────────────────────────────→ HEAVY        ║
+ * ║            Squat, Stacco, Panca, Lat, Core ──────────────────→ MODERATE     ║
+ * ║                                                                              ║
+ * ╠══════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                              ║
+ * ║  📅 FREQUENZA 4+ (4+ giorni/settimana)                                       ║
+ * ║  ─────────────────────────────────────                                       ║
+ * ║  → 1 heavy per giorno, ruotando tra i compound principali                   ║
+ * ║  → Squat, Stacco, Panca ruotano come heavy                                  ║
+ * ║  → Gli altri alternano moderate/volume                                       ║
+ * ║                                                                              ║
+ * ╠══════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                              ║
+ * ║  🎯 RANGE RIPETIZIONI PER GOAL "FORZA":                                      ║
+ * ║  ──────────────────────────────────────                                      ║
+ * ║  HEAVY:    3-5 reps   @ 80-92% ──→ Forza massimale                          ║
+ * ║  MODERATE: 5-6 reps   @ 75-80% ──→ Forza dinamica                           ║
+ * ║  VOLUME:   8-10 reps  @ 70-75% ──→ Forza-ipertrofia                         ║
+ * ║                                                                              ║
+ * ║  ⚠️  Core e Correttivi: SEMPRE volume (no stress SNC)                        ║
+ * ║                                                                              ║
+ * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
 
-// Matrice di rotazione DUP per 3 giorni (base)
-// Ogni pattern ha una sequenza di tipi che ruota
+// Matrice di rotazione DUP (usata come fallback per frequenze non standard)
 const DUP_ROTATION_MATRIX: Record<string, ('heavy' | 'moderate' | 'volume')[]> = {
-  // Lower body: alternanza antagonista
-  lower_push:      ['heavy', 'moderate', 'volume'],    // Squat: H -> M -> V
-  lower_pull:      ['moderate', 'heavy', 'moderate'],  // Stacco: M -> H -> M
+  // COMPOUND PRINCIPALI: ruotano heavy uno alla volta
+  lower_push:      ['heavy', 'moderate', 'volume'],    // Squat: HEAVY solo Giorno 1
+  lower_pull:      ['moderate', 'heavy', 'moderate'],  // Stacco: HEAVY solo Giorno 2
+  horizontal_push: ['volume', 'moderate', 'heavy'],    // Panca: HEAVY solo Giorno 3
 
-  // Upper push: bench e military si alternano
-  horizontal_push: ['heavy', 'moderate', 'volume'],    // Panca: H -> M -> V
-  vertical_push:   ['moderate', 'heavy', 'moderate'],  // Military: M -> H -> M
+  // COMPOUND SECONDARI: mai heavy, alternano moderate/volume
+  vertical_push:   ['moderate', 'volume', 'moderate'],  // Military: mai heavy (spalle fragili)
+  vertical_pull:   ['volume', 'moderate', 'volume'],    // Lat: mai heavy, focus volume
+  horizontal_pull: ['moderate', 'volume', 'moderate'],  // Row: mai heavy, supporto
 
-  // Upper pull: lat e row si alternano
-  vertical_pull:   ['moderate', 'volume', 'heavy'],    // Lat: M -> V -> H
-  horizontal_pull: ['volume', 'moderate', 'heavy'],    // Row: V -> M -> H
-
-  // Core: sempre volume/moderato (non richiede heavy)
+  // Core: sempre volume (no stress SNC)
   core:            ['volume', 'volume', 'volume'],
   corrective:      ['volume', 'volume', 'volume'],
 };
@@ -610,38 +652,74 @@ function getIntensityForPattern(
   goal: string = 'forza',
   frequency: number = 3
 ): 'heavy' | 'volume' | 'moderate' {
+  // ╔════════════════════════════════════════════════════════════════════════╗
+  // ║  ⛔ NON MODIFICARE QUESTA FUNZIONE SENZA APPROVAZIONE ⛔               ║
+  // ║  La logica DUP è stata definita e validata. Vedi documentazione sopra. ║
+  // ╚════════════════════════════════════════════════════════════════════════╝
+
   // CORE/ACCESSORI: sempre volume
   if (patternId === 'core' || patternId === 'corrective') {
     return 'volume';
   }
 
-  // Ottieni la rotazione base per questo pattern
-  const rotation = DUP_ROTATION_MATRIX[patternId] || ['moderate', 'moderate', 'moderate'];
-
-  // Calcola l'indice nella rotazione (ciclico)
-  const rotationIndex = dayIndex % rotation.length;
-  let baseType = rotation[rotationIndex];
-
-  // Per frequenza 2: focus più stretto sull'obiettivo
+  // ============================================================
+  // FREQUENZA 2: 3 heavy per giorno (bilanciati push/pull/lower)
+  // G1: Squat, Panca, Lat → HEAVY
+  // G2: Stacco, Military, Row → HEAVY
+  // ============================================================
   if (frequency === 2) {
-    const goalLower = goal.toLowerCase();
-    if (['forza', 'strength'].includes(goalLower)) {
-      // 2 giorni forza: più heavy, meno volume
-      if (baseType === 'volume') baseType = 'moderate';
-    } else if (['fat_loss', 'tonificazione', 'dimagrimento'].includes(goalLower)) {
-      // 2 giorni fat loss: più volume
-      if (baseType === 'heavy') baseType = 'moderate';
+    const day1Heavy = ['lower_push', 'horizontal_push', 'vertical_pull'];
+    const day2Heavy = ['lower_pull', 'vertical_push', 'horizontal_pull'];
+
+    if (dayIndex === 0) {
+      return day1Heavy.includes(patternId) ? 'heavy' : 'moderate';
+    } else {
+      return day2Heavy.includes(patternId) ? 'heavy' : 'moderate';
     }
   }
 
-  // Per frequenza 4+: più varietà, manteniamo la rotazione estesa
-  if (frequency >= 4) {
-    // Con 4+ giorni, estendiamo la rotazione per coprire tutti i tipi
-    const extendedRotation = [...rotation, 'moderate'] as ('heavy' | 'moderate' | 'volume')[];
-    baseType = extendedRotation[dayIndex % extendedRotation.length];
+  // ============================================================
+  // FREQUENZA 3: 2 heavy per giorno (1 lower + 1 upper, o 2 upper)
+  // G1: Squat + Panca → HEAVY
+  // G2: Stacco + Lat → HEAVY
+  // G3: Military + Row → HEAVY (solo upper, nessun lower)
+  // ============================================================
+  if (frequency === 3) {
+    const day1Heavy = ['lower_push', 'horizontal_push'];      // Squat + Panca
+    const day2Heavy = ['lower_pull', 'vertical_pull'];        // Stacco + Lat
+    const day3Heavy = ['vertical_push', 'horizontal_pull'];   // Military + Row
+
+    if (dayIndex === 0) {
+      return day1Heavy.includes(patternId) ? 'heavy' : 'moderate';
+    } else if (dayIndex === 1) {
+      return day2Heavy.includes(patternId) ? 'heavy' : 'moderate';
+    } else {
+      return day3Heavy.includes(patternId) ? 'heavy' : 'moderate';
+    }
   }
 
-  return baseType;
+  // ============================================================
+  // FREQUENZA 4+: rotazione estesa con 1 heavy per giorno
+  // Ruota i compound principali, il resto moderate/volume
+  // ============================================================
+  if (frequency >= 4) {
+    // Solo i 3 compound principali possono essere heavy
+    const heavyPatterns = ['lower_push', 'lower_pull', 'horizontal_push'];
+
+    if (heavyPatterns.includes(patternId)) {
+      // Ogni pattern è heavy 1 giorno su frequency
+      const patternIndex = heavyPatterns.indexOf(patternId);
+      if (dayIndex % frequency === patternIndex) {
+        return 'heavy';
+      }
+    }
+
+    // Alterna moderate/volume per il resto
+    return dayIndex % 2 === 0 ? 'moderate' : 'volume';
+  }
+
+  // Fallback: moderate
+  return 'moderate';
 }
 
 /**

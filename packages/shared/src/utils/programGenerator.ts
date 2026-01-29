@@ -2651,25 +2651,29 @@ function calculateVolumeWeighted(
   let intensity = '75%';
   let notes = '';
 
-  // FORZA (weighted) - Meno reps, più carico
+  // FORZA (weighted) - Range fissi per DUP efficace
+  // Non usa workingReps per evitare che tutti i giorni abbiano le stesse reps
   if (goal === 'forza' || goal === 'strength') {
     if (dayType === 'heavy') {
+      // Heavy Day: Forza massimale - 3-5 reps con carico alto
       sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
-      reps = Math.max(3, Math.min(workingReps, 5));
+      reps = level === 'beginner' ? 5 : level === 'intermediate' ? 4 : 3;
       rest = '3-5min';
-      intensity = '85-90%';
+      intensity = level === 'beginner' ? '80-85%' : '85-92%';
       notes = 'Forza Massimale - Carico pesante, recupero completo';
     } else if (dayType === 'volume') {
-      sets = level === 'beginner' ? 4 : 5;
-      reps = Math.max(6, Math.min(workingReps, 10));
+      // Volume Day: Forza-Resistenza - 8-12 reps con carico moderato
+      sets = level === 'beginner' ? 3 : 4;
+      reps = level === 'beginner' ? 10 : level === 'intermediate' ? 8 : 8;
+      rest = '90s-2min';
+      intensity = '70-75%';
+      notes = 'Forza-Ipertrofia - Accumulo volume';
+    } else {
+      // Moderate Day: Forza Dinamica - 5-6 reps con velocità
+      sets = level === 'beginner' ? 4 : level === 'intermediate' ? 4 : 5;
+      reps = level === 'beginner' ? 6 : 5;
       rest = '2-3min';
       intensity = '75-80%';
-      notes = 'Forza-Resistenza - Accumulo volume a carichi medi-alti';
-    } else {
-      sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 5;
-      reps = Math.max(5, Math.min(workingReps, 8));
-      rest = '2-3min';
-      intensity = '78-82%';
       notes = 'Forza Dinamica - Velocità e tecnica';
     }
   }

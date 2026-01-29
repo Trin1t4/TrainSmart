@@ -1726,6 +1726,39 @@ export default function Dashboard() {
           </motion.div>
         )}
 
+        {/* Banner Completa Profilo (running interest) - SPOSTATO IN ALTO */}
+        {missingOnboardingParts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 rounded-xl p-4"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-amber-200">Completa il tuo profilo</h3>
+                  <p className="text-amber-200/70 text-sm">
+                    {missingOnboardingParts.includes('running_interest')
+                      ? 'Non ci hai ancora detto se vuoi integrare la corsa nel tuo allenamento'
+                      : missingOnboardingParts.includes('running_integration')
+                      ? 'Scegli come integrare la corsa: insieme ai pesi o in giorni separati'
+                      : 'Alcune informazioni mancano per ottimizzare il tuo programma'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddRunningModal(true)}
+                className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
+              >
+                Completa Ora
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick Actions Grid - Griglia monitoraggio progressi */}
         <QuickActionsGrid
           painAreas={dataStatus.onboarding?.painAreas?.length || 0}
@@ -1923,99 +1956,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Analytics Cards - 3 column grid, stacks on mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
-          {/* Workouts Completed */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
-          >
-            <Card className="bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 backdrop-blur-xl border-emerald-700/50 shadow-2xl shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all duration-300">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-emerald-300">
-                  <Activity className="w-4 h-4 md:w-5 md:h-5" />
-                  Giorni Attivi
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl md:text-4xl font-bold text-emerald-400">{analytics.daysActive}</span>
-                  <span className="text-xs md:text-sm text-emerald-300/60">{t('onboarding.activity.days')}</span>
-                </div>
-                <p className="text-[10px] md:text-xs text-emerald-300/50 mt-1 md:mt-2 line-clamp-1">
-                  {analytics.lastWorkoutDays !== null
-                    ? `${t('dashboard.analytics.last_workout')}: ${
-                        analytics.lastWorkoutDays === 0
-                          ? t('dashboard.analytics.today')
-                          : analytics.lastWorkoutDays === 1
-                            ? t('dashboard.analytics.yesterday')
-                            : t('dashboard.analytics.days_ago').replace('{{days}}', String(analytics.lastWorkoutDays))
-                      }`
-                    : t('dashboard.no_program_desc')}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Total Volume */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
-          >
-            <Card className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-xl border-blue-700/50 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-300">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-blue-300">
-                  <Target className="w-4 h-4 md:w-5 md:h-5" />
-                  {t('dashboard.analytics.total_volume')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl md:text-4xl font-bold text-blue-400">
-                    {analytics.totalVolume > 0 ? analytics.totalVolume.toLocaleString() : '0'}
-                  </span>
-                  <span className="text-xs md:text-sm text-blue-300/60">reps</span>
-                </div>
-                <p className="text-[10px] md:text-xs text-blue-300/50 mt-1 md:mt-2">
-                  {t('dashboard.analytics.weekly').replace('{{volume}}', analytics.weeklyVolume > 0 ? analytics.weeklyVolume.toLocaleString() : '0')}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Progress */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.6 }}
-          >
-            <Card className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 backdrop-blur-xl border-purple-700/50 shadow-2xl shadow-purple-500/10 hover:shadow-purple-500/20 transition-all duration-300">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-sm md:text-lg font-display flex items-center gap-2 text-purple-300">
-                  <Zap className="w-4 h-4 md:w-5 md:h-5" />
-                  Progressione
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 md:p-6 pt-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl md:text-4xl font-bold text-purple-400">
-                    {analytics.progression > 0 ? `+${analytics.progression}%` : '0%'}
-                  </span>
-                  <span className="text-xs md:text-sm text-purple-300/60">vs baseline</span>
-                </div>
-                <div className="mt-2 md:mt-3 h-1.5 md:h-2 bg-purple-900/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, analytics.progression)}%` }}
-                  ></div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
         {/* Main Program Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -2103,39 +2043,6 @@ export default function Dashboard() {
                     <p className="text-slate-300">Split: <span className="font-display font-semibold text-white">{program.split}</span></p>
                     <p className="text-slate-300">Frequenza: <span className="font-display font-semibold text-white">{program.frequency}x/settimana</span></p>
                   </div>
-
-                  {/* Banner Completa Profilo - se mancano parti dell'onboarding */}
-                  {missingOnboardingParts.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 rounded-xl p-4"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center flex-shrink-0">
-                            <AlertCircle className="w-5 h-5 text-amber-400" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-amber-200">Completa il tuo profilo</h3>
-                            <p className="text-amber-200/70 text-sm">
-                              {missingOnboardingParts.includes('running_interest')
-                                ? 'Non ci hai ancora detto se vuoi integrare la corsa nel tuo allenamento'
-                                : missingOnboardingParts.includes('running_integration')
-                                ? 'Scegli come integrare la corsa: insieme ai pesi o in giorni separati'
-                                : 'Alcune informazioni mancano per ottimizzare il tuo programma'}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setShowAddRunningModal(true)}
-                          className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
-                        >
-                          Completa Ora
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
 
                   {/* Banner Aggiungi Corsa - se programma non ha running MA l'utente ha già completato onboarding */}
                   {!programHasRunning && missingOnboardingParts.length === 0 && dataStatus.onboarding?.runningInterest?.enabled === false && (
@@ -2290,6 +2197,35 @@ export default function Dashboard() {
                   >
                     <Activity className="w-5 h-5" />
                     {t('dashboard.start_workout')} LIVE
+                  </motion.button>
+
+                  {/* Pulsante Corsa */}
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      // Trova il primo giorno running o crea una sessione running
+                      const runningDay = program.weekly_split?.days?.find((day: any) => day.type === 'running' || day.runningSession);
+                      if (runningDay) {
+                        setRunningDayData(runningDay);
+                        setShowRunningSession(true);
+                      } else {
+                        // Se non c'è running nel programma, crea una sessione base
+                        setRunningDayData({
+                          dayName: 'Corsa',
+                          type: 'running',
+                          runningSession: {
+                            type: 'easy',
+                            duration: 30,
+                            notes: 'Corsa libera'
+                          }
+                        });
+                        setShowRunningSession(true);
+                      }
+                    }}
+                    className="flex-1 bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 transition-all duration-300 text-sm md:text-base"
+                  >
+                    <Footprints className="w-5 h-5" />
+                    Corsa
                   </motion.button>
 
                   <div className="flex gap-2 md:gap-4">
