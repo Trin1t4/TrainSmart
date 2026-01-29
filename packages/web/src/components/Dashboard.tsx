@@ -1752,9 +1752,9 @@ export default function Dashboard() {
                   if (missingOnboardingParts.includes('onboarding')) {
                     navigate('/onboarding');
                   }
-                  // Se manca interesse corsa o integrazione, naviga a onboarding sezione running
+                  // Se manca interesse corsa o integrazione, vai direttamente ai quiz opzionali
                   else if (missingOnboardingParts.includes('running_interest') || missingOnboardingParts.includes('running_integration')) {
-                    navigate('/onboarding', { state: { section: 'running' } });
+                    navigate('/optional-quizzes');
                   }
                   // Fallback: mostra modale corsa
                   else {
