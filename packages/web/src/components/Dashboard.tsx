@@ -46,7 +46,6 @@ import { useCurrentProgram, useUserPrograms, useCreateProgram, programKeys } fro
 import VideoMosaicBackground from './VideoMosaicBackground';
 import { useAppStore } from '../store/useAppStore';
 import AddRunningModal from './AddRunningModal';
-import QuickActionsGrid from './QuickActionsGrid';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -1688,9 +1687,10 @@ export default function Dashboard() {
                     const screeningType = dataStatus.onboarding?.screeningType;
                     const onboardingData = dataStatus.onboarding;
 
-                    // FIX: Passa userData nello state della navigazione
-                    // Questo garantisce che trainingLocation sia corretto anche se localStorage non è sincronizzato
+                    // FIX: Passa userData nello state della navigazione + skipWarmup
+                    // L'utente ha già fatto onboarding, va direttamente ai test
                     const navigationState = {
+                      skipWarmup: true, // Salta il riscaldamento, vai direttamente ai test
                       userData: {
                         trainingLocation: onboardingData?.trainingLocation,
                         trainingType: onboardingData?.trainingType,
@@ -1771,21 +1771,6 @@ export default function Dashboard() {
             </div>
           </motion.div>
         )}
-
-        {/* Quick Actions Grid - Griglia monitoraggio progressi */}
-        <QuickActionsGrid
-          painAreas={dataStatus.onboarding?.painAreas?.length || 0}
-          hasPainImprovement={false}
-          strengthProgress={analytics.progression}
-          volumeProgress={Math.round((analytics.weeklyVolume / 100) * 10)}
-          totalWorkouts={completedSessions?.total || 0}
-          personalRecords={0}
-          latestPR={undefined}
-          onPainClick={() => navigate('/stats#pain')}
-          onProgressClick={() => navigate('/stats#progress')}
-          onDatabaseClick={() => navigate('/stats#history')}
-          onRecordsClick={() => navigate('/stats#records')}
-        />
 
         {/* Deload Week Notification */}
         {retestSchedule && retestSchedule.phase === 'deload' && retestSchedule.deloadConfig && !showRetestDismissed && hasProgram && (

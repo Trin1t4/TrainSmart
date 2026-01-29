@@ -27,16 +27,22 @@ export default function Screening() {
 
     // Check if this is manual entry mode (user knows their maxes, not in gym)
     const manualEntry = location.state?.manualEntry === true;
+    // Check if coming from Dashboard with skipWarmup flag
+    const skipWarmup = location.state?.skipWarmup === true;
     setIsManualEntry(manualEntry);
 
     // Skip warmup if:
     // 1. Manual entry mode (user is not in gym)
     // 2. Warmup was already completed this session
+    // 3. skipWarmup flag from Dashboard (user already did onboarding)
     const warmupCompleted = sessionStorage.getItem('warmup_completed');
-    if (manualEntry || warmupCompleted === 'true' || warmupCompleted === 'skipped') {
+    if (manualEntry || skipWarmup || warmupCompleted === 'true' || warmupCompleted === 'skipped') {
       setShowWarmup(false);
       if (manualEntry) {
         console.log('[SCREENING] Manual entry mode - skipping warmup');
+      }
+      if (skipWarmup) {
+        console.log('[SCREENING] skipWarmup flag - going directly to tests');
       }
     }
   }, [location.state]);
