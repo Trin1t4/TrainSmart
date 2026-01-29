@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSmart - Albero Genealogico Generazione Schede</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-node: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent-red: #f85149;
+      --accent-orange: #d29922;
+      --accent-yellow: #e3b341;
+      --accent-green: #3fb950;
+      --accent-blue: #58a6ff;
+      --accent-purple: #a371f7;
+      --accent-pink: #db61a2;
+      --accent-cyan: #39c5cf;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      line-height: 1.5;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* Tree Structure */
+    .tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tree ul {
+      list-style: none;
+      position: relative;
+      padding-top: 20px;
+    }
+
+    .tree li {
+      position: relative;
+      padding: 20px 5px 0 5px;
+      display: inline-block;
+      vertical-align: top;
+      text-align: center;
+    }
+
+    /* Connectors */
+    .tree li::before, .tree li::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      border-top: 2px solid var(--border);
+      width: 50%;
+      height: 20px;
+    }
+
+    .tree li::before {
+      right: 50%;
+      border-right: 2px solid var(--border);
+    }
+
+    .tree li::after {
+      left: 50%;
+      border-left: 2px solid var(--border);
+    }
+
+    .tree li:only-child::after, .tree li:only-child::before {
+      display: none;
+    }
+
+    .tree li:only-child {
+      padding-top: 0;
+    }
+
+    .tree li:first-child::before, .tree li:last-child::after {
+      border: 0 none;
+    }
+
+    .tree li:last-child::before {
+      border-right: 2px solid var(--border);
+      border-radius: 0 5px 0 0;
+    }
+
+    .tree li:first-child::after {
+      border-left: 2px solid var(--border);
+      border-radius: 5px 0 0 0;
+    }
+
+    .tree ul ul::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      border-left: 2px solid var(--border);
+      width: 0;
+      height: 20px;
+    }
+
+    /* Nodes */
+    .node {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--bg-node);
+      border: 2px solid var(--border);
+      position: relative;
+      min-width: 120px;
+      transition: all 0.2s;
+    }
+
+    .node:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+
+    .node-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+    }
+
+    .node-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .node-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* Node Colors */
+    .root { border-color: var(--accent-purple); background: linear-gradient(135deg, rgba(163, 113, 247, 0.2), rgba(163, 113, 247, 0.05)); }
+    .root .node-title { color: var(--accent-purple); }
+
+    .goal-node { border-color: var(--accent-blue); }
+    .goal-node .node-title { color: var(--accent-blue); }
+
+    .level-node { border-color: var(--accent-cyan); }
+    .level-node .node-title { color: var(--accent-cyan); }
+
+    .freq-node { border-color: var(--accent-green); }
+    .freq-node .node-title { color: var(--accent-green); }
+
+    .day-node { border-color: var(--accent-yellow); }
+    .day-node .node-title { color: var(--accent-yellow); }
+
+    .intensity-node { border-color: var(--accent-orange); }
+    .intensity-node .node-title { color: var(--accent-orange); }
+
+    .params-node { border-color: var(--accent-red); }
+    .params-node .node-title { color: var(--accent-red); }
+
+    /* Intensity specific */
+    .heavy-node { border-color: var(--accent-red); background: rgba(248, 81, 73, 0.1); }
+    .moderate-node { border-color: var(--accent-orange); background: rgba(210, 153, 34, 0.1); }
+    .volume-node { border-color: var(--accent-green); background: rgba(63, 185, 80, 0.1); }
+
+    /* Badges */
+    .badge-heavy { background: var(--accent-red); color: white; }
+    .badge-moderate { background: var(--accent-orange); color: black; }
+    .badge-volume { background: var(--accent-green); color: black; }
+
+    /* Horizontal scrolling container */
+    .tree-container {
+      overflow-x: auto;
+      padding: 2rem 0;
+    }
+
+    /* Section dividers */
+    .section {
+      margin: 3rem 0;
+      padding: 2rem;
+      background: var(--bg-node);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Detailed params table */
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .params-table th, .params-table td {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .params-table th {
+      background: rgba(255,255,255,0.05);
+      font-weight: 600;
+    }
+
+    .params-table .pattern-col {
+      text-align: left;
+      font-weight: 600;
+    }
+
+    /* Mini tree for each goal */
+    .goal-tree {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .goal-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .goal-icon {
+      font-size: 2rem;
+    }
+
+    .goal-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .goal-aliases {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Compact tree for params */
+    .compact-tree {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .level-branch {
+      background: var(--bg-node);
+      border-radius: 8px;
+      padding: 1rem;
+      min-width: 300px;
+      border: 1px solid var(--border);
+    }
+
+    .level-header {
+      text-align: center;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .level-beginner .level-header { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+    .level-intermediate .level-header { background: rgba(210, 153, 34, 0.2); color: var(--accent-orange); }
+    .level-advanced .level-header { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+
+    .day-type-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .day-type-row.heavy { background: rgba(248, 81, 73, 0.1); }
+    .day-type-row.moderate { background: rgba(210, 153, 34, 0.1); }
+    .day-type-row.volume { background: rgba(63, 185, 80, 0.1); }
+
+    .day-type-name {
+      font-weight: 600;
+    }
+
+    .day-type-params {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .param {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .param-value {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .param-label {
+      color: var(--text-muted);
+    }
+
+    /* DUP Distribution visual */
+    .dup-visual {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .dup-row {
+      display: flex;
+      align-items: center;
+      margin: 0.5rem 0;
+      gap: 0.5rem;
+    }
+
+    .dup-pattern {
+      width: 150px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .dup-days {
+      display: flex;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    .dup-day {
+      flex: 1;
+      padding: 0.25rem;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .dup-day.h { background: var(--accent-red); color: white; }
+    .dup-day.m { background: var(--accent-orange); color: black; }
+    .dup-day.v { background: var(--accent-green); color: black; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    /* Flow diagram */
+    .flow-section {
+      margin: 2rem 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+    }
+
+    .flow-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .flow-content {
+      flex: 1;
+      background: var(--bg-node);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-purple);
+    }
+
+    .flow-title {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .flow-file {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--accent-blue);
+      margin-top: 0.5rem;
+    }
+
+    .connector {
+      width: 2px;
+      height: 20px;
+      background: var(--border);
+      margin-left: 19px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌳 Albero Genealogico - Generazione Schede</h1>
+<p class="subtitle">Ogni percorso possibile dalla radice alle foglie</p>
+
+<!-- MAIN FLOW -->
+<div class="section">
+  <div class="section-title">📊 Flusso Principale di Decisione</div>
+
+  <div class="flow-section">
+    <div class="flow-step">
+      <div class="flow-number">1</div>
+      <div class="flow-content">
+        <div class="flow-title">INPUT: Onboarding Data</div>
+        <div class="flow-desc">Goal, Level, Frequency, Location, Pain Areas</div>
+        <div class="flow-file">→ Onboarding.tsx</div>
+      </div>
+    </div>
+    <div class="connector"></div>
+    <div class="flow-step">
+      <div class="flow-number">2</div>
+      <div class="flow-content">
+        <div class="flow-title">INPUT: Screening Data</div>
+        <div class="flow-desc">Pattern Baselines (reps/peso per ogni pattern)</div>
+        <div class="flow-file">→ Screening.tsx</div>
+      </div>
+    </div>
+    <div class="connector"></div>
+    <div class="flow-step">
+      <div class="flow-number">3</div>
+      <div class="flow-content">
+        <div class="flow-title">DECISION: Select Split by Frequency</div>
+        <div class="flow-desc">2 giorni → Full Body | 3 giorni → Full Body | 4+ → Upper/Lower</div>
+        <div class="flow-file">→ weeklySplitGenerator.ts</div>
+      </div>
+    </div>
+    <div class="connector"></div>
+    <div class="flow-step">
+      <div class="flow-number">4</div>
+      <div class="flow-content">
+        <div class="flow-title">DECISION: DUP Distribution</div>
+        <div class="flow-desc">getIntensityForPattern(pattern, dayIndex, goal, frequency)</div>
+        <div class="flow-file">→ weeklySplitGenerator.ts:648</div>
+      </div>
+    </div>
+    <div class="connector"></div>
+    <div class="flow-step">
+      <div class="flow-number">5</div>
+      <div class="flow-content">
+        <div class="flow-title">CALCULATION: Volume Params</div>
+        <div class="flow-desc">calculateVolume(baseline, goal, level, location, dayType)</div>
+        <div class="flow-file">→ programGenerator.ts:2615</div>
+      </div>
+    </div>
+    <div class="connector"></div>
+    <div class="flow-step">
+      <div class="flow-number">6</div>
+      <div class="flow-content">
+        <div class="flow-title">OUTPUT: Exercise Object</div>
+        <div class="flow-desc">{name, sets, reps, rest, intensity, dayType, notes}</div>
+        <div class="flow-file">→ WeeklySplit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DUP DISTRIBUTION BY FREQUENCY -->
+<div class="section">
+  <div class="section-title">⚡ DUP Distribution per Frequenza</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-red);"></div> H = Heavy</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-orange);"></div> M = Moderate</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-green);"></div> V = Volume</div>
+  </div>
+
+  <!-- Frequency 2 -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">2️⃣</div>
+      <div>
+        <div class="goal-name">FREQUENZA 2 - Full Body A/B</div>
+        <div class="goal-aliases">3 Heavy per giorno (bilanciati push/pull/lower)</div>
+      </div>
+    </div>
+    <div class="dup-visual">
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_push</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">💪 horizontal_push</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">💪 horizontal_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🙌 vertical_push</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🙌 vertical_pull</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🎯 core</div>
+        <div class="dup-days">
+          <div class="dup-day v">G1: V</div>
+          <div class="dup-day v">G2: V</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frequency 3 -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">3️⃣</div>
+      <div>
+        <div class="goal-name">FREQUENZA 3 - Full Body A/B/C</div>
+        <div class="goal-aliases">2 Heavy per giorno (1 lower + 1 upper, o 2 upper)</div>
+      </div>
+    </div>
+    <div class="dup-visual">
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_push</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day m">G3: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+          <div class="dup-day m">G3: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">💪 horizontal_push</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day m">G3: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">💪 horizontal_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day h">G3: H</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🙌 vertical_push</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day h">G3: H</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🙌 vertical_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+          <div class="dup-day m">G3: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🎯 core</div>
+        <div class="dup-days">
+          <div class="dup-day v">G1: V</div>
+          <div class="dup-day v">G2: V</div>
+          <div class="dup-day v">G3: V</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frequency 4+ -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">4️⃣</div>
+      <div>
+        <div class="goal-name">FREQUENZA 4+ - Upper/Lower o PPL</div>
+        <div class="goal-aliases">1 Heavy per giorno (rotazione compound principali)</div>
+      </div>
+    </div>
+    <div class="dup-visual">
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_push</div>
+        <div class="dup-days">
+          <div class="dup-day h">G1: H</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day v">G3: V</div>
+          <div class="dup-day m">G4: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">🦵 lower_pull</div>
+        <div class="dup-days">
+          <div class="dup-day m">G1: M</div>
+          <div class="dup-day h">G2: H</div>
+          <div class="dup-day m">G3: M</div>
+          <div class="dup-day v">G4: V</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">💪 horizontal_push</div>
+        <div class="dup-days">
+          <div class="dup-day v">G1: V</div>
+          <div class="dup-day m">G2: M</div>
+          <div class="dup-day h">G3: H</div>
+          <div class="dup-day m">G4: M</div>
+        </div>
+      </div>
+      <div class="dup-row">
+        <div class="dup-pattern">Altri pattern</div>
+        <div class="dup-days">
+          <div class="dup-day m">M/V alternati</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL TREES -->
+<div class="section">
+  <div class="section-title">🎯 Parametri per Goal (Weighted Training)</div>
+
+  <!-- FORZA -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">💪</div>
+      <div>
+        <div class="goal-name">FORZA / STRENGTH</div>
+        <div class="goal-aliases">Alias: "forza", "strength"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 BEGINNER</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">5</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">80-85%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-intermediate">
+        <div class="level-header">⚡ INTERMEDIATE</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">4</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">85-92%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">5</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-advanced">
+        <div class="level-header">🔥 ADVANCED</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">6</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">3</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">85-92%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">5</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IPERTROFIA -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">🏋️</div>
+      <div>
+        <div class="goal-name">IPERTROFIA / MASSA</div>
+        <div class="goal-aliases">Alias: "massa", "massa muscolare", "muscle_gain", "ipertrofia", "hypertrophy"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 BEGINNER</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-8</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">80-85%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-intermediate">
+        <div class="level-header">⚡ INTERMEDIATE</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-8</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">80-85%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-advanced">
+        <div class="level-header">🔥 ADVANCED</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-8</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">80-85%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">6</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMAGRIMENTO -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">🔥</div>
+      <div>
+        <div class="goal-name">DIMAGRIMENTO / TONIFICAZIONE</div>
+        <div class="goal-aliases">Alias: "fat_loss", "tonificazione", "dimagrimento", "definizione"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 BEGINNER</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-intermediate">
+        <div class="level-header">⚡ INTERMEDIATE</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-advanced">
+        <div class="level-header">🔥 ADVANCED</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESISTENZA -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">🏃</div>
+      <div>
+        <div class="goal-name">RESISTENZA / ENDURANCE</div>
+        <div class="goal-aliases">Alias: "endurance", "resistenza"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 BEGINNER</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-18</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">15-20</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">55-65%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-intermediate">
+        <div class="level-header">⚡ INTERMEDIATE</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-18</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">15-20</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">55-65%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-advanced">
+        <div class="level-header">🔥 ADVANCED</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12-18</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">15-20</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">55-65%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENESSERE -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">🧘</div>
+      <div>
+        <div class="goal-name">BENESSERE / GENERAL FITNESS</div>
+        <div class="goal-aliases">Alias: "general_fitness", "benessere"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 BEGINNER</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-78%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-intermediate">
+        <div class="level-header">⚡ INTERMEDIATE</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-78%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch level-advanced">
+        <div class="level-header">🔥 ADVANCED</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">75-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-78%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPORT PERFORMANCE -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">⚽</div>
+      <div>
+        <div class="goal-name">SPORT PERFORMANCE</div>
+        <div class="goal-aliases">Alias: "sport_performance", "prestazioni_sportive"</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch level-beginner">
+        <div class="level-header">🌱 ALL LEVELS</div>
+        <div class="day-type-row heavy">
+          <span class="day-type-name">Heavy</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">4-6</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">80-85%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row moderate">
+          <span class="day-type-name">Moderate</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6-10</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">70-80%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+        <div class="day-type-row volume">
+          <span class="day-type-name">Volume</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">65-75%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPECIAL POPULATIONS -->
+  <div class="goal-tree">
+    <div class="goal-header">
+      <div class="goal-icon">♿</div>
+      <div>
+        <div class="goal-name">POPOLAZIONI SPECIALI</div>
+        <div class="goal-aliases">Motor Recovery, Pregnancy, Disability</div>
+      </div>
+    </div>
+    <div class="compact-tree">
+      <div class="level-branch" style="border-color: var(--accent-cyan);">
+        <div class="level-header" style="background: rgba(57, 197, 207, 0.2); color: var(--accent-cyan);">🔄 MOTOR RECOVERY</div>
+        <div class="day-type-row" style="background: rgba(57, 197, 207, 0.1);">
+          <span class="day-type-name">Standard</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch" style="border-color: var(--accent-pink);">
+        <div class="level-header" style="background: rgba(219, 97, 162, 0.2); color: var(--accent-pink);">🤰 PREGNANCY</div>
+        <div class="day-type-row" style="background: rgba(219, 97, 162, 0.1);">
+          <span class="day-type-name">Standard</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10-15</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">50-65%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-branch" style="border-color: var(--accent-purple);">
+        <div class="level-header" style="background: rgba(163, 113, 247, 0.2); color: var(--accent-purple);">♿ DISABILITY</div>
+        <div class="day-type-row" style="background: rgba(163, 113, 247, 0.1);">
+          <span class="day-type-name">Standard</span>
+          <div class="day-type-params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8-12</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60-70%</span><span class="param-label">1RM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LOCATION BRANCH -->
+<div class="section">
+  <div class="section-title">📍 Branch per Location</div>
+
+  <div class="compact-tree">
+    <div class="level-branch" style="border-color: var(--accent-blue);">
+      <div class="level-header" style="background: rgba(88, 166, 255, 0.2); color: var(--accent-blue);">🏋️ GYM / HOME_GYM</div>
+      <div style="padding: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+        <p><strong>Funzione:</strong> calculateVolumeWeighted()</p>
+        <p><strong>Logica:</strong> Modula CARICO e REPS</p>
+        <p><strong>Heavy:</strong> Meno reps, più peso</p>
+        <p><strong>Volume:</strong> Più reps, meno peso</p>
+      </div>
+    </div>
+    <div class="level-branch" style="border-color: var(--accent-green);">
+      <div class="level-header" style="background: rgba(63, 185, 80, 0.2); color: var(--accent-green);">🏠 HOME (Bodyweight)</div>
+      <div style="padding: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+        <p><strong>Funzione:</strong> calculateVolumeBodyweight()</p>
+        <p><strong>Logica:</strong> Modula VARIANTE e REPS</p>
+        <p><strong>Heavy:</strong> Variante più difficile, meno reps</p>
+        <p><strong>Volume:</strong> Variante base, più reps</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAIN MANAGEMENT BRANCH -->
+<div class="section">
+  <div class="section-title">🩹 Branch Pain Management</div>
+
+  <div class="compact-tree">
+    <div class="level-branch" style="border-color: var(--accent-green);">
+      <div class="level-header" style="background: rgba(63, 185, 80, 0.2); color: var(--accent-green);">😊 MILD</div>
+      <div style="padding: 0.5rem; font-size: 0.85rem;">
+        <p>• Solo DELOAD (riduzione carico)</p>
+        <p>• MAI sostituzione esercizio</p>
+        <p>• Reps -10%, Sets invariati</p>
+      </div>
+    </div>
+    <div class="level-branch" style="border-color: var(--accent-orange);">
+      <div class="level-header" style="background: rgba(210, 153, 34, 0.2); color: var(--accent-orange);">😐 MODERATE</div>
+      <div style="padding: 0.5rem; font-size: 0.85rem;">
+        <p>• Deload + Variante più facile</p>
+        <p>• STESSO pattern (es. Deadlift → RDL)</p>
+        <p>• Reps -20%, Sets -1</p>
+      </div>
+    </div>
+    <div class="level-branch" style="border-color: var(--accent-red);">
+      <div class="level-header" style="background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">😣 SEVERE</div>
+      <div style="padding: 0.5rem; font-size: 0.85rem;">
+        <p>• Sostituzione COMPLETA</p>
+        <p>• Pattern DIVERSO (es. Deadlift → Glute Bridge)</p>
+        <p>• Reps -30%, Sets -2</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem;">
+  TrainSmart © 2024 - Albero Genealogico Generazione Schede v1.0<br>
+  File: docs/program-generation-tree.html
+</footer>
+
+</body>
+</html>
