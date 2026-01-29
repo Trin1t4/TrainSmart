@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSmart - Information Architecture: Generazione Schede</title>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #13131a;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+      --accent-red: #ef4444;
+      --accent-yellow: #eab308;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: #1e293b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+    }
+
+    /* Main Flow Container */
+    .flow-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Phase Sections */
+    .phase {
+      margin-bottom: 3rem;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .phase-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .phase-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .phase-desc {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-content {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .card-content ul {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+
+    .card-content li {
+      padding: 0.25rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .card-content li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent-blue);
+    }
+
+    /* File reference */
+    .file-ref {
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--accent-blue);
+      display: inline-block;
+      margin-top: 0.75rem;
+    }
+
+    /* Colors for phases */
+    .phase-1 .phase-number { background: var(--accent-blue); }
+    .phase-2 .phase-number { background: var(--accent-purple); }
+    .phase-3 .phase-number { background: var(--accent-green); }
+    .phase-4 .phase-number { background: var(--accent-orange); }
+    .phase-5 .phase-number { background: var(--accent-red); }
+
+    .phase-1 .card { border-top: 3px solid var(--accent-blue); }
+    .phase-2 .card { border-top: 3px solid var(--accent-purple); }
+    .phase-3 .card { border-top: 3px solid var(--accent-green); }
+    .phase-4 .card { border-top: 3px solid var(--accent-orange); }
+    .phase-5 .card { border-top: 3px solid var(--accent-red); }
+
+    /* Arrow connector */
+    .arrow-down {
+      text-align: center;
+      font-size: 2rem;
+      color: var(--text-secondary);
+      margin: 1rem 0;
+    }
+
+    /* Goals Table */
+    .goals-section {
+      margin: 4rem 0;
+    }
+
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .goal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .goal-header {
+      padding: 1rem 1.5rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .goal-body {
+      padding: 1rem 1.5rem;
+    }
+
+    .day-type {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+    }
+
+    .day-type-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .day-type-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .day-type-badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .badge-heavy { background: var(--accent-red); }
+    .badge-moderate { background: var(--accent-orange); }
+    .badge-volume { background: var(--accent-green); }
+
+    .day-type-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .detail-item {
+      text-align: center;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Goal colors */
+    .goal-forza .goal-header { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+    .goal-ipertrofia .goal-header { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+    .goal-dimagrimento .goal-header { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .goal-resistenza .goal-header { background: linear-gradient(135deg, #0891b2, #0e7490); }
+    .goal-benessere .goal-header { background: linear-gradient(135deg, #ca8a04, #a16207); }
+    .goal-sport .goal-header { background: linear-gradient(135deg, #ea580c, #c2410c); }
+    .goal-special .goal-header { background: linear-gradient(135deg, #64748b, #475569); }
+
+    /* DUP Matrix */
+    .dup-section {
+      margin: 4rem 0;
+    }
+
+    .dup-matrix {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .dup-header {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      padding: 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .dup-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .dup-table th, .dup-table td {
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .dup-table th {
+      background: rgba(255,255,255,0.05);
+      font-weight: 600;
+    }
+
+    .dup-table .pattern-name {
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .heavy { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .moderate { background: rgba(249, 115, 22, 0.2); color: #fdba74; }
+    .volume { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    /* Notes Section */
+    .notes {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+
+    .notes h3 {
+      margin-bottom: 1rem;
+      color: var(--accent-yellow);
+    }
+
+    .notes ul {
+      list-style: disc;
+      margin-left: 1.5rem;
+      color: var(--text-secondary);
+    }
+
+    .notes li {
+      margin: 0.5rem 0;
+    }
+
+    .notes code {
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--accent-blue);
+    }
+  </style>
+</head>
+<body>
+  <h1>🏋️ TrainSmart - Information Architecture</h1>
+  <p class="subtitle">Processo di Generazione Schede di Allenamento</p>
+
+  <div class="flow-container">
+
+    <!-- PHASE 1: Input Collection -->
+    <div class="phase phase-1">
+      <div class="phase-header">
+        <div class="phase-number">1</div>
+        <div>
+          <div class="phase-title">📥 Input Collection</div>
+          <div class="phase-desc">Raccolta dati utente tramite Onboarding e Screening</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(59, 130, 246, 0.2);">📋</div>
+            <div class="card-title">Onboarding Data</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li><strong>Goal</strong>: Forza, Ipertrofia, Dimagrimento, ecc.</li>
+              <li><strong>Level</strong>: Beginner, Intermediate, Advanced</li>
+              <li><strong>Frequency</strong>: 2, 3, 4+ giorni/settimana</li>
+              <li><strong>Location</strong>: Gym, Home, Home Gym</li>
+              <li><strong>Pain Areas</strong>: Zone dolorose da evitare/adattare</li>
+              <li><strong>Running Interest</strong>: Interesse per corsa</li>
+            </ul>
+            <div class="file-ref">packages/web/src/components/Onboarding.tsx</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(139, 92, 246, 0.2);">🎯</div>
+            <div class="card-title">Screening Data (Pattern Baselines)</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li><strong>lower_push</strong>: Squat baseline (reps, peso)</li>
+              <li><strong>lower_pull</strong>: Deadlift baseline</li>
+              <li><strong>horizontal_push</strong>: Bench Press baseline</li>
+              <li><strong>horizontal_pull</strong>: Row baseline</li>
+              <li><strong>vertical_push</strong>: OHP baseline</li>
+              <li><strong>vertical_pull</strong>: Pull-up baseline</li>
+              <li><strong>core</strong>: Core baseline</li>
+            </ul>
+            <div class="file-ref">packages/web/src/components/Screening.tsx</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(34, 197, 94, 0.2);">🩹</div>
+            <div class="card-title">Pain Detect 2.0</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Body map con aree dolenti</li>
+              <li>Severity: mild, moderate, severe</li>
+              <li>Genera modifiche/sostituzioni esercizi</li>
+              <li>Integrato in screening e dashboard</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/painTracking.ts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇️</div>
+
+    <!-- PHASE 2: Goal Configuration -->
+    <div class="phase phase-2">
+      <div class="phase-header">
+        <div class="phase-number">2</div>
+        <div>
+          <div class="phase-title">🎯 Goal Configuration</div>
+          <div class="phase-desc">Normalizzazione e configurazione parametri per obiettivo</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(139, 92, 246, 0.2);">🔄</div>
+            <div class="card-title">Goal Normalization</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>"Forza" → "forza" (lowercase)</li>
+              <li>"Massa Muscolare" → "massa_muscolare"</li>
+              <li>Supporta italiano e inglese</li>
+              <li>Mapping alias per retrocompatibilità</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/goalMapper.ts</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(249, 115, 22, 0.2);">⚙️</div>
+            <div class="card-title">Goal Config</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Rep ranges per goal</li>
+              <li>Set ranges per livello</li>
+              <li>Rest periods</li>
+              <li>Intensity percentages</li>
+              <li>Volume targets</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/programGenerator.ts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇️</div>
+
+    <!-- PHASE 3: Split Generation -->
+    <div class="phase phase-3">
+      <div class="phase-header">
+        <div class="phase-number">3</div>
+        <div>
+          <div class="phase-title">📅 Weekly Split Generation</div>
+          <div class="phase-desc">Generazione struttura settimanale con DUP</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(34, 197, 94, 0.2);">📊</div>
+            <div class="card-title">Split Selection</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li><strong>2 giorni</strong>: Full Body A/B</li>
+              <li><strong>3 giorni</strong>: Full Body A/B/C</li>
+              <li><strong>4 giorni</strong>: Upper/Lower split</li>
+              <li><strong>5+ giorni</strong>: PPL o specializzato</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/weeklySplitGenerator.ts</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(239, 68, 68, 0.2);">🔥</div>
+            <div class="card-title">DUP Logic (getIntensityForPattern)</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Determina Heavy/Moderate/Volume per pattern</li>
+              <li>Ruota intensità tra i giorni</li>
+              <li>Mai tutti heavy nello stesso giorno (SNC)</li>
+              <li>Bilanciamento push/pull/legs</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/weeklySplitGenerator.ts:648</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(59, 130, 246, 0.2);">🏗️</div>
+            <div class="card-title">createExercise()</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Riceve patternId + baseline + dayType</li>
+              <li>Seleziona variante esercizio</li>
+              <li>Applica safety caps (gravidanza, etc.)</li>
+              <li>Chiama calculateVolume()</li>
+              <li>Applica pain management</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/weeklySplitGenerator.ts:2174</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇️</div>
+
+    <!-- PHASE 4: Volume Calculation -->
+    <div class="phase phase-4">
+      <div class="phase-header">
+        <div class="phase-number">4</div>
+        <div>
+          <div class="phase-title">📏 Volume Calculation</div>
+          <div class="phase-desc">Calcolo sets, reps, rest, intensity per esercizio</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(249, 115, 22, 0.2);">🏋️</div>
+            <div class="card-title">calculateVolumeWeighted()</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Per location = gym | home_gym</li>
+              <li>Modula carico e reps</li>
+              <li>Range fissi per goal FORZA</li>
+              <li>Range dinamici per altri goal</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/programGenerator.ts:2638</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(34, 197, 94, 0.2);">🤸</div>
+            <div class="card-title">calculateVolumeBodyweight()</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Per location = home</li>
+              <li>Modula variante + reps</li>
+              <li>Heavy = variante più difficile, meno reps</li>
+              <li>Volume = variante base, più reps</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/utils/programGenerator.ts:2837</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇️</div>
+
+    <!-- PHASE 5: Output -->
+    <div class="phase phase-5">
+      <div class="phase-header">
+        <div class="phase-number">5</div>
+        <div>
+          <div class="phase-title">📤 Output & Storage</div>
+          <div class="phase-desc">Salvataggio e visualizzazione programma</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(239, 68, 68, 0.2);">💾</div>
+            <div class="card-title">Program Storage</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Salvataggio su Supabase</li>
+              <li>Cache locale per offline</li>
+              <li>Versionamento programmi</li>
+              <li>History modifiche</li>
+            </ul>
+            <div class="file-ref">packages/shared/src/lib/programService.ts</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: rgba(59, 130, 246, 0.2);">📱</div>
+            <div class="card-title">UI Display</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Dashboard overview</li>
+              <li>Workout day details</li>
+              <li>Exercise cards con note DUP</li>
+              <li>Warmup generator integrato</li>
+            </ul>
+            <div class="file-ref">packages/web/src/components/Dashboard.tsx</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUP MATRIX SECTION -->
+    <div class="dup-section">
+      <div class="dup-matrix">
+        <div class="dup-header">⚡ DUP Matrix - Distribuzione Intensità per Frequenza</div>
+
+        <h3 style="padding: 1rem 1.5rem; color: var(--accent-yellow);">Frequenza 2 (3 Heavy per giorno)</h3>
+        <table class="dup-table">
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Giorno 1</th>
+              <th>Giorno 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="pattern-name">🦵 lower_push (Squat)</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">🦵 lower_pull (Stacco)</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td></tr>
+            <tr><td class="pattern-name">💪 horizontal_push (Panca)</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">💪 horizontal_pull (Row)</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td></tr>
+            <tr><td class="pattern-name">🙌 vertical_push (Military)</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td></tr>
+            <tr><td class="pattern-name">🙌 vertical_pull (Lat)</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">🎯 core</td><td class="volume">VOLUME</td><td class="volume">VOLUME</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="padding: 1rem 1.5rem; color: var(--accent-yellow);">Frequenza 3 (2 Heavy per giorno)</h3>
+        <table class="dup-table">
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Giorno 1</th>
+              <th>Giorno 2</th>
+              <th>Giorno 3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="pattern-name">🦵 lower_push (Squat)</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">🦵 lower_pull (Stacco)</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">💪 horizontal_push (Panca)</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">💪 horizontal_pull (Row)</td><td class="moderate">MODERATE</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td></tr>
+            <tr><td class="pattern-name">🙌 vertical_push (Military)</td><td class="moderate">MODERATE</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td></tr>
+            <tr><td class="pattern-name">🙌 vertical_pull (Lat)</td><td class="moderate">MODERATE</td><td class="heavy">HEAVY</td><td class="moderate">MODERATE</td></tr>
+            <tr><td class="pattern-name">🎯 core</td><td class="volume">VOLUME</td><td class="volume">VOLUME</td><td class="volume">VOLUME</td></tr>
+          </tbody>
+        </table>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(239, 68, 68, 0.5);"></div>
+            <span>HEAVY: 3-5 reps @ 80-92%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(249, 115, 22, 0.5);"></div>
+            <span>MODERATE: 5-6 reps @ 75-80%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: rgba(34, 197, 94, 0.5);"></div>
+            <span>VOLUME: 8-10 reps @ 70-75%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOALS SECTION -->
+    <div class="goals-section">
+      <h2 style="text-align: center; margin-bottom: 2rem; font-size: 1.75rem;">
+        🎯 Configurazione per Obiettivo (Weighted Training)
+      </h2>
+
+      <div class="goals-grid">
+
+        <!-- FORZA -->
+        <div class="goal-card goal-forza">
+          <div class="goal-header">💪 FORZA / STRENGTH</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">3-5</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4-6</div>sets</div>
+                <div class="detail-item"><div class="detail-value">80-92%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">5-6</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4-5</div>sets</div>
+                <div class="detail-item"><div class="detail-value">75-80%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-10</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">70-75%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IPERTROFIA -->
+        <div class="goal-card goal-ipertrofia">
+          <div class="goal-header">🏋️ IPERTROFIA / MASSA</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">6-8</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-5</div>sets</div>
+                <div class="detail-item"><div class="detail-value">80-85%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-12</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-5</div>sets</div>
+                <div class="detail-item"><div class="detail-value">70-80%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">10-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4-6</div>sets</div>
+                <div class="detail-item"><div class="detail-value">65-70%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIMAGRIMENTO -->
+        <div class="goal-card goal-dimagrimento">
+          <div class="goal-header">🔥 DIMAGRIMENTO / TONIFICAZIONE</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-10</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">75-80%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">10-12</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">70-75%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">12-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4-5</div>sets</div>
+                <div class="detail-item"><div class="detail-value">60-70%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESISTENZA -->
+        <div class="goal-card goal-resistenza">
+          <div class="goal-header">🏃 RESISTENZA / ENDURANCE</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">12-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">65-70%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">12-18</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">60-70%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">15-20</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-5</div>sets</div>
+                <div class="detail-item"><div class="detail-value">55-65%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BENESSERE -->
+        <div class="goal-card goal-benessere">
+          <div class="goal-header">🧘 BENESSERE / GENERAL FITNESS</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">6-10</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">75-80%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-12</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">70-78%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">10-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3-4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">65-75%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPORT PERFORMANCE -->
+        <div class="goal-card goal-sport">
+          <div class="goal-header">⚽ SPORT PERFORMANCE</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Heavy Day</span>
+                <span class="day-type-badge badge-heavy">HEAVY</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">4-6</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">80-85%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Moderate Day</span>
+                <span class="day-type-badge badge-moderate">MODERATE</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">6-10</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">70-80%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Volume Day</span>
+                <span class="day-type-badge badge-volume">VOLUME</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">10-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">4</div>sets</div>
+                <div class="detail-item"><div class="detail-value">65-75%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL GOALS -->
+        <div class="goal-card goal-special">
+          <div class="goal-header">♿ GOAL SPECIALI</div>
+          <div class="goal-body">
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Motor Recovery</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-12</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3</div>sets</div>
+                <div class="detail-item"><div class="detail-value">60-70%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Pregnancy</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">10-15</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3</div>sets</div>
+                <div class="detail-item"><div class="detail-value">50-65%</div>1RM</div>
+              </div>
+            </div>
+            <div class="day-type">
+              <div class="day-type-header">
+                <span class="day-type-name">Disability</span>
+              </div>
+              <div class="day-type-details">
+                <div class="detail-item"><div class="detail-value">8-12</div>reps</div>
+                <div class="detail-item"><div class="detail-value">3</div>sets</div>
+                <div class="detail-item"><div class="detail-value">60-70%</div>1RM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="notes">
+      <h3>⚠️ Note Importanti</h3>
+      <ul>
+        <li>La logica DUP (Daily Undulating Periodization) <strong>NON</strong> mette tutti gli esercizi pesanti nello stesso giorno per evitare affaticamento del SNC</li>
+        <li>Per <code>goal = forza</code>, i range di reps sono <strong>fissi</strong> e non dipendono dal baseline</li>
+        <li>Per altri goal, i range sono <strong>dinamici</strong> e si adattano al baseline dell'utente</li>
+        <li>Il parametro <code>dayType</code> viene calcolato da <code>getIntensityForPattern()</code> in base a pattern, giorno e frequenza</li>
+        <li>La funzione <code>calculateVolumeWeighted()</code> ora normalizza il goal a lowercase prima dei confronti</li>
+        <li>Le popolazioni speciali (gravidanza, disabilità) hanno cap di intensità automatici</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer style="text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 0.875rem;">
+    TrainSmart © 2024 - Information Architecture v2.0
+  </footer>
+</body>
+</html>

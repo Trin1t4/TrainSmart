@@ -2642,6 +2642,9 @@ function calculateVolumeWeighted(
   dayType: 'heavy' | 'volume' | 'moderate'
 ): VolumeResult {
 
+  // NORMALIZZA goal a lowercase per confronti sicuri
+  const goalLower = goal.toLowerCase();
+
   // Working reps: 75% del baseline (logica esistente, funziona per i pesi)
   const workingReps = Math.max(4, Math.floor(baselineMaxReps * 0.75));
 
@@ -2653,7 +2656,7 @@ function calculateVolumeWeighted(
 
   // FORZA (weighted) - Range fissi per DUP efficace
   // Non usa workingReps per evitare che tutti i giorni abbiano le stesse reps
-  if (goal === 'forza' || goal === 'strength') {
+  if (goalLower === 'forza' || goalLower === 'strength') {
     if (dayType === 'heavy') {
       // Heavy Day: Forza massimale - 3-5 reps con carico alto
       sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
@@ -2678,7 +2681,7 @@ function calculateVolumeWeighted(
     }
   }
   // IPERTROFIA (weighted)
-  else if (goal === 'massa' || goal === 'massa muscolare' || goal === 'muscle_gain' || goal === 'ipertrofia') {
+  else if (goalLower === 'massa' || goalLower === 'massa muscolare' || goalLower === 'muscle_gain' || goalLower === 'ipertrofia') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
       reps = workingReps <= 6 ? 6 : 8;
@@ -2700,7 +2703,7 @@ function calculateVolumeWeighted(
     }
   }
   // DIMAGRIMENTO / TONIFICAZIONE (weighted)
-  else if (goal === 'fat_loss' || goal === 'tonificazione' || goal === 'dimagrimento' || goal === 'definizione') {
+  else if (goalLower === 'fat_loss' || goalLower === 'tonificazione' || goalLower === 'dimagrimento' || goalLower === 'definizione') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(8, Math.min(workingReps, 10));
@@ -2722,7 +2725,7 @@ function calculateVolumeWeighted(
     }
   }
   // RESISTENZA (weighted)
-  else if (goal === 'endurance' || goal === 'resistenza') {
+  else if (goalLower === 'endurance' || goalLower === 'resistenza') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(12, Math.min(workingReps, 15));
@@ -2744,7 +2747,7 @@ function calculateVolumeWeighted(
     }
   }
   // BENESSERE / GENERAL FITNESS (weighted)
-  else if (goal === 'general_fitness' || goal === 'benessere') {
+  else if (goalLower === 'general_fitness' || goalLower === 'benessere') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : 4;
       reps = Math.max(6, Math.min(workingReps, 10));
@@ -2766,7 +2769,7 @@ function calculateVolumeWeighted(
     }
   }
   // SPORT PERFORMANCE (weighted)
-  else if (goal === 'sport_performance' || goal === 'prestazioni_sportive') {
+  else if (goalLower === 'sport_performance' || goalLower === 'prestazioni_sportive') {
     if (dayType === 'heavy') {
       sets = 4;
       reps = Math.max(4, Math.min(workingReps, 6));
@@ -2788,21 +2791,21 @@ function calculateVolumeWeighted(
     }
   }
   // GOAL SPECIALI (weighted)
-  else if (goal === 'motor_recovery' || goal === 'recupero_motorio') {
+  else if (goalLower === 'motor_recovery' || goalLower === 'recupero_motorio') {
     sets = 3;
     reps = Math.max(8, Math.min(workingReps, 12));
     rest = '90-120s';
     intensity = '60-70%';
     notes = 'Recupero motorio - Focus tecnica';
   }
-  else if (goal === 'pregnancy' || goal === 'gravidanza') {
+  else if (goalLower === 'pregnancy' || goalLower === 'gravidanza') {
     sets = 3;
     reps = Math.max(10, Math.min(workingReps, 15));
     rest = '90-120s';
     intensity = '50-65%';
     notes = 'Gravidanza - Intensità controllata';
   }
-  else if (goal === 'disability' || goal === 'disabilita') {
+  else if (goalLower === 'disability' || goalLower === 'disabilita') {
     sets = 3;
     reps = Math.max(8, Math.min(workingReps, 12));
     rest = '120s';

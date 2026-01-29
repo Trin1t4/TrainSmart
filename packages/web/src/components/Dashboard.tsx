@@ -1750,7 +1750,20 @@ export default function Dashboard() {
                 </div>
               </div>
               <button
-                onClick={() => setShowAddRunningModal(true)}
+                onClick={() => {
+                  // Se manca l'intero onboarding, naviga a onboarding
+                  if (missingOnboardingParts.includes('onboarding')) {
+                    navigate('/onboarding');
+                  }
+                  // Se manca interesse corsa o integrazione, naviga a onboarding sezione running
+                  else if (missingOnboardingParts.includes('running_interest') || missingOnboardingParts.includes('running_integration')) {
+                    navigate('/onboarding', { state: { section: 'running' } });
+                  }
+                  // Fallback: mostra modale corsa
+                  else {
+                    setShowAddRunningModal(true);
+                  }
+                }}
                 className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
               >
                 Completa Ora
