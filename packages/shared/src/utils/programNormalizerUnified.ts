@@ -34,6 +34,14 @@ export interface NormalizedExercise {
   isFinisher?: boolean;
   baseline?: any;
   superset?: boolean;
+  /** ⚠️ IMPORTANTE: Configurazione riscaldamento specifica per questo esercizio */
+  warmup?: {
+    sets: number;
+    reps: number;
+    percentage: number;
+    note?: string;
+    ramp?: Array<{ reps: number; percentage: number }>;
+  };
 }
 
 export interface NormalizedDay {
@@ -214,6 +222,15 @@ function normalizeExercise(ex: any, dayIndex: number, exIndex: number): Normaliz
     };
   }
 
+  // ⚠️ Preserva l'oggetto warmup se esiste (NON convertirlo in boolean!)
+  const warmupData = ex.warmup && typeof ex.warmup === 'object' ? {
+    sets: ex.warmup.sets || 2,
+    reps: ex.warmup.reps || 6,
+    percentage: ex.warmup.percentage || 60,
+    note: ex.warmup.note,
+    ramp: ex.warmup.ramp,
+  } : undefined;
+
   return {
     id: ex.id || generateExerciseId(dayIndex, exIndex, ex.name),
     name: ex.name || `Exercise ${exIndex + 1}`,
@@ -228,10 +245,11 @@ function normalizeExercise(ex: any, dayIndex: number, exIndex: number): Normaliz
     notes: ex.notes,
     videoUrl: ex.videoUrl ?? ex.video_url,
     alternatives: ex.alternatives,
-    isWarmup: ex.isWarmup ?? ex.warmup ?? false,
+    isWarmup: ex.isWarmup ?? (typeof ex.warmup === 'boolean' ? ex.warmup : false),
     isFinisher: ex.isFinisher ?? ex.finisher ?? false,
     baseline: ex.baseline,
     superset: ex.superset,
+    warmup: warmupData, // ⚠️ Ora il warmup viene preservato!
   };
 }
 
