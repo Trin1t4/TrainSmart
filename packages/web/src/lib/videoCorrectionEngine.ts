@@ -252,7 +252,9 @@ export class VideoCorrectionEngine {
   }
 
   /**
-   * Analizza un video usando il sistema interno con fallback a Gemini
+   * Analizza un video usando il sistema interno (MediaPipe + Biomechanics Engine)
+   *
+   * ⚠️ NO FALLBACK ESTERNO - Solo analisi interna per privacy e costi
    */
   async analyzeVideo(
     videoBlob: Blob,
@@ -264,15 +266,25 @@ export class VideoCorrectionEngine {
 
     // 1. Verifica supporto MediaPipe
     if (!isPoseDetectionSupported()) {
-      console.log('[VideoCorrectionEngine] WebGL not supported, using Gemini fallback');
-      return this.fallbackToGemini(videoBlob, exerciseName, userId, correctionId);
+      console.log('[VideoCorrectionEngine] WebGL not supported');
+      this.updateProgress('failed', 100, 'Browser non supportato');
+      return {
+        success: false,
+        source: 'failed',
+        error: 'Il tuo browser non supporta WebGL. Prova con Chrome, Firefox o Edge aggiornati.'
+      };
     }
 
     // 2. Mappa l'esercizio
     const supportedExercise = mapExerciseToSupported(exerciseName);
     if (!supportedExercise) {
-      console.log(`[VideoCorrectionEngine] Exercise "${exerciseName}" not supported internally, using Gemini`);
-      return this.fallbackToGemini(videoBlob, exerciseName, userId, correctionId);
+      console.log(`[VideoCorrectionEngine] Exercise "${exerciseName}" not supported`);
+      this.updateProgress('failed', 100, 'Esercizio non supportato');
+      return {
+        success: false,
+        source: 'failed',
+        error: `L'esercizio "${exerciseName}" non è ancora supportato per l'analisi video. Supportiamo: Squat, Deadlift, Bench Press, Overhead Press, Row, Lunge.`
+      };
     }
 
     try {
@@ -281,7 +293,7 @@ export class VideoCorrectionEngine {
       const poseDetector = getPoseDetector();
       await poseDetector.initialize();
 
-      // 4. Estrai landmark dal video
+      // 4. Estrai landmark dal video (⚠️ Solo porzione centrale per evitare walk-in/walk-out)
       this.updateProgress('extracting', 10, 'Estrazione movimento dal video...');
 
       const videoResult = await poseDetector.analyzeVideoBlob(
@@ -295,7 +307,12 @@ export class VideoCorrectionEngine {
 
       if (!videoResult.success || videoResult.frameSequence.length === 0) {
         console.log('[VideoCorrectionEngine] Pose detection failed:', videoResult.error);
-        return this.fallbackToGemini(videoBlob, exerciseName, userId, correctionId);
+        this.updateProgress('failed', 100, 'Rilevamento pose fallito');
+        return {
+          success: false,
+          source: 'failed',
+          error: videoResult.error || 'Non riesco a rilevare la tua posizione nel video. Assicurati di essere completamente inquadrato e ben illuminato.'
+        };
       }
 
       // 5. Analizza con il Biomechanics Engine
@@ -327,104 +344,11 @@ export class VideoCorrectionEngine {
 
     } catch (error) {
       console.error('[VideoCorrectionEngine] Internal analysis failed:', error);
-      return this.fallbackToGemini(videoBlob, exerciseName, userId, correctionId);
-    }
-  }
-
-  /**
-   * Fallback a Gemini quando l'analisi interna fallisce
-   */
-  private async fallbackToGemini(
-    videoBlob: Blob,
-    exerciseName: string,
-    userId?: string,
-    correctionId?: string
-  ): Promise<CorrectionResult> {
-    this.updateProgress('fallback', 50, 'Utilizzo AI avanzata per analisi...');
-
-    if (!userId || !correctionId) {
-      return {
-        success: false,
-        source: 'failed',
-        error: 'Analisi fallita: parametri mancanti per il fallback'
-      };
-    }
-
-    try {
-      // Chiama la Edge Function esistente di Gemini
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-
-      if (!accessToken) {
-        throw new Error('No access token available');
-      }
-
-      // Upload video to storage first (se non già fatto)
-      const timestamp = Date.now();
-      const filename = `${exerciseName.replace(/\s+/g, '-')}_${timestamp}.mp4`;
-      const filePath = `${userId}/${filename}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('user-exercise-videos')
-        .upload(filePath, videoBlob, { contentType: 'video/mp4' });
-
-      if (uploadError && !uploadError.message.includes('already exists')) {
-        throw uploadError;
-      }
-
-      // Update correction record with video path
-      await supabase
-        .from('video_corrections')
-        .update({
-          video_url: filePath,
-          ai_model_used: 'gemini-1.5-pro-fallback'
-        })
-        .eq('id', correctionId);
-
-      // Call Gemini Edge Function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/analyze-exercise-video`;
-
-      const response = await fetch(edgeFunctionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          video_url: filePath,
-          exercise_name: exerciseName,
-          user_id: userId,
-          correction_id: correctionId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
-      }
-
-      const geminiResult = await response.json();
-
-      this.updateProgress('completed', 100, 'Analisi biomeccanica completata!');
-
-      return {
-        success: true,
-        source: 'gemini',
-        score: geminiResult.feedback?.score,
-        issues: [],  // Gemini restituisce in formato diverso, il polling leggerà dal DB
-        corrections: [],
-        warnings: []
-      };
-
-    } catch (error) {
-      console.error('[VideoCorrectionEngine] Gemini fallback failed:', error);
-
       this.updateProgress('failed', 100, 'Analisi fallita');
-
       return {
         success: false,
         source: 'failed',
-        error: error instanceof Error ? error.message : 'Analisi fallita'
+        error: error instanceof Error ? error.message : 'Errore durante l\'analisi. Riprova con un video più breve e ben illuminato.'
       };
     }
   }

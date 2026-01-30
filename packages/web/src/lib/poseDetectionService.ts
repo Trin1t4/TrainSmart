@@ -133,6 +133,80 @@ function calculateConfidence(landmarks: PoseLandmarks): number {
 }
 
 /**
+ * ⚠️ SMART DETECTION: Rileva se la persona sta camminando o è ferma
+ *
+ * Calcola il movimento orizzontale delle anche (walking indicator)
+ * Se le anche si muovono molto orizzontalmente → camminata
+ * Se le anche si muovono principalmente verticalmente → esercizio
+ */
+function calculateHorizontalMotion(currentFrame: PoseLandmarks, previousFrame: PoseLandmarks): number {
+  const hipDeltaX = Math.abs(
+    ((currentFrame.left_hip.x + currentFrame.right_hip.x) / 2) -
+    ((previousFrame.left_hip.x + previousFrame.right_hip.x) / 2)
+  );
+  return hipDeltaX;
+}
+
+/**
+ * Rileva se i piedi sono "piantati" (non in movimento orizzontale)
+ * Utile per capire quando la persona è in posizione per l'esercizio
+ */
+function areFeetPlanted(currentFrame: PoseLandmarks, previousFrame: PoseLandmarks, threshold: number = 0.02): boolean {
+  const leftFootDeltaX = Math.abs(currentFrame.left_ankle.x - previousFrame.left_ankle.x);
+  const rightFootDeltaX = Math.abs(currentFrame.right_ankle.x - previousFrame.right_ankle.x);
+
+  return leftFootDeltaX < threshold && rightFootDeltaX < threshold;
+}
+
+/**
+ * Trova la "finestra di esercizio" analizzando il movimento
+ * Restituisce l'indice di inizio e fine dei frame validi
+ */
+function findExerciseWindow(
+  frames: PoseLandmarks[],
+  minStableFrames: number = 3
+): { startIndex: number; endIndex: number } {
+  if (frames.length < minStableFrames * 2) {
+    return { startIndex: 0, endIndex: frames.length - 1 };
+  }
+
+  let startIndex = 0;
+  let endIndex = frames.length - 1;
+
+  // Trova inizio: primo punto dove i piedi sono stabili per N frame consecutivi
+  let stableCount = 0;
+  for (let i = 1; i < frames.length - minStableFrames; i++) {
+    if (areFeetPlanted(frames[i], frames[i - 1])) {
+      stableCount++;
+      if (stableCount >= minStableFrames) {
+        startIndex = Math.max(0, i - minStableFrames);
+        console.log(`[SmartDetection] 🎯 Exercise start detected at frame ${startIndex}`);
+        break;
+      }
+    } else {
+      stableCount = 0;
+    }
+  }
+
+  // Trova fine: ultimo punto dove i piedi sono ancora stabili
+  stableCount = 0;
+  for (let i = frames.length - 2; i > startIndex + minStableFrames; i--) {
+    if (areFeetPlanted(frames[i], frames[i + 1])) {
+      stableCount++;
+      if (stableCount >= minStableFrames) {
+        endIndex = Math.min(frames.length - 1, i + minStableFrames);
+        console.log(`[SmartDetection] 🎯 Exercise end detected at frame ${endIndex}`);
+        break;
+      }
+    } else {
+      stableCount = 0;
+    }
+  }
+
+  return { startIndex, endIndex };
+}
+
+/**
  * Classe principale per il Pose Detection
  * Usa MediaPipe Pose per estrarre i landmark frame by frame
  */
@@ -217,6 +291,13 @@ export class PoseDetector {
 
   /**
    * Analizza un video completo e restituisce la sequenza di landmark
+   *
+   * ⚠️ IMPORTANTE: Analizza solo la PORZIONE CENTRALE del video
+   * Questo evita di catturare l'utente mentre cammina verso la postazione
+   * o mentre si allontana alla fine.
+   *
+   * Strategia: Salta il primo 20% e l'ultimo 20% del video
+   * Analizza solo il 60% centrale (dove presumibilmente si svolge l'esercizio)
    */
   async analyzeVideo(
     videoElement: HTMLVideoElement,
@@ -228,8 +309,23 @@ export class PoseDetector {
     }
 
     const frameSequence: PoseLandmarks[] = [];
-    const duration = videoElement.duration;
-    const totalFrames = Math.floor(duration * targetFps);
+    const totalDuration = videoElement.duration;
+
+    // ⚠️ SMART FRAME SELECTION: Analizza solo la porzione centrale del video
+    // Salta il primo 20% (camminata verso postazione) e l'ultimo 20% (uscita)
+    const SKIP_START_PERCENT = 0.20;  // Salta primo 20%
+    const SKIP_END_PERCENT = 0.20;    // Salta ultimo 20%
+
+    const startTime = totalDuration * SKIP_START_PERCENT;
+    const endTime = totalDuration * (1 - SKIP_END_PERCENT);
+    const analyzeDuration = endTime - startTime;
+
+    // Se il video è troppo corto (< 5 secondi), analizza tutto
+    const effectiveStartTime = totalDuration < 5 ? 0 : startTime;
+    const effectiveEndTime = totalDuration < 5 ? totalDuration : endTime;
+    const effectiveDuration = effectiveEndTime - effectiveStartTime;
+
+    const totalFrames = Math.floor(effectiveDuration * targetFps);
     const frameInterval = 1 / targetFps;
 
     let confidenceSum = 0;
@@ -241,7 +337,11 @@ export class PoseDetector {
     canvas.height = videoElement.videoHeight;
     const ctx = canvas.getContext('2d')!;
 
-    console.log(`[PoseDetector] Analyzing video: ${duration}s, ${totalFrames} frames at ${targetFps} fps`);
+    console.log(`[PoseDetector] Analyzing video: ${totalDuration}s total`);
+    console.log(`[PoseDetector] ⏱️ Smart selection: analyzing ${effectiveStartTime.toFixed(1)}s - ${effectiveEndTime.toFixed(1)}s (${totalFrames} frames at ${targetFps} fps)`);
+    if (totalDuration >= 5) {
+      console.log(`[PoseDetector] ⚠️ Skipping first ${(SKIP_START_PERCENT * 100)}% and last ${(SKIP_END_PERCENT * 100)}% to avoid walk-in/walk-out`);
+    }
 
     onProgress?.({
       currentFrame: 0,
@@ -251,7 +351,8 @@ export class PoseDetector {
     });
 
     for (let i = 0; i < totalFrames; i++) {
-      const currentTime = i * frameInterval;
+      // ⚠️ Inizia da effectiveStartTime, non da 0
+      const currentTime = effectiveStartTime + (i * frameInterval);
 
       // Seek to frame
       videoElement.currentTime = currentTime;
@@ -298,11 +399,28 @@ export class PoseDetector {
         success: false,
         frameSequence: [],
         fps: targetFps,
-        duration,
+        duration: effectiveDuration,
         averageConfidence: 0,
         error: `Pose detection riuscita solo nel ${Math.round(validPercentage * 100)}% dei frame. Assicurati di essere completamente inquadrato.`
       };
     }
+
+    // ⚠️ SMART DETECTION: Trova la finestra dove l'esercizio è effettivamente eseguito
+    // Questo filtra ulteriormente i frame dove la persona sta ancora camminando
+    console.log(`[PoseDetector] 🔍 Running smart exercise detection...`);
+    const exerciseWindow = findExerciseWindow(frameSequence, 3);
+
+    // Estrai solo i frame nella finestra di esercizio
+    const filteredFrames = frameSequence.slice(exerciseWindow.startIndex, exerciseWindow.endIndex + 1);
+    const framesRemoved = frameSequence.length - filteredFrames.length;
+
+    if (framesRemoved > 0) {
+      console.log(`[PoseDetector] 🎯 Smart detection removed ${framesRemoved} frames (walk-in/walk-out)`);
+      console.log(`[PoseDetector] 📊 Using frames ${exerciseWindow.startIndex}-${exerciseWindow.endIndex} of ${frameSequence.length}`);
+    }
+
+    // Ricalcola confidence sui frame filtrati
+    const filteredConfidence = filteredFrames.reduce((sum, frame) => sum + calculateConfidence(frame), 0) / filteredFrames.length;
 
     onProgress?.({
       currentFrame: totalFrames,
@@ -311,12 +429,14 @@ export class PoseDetector {
       status: 'completed'
     });
 
+    console.log(`[PoseDetector] ✅ Analysis complete: ${filteredFrames.length} exercise frames (${Math.round(filteredConfidence * 100)}% confidence)`);
+
     return {
       success: true,
-      frameSequence,
+      frameSequence: filteredFrames,
       fps: targetFps,
-      duration,
-      averageConfidence: validFrames > 0 ? confidenceSum / validFrames : 0
+      duration: filteredFrames.length / targetFps,
+      averageConfidence: filteredConfidence
     };
   }
 
