@@ -41,6 +41,8 @@ interface SlimOnboardingData {
   location: 'gym' | 'home';
   trainingType: 'bodyweight' | 'equipment' | 'machines'; // Tipo allenamento
   frequency: number;
+  // ⚠️ CRITICO: sessionDuration attiva adaptWorkoutToTimeLimit - NON RIMUOVERE
+  sessionDuration: 30 | 45 | 60 | 90; // Durata sessione in minuti
   painAreas: PainEntry[];
   equipment?: Record<string, boolean>;
 }
@@ -114,6 +116,7 @@ export default function SlimOnboarding() {
     location: 'gym',
     trainingType: 'equipment', // Default: pesi liberi
     frequency: 3,
+    sessionDuration: 60, // Default: 60 minuti
     painAreas: [],
     equipment: {},
   });
@@ -204,6 +207,27 @@ export default function SlimOnboarding() {
         trainingLocation: data.location,
         trainingType: data.trainingType,
         frequency: data.frequency,
+        // ╔════════════════════════════════════════════════════════════════════════════╗
+        // ║  ⚠️  ATTENZIONE - SEZIONE CRITICA - NON MODIFICARE  ⚠️                     ║
+        // ║                                                                            ║
+        // ║  activityLevel.sessionDuration DEVE essere salvato per attivare           ║
+        // ║  il sistema adaptWorkoutToTimeLimit in weeklySplitGenerator.ts            ║
+        // ║                                                                            ║
+        // ║  FLUSSO:                                                                   ║
+        // ║  1. Utente seleziona durata (30/45/60/90 min) nello Step 3                ║
+        // ║  2. Salvato in activityLevel.sessionDuration                              ║
+        // ║  3. Dashboard legge: onboarding?.activityLevel?.sessionDuration           ║
+        // ║  4. Passa a generateProgramWithSplit({ sessionDuration })                 ║
+        // ║  5. weeklySplitGenerator chiama adaptWorkoutToTimeLimit se necessario     ║
+        // ║                                                                            ║
+        // ║  SE RIMOSSO: Il sistema NON adatterà i workout al tempo disponibile!      ║
+        // ║                                                                            ║
+        // ║  Data ultima modifica: 2025-01-30                                         ║
+        // ╚════════════════════════════════════════════════════════════════════════════╝
+        activityLevel: {
+          weeklyFrequency: data.frequency,
+          sessionDuration: data.sessionDuration,
+        },
         painAreas: data.painAreas,
         equipment: data.equipment,
         screeningType: 'light', // Default: light screening
@@ -630,6 +654,30 @@ export default function SlimOnboarding() {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ⚠️ Session Duration - CRITICO per adaptWorkoutToTimeLimit - NON RIMUOVERE */}
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">
+          Quanto tempo hai per allenarti?
+        </label>
+        <div className="grid grid-cols-4 gap-2">
+          {([30, 45, 60, 90] as const).map(d => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => updateData({ sessionDuration: d })}
+              className={`py-3 rounded-lg font-bold transition-all ${
+                data.sessionDuration === d
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              <div className="text-lg">{d}</div>
+              <div className="text-xs opacity-75">min</div>
+            </button>
+          ))}
         </div>
       </div>
 

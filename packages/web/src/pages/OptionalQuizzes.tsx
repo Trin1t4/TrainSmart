@@ -10,7 +10,7 @@
  * L'utente può completare uno, alcuni, tutti o nessuno prima di procedere.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../hooks/useAuth';
@@ -100,6 +100,51 @@ export default function OptionalQuizzes() {
   const [isNavigating, setIsNavigating] = useState(false);
 
   // ============================================================================
+  // INIT - Controlla quiz già completati
+  // ============================================================================
+
+  useEffect(() => {
+    const completed = new Set<QuizType>();
+    const previousQuizTimestamp = sessionStorage.getItem('last_quiz_timestamp');
+
+    // Controlla quiz biomeccanico
+    const quizData = localStorage.getItem('quiz_data');
+    if (quizData) {
+      try {
+        const parsed = JSON.parse(quizData);
+        if (parsed.completedAt) {
+          completed.add('biomechanics');
+
+          // Se il quiz è stato appena completato (timestamp diverso), trigger rigenerazione
+          if (previousQuizTimestamp !== parsed.completedAt) {
+            sessionStorage.setItem('last_quiz_timestamp', parsed.completedAt);
+            // Solo se c'era già un programma (non primo onboarding)
+            const hasProgram = localStorage.getItem('currentProgram') || sessionStorage.getItem('had_program');
+            if (hasProgram || previousQuizTimestamp) {
+              localStorage.setItem('regenerate_program', 'quiz');
+              console.log('[OPTIONAL_QUIZZES] Quiz biomeccanico completato - programma verrà rigenerato');
+            }
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Controlla massimali
+    if (user) {
+      const maximals = localStorage.getItem(`maximals_${user.id}`);
+      if (maximals) {
+        completed.add('maximals');
+      }
+    }
+
+    if (completed.size > 0) {
+      setCompletedQuizzes(completed);
+    }
+  }, [user]);
+
+  // ============================================================================
   // HANDLERS
   // ============================================================================
 
@@ -110,6 +155,9 @@ export default function OptionalQuizzes() {
       // Salva i dati specifici del quiz
       if (quizType === 'maximals' && data) {
         await saveMaximals(data);
+        // Trigger rigenerazione programma con nuovi massimali
+        localStorage.setItem('regenerate_program', 'maximals');
+        console.log('[OPTIONAL_QUIZZES] Massimali salvati - programma verrà rigenerato');
       }
       // Altri quiz salvano i loro dati internamente
 
@@ -523,11 +571,18 @@ function BodyMeasuresPlaceholder({ onComplete, onSkip }: { onComplete: () => voi
 }
 
 function BiomechanicsQuizPlaceholder({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
+  const navigate = useNavigate();
+
+  const handleStartQuiz = () => {
+    // Naviga al quiz vero, con state per tornare qui dopo
+    navigate('/quiz-full', { state: { returnTo: '/optional-quizzes' } });
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
         <p className="text-emerald-200">
-          Qui verrà integrato il Quiz Biomeccanico esistente:
+          Test le tue conoscenze biomeccaniche:
         </p>
         <ul className="text-emerald-300/80 text-sm mt-2 space-y-1">
           <li>• Domande su mobilità e flessibilità</li>
@@ -544,7 +599,7 @@ function BiomechanicsQuizPlaceholder({ onComplete, onSkip }: { onComplete: () =>
           Salta
         </button>
         <button
-          onClick={onComplete}
+          onClick={handleStartQuiz}
           className="flex-1 bg-emerald-500 text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition"
         >
           Inizia quiz

@@ -553,38 +553,38 @@ function enrichExercisesWithWeights(
  * ║                                                                              ║
  * ╠══════════════════════════════════════════════════════════════════════════════╣
  * ║                                                                              ║
- * ║  📅 FREQUENZA 2 (2 giorni/settimana)                                         ║
+ * ║  📅 FREQUENZA 2 (2 giorni/settimana) - DUP VERA: HEAVY + VOLUME              ║
  * ║  ────────────────────────────────────                                        ║
- * ║  → 3 heavy per giorno (bilanciati push/pull/lower)                          ║
+ * ║  → 3 heavy per giorno + 3 volume (alternati tra i giorni)                   ║
  * ║                                                                              ║
  * ║  GIORNO 1: Squat + Panca + Lat ──────────────────────────────→ HEAVY        ║
- * ║            Stacco, Military, Row, Core ──────────────────────→ MODERATE     ║
+ * ║            Stacco, Military, Row, Core ──────────────────────→ VOLUME       ║
  * ║                                                                              ║
  * ║  GIORNO 2: Stacco + Military + Row ──────────────────────────→ HEAVY        ║
- * ║            Squat, Panca, Lat, Core ──────────────────────────→ MODERATE     ║
+ * ║            Squat, Panca, Lat, Core ──────────────────────────→ VOLUME       ║
  * ║                                                                              ║
  * ╠══════════════════════════════════════════════════════════════════════════════╣
  * ║                                                                              ║
- * ║  📅 FREQUENZA 3 (3 giorni/settimana)                                         ║
+ * ║  📅 FREQUENZA 3 (3 giorni/settimana) - DUP VERA: HEAVY + VOLUME              ║
  * ║  ────────────────────────────────────                                        ║
- * ║  → 2 heavy per giorno (1 lower + 1 upper, oppure 2 upper)                   ║
+ * ║  → 2 heavy per giorno + resto volume                                        ║
  * ║                                                                              ║
  * ║  GIORNO 1: Squat + Panca ────────────────────────────────────→ HEAVY        ║
- * ║            Stacco, Military, Lat, Row, Core ─────────────────→ MODERATE     ║
+ * ║            Stacco, Military, Lat, Row, Core ─────────────────→ VOLUME       ║
  * ║                                                                              ║
  * ║  GIORNO 2: Stacco + Lat ─────────────────────────────────────→ HEAVY        ║
- * ║            Squat, Panca, Military, Row, Core ────────────────→ MODERATE     ║
+ * ║            Squat, Panca, Military, Row, Core ────────────────→ VOLUME       ║
  * ║                                                                              ║
  * ║  GIORNO 3: Military + Row ───────────────────────────────────→ HEAVY        ║
- * ║            Squat, Stacco, Panca, Lat, Core ──────────────────→ MODERATE     ║
+ * ║            Squat, Stacco, Panca, Lat, Core ──────────────────→ VOLUME       ║
  * ║                                                                              ║
  * ╠══════════════════════════════════════════════════════════════════════════════╣
  * ║                                                                              ║
- * ║  📅 FREQUENZA 4+ (4+ giorni/settimana)                                       ║
+ * ║  📅 FREQUENZA 4+ (4+ giorni/settimana) - DUP VERA: HEAVY + VOLUME            ║
  * ║  ─────────────────────────────────────                                       ║
  * ║  → 1 heavy per giorno, ruotando tra i compound principali                   ║
  * ║  → Squat, Stacco, Panca ruotano come heavy                                  ║
- * ║  → Gli altri alternano moderate/volume                                       ║
+ * ║  → Tutto il resto sempre volume (8-10 reps)                                 ║
  * ║                                                                              ║
  * ╠══════════════════════════════════════════════════════════════════════════════╣
  * ║                                                                              ║
@@ -663,26 +663,26 @@ function getIntensityForPattern(
   }
 
   // ============================================================
-  // FREQUENZA 2: 3 heavy per giorno (bilanciati push/pull/lower)
-  // G1: Squat, Panca, Lat → HEAVY
-  // G2: Stacco, Military, Row → HEAVY
+  // FREQUENZA 2: DUP vera - HEAVY + VOLUME (no moderate!)
+  // G1: Squat, Panca, Lat → HEAVY | Stacco, Military, Row → VOLUME
+  // G2: Stacco, Military, Row → HEAVY | Squat, Panca, Lat → VOLUME
   // ============================================================
   if (frequency === 2) {
     const day1Heavy = ['lower_push', 'horizontal_push', 'vertical_pull'];
     const day2Heavy = ['lower_pull', 'vertical_push', 'horizontal_pull'];
 
     if (dayIndex === 0) {
-      return day1Heavy.includes(patternId) ? 'heavy' : 'moderate';
+      return day1Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else {
-      return day2Heavy.includes(patternId) ? 'heavy' : 'moderate';
+      return day2Heavy.includes(patternId) ? 'heavy' : 'volume';
     }
   }
 
   // ============================================================
-  // FREQUENZA 3: 2 heavy per giorno (1 lower + 1 upper, o 2 upper)
-  // G1: Squat + Panca → HEAVY
-  // G2: Stacco + Lat → HEAVY
-  // G3: Military + Row → HEAVY (solo upper, nessun lower)
+  // FREQUENZA 3: DUP vera - 2 HEAVY + resto VOLUME per giorno
+  // G1: Squat + Panca → HEAVY | resto → VOLUME
+  // G2: Stacco + Lat → HEAVY | resto → VOLUME
+  // G3: Military + Row → HEAVY | resto → VOLUME
   // ============================================================
   if (frequency === 3) {
     const day1Heavy = ['lower_push', 'horizontal_push'];      // Squat + Panca
@@ -690,17 +690,17 @@ function getIntensityForPattern(
     const day3Heavy = ['vertical_push', 'horizontal_pull'];   // Military + Row
 
     if (dayIndex === 0) {
-      return day1Heavy.includes(patternId) ? 'heavy' : 'moderate';
+      return day1Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else if (dayIndex === 1) {
-      return day2Heavy.includes(patternId) ? 'heavy' : 'moderate';
+      return day2Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else {
-      return day3Heavy.includes(patternId) ? 'heavy' : 'moderate';
+      return day3Heavy.includes(patternId) ? 'heavy' : 'volume';
     }
   }
 
   // ============================================================
-  // FREQUENZA 4+: rotazione estesa con 1 heavy per giorno
-  // Ruota i compound principali, il resto moderate/volume
+  // FREQUENZA 4+: DUP vera - 1 HEAVY per giorno + resto VOLUME
+  // Ruota i compound principali, il resto sempre volume
   // ============================================================
   if (frequency >= 4) {
     // Solo i 3 compound principali possono essere heavy
@@ -714,12 +714,12 @@ function getIntensityForPattern(
       }
     }
 
-    // Alterna moderate/volume per il resto
-    return dayIndex % 2 === 0 ? 'moderate' : 'volume';
+    // Tutto il resto è volume
+    return 'volume';
   }
 
-  // Fallback: moderate
-  return 'moderate';
+  // Fallback: volume
+  return 'volume';
 }
 
 /**
@@ -2618,6 +2618,48 @@ function generateCorrectiveExercises(
 /**
  * FUNZIONE PRINCIPALE - Genera split settimanale basato su frequenza
  */
+
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  ⚠️  ATTENZIONE - FUNZIONE CRITICA - NON MODIFICARE  ⚠️                      ║
+// ║                                                                              ║
+// ║  adaptWorkoutToTimeLimit - Sistema di adattamento tempo GOAL-AWARE           ║
+// ║                                                                              ║
+// ║  Questa funzione gestisce l'adattamento intelligente dell'allenamento        ║
+// ║  quando l'utente ha tempo limitato (sessionDuration).                        ║
+// ║                                                                              ║
+// ║  STRATEGIA A 4 STEP (IN ORDINE DI PRIORITÀ):                                 ║
+// ║  ─────────────────────────────────────────────                               ║
+// ║  STEP 0: Superset - Crea superset per risparmiare tempo SENZA perdere        ║
+// ║          volume (es. panca + rematore insieme = -20/30% tempo)               ║
+// ║                                                                              ║
+// ║  STEP 1: Rimuovi NON-goal-aligned - Elimina esercizi priorità 3              ║
+// ║          (accessori non allineati all'obiettivo dell'utente)                 ║
+// ║                                                                              ║
+// ║  STEP 2: Riduci serie NON-goal - Riduce serie su esercizi non allineati      ║
+// ║          (es. da 4x12 a 3x12 su curl se goal = forza)                        ║
+// ║                                                                              ║
+// ║  STEP 3: Rimuovi accessori goal-aligned - Ultimo resort prima di toccare     ║
+// ║          i principali, rimuove anche accessori allineati al goal             ║
+// ║                                                                              ║
+// ║  STEP 4: Riduci serie PRINCIPALI - Solo se tutto il resto non basta,         ║
+// ║          riduce le serie sugli esercizi core del goal                        ║
+// ║                                                                              ║
+// ║  PRIORITÀ ESERCIZI:                                                          ║
+// ║  0 = Compound + Goal-aligned (MAX priorità, toccare per ultimo)              ║
+// ║  1 = Compound + Non goal-aligned                                             ║
+// ║  2 = Accessorio + Goal-aligned                                               ║
+// ║  3 = Accessorio + Non goal-aligned (MIN priorità, rimuovere per primo)       ║
+// ║                                                                              ║
+// ║  GOAL ALIGNMENT:                                                             ║
+// ║  - FORZA: preserva esercizi 3-6 reps, rest ≥120s, intensità ≥80%            ║
+// ║  - IPERTROFIA: preserva esercizi 8-15 reps, rest 60-120s                     ║
+// ║  - DIMAGRIMENTO: preserva esercizi 10+ reps, rest ≤75s                       ║
+// ║  - RESISTENZA: preserva esercizi 12+ reps, rest ≤60s                         ║
+// ║                                                                              ║
+// ║  Data ultima modifica: 2025-01-30                                            ║
+// ║  Motivo: Documentazione strategia adattamento tempo                          ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
 /**
  * Adatta workout al tempo disponibile con strategia GOAL-AWARE
  *

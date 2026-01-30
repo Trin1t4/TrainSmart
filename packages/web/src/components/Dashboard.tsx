@@ -707,8 +707,8 @@ export default function Dashboard() {
         return false;
       }
 
-      // Se non c'è screening, usa "beginner" come default (SlimOnboarding flow)
-      const screeningLevel = screening?.level || 'beginner';
+      // Se non c'è screening, usa quiz.level come fallback, poi "beginner" come default
+      const screeningLevel = screening?.level || quiz?.level || 'beginner';
 
       // Beta tester can override the screening level
       const userLevel = fitnessLevelOverride || screeningLevel;
@@ -718,7 +718,8 @@ export default function Dashboard() {
       const mappedGoal = originalGoal;
 
       console.group('PROGRAM GENERATION');
-      console.log('Level from Screening:', screening?.level || 'N/A (default: beginner)');
+      console.log('Level from Screening:', screening?.level || 'N/A');
+      console.log('Level from Quiz:', quiz?.level || 'N/A');
       console.log('Level Override (Beta):', fitnessLevelOverride);
       console.log('Final Level:', userLevel);
       console.log('Screening Scores:', {
@@ -926,6 +927,24 @@ export default function Dashboard() {
     }
   }, [dataStatus.onboarding, program, programLoading, autoGenerateTriggered, generatingProgram, handleGenerateProgram]);
 
+  // ===== AUTO-REGENERATE: Quando quiz o massimali vengono aggiornati =====
+  useEffect(() => {
+    const shouldRegenerate = localStorage.getItem('regenerate_program');
+
+    if (shouldRegenerate && program && !programLoading && !generatingProgram && dataStatus.onboarding) {
+      console.log('🔄 [AUTO-REGEN] Quiz/Massimali updated, regenerating program...');
+      localStorage.removeItem('regenerate_program');
+
+      handleGenerateProgram().then((success) => {
+        if (success) {
+          console.log('✅ [AUTO-REGEN] Program regenerated with new data');
+        } else {
+          console.warn('⚠️ [AUTO-REGEN] Failed to regenerate program');
+        }
+      });
+    }
+  }, [program, programLoading, generatingProgram, dataStatus.onboarding, handleGenerateProgram]);
+
   // ===== ADD RUNNING TO EXISTING PROGRAM =====
   const handleAddRunning = useCallback(async (runningPrefs: {
     enabled: boolean;
@@ -1090,7 +1109,85 @@ export default function Dashboard() {
 
     // Inferisci i pattern mancanti (horizontal_pull, vertical_push, lower_pull)
     // Per onboarding rapido senza test, stima basata su peso corporeo
-    const rawBaselines = dataStatus.screening?.patternBaselines || {};
+    let rawBaselines = dataStatus.screening?.patternBaselines || {};
+
+    // ✅ MASSIMALI: Se l'utente ha inserito i massimali, usali per i baselines
+    // Cerca la chiave maximals_* nel localStorage (il pattern è maximals_{userId})
+    const maximalsKey = Object.keys(localStorage).find(k => k.startsWith('maximals_'));
+    const maximalsStr = maximalsKey ? localStorage.getItem(maximalsKey) : null;
+
+    if (maximalsStr) {
+      try {
+        const maximals = JSON.parse(maximalsStr);
+        console.log('🏋️ [MASSIMALI] Found user maximals:', maximals);
+
+        // Converti massimali in baselines (peso → stima reps a peso corporeo)
+        // Per ora usiamo i massimali come indicatore del livello di forza
+        if (maximals.squat?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            lower_push: {
+              ...rawBaselines.lower_push,
+              maxWeight: maximals.squat.weight,
+              repMax: maximals.squat.repMax || 1
+            }
+          };
+        }
+        if (maximals.deadlift?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            lower_pull: {
+              ...rawBaselines.lower_pull,
+              maxWeight: maximals.deadlift.weight,
+              repMax: maximals.deadlift.repMax || 1
+            }
+          };
+        }
+        if (maximals.benchPress?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            horizontal_push: {
+              ...rawBaselines.horizontal_push,
+              maxWeight: maximals.benchPress.weight,
+              repMax: maximals.benchPress.repMax || 1
+            }
+          };
+        }
+        if (maximals.militaryPress?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            vertical_push: {
+              ...rawBaselines.vertical_push,
+              maxWeight: maximals.militaryPress.weight,
+              repMax: maximals.militaryPress.repMax || 1
+            }
+          };
+        }
+        if (maximals.latPulldown?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            vertical_pull: {
+              ...rawBaselines.vertical_pull,
+              maxWeight: maximals.latPulldown.weight
+            }
+          };
+        }
+        if (maximals.seatedRow?.weight) {
+          rawBaselines = {
+            ...rawBaselines,
+            horizontal_pull: {
+              ...rawBaselines.horizontal_pull,
+              maxWeight: maximals.seatedRow.weight
+            }
+          };
+        }
+
+        console.log('🏋️ [MASSIMALI] Updated baselines with maximals:', rawBaselines);
+      } catch (e) {
+        console.warn('[MASSIMALI] Failed to parse maximals:', e);
+      }
+    }
+
     const baselines = inferMissingBaselines(rawBaselines, userBodyweight, finalLevel as any);
     const muscularFocus = onboarding?.muscularFocus || '';
     const goals = onboarding?.goals || [finalGoal];

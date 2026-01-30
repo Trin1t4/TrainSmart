@@ -210,6 +210,43 @@ function normalizeRest(rest: any): number {
   return 60;
 }
 
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  ⚠️  ATTENZIONE - FUNZIONE CRITICA - NON MODIFICARE  ⚠️                      ║
+// ║                                                                              ║
+// ║  normalizeExercise - Sistema di normalizzazione esercizi                     ║
+// ║                                                                              ║
+// ║  GESTIONE WARMUP - BUG CRITICO RISOLTO:                                      ║
+// ║  ─────────────────────────────────────                                       ║
+// ║  Il campo `warmup` può essere:                                               ║
+// ║  - Un OGGETTO con { sets, reps, percentage, note, ramp }                     ║
+// ║  - Un BOOLEAN (true/false) per indicare se l'esercizio è warmup             ║
+// ║                                                                              ║
+// ║  PROBLEMA PRECEDENTE:                                                        ║
+// ║  Il codice `isWarmup: ex.isWarmup ?? ex.warmup ?? false` convertiva          ║
+// ║  l'oggetto warmup in boolean (truthy), PERDENDO tutti i dati del             ║
+// ║  riscaldamento (sets, reps, percentuali).                                    ║
+// ║                                                                              ║
+// ║  SOLUZIONE:                                                                  ║
+// ║  1. `warmupData` estrae l'oggetto warmup SOLO se è un oggetto                ║
+// ║  2. `isWarmup` usa ex.warmup come boolean SOLO se è già boolean              ║
+// ║  3. Il campo `warmup` finale preserva l'oggetto completo                     ║
+// ║                                                                              ║
+// ║  STRUTTURA WARMUP OBJECT:                                                    ║
+// ║  {                                                                           ║
+// ║    sets: number,        // Numero serie riscaldamento (default: 2)           ║
+// ║    reps: number,        // Ripetizioni per serie (default: 6)                ║
+// ║    percentage: number,  // % del carico di lavoro (default: 60)              ║
+// ║    note?: string,       // Note opzionali                                    ║
+// ║    ramp?: Array<{       // Rampa progressiva opzionale                       ║
+// ║      reps: number,                                                           ║
+// ║      percentage: number                                                      ║
+// ║    }>                                                                        ║
+// ║  }                                                                           ║
+// ║                                                                              ║
+// ║  Data ultima modifica: 2025-01-30                                            ║
+// ║  Motivo: Fix bug warmup convertito in boolean                                ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
 function normalizeExercise(ex: any, dayIndex: number, exIndex: number): NormalizedExercise {
   if (typeof ex === 'string') {
     return {
@@ -222,7 +259,10 @@ function normalizeExercise(ex: any, dayIndex: number, exIndex: number): Normaliz
     };
   }
 
-  // ⚠️ Preserva l'oggetto warmup se esiste (NON convertirlo in boolean!)
+  // ╔════════════════════════════════════════════════════════════════════════════╗
+  // ║  ⚠️ WARMUP PRESERVATION - NON MODIFICARE QUESTA LOGICA ⚠️                  ║
+  // ║  Estrae l'oggetto warmup SOLO se è un oggetto (non boolean)                ║
+  // ╚════════════════════════════════════════════════════════════════════════════╝
   const warmupData = ex.warmup && typeof ex.warmup === 'object' ? {
     sets: ex.warmup.sets || 2,
     reps: ex.warmup.reps || 6,
@@ -245,11 +285,13 @@ function normalizeExercise(ex: any, dayIndex: number, exIndex: number): Normaliz
     notes: ex.notes,
     videoUrl: ex.videoUrl ?? ex.video_url,
     alternatives: ex.alternatives,
+    // ⚠️ isWarmup usa ex.warmup come boolean SOLO se è già boolean
     isWarmup: ex.isWarmup ?? (typeof ex.warmup === 'boolean' ? ex.warmup : false),
     isFinisher: ex.isFinisher ?? ex.finisher ?? false,
     baseline: ex.baseline,
     superset: ex.superset,
-    warmup: warmupData, // ⚠️ Ora il warmup viene preservato!
+    // ⚠️ warmup preserva l'OGGETTO completo con sets/reps/percentage
+    warmup: warmupData,
   };
 }
 
