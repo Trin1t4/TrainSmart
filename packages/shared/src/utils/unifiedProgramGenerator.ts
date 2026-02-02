@@ -18,9 +18,9 @@
  * @version 1.0.0
  */
 
-import type { Level, Goal, PatternBaselines } from '../types';
+import type { Level, Goal, PatternBaselines, WeeklySplit } from '../types';
 import type { NormalizedPainArea } from './validators';
-import { generateWeeklySplit, type WeeklySplit } from './weeklySplitGenerator';
+import { generateWeeklySplit } from './weeklySplitGenerator';
 import { integrateRunningIntoSplit } from './runningProgramGenerator';
 import {
   validateProgramInput,

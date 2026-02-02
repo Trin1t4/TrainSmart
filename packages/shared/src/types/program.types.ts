@@ -125,6 +125,31 @@ export interface WeeklySplit {
   splitName: string;
   description: string;
   days: DayWorkout[];
+  weeks?: WeekProgram[]; // 8 settimane con progressive overload
+  averageDuration?: number; // Durata media workout in minuti
+}
+
+/**
+ * Programma settimanale con progressione (8 settimane)
+ */
+export interface WeekProgram {
+  weekNumber: number;
+  days: DayWorkout[];
+  isDeload: boolean;
+  note: string;
+}
+
+/**
+ * Strategia di progressione per il programma
+ */
+export interface ProgressionStrategy {
+  type: 'linear' | 'double' | 'wave' | 'variant_progression';
+  incrementPercent: number;
+  incrementReps: number;
+  maxRepsBeforeUpgrade: number;
+  weightIncrementWhenUpgrade?: number;
+  deloadWeeks: number[];
+  deloadPercent: number;
 }
 
 export interface Program {

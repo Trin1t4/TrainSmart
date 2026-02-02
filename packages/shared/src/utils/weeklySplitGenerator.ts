@@ -4,7 +4,7 @@
  * Split scientificamente validati con varianti per evitare ripetizioni
  */
 
-import { Level, Goal, PatternBaselines, Exercise, WarmupSet, WarmupSetDetail, SupersetConfig } from '../types';
+import { Level, Goal, PatternBaselines, Exercise, WarmupSet, WarmupSetDetail, SupersetConfig, WeekProgram, ProgressionStrategy, DayWorkout, WeeklySplit } from '../types';
 import { NormalizedPainArea } from './validators';
 import { calculateVolume } from './programGenerator';
 import {
@@ -890,20 +890,7 @@ function sortExercisesByIntensity(exercises: Exercise[]): Exercise[] {
   });
 }
 
-export interface DayWorkout {
-  dayNumber: number;
-  dayName: string;
-  focus: string;
-  exercises: Exercise[];
-  estimatedDuration?: number; // Durata stimata in minuti
-}
-
-export interface WeeklySplit {
-  splitName: string;
-  description: string;
-  days: DayWorkout[];
-  averageDuration?: number; // Durata media workout in minuti
-}
+// DayWorkout e WeeklySplit importati da types/program.types.ts
 
 // ============================================
 // SISTEMA RISCALDAMENTO AUTOMATICO
@@ -3083,6 +3070,478 @@ function adaptWorkoutToTimeLimit(
   return { exercises: adapted, usedSupersets, warning: finalWarning };
 }
 
+// ============================================================================
+// PROGRESSIVE OVERLOAD SYSTEM - 8 Settimane con Periodizzazione
+// ============================================================================
+
+/**
+ * Genera 8 settimane di programma con progressive overload
+ * Applica strategia in base a level e goal
+ */
+function generateProgressiveWeeks(
+  baseWeek: WeeklySplit,
+  options: SplitGeneratorOptions
+): WeekProgram[] {
+  const { level, goal, painAreas, location } = options;
+
+  console.log(`\n📈 Generazione 8 settimane con progressive overload (${level}, ${goal})`);
+
+  // Determina strategia progressione
+  const strategy = getProgressionStrategy(level, goal, location);
+  console.log(`   Strategia: ${strategy.type} (${strategy.incrementPercent}% weekly, deload weeks: ${strategy.deloadWeeks.join(', ')})`);
+
+  const weeks: WeekProgram[] = [];
+
+  for (let weekNum = 1; weekNum <= 8; weekNum++) {
+    const isDeloadWeek = strategy.deloadWeeks.includes(weekNum);
+
+    // Clona settimana base (deep clone per evitare mutazioni)
+    const weekDays: DayWorkout[] = baseWeek.days.map(day => ({
+      ...day,
+      exercises: day.exercises.map(ex => ({ ...ex }))
+    }));
+
+    // Applica progressione a ogni giorno
+    weekDays.forEach(day => {
+      day.exercises = applyProgressionToExercises(
+        day.exercises,
+        weekNum,
+        isDeloadWeek,
+        strategy,
+        painAreas,
+        location
+      );
+    });
+
+    weeks.push({
+      weekNumber: weekNum,
+      days: weekDays,
+      isDeload: isDeloadWeek,
+      note: isDeloadWeek
+        ? `Settimana di SCARICO: -${strategy.deloadPercent}% carico, -1 set. Focus recupero e tecnica.`
+        : `Settimana ${weekNum}: Progressione ${strategy.type}${weekNum > 1 ? ` (+${getWeeklyIncrementDescription(strategy, weekNum)})` : ' (baseline)'}`
+    });
+
+    console.log(`   Week ${weekNum}: ${isDeloadWeek ? 'DELOAD' : 'Progression'}`);
+  }
+
+  return weeks;
+}
+
+/**
+ * Genera descrizione incremento settimanale
+ */
+function getWeeklyIncrementDescription(strategy: ProgressionStrategy, weekNum: number): string {
+  if (strategy.type === 'linear') {
+    const totalIncrement = (weekNum - 1) * strategy.incrementPercent;
+    return `${totalIncrement.toFixed(1)}% totale`;
+  } else if (strategy.type === 'double') {
+    return `${strategy.incrementReps} reps`;
+  } else if (strategy.type === 'wave') {
+    return `wave cycle`;
+  } else if (strategy.type === 'variant_progression') {
+    return `${strategy.incrementReps} reps`;
+  }
+  return '';
+}
+
+/**
+ * Determina strategia progressione in base a level, goal, location
+ */
+function getProgressionStrategy(
+  level: string,
+  goal: string,
+  location: 'gym' | 'home' | 'home_gym'
+): ProgressionStrategy {
+
+  const goalLower = (goal || '').toLowerCase();
+  const isBodyweight = location === 'home';
+
+  // ===================================================================
+  // GOALS CHE NON PREVEDONO PROGRESSIONE AGGRESSIVA
+  // ===================================================================
+  const maintenanceGoals = ['fat_loss', 'dimagrimento', 'definizione', 'weight_loss', 'toning', 'tonificazione'];
+  const isMaintenance = maintenanceGoals.some(g => goalLower.includes(g));
+
+  if (isMaintenance) {
+    // Fat loss/toning: progressione molto lenta, focus su densità
+    return {
+      type: 'double',
+      incrementPercent: 0,
+      incrementReps: 1, // Solo +1 rep ogni 2 settimane
+      maxRepsBeforeUpgrade: 15, // Range più alto
+      weightIncrementWhenUpgrade: 2.5, // Incremento piccolo
+      deloadWeeks: [4, 8],
+      deloadPercent: 10
+    };
+  }
+
+  // ===================================================================
+  // BODYWEIGHT → VARIANT PROGRESSION (upgrade variante)
+  // ===================================================================
+  if (isBodyweight) {
+    return {
+      type: 'variant_progression',
+      incrementPercent: 0, // Non incrementa peso, cambia variante
+      incrementReps: 1, // +1 rep/settimana fino a soglia
+      maxRepsBeforeUpgrade: 20, // Quando arrivi a 20 reps, upgrade variante
+      deloadWeeks: [4, 8],
+      deloadPercent: 10
+    };
+  }
+
+  // ===================================================================
+  // WEIGHTED TRAINING - IN BASE A LEVEL
+  // ===================================================================
+
+  // BEGINNER → LINEAR PROGRESSION
+  if (level === 'beginner') {
+    return {
+      type: 'linear',
+      incrementPercent: 2.5, // +2.5% ogni settimana
+      incrementReps: 0,
+      maxRepsBeforeUpgrade: 0,
+      deloadWeeks: [4, 8],
+      deloadPercent: 10
+    };
+  }
+
+  // INTERMEDIATE → DOUBLE PROGRESSION
+  if (level === 'intermediate') {
+    return {
+      type: 'double',
+      incrementPercent: 0, // Peso aumenta solo quando reps = max
+      incrementReps: 1, // +1 rep/settimana
+      maxRepsBeforeUpgrade: 12, // Quando arrivi a 12 reps, aumenta peso
+      weightIncrementWhenUpgrade: 5, // +5% peso quando upgrade
+      deloadWeeks: [5],
+      deloadPercent: 10
+    };
+  }
+
+  // ADVANCED → WAVE PERIODIZATION
+  if (level === 'advanced') {
+    // Advanced usa DUP + Wave
+    // Incremento più piccolo ma costante
+    return {
+      type: 'wave',
+      incrementPercent: 3, // +3% ogni settimana (poi deload)
+      incrementReps: 0,
+      maxRepsBeforeUpgrade: 0,
+      deloadWeeks: [4], // 3+1 wave
+      deloadPercent: 10
+    };
+  }
+
+  // Fallback: intermediate
+  return {
+    type: 'double',
+    incrementPercent: 0,
+    incrementReps: 1,
+    maxRepsBeforeUpgrade: 12,
+    weightIncrementWhenUpgrade: 5,
+    deloadWeeks: [5],
+    deloadPercent: 10
+  };
+}
+
+/**
+ * Applica progressione agli esercizi di un giorno
+ */
+function applyProgressionToExercises(
+  exercises: Exercise[],
+  weekNum: number,
+  isDeload: boolean,
+  strategy: ProgressionStrategy,
+  painAreas: NormalizedPainArea[],
+  location: 'gym' | 'home' | 'home_gym'
+): Exercise[] {
+
+  return exercises.map(ex => {
+    // ================================================================
+    // CHECK: Se esercizio è sostituito per dolore, NO PROGRESSIONE
+    // ================================================================
+    if (ex.wasReplacedForPain) {
+      console.log(`   ⚠️ ${ex.name}: NO progressione (pain replacement)`);
+      return ex; // Mantieni invariato
+    }
+
+    // Check se esercizio ha dolore attivo
+    const hasPain = painAreas.some(pain =>
+      isExerciseConflicting(ex.name, pain.area)
+    );
+
+    if (hasPain) {
+      console.log(`   ⚠️ ${ex.name}: NO progressione (active pain)`);
+      return ex; // Mantieni invariato
+    }
+
+    // ================================================================
+    // DELOAD WEEK
+    // ================================================================
+    if (isDeload) {
+      return applyDeload(ex, strategy.deloadPercent);
+    }
+
+    // ================================================================
+    // PROGRESSIONE NORMALE
+    // ================================================================
+    if (strategy.type === 'linear') {
+      return applyLinearProgression(ex, weekNum, strategy.incrementPercent);
+    } else if (strategy.type === 'double') {
+      return applyDoubleProgression(ex, weekNum, strategy);
+    } else if (strategy.type === 'wave') {
+      return applyWaveProgression(ex, weekNum, strategy.incrementPercent);
+    } else if (strategy.type === 'variant_progression') {
+      return applyVariantProgression(ex, weekNum, strategy, location);
+    }
+
+    return ex;
+  });
+}
+
+/**
+ * Pattern compound per identificare esercizi principali
+ */
+const COMPOUND_PATTERNS = ['lower_push', 'lower_pull', 'horizontal_push', 'horizontal_pull', 'vertical_push', 'vertical_pull'];
+
+/**
+ * Applica deload: -10% peso, -1 set
+ */
+function applyDeload(ex: Exercise, deloadPercent: number): Exercise {
+  const newEx = { ...ex };
+
+  // Riduce peso se presente
+  if (newEx.weight) {
+    const currentWeight = parseFloat(newEx.weight.replace(/[^\d.]/g, ''));
+    if (!isNaN(currentWeight) && currentWeight > 0) {
+      const newWeight = currentWeight * (1 - deloadPercent / 100);
+      newEx.weight = `${Math.round(newWeight * 2) / 2}kg`; // Round a 0.5kg
+    }
+  }
+
+  // Riduce intensity se presente
+  if (newEx.intensity) {
+    const currentIntensity = parseFloat(newEx.intensity.replace(/[^\d]/g, ''));
+    if (!isNaN(currentIntensity)) {
+      newEx.intensity = `${Math.round(currentIntensity * (1 - deloadPercent / 100))}%`;
+    }
+  }
+
+  // Riduce sets (minimo 2)
+  if (typeof newEx.sets === 'number' && newEx.sets > 2) {
+    newEx.sets = newEx.sets - 1;
+  }
+
+  // Aggiorna note
+  newEx.notes = `${newEx.notes || ''} | DELOAD: -${deloadPercent}% carico, -1 set`.trim();
+
+  return newEx;
+}
+
+/**
+ * Linear Progression (Beginner): +2.5% peso ogni settimana
+ */
+function applyLinearProgression(
+  ex: Exercise,
+  weekNum: number,
+  incrementPercent: number
+): Exercise {
+  const newEx = { ...ex };
+
+  // Solo compound progrediscono con peso
+  const isCompound = COMPOUND_PATTERNS.includes(ex.pattern as string);
+
+  if (!isCompound) {
+    // Accessori: +1 rep ogni 2 settimane
+    if (weekNum % 2 === 0 && typeof newEx.reps === 'number' && newEx.reps < 15) {
+      newEx.reps = newEx.reps + 1;
+    }
+    return newEx;
+  }
+
+  // Compound: incrementa peso
+  if (newEx.weight) {
+    const currentWeight = parseFloat(newEx.weight.replace(/[^\d.]/g, ''));
+    if (!isNaN(currentWeight) && currentWeight > 0) {
+      // Incremento composto: settimana 1 = base, settimana 2 = +2.5%, settimana 3 = +5%, ecc.
+      const totalIncrement = (weekNum - 1) * incrementPercent;
+      const newWeight = currentWeight * (1 + totalIncrement / 100);
+      newEx.weight = `${Math.round(newWeight * 2) / 2}kg`; // Round a 0.5kg
+
+      // Aggiorna intensity
+      const baseIntensity = parseFloat(ex.intensity?.replace(/[^\d]/g, '') || '75');
+      newEx.intensity = `${Math.min(95, Math.round(baseIntensity + totalIncrement))}%`; // Cap a 95%
+
+      if (weekNum > 1) {
+        newEx.notes = `${newEx.notes || ''} | W${weekNum}: +${totalIncrement.toFixed(1)}%`.trim();
+      }
+    }
+  }
+
+  return newEx;
+}
+
+/**
+ * Double Progression (Intermediate): prima reps, poi peso
+ */
+function applyDoubleProgression(
+  ex: Exercise,
+  weekNum: number,
+  strategy: ProgressionStrategy
+): Exercise {
+  const newEx = { ...ex };
+
+  // Solo compound
+  const isCompound = COMPOUND_PATTERNS.includes(ex.pattern as string);
+  if (!isCompound) {
+    // Accessori: +1 rep ogni 2 settimane
+    if (weekNum % 2 === 0 && typeof newEx.reps === 'number' && newEx.reps < 15) {
+      newEx.reps = newEx.reps + 1;
+    }
+    return newEx;
+  }
+
+  // Logica: ogni settimana +1 rep fino a maxReps, poi aumenta peso e reset reps
+  // Simulazione: W1=8, W2=9, W3=10, W4=11, W5=12 (max), W6=aumenta peso e torna a 8
+
+  const baseReps = typeof ex.reps === 'number' ? ex.reps : 8;
+  const targetReps = Math.min(
+    baseReps + (weekNum - 1) * strategy.incrementReps,
+    strategy.maxRepsBeforeUpgrade
+  );
+
+  // Se abbiamo raggiunto max reps E siamo oltre W5, aumenta peso
+  const shouldUpgradeWeight = targetReps >= strategy.maxRepsBeforeUpgrade && weekNum >= 5;
+
+  if (shouldUpgradeWeight && newEx.weight) {
+    // Aumenta peso e reset reps
+    const currentWeight = parseFloat(newEx.weight.replace(/[^\d.]/g, ''));
+    if (!isNaN(currentWeight) && currentWeight > 0) {
+      const incrementPct = strategy.weightIncrementWhenUpgrade || 5;
+      const newWeight = currentWeight * (1 + incrementPct / 100);
+      newEx.weight = `${Math.round(newWeight * 2) / 2}kg`;
+      newEx.reps = baseReps; // Reset a reps iniziali
+      newEx.notes = `${newEx.notes || ''} | W${weekNum}: Peso +${incrementPct}%, reps reset`.trim();
+    }
+  } else {
+    // Aumenta reps
+    newEx.reps = targetReps;
+    if (weekNum > 1 && targetReps !== baseReps) {
+      newEx.notes = `${newEx.notes || ''} | W${weekNum}: ${targetReps} reps`.trim();
+    }
+  }
+
+  return newEx;
+}
+
+/**
+ * Wave Progression (Advanced): +3% ogni settimana in cicli 3+1
+ */
+function applyWaveProgression(
+  ex: Exercise,
+  weekNum: number,
+  incrementPercent: number
+): Exercise {
+  const newEx = { ...ex };
+
+  const isCompound = COMPOUND_PATTERNS.includes(ex.pattern as string);
+  if (!isCompound) {
+    // Accessori seguono double progression
+    if (weekNum % 2 === 0 && typeof newEx.reps === 'number' && newEx.reps < 15) {
+      newEx.reps = newEx.reps + 1;
+    }
+    return newEx;
+  }
+
+  if (newEx.weight) {
+    const currentWeight = parseFloat(newEx.weight.replace(/[^\d.]/g, ''));
+    if (!isNaN(currentWeight) && currentWeight > 0) {
+      // Wave: W1=base, W2=+3%, W3=+6%, W4=deload (gestito separatamente)
+      // Poi W5=+9%, W6=+12%, W7=+15%, W8=deload
+      const weekInCycle = ((weekNum - 1) % 4) + 1; // 1,2,3,4,1,2,3,4
+
+      let totalIncrement = 0;
+      if (weekNum <= 4) {
+        totalIncrement = (weekInCycle - 1) * incrementPercent;
+      } else {
+        // Secondo ciclo: parte da +9% (dopo primo deload)
+        totalIncrement = 9 + (weekInCycle - 1) * incrementPercent;
+      }
+
+      const newWeight = currentWeight * (1 + totalIncrement / 100);
+      newEx.weight = `${Math.round(newWeight * 2) / 2}kg`;
+
+      const baseIntensity = parseFloat(ex.intensity?.replace(/[^\d]/g, '') || '75');
+      newEx.intensity = `${Math.min(95, Math.round(baseIntensity + totalIncrement))}%`; // Cap a 95%
+
+      if (weekNum > 1) {
+        newEx.notes = `${newEx.notes || ''} | W${weekNum}: +${totalIncrement}% (wave)`.trim();
+      }
+    }
+  }
+
+  return newEx;
+}
+
+/**
+ * Variant Progression (Bodyweight): prima reps, poi upgrade variante
+ */
+function applyVariantProgression(
+  ex: Exercise,
+  weekNum: number,
+  strategy: ProgressionStrategy,
+  location: 'gym' | 'home' | 'home_gym'
+): Exercise {
+  const newEx = { ...ex };
+
+  const baseReps = typeof ex.reps === 'number' ? ex.reps : 10;
+
+  // W1-4: accumula reps sulla variante base
+  // W5+: se reps >= max, upgrade variante e reset reps
+
+  if (weekNum <= 4) {
+    // Accumula reps
+    const targetReps = Math.min(baseReps + (weekNum - 1) * strategy.incrementReps, strategy.maxRepsBeforeUpgrade);
+    newEx.reps = targetReps;
+    if (weekNum > 1 && targetReps !== baseReps) {
+      newEx.notes = `${newEx.notes || ''} | W${weekNum}: ${targetReps} reps`.trim();
+    }
+  } else {
+    // W5+: check per upgrade variante
+    const currentReps = Math.min(baseReps + 3 * strategy.incrementReps, strategy.maxRepsBeforeUpgrade); // Reps a W4
+
+    if (currentReps >= strategy.maxRepsBeforeUpgrade - 2) {
+      // Vicino al max, tenta upgrade variante
+      const locationMap = location === 'home' || location === 'home_gym' ? 'home' : 'gym';
+      const upgraded = getUpgradedExercise(ex.name, ex.pattern as string, locationMap);
+
+      if (upgraded) {
+        newEx.name = upgraded.name;
+        newEx.reps = Math.max(8, Math.floor(baseReps * 0.6)); // Reset reps (60% delle baseline)
+        newEx.notes = `${newEx.notes || ''} | W${weekNum}: Variante UPGRADED`.trim();
+        console.log(`   📈 ${ex.name} → ${upgraded.name} (W${weekNum})`);
+      } else {
+        // Già alla variante max, continua ad aumentare reps
+        const finalReps = Math.min(currentReps + (weekNum - 4) * strategy.incrementReps, 30);
+        newEx.reps = finalReps;
+        newEx.notes = `${newEx.notes || ''} | W${weekNum}: ${finalReps} reps (max variant)`.trim();
+      }
+    } else {
+      // Continua ad accumulare reps
+      const targetReps = Math.min(currentReps + (weekNum - 4) * strategy.incrementReps, strategy.maxRepsBeforeUpgrade);
+      newEx.reps = targetReps;
+      newEx.notes = `${newEx.notes || ''} | W${weekNum}: ${targetReps} reps`.trim();
+    }
+  }
+
+  return newEx;
+}
+
+// ============================================================================
+// FINE PROGRESSIVE OVERLOAD SYSTEM
+// ============================================================================
+
 export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit {
   const { frequency, goals, location, baselines, userBodyweight, equipment, trainingType } = options;
 
@@ -3255,6 +3714,17 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
       day.exercises = enrichExercisesWithWeights(day.exercises, baselines);
     });
   }
+
+  // ============================================
+  // GENERA 8 SETTIMANE CON PROGRESSIVE OVERLOAD
+  // ============================================
+  const weeksProgram = generateProgressiveWeeks(split, options);
+  split.weeks = weeksProgram;
+
+  console.log(`\n✅ Programma 8 settimane generato:`);
+  weeksProgram.forEach(w => {
+    console.log(`   Week ${w.weekNumber}: ${w.isDeload ? '📉 DELOAD' : '📈 Progression'}`);
+  });
 
   return split;
 }

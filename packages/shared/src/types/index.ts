@@ -39,6 +39,8 @@ export type {
   DayType,
   DayWorkout,
   WeeklySplit,
+  WeekProgram,
+  ProgressionStrategy,
   Program,
   WeeklySchedule,
   WorkoutExercise,
