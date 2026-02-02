@@ -84,26 +84,46 @@ function isAlreadyBodyweightExercise(exerciseName: string, pattern: string): boo
   if (isInVariants) return true;
 
   // Controlla anche esercizi comuni bodyweight non in variants
+  // ✅ FIX BUG #2: Espanso con varianti italiane complete
   const commonBodyweight = [
+    // === SQUAT VARIANTS ===
     'squat a corpo libero', 'squat', 'air squat', 'bodyweight squat',
     'split squat', 'affondi', 'affondi statici', 'affondi indietro',
-    'squat bulgaro', 'bulgarian split squat', 'pistol squat', 'squat a pistola',
+    'squat bulgaro', 'split squat bulgaro', 'affondo bulgaro', 'bulgarian split squat',
+    'pistol squat', 'squat a pistola',
     'shrimp squat', 'squat gamberetto', 'skater squat', 'squat del pattinatore',
+    // === PUSH-UP VARIANTS ===
     'push-up', 'piegamenti', 'push-up standard', 'standard push-up',
     'push-up diamante', 'diamond push-up', 'push-up arciere', 'archer push-up',
     'push-up deficit', 'deficit push-up', 'push-up inclinati', 'incline push-up',
     'push-up al muro', 'wall push-up', 'push-up sulle ginocchia', 'knee push-up',
+    'piegamento', 'piegamenti sulle ginocchia', 'piegamenti al muro',
+    'piegamenti facilitati', 'push-up facilitati', 'push up facilitati',
+    // === PIKE PUSH-UP / VERTICAL PUSH ===
     'pike push-up', 'pike push-up elevato', 'elevated pike push-up',
+    'pike push-up al muro', 'hspu', 'handstand push-up',
+    // === TRAZIONI / VERTICAL PULL ===
     'trazioni', 'pull-up', 'chin-up', 'trazioni presa neutra', 'neutral grip pull-up',
     'trazioni negative', 'negative pull-up', 'trazioni con elastico',
+    // === REMATORE / HORIZONTAL PULL ===
     'rematore inverso', 'inverted row', 'australian pull-up',
     'rematore inverso facilitato', 'rematore inverso presa larga', 'rematore inverso piedi elevati',
-    'superman row', 'prone y raise',
+    'rematore inverso al tavolo', 'inverted row al tavolo',
+    'australian pull-up facilitato',
+    'superman', 'superman row', 'prone y raise',
     'floor pull', 'floor pull con asciugamano',
+    // === PONTE / HIP THRUST VARIANTS ===
+    'ponte glutei', 'glute bridge', 'hip thrust',
+    'ponte glutei monopodalico', 'single leg glute bridge',
+    'hip thrust corporeo', 'hip thrust a corpo libero',
+    'glute bridge a una gamba', 'ponte a una gamba',
+    // === NORDIC / LEG CURL VARIANTS ===
+    'nordic curl', 'nordic eccentrica', 'nordic curl eccentrica', 'nordic solo eccentrica',
+    'slider leg curl', 'leg curl scorrevole',
+    'slider leg curl singolo', 'leg curl scorrevole singolo',
+    // === CORE VARIANTS ===
     'plank', 'plank laterale', 'side plank', 'hollow body hold',
-    'dead bug', 'bird dog', 'l-sit', 'dragon flag',
-    'ponte glutei', 'glute bridge', 'hip thrust', 'nordic curl',
-    'slider leg curl', 'leg curl scorrevole'
+    'dead bug', 'bird dog', 'l-sit', 'dragon flag'
   ];
 
   return commonBodyweight.some(bw => lowerName.includes(bw) || bw.includes(lowerName));
@@ -183,8 +203,41 @@ const BODYWEIGHT_ALTERNATIVES: Record<string, string> = {
   'french press': 'Piegamenti Diamante',
   'curl con bilanciere': 'Chin-up (Supinato)',
   'curl a martello': 'Trazioni Presa Neutra',
-  'calf raise seduto': 'Calf Raise in Piedi'
-  // 'pallof press' già definito sopra (riga 107)
+  'calf raise seduto': 'Calf Raise in Piedi',
+
+  // ========== MAPPINGS ITALIANI AGGIUNTIVI (BUG #2 FIX) ==========
+
+  // Lower Push - IT (varianti aggiuntive)
+  'pressa gambe': 'Squat a Corpo Libero',
+  'leg press (macchina)': 'Squat a Corpo Libero',
+  'hack squat (macchina)': 'Squat Bulgaro',
+  'squat al multipower': 'Squat a Corpo Libero',
+  'smith machine squat': 'Squat a Corpo Libero',
+
+  // Lower Pull - IT (varianti aggiuntive)
+  'stacco': 'Hip Hinge a Corpo Libero',
+  'romanian deadlift': 'Hip Hinge a Corpo Libero',
+  'leg curl macchina': 'Nordic Curl',
+
+  // Horizontal Push - IT (varianti aggiuntive)
+  'panca con bilanciere': 'Piegamenti',
+  'chest press (macchina)': 'Piegamenti',
+  'chest press macchina': 'Piegamenti',
+
+  // Horizontal Pull - IT (varianti aggiuntive)
+  'pulley orizzontale': 'Rematore Inverso (tavolo)',
+  'seated cable row': 'Rematore Inverso (tavolo)',
+  't-bar row': 'Superman Row',
+
+  // Vertical Push - IT (varianti aggiuntive)
+  'military press': 'Pike Push-up',
+  'shoulder press (macchina)': 'Pike Push-up',
+  'shoulder press macchina': 'Pike Push-up',
+
+  // Vertical Pull - IT (varianti aggiuntive)
+  'lat pulldown (macchina)': 'Trazioni Negative',
+  'lat pulldown macchina': 'Trazioni Negative',
+  'trazioni assistite': 'Trazioni Negative'
 };
 
 /**
@@ -641,6 +694,51 @@ function adaptExercise(
     return exercise;
   }
 
+  // ✅ FIX BUG #1: NON riconvertire esercizi sostituiti per pain management
+  if (exercise.wasReplacedForPain) {
+    console.log(`  ⚠️ SKIP (pain): ${exercise.name} (original: ${exercise.originalExercise})`);
+
+    // Se l'esercizio sostituito è da palestra MA siamo a casa, trova alternativa SAFE
+    if (location === 'home' && needsGymEquipment(exercise.name)) {
+      console.log(`    → ${exercise.name} richiede palestra, cerco alternativa safe per casa`);
+
+      // Trova alternativa bodyweight per lo STESSO pattern (NON riportare all'originale!)
+      const safeHomeAlternative = findSafeHomeAlternativeForPattern(
+        exercise.pattern,
+        equipment,
+        exercise.originalExercise // Evita questo esercizio
+      );
+
+      return {
+        ...exercise,
+        name: safeHomeAlternative,
+        notes: `${exercise.notes || ''} | Adattato per casa (pain-safe)`.trim()
+      };
+    }
+
+    // Altrimenti mantieni com'è
+    return exercise;
+  }
+
+  // ✅ FIX #5: Verifica se peso richiesto supera equipment disponibile
+  if (location === 'home' && equipment?.dumbbellMaxKg && exercise.weight) {
+    const requiredWeight = parseWeightString(exercise.weight);
+
+    if (requiredWeight > equipment.dumbbellMaxKg) {
+      console.log(`    ⚠️ ${exercise.name} richiede ${requiredWeight}kg, max disponibile: ${equipment.dumbbellMaxKg}kg`);
+
+      // Trova alternativa bodyweight o con peso corporeo
+      const bodyweightAlt = findBodyweightAlternativeForPatternWeight(exercise.pattern);
+
+      return {
+        ...exercise,
+        name: bodyweightAlt,
+        weight: undefined, // Rimuovi peso (bodyweight)
+        notes: `${exercise.notes || ''} | Adattato: peso richiesto supera equipment`.trim()
+      };
+    }
+  }
+
   let newName = exercise.name;
   let wasReplaced = false;
 
@@ -962,4 +1060,207 @@ export function mapDifficultyToExercise(
 
   // Fallback all'ultimo elemento (più difficile)
   return mapping[mapping.length - 1].exercise;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS PER PAIN MANAGEMENT (BUG #1 FIX)
+// ============================================================================
+
+/**
+ * Verifica se un esercizio richiede attrezzatura da palestra
+ */
+function needsGymEquipment(exerciseName: string): boolean {
+  const lowerName = exerciseName.toLowerCase();
+  const gymKeywords = [
+    'press machine', 'pressa', 'leg press',
+    'cable', 'cavo', 'pulley',
+    'machine', 'macchina',
+    'smith', 'hack squat',
+    'lat pulldown', 'lat machine',
+    'chest press', 'shoulder press machine',
+    'leg curl machine', 'leg extension',
+    'seated row machine'
+  ];
+
+  return gymKeywords.some(kw => lowerName.includes(kw));
+}
+
+/**
+ * Trova alternativa bodyweight safe per un pattern
+ * Evita l'esercizio originale che causava dolore
+ */
+function findSafeHomeAlternativeForPattern(
+  pattern: string,
+  equipment?: HomeEquipment,
+  avoidExercise?: string
+): string {
+  const avoidLower = avoidExercise?.toLowerCase() || '';
+
+  // Mapping pattern → alternative bodyweight (in ordine di preferenza)
+  const alternatives: Record<string, string[]> = {
+    lower_push: [
+      'Ponte Glutei',
+      'Hip Thrust a Corpo Libero',
+      'Affondi Statici',
+      'Step Up',
+      'Glute Bridge Monopodalico'
+    ],
+    lower_pull: [
+      'Ponte Glutei',
+      'Hip Thrust',
+      'Nordic Curl (Eccentrica)',
+      'Slider Leg Curl',
+      'Glute Bridge Monopodalico'
+    ],
+    horizontal_push: [
+      'Piegamenti',
+      'Push-up Standard',
+      'Push-up Sulle Ginocchia',
+      'Push-up Inclinati',
+      'Push-up al Muro'
+    ],
+    horizontal_pull: [
+      'Rematore Inverso (tavolo)',
+      'Superman Row',
+      'Prone Y Raise',
+      'Floor Pull con Asciugamano'
+    ],
+    vertical_push: [
+      'Pike Push-up',
+      'Pike Push-up al Muro',
+      'Alzate Laterali (corpo libero)',
+      'Plank to Down Dog'
+    ],
+    vertical_pull: [
+      'Trazioni Negative',
+      'Rematore Inverso Presa Larga',
+      'Superman Row',
+      'Prone Y Raise'
+    ],
+    core: [
+      'Plank',
+      'Dead Bug',
+      'Bird Dog',
+      'Hollow Body Hold'
+    ]
+  };
+
+  const patternAlternatives = alternatives[pattern] || ['Plank']; // Fallback
+
+  // Filtra esercizi che richiedono equipment non disponibile
+  const available = patternAlternatives.filter(ex => {
+    const lowerEx = ex.toLowerCase();
+
+    // Se richiede pullupBar ma non disponibile, skip
+    if ((lowerEx.includes('trazione') || lowerEx.includes('pull-up')) && !equipment?.pullupBar) {
+      return false;
+    }
+
+    // Se richiede tavolo robusto ma non disponibile, skip
+    if (lowerEx.includes('rematore inverso') && !(equipment as any)?.sturdyTable) {
+      return false;
+    }
+
+    // Evita esercizio originale che causava dolore
+    if (avoidLower && lowerEx.includes(avoidLower)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Ritorna il primo disponibile, o fallback generico
+  return available[0] || 'Plank';
+}
+
+// ============================================================================
+// HELPER FUNCTIONS PER EQUIPMENT CHECK (BUG #2 FIX)
+// ============================================================================
+
+/**
+ * Verifica se esercizio richiede barra trazioni
+ */
+function requiresPullupBar(exerciseName: string): boolean {
+  const lowerName = exerciseName.toLowerCase();
+  return lowerName.includes('trazione') ||
+         lowerName.includes('pull-up') ||
+         lowerName.includes('chin-up') ||
+         lowerName.includes('pull up') ||
+         lowerName.includes('chin up') ||
+         lowerName.includes('alla sbarra');
+}
+
+/**
+ * Verifica se esercizio richiede tavolo robusto
+ */
+function requiresSturdyTable(exerciseName: string): boolean {
+  const lowerName = exerciseName.toLowerCase();
+  return lowerName.includes('rematore inverso') ||
+         lowerName.includes('inverted row') ||
+         lowerName.includes('australian pull');
+}
+
+/**
+ * Trova alternativa per pattern senza pullupBar
+ */
+function findAlternativeWithoutPullupBar(pattern: string): string {
+  const noPullupBarAlternatives: Record<string, string> = {
+    vertical_pull: 'Floor Pull (asciugamano)',
+    horizontal_pull: 'Superman Row'
+  };
+
+  return noPullupBarAlternatives[pattern] || 'Plank';
+}
+
+/**
+ * Trova alternativa per pattern senza tavolo
+ */
+function findAlternativeWithoutTable(pattern: string): string {
+  const noTableAlternatives: Record<string, string> = {
+    horizontal_pull: 'Superman Row',
+    vertical_pull: 'Prone Y Raise'
+  };
+
+  return noTableAlternatives[pattern] || 'Superman Row';
+}
+
+// ============================================================================
+// HELPER FUNCTIONS PER WEIGHT CHECK (FIX #5)
+// ============================================================================
+
+/**
+ * Parse peso da stringa (es. "80kg", "175lb", "60")
+ */
+function parseWeightString(weight: string): number {
+  if (!weight) return 0;
+
+  // Rimuovi unità e converti a numero
+  const match = weight.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return 0;
+
+  const value = parseFloat(match[1]);
+
+  // Se in libbre, converti in kg
+  if (weight.toLowerCase().includes('lb')) {
+    return value * 0.453592;
+  }
+
+  return value;
+}
+
+/**
+ * Trova alternativa bodyweight per pattern (quando peso non disponibile)
+ */
+function findBodyweightAlternativeForPatternWeight(pattern: string): string {
+  const bodyweightByPattern: Record<string, string> = {
+    lower_push: 'Squat a Corpo Libero',
+    lower_pull: 'Ponte Glutei',
+    horizontal_push: 'Piegamenti',
+    horizontal_pull: 'Superman Row',
+    vertical_push: 'Pike Push-up',
+    vertical_pull: 'Trazioni Negative',
+    core: 'Plank'
+  };
+
+  return bodyweightByPattern[pattern] || 'Plank';
 }

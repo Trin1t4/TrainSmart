@@ -637,8 +637,134 @@ const GOAL_BIAS: Record<string, { heavy: number; moderate: number; volume: numbe
   resistenza: { heavy: 0.2, moderate: 0.3, volume: 0.5 },
 };
 
+// ============================================================================
+// DUP GOAL-AWARE HELPERS (FIX #4)
+// ============================================================================
+
+/**
+ * Determina il bias DUP in base al goal
+ * - strength: favorisce heavy (più intensità)
+ * - muscle_gain: favorisce moderate (volume ottimale ipertrofia)
+ * - fat_loss: favorisce volume (densità, calorie)
+ */
+function getGoalDUPBias(goal: string): 'heavy' | 'moderate' | 'volume' {
+  const goalBias: Record<string, 'heavy' | 'moderate' | 'volume'> = {
+    // Forza: massima intensità
+    'strength': 'heavy',
+    'forza': 'heavy',
+
+    // Ipertrofia: moderate (sweet spot)
+    'muscle_gain': 'moderate',
+    'ipertrofia': 'moderate',
+    'hypertrophy': 'moderate',
+    'massa': 'moderate',
+    'massa muscolare': 'moderate',
+
+    // Fat loss: volume (densità allenamento)
+    'fat_loss': 'volume',
+    'dimagrimento': 'volume',
+    'weight_loss': 'volume',
+
+    // Toning: volume
+    'toning': 'volume',
+    'tonificazione': 'volume',
+
+    // Endurance: volume
+    'endurance': 'volume',
+    'resistenza': 'volume',
+
+    // Performance: moderate (bilanciato)
+    'performance': 'moderate',
+    'performance_sportiva': 'moderate',
+
+    // General fitness: moderate
+    'general_fitness': 'moderate',
+    'benessere': 'moderate',
+    'wellness': 'moderate',
+
+    // Recovery: volume (bassa intensità)
+    'motor_recovery': 'volume',
+    'recupero_motorio': 'volume',
+
+    // Pregnancy: volume (safety first)
+    'pregnancy': 'volume',
+    'gravidanza': 'volume',
+
+    // Disability: volume
+    'disability': 'volume'
+  };
+
+  return goalBias[goal?.toLowerCase()] || 'moderate'; // Default: moderate
+}
+
+/**
+ * Applica goal bias all'intensità base
+ * Trasforma intensità in base al goal dell'utente
+ */
+function applyGoalBias(
+  baseIntensity: 'heavy' | 'volume' | 'moderate',
+  goalBias: 'heavy' | 'moderate' | 'volume',
+  patternId: string
+): 'heavy' | 'volume' | 'moderate' {
+
+  // ===================================================================
+  // REGOLE BIAS:
+  // - strength bias → sposta verso heavy
+  // - moderate bias → mantiene variazione, introduce moderate
+  // - volume bias → sposta verso volume
+  // ===================================================================
+
+  // STRENGTH BIAS: favorisce heavy
+  if (goalBias === 'heavy') {
+    // heavy → heavy (mantieni)
+    if (baseIntensity === 'heavy') return 'heavy';
+
+    // volume → moderate (alza intensità compound, mantieni volume accessori)
+    if (baseIntensity === 'volume') {
+      const isCompound = ['lower_push', 'lower_pull', 'horizontal_push', 'vertical_push'].includes(patternId);
+      return isCompound ? 'moderate' : 'volume';
+    }
+
+    // moderate → heavy (alza intensità)
+    if (baseIntensity === 'moderate') return 'heavy';
+  }
+
+  // MODERATE BIAS: introduce variazione moderate
+  if (goalBias === 'moderate') {
+    // heavy → moderate (abbassa intensità per favorire volume)
+    if (baseIntensity === 'heavy') return 'moderate';
+
+    // volume → moderate (alza intensità accessori per ipertrofia)
+    if (baseIntensity === 'volume') {
+      const isAccessory = !['lower_push', 'lower_pull'].includes(patternId);
+      return isAccessory ? 'moderate' : 'volume';
+    }
+
+    // moderate → moderate (mantieni)
+    if (baseIntensity === 'moderate') return 'moderate';
+  }
+
+  // VOLUME BIAS: favorisce volume
+  if (goalBias === 'volume') {
+    // heavy → moderate (abbassa intensità)
+    if (baseIntensity === 'heavy') return 'moderate';
+
+    // moderate → volume (abbassa intensità)
+    if (baseIntensity === 'moderate') return 'volume';
+
+    // volume → volume (mantieni)
+    if (baseIntensity === 'volume') return 'volume';
+  }
+
+  // Fallback: mantieni base
+  return baseIntensity;
+}
+
+// ============================================================================
+
 /**
  * Determina l'intensità dell'esercizio con DUP INTRA-GIORNATA
+ * ✅ FIX #4: Aggiunto goal-awareness al sistema DUP
  *
  * @param patternId - Pattern dell'esercizio
  * @param dayIndex - Indice del giorno (0, 1, 2, ...)
@@ -653,9 +779,13 @@ function getIntensityForPattern(
   frequency: number = 3
 ): 'heavy' | 'volume' | 'moderate' {
   // ╔════════════════════════════════════════════════════════════════════════╗
-  // ║  ⛔ NON MODIFICARE QUESTA FUNZIONE SENZA APPROVAZIONE ⛔               ║
-  // ║  La logica DUP è stata definita e validata. Vedi documentazione sopra. ║
+  // ║  ✅ FIX #4: GOAL-AWARE DUP                                             ║
+  // ║  La logica DUP ora considera il goal dell'utente per biasare intensità ║
   // ╚════════════════════════════════════════════════════════════════════════╝
+
+  // ✅ FIX #4: Normalizza goal e calcola bias
+  const canonicalGoal = toCanonicalGoal(goal);
+  const goalBias = getGoalDUPBias(canonicalGoal);
 
   // CORE/ACCESSORI: sempre volume
   if (patternId === 'core' || patternId === 'corrective') {
@@ -666,16 +796,19 @@ function getIntensityForPattern(
   // FREQUENZA 2: DUP vera - HEAVY + VOLUME (no moderate!)
   // G1: Squat, Panca, Lat → HEAVY | Stacco, Military, Row → VOLUME
   // G2: Stacco, Military, Row → HEAVY | Squat, Panca, Lat → VOLUME
+  // ✅ FIX #4: Aggiunto goal bias
   // ============================================================
   if (frequency === 2) {
     const day1Heavy = ['lower_push', 'horizontal_push', 'vertical_pull'];
     const day2Heavy = ['lower_pull', 'vertical_push', 'horizontal_pull'];
 
+    let baseIntensity: 'heavy' | 'volume';
     if (dayIndex === 0) {
-      return day1Heavy.includes(patternId) ? 'heavy' : 'volume';
+      baseIntensity = day1Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else {
-      return day2Heavy.includes(patternId) ? 'heavy' : 'volume';
+      baseIntensity = day2Heavy.includes(patternId) ? 'heavy' : 'volume';
     }
+    return applyGoalBias(baseIntensity, goalBias, patternId);
   }
 
   // ============================================================
@@ -683,39 +816,47 @@ function getIntensityForPattern(
   // G1: Squat + Panca → HEAVY | resto → VOLUME
   // G2: Stacco + Lat → HEAVY | resto → VOLUME
   // G3: Military + Row → HEAVY | resto → VOLUME
+  // ✅ FIX #4: Aggiunto goal bias
   // ============================================================
   if (frequency === 3) {
     const day1Heavy = ['lower_push', 'horizontal_push'];      // Squat + Panca
     const day2Heavy = ['lower_pull', 'vertical_pull'];        // Stacco + Lat
     const day3Heavy = ['vertical_push', 'horizontal_pull'];   // Military + Row
 
+    let baseIntensity: 'heavy' | 'volume';
     if (dayIndex === 0) {
-      return day1Heavy.includes(patternId) ? 'heavy' : 'volume';
+      baseIntensity = day1Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else if (dayIndex === 1) {
-      return day2Heavy.includes(patternId) ? 'heavy' : 'volume';
+      baseIntensity = day2Heavy.includes(patternId) ? 'heavy' : 'volume';
     } else {
-      return day3Heavy.includes(patternId) ? 'heavy' : 'volume';
+      baseIntensity = day3Heavy.includes(patternId) ? 'heavy' : 'volume';
     }
+    return applyGoalBias(baseIntensity, goalBias, patternId);
   }
 
   // ============================================================
   // FREQUENZA 4+: DUP vera - 1 HEAVY per giorno + resto VOLUME
   // Ruota i compound principali, il resto sempre volume
+  // ✅ FIX #4: Aggiunto goal bias
   // ============================================================
   if (frequency >= 4) {
     // Solo i 3 compound principali possono essere heavy
     const heavyPatterns = ['lower_push', 'lower_pull', 'horizontal_push'];
+    let baseIntensity: 'heavy' | 'volume';
 
     if (heavyPatterns.includes(patternId)) {
       // Ogni pattern è heavy 1 giorno su frequency
       const patternIndex = heavyPatterns.indexOf(patternId);
       if (dayIndex % frequency === patternIndex) {
-        return 'heavy';
+        baseIntensity = 'heavy';
+      } else {
+        baseIntensity = 'volume';
       }
+    } else {
+      baseIntensity = 'volume';
     }
 
-    // Tutto il resto è volume
-    return 'volume';
+    return applyGoalBias(baseIntensity, goalBias, patternId);
   }
 
   // Fallback: volume
@@ -1367,20 +1508,27 @@ function getGoalDistributionNote(goals: string[]): string {
  * WORKOUT DURATION ESTIMATOR
  * Calcola durata stimata in minuti basandosi su esercizi/sets/rest
  *
+ * ✅ FIX BUG #3: Aggiunto overhead realistico per setup/transizioni
+ *
  * Formula:
- * Duration = General Warm-up + Specific Warmup Sets + Work Sets + Cool-down
+ * Duration = General Warm-up + Specific Warmup Sets + Work Sets + Setup + Cool-down + Buffer
  *
  * Tempi medi:
  * - General Warm-up: 5 min (cardio leggero, mobilità)
  * - Specific Warmup Sets: 2x6 reps @ 60% = ~90s per esercizio con warmup
  * - Time per work set: 30-45s (basato su reps)
  * - Rest: estratto dall'esercizio (30s, 60s, 90s, 2min, 3min)
+ * - Setup/transizione: 90s per compound, 45s per isolation
  * - Cool-down: 3 min
+ * - Buffer: +10% per imprevedibilità (bere, asciugarsi, riposizionare)
  */
 export function estimateWorkoutDuration(exercises: Exercise[]): number {
   const GENERAL_WARMUP_MINUTES = 5; // Cardio leggero + mobilità generale
   const COOLDOWN_MINUTES = 3;
   const WARMUP_REST_SECONDS = 45; // Rest breve tra serie warmup
+
+  // Pattern che indicano esercizi compound (setup più lungo)
+  const COMPOUND_PATTERNS = ['lower_push', 'lower_pull', 'horizontal_push', 'horizontal_pull', 'vertical_push', 'vertical_pull'];
 
   let totalSeconds = 0;
 
@@ -1455,13 +1603,21 @@ export function estimateWorkoutDuration(exercises: Exercise[]): number {
     // Il rest è tra i set, quindi ne abbiamo sets-1
     const exerciseTime = (sets * secondsPerSet) + ((sets - 1) * restSeconds);
 
-    // Aggiungi tempo transizione tra esercizi (~30s)
-    totalSeconds += exerciseTime + 30;
+    // ✅ FIX BUG #3: Setup/transizione differenziato per compound vs isolation
+    // Compound: 90s (setup bilanciere/macchina, regolazioni)
+    // Isolation/Core: 45s (setup minimo)
+    const isCompound = COMPOUND_PATTERNS.includes(exercise.pattern as string);
+    const setupTime = isCompound ? 90 : 45;
+
+    totalSeconds += exerciseTime + setupTime;
   }
 
   // Converti in minuti e aggiungi warm-up generale/cool-down
   const workoutMinutes = Math.ceil(totalSeconds / 60);
-  const totalMinutes = GENERAL_WARMUP_MINUTES + workoutMinutes + COOLDOWN_MINUTES;
+  let totalMinutes = GENERAL_WARMUP_MINUTES + workoutMinutes + COOLDOWN_MINUTES;
+
+  // ✅ FIX BUG #3: Buffer +10% per imprevedibilità (bere, asciugarsi, pausa telefono)
+  totalMinutes = Math.round(totalMinutes * 1.10);
 
   return totalMinutes;
 }
@@ -2209,13 +2365,16 @@ function createExercise(
     };
   }
 
-  // Calcola baseline reps
-  const baselineReps = baseline.reps;
+  // ✅ FIX #6: Safety check per baseline.reps undefined
+  const baselineReps = baseline.reps || 10; // Fallback sicuro
+  if (!baseline.reps) {
+    console.warn(`⚠️ baseline.reps undefined per ${patternId}, usando 10 come fallback`);
+  }
 
   // Determina quale variante usare
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
   // Traduci il nome dal baseline (potrebbe essere inglese da screening vecchio)
-  const translatedBaselineName = translateExerciseName(baseline.variantName);
+  const translatedBaselineName = translateExerciseName(baseline.variantName || patternId);
 
   // ════════════════════════════════════════════════════════════════════════
   // DETERMINAZIONE VARIANTE - DUP REALE PER BODYWEIGHT
@@ -2225,10 +2384,16 @@ function createExercise(
   let wasUpgraded = false; // Flag per ridurre reps se variante upgraded
 
   if (equipment === 'bodyweight') {
+    // ✅ FIX #6: Safety check per baseline.difficulty undefined
+    const safeDifficulty = baseline.difficulty || 5; // Fallback intermedio
+    if (!baseline.difficulty) {
+      console.warn(`⚠️ baseline.difficulty undefined per ${patternId}, usando 5 come fallback`);
+    }
+
     // Variante base dalla progressione
     const baseVariantName = getProgressedBodyweightVariant(
       patternId,
-      baseline.difficulty,
+      safeDifficulty,
       baselineReps,
       variantIndex
     ) || translatedBaselineName;
@@ -2283,6 +2448,8 @@ function createExercise(
   }
   let painNotes = '';
   let wasReplaced = false;
+  let wasReplacedForPain = false;
+  let originalExerciseForPain: string | undefined;
 
   // Pain Management
   for (const painEntry of painAreas) {
@@ -2297,6 +2464,9 @@ function createExercise(
       finalReps = deload.reps;
       painNotes = deload.note;
 
+      // Track original name PRIMA della sostituzione
+      const originalExerciseName = exerciseName;
+
       // LOGICA SOSTITUZIONE:
       // - mild: MAI sostituire, solo deload
       // - moderate: variante più facile dello STESSO pattern (es. Deadlift → RDL ridotto)
@@ -2307,6 +2477,8 @@ function createExercise(
         console.log(`  🔄 Sostituzione (${severity}): ${exerciseName} → ${alternative}`);
         exerciseName = alternative;
         wasReplaced = true;
+        wasReplacedForPain = true;
+        originalExerciseForPain = originalExerciseName;
         painNotes = `${painNotes} | Sostituito con ${alternative}`;
       } else if (deload.needsEasierVariant) {
         // MODERATE: variante più facile stesso pattern
@@ -2314,6 +2486,8 @@ function createExercise(
         console.log(`  📉 Variante ridotta (${severity}): ${exerciseName} → ${alternative}`);
         exerciseName = alternative;
         wasReplaced = true;
+        wasReplacedForPain = true;
+        originalExerciseForPain = originalExerciseName;
         painNotes = `${painNotes} | Variante ridotta: ${alternative}`;
       } else {
         // MILD: solo deload, nessuna sostituzione
@@ -2392,6 +2566,9 @@ function createExercise(
       maxReps: baselineReps
     },
     wasReplaced: wasReplaced,
+    // NEW: Pain management tracking
+    wasReplacedForPain: wasReplacedForPain,
+    originalExercise: originalExerciseForPain,
     notes: [
       pregnancyNote, // PREGNANCY: nota se esercizio sostituito
       volumeCalc.notes,
@@ -2762,12 +2939,20 @@ function adaptWorkoutToTimeLimit(
 
   /**
    * Classifica priorità esercizio (più basso = più importante)
-   * 0 = Compound + Goal-aligned (MAX priorità)
-   * 1 = Compound + Non goal-aligned
-   * 2 = Accessorio + Goal-aligned
-   * 3 = Accessorio + Non goal-aligned (MIN priorità)
+   * ✅ FIX BUG #3: Aggiunta priorità per pain management
+   *
+   * -1 = Pain management + DUP heavy (CRITICO - MAI toccare)
+   *  0 = Compound + Goal-aligned (MAX priorità)
+   *  1 = Compound + Non goal-aligned
+   *  2 = Accessorio + Goal-aligned
+   *  3 = Accessorio + Non goal-aligned (MIN priorità)
    */
   function getExercisePriority(exercise: Exercise): number {
+    // ✅ FIX BUG #3: Esercizi critici (pain management, DUP heavy) MAI rimuovere
+    if (exercise.wasReplacedForPain || exercise.dayType === 'heavy') {
+      return -1; // Priorità massima, non toccare
+    }
+
     const isCompound = compoundPatterns.some(p => exercise.pattern?.toLowerCase().includes(p));
     const aligned = isGoalAligned(exercise);
 
@@ -2784,15 +2969,18 @@ function adaptWorkoutToTimeLimit(
     usedSupersets ? estimateWorkoutDurationWithSupersets(exs) : estimateWorkoutDuration(exs);
 
   // STEP 1: Rimuovi esercizi NON allineati con il goal (priorità 3)
+  // ✅ FIX BUG #3: MAI rimuovere esercizi con priorità -1 (pain management, heavy)
   console.log(`\n🔍 STEP 1: Rimozione esercizi NON allineati con goal`);
   while (currentDuration > targetDuration && adapted.length > 3) {
     let removedIndex = -1;
     let maxPriority = -1;
 
     // Cerca l'esercizio con priorità più bassa (3 = non-compound + non-aligned)
+    // SKIP priorità -1 (pain/heavy)
     for (let i = adapted.length - 1; i >= 0; i--) {
       const priority = getExercisePriority(adapted[i]);
-      if (priority > maxPriority) {
+      // ✅ FIX: Non considerare esercizi critici (pain management, heavy)
+      if (priority >= 0 && priority > maxPriority) {
         maxPriority = priority;
         removedIndex = i;
       }
@@ -2838,14 +3026,18 @@ function adaptWorkoutToTimeLimit(
   }
 
   // STEP 3: Rimuovi esercizi accessori anche se goal-aligned (priorità 2)
+  // ✅ FIX BUG #3: MAI rimuovere esercizi pain management
   console.log(`\n✂️ STEP 3: Rimozione esercizi accessori goal-aligned`);
   while (currentDuration > targetDuration && adapted.length > 2) {
     let removedIndex = -1;
 
     // Cerca ultimo esercizio accessorio (anche se aligned)
+    // ✅ FIX: SKIP esercizi con priorità -1 (pain management, heavy)
     for (let i = adapted.length - 1; i >= 0; i--) {
+      const priority = getExercisePriority(adapted[i]);
       const isCompound = compoundPatterns.some(p => adapted[i].pattern?.toLowerCase().includes(p));
-      if (!isCompound) {
+      // Non rimuovere esercizi critici (pain/heavy)
+      if (!isCompound && priority >= 0) {
         removedIndex = i;
         break;
       }
@@ -2870,9 +3062,12 @@ function adaptWorkoutToTimeLimit(
   }
 
   // STEP 4: ULTIMO RESORT - Riduci sets esercizi del goal principale (priorità 0)
+  // ✅ FIX BUG #3: Anche qui, proteggi esercizi pain management (priorità -1)
   console.log(`\n⚠️ STEP 4: Riduzione sets esercizi GOAL PRINCIPALI (ultimo resort)`);
   adapted = adapted.map(ex => {
-    if (typeof ex.sets === 'number' && ex.sets > 2) {
+    const priority = getExercisePriority(ex);
+    // ✅ FIX: MAI ridurre esercizi critici (pain/heavy)
+    if (priority >= 0 && typeof ex.sets === 'number' && ex.sets > 2) {
       reducedSets = true;
       console.log(`   📉 Ridotto (goal exercise): ${ex.name} (${ex.sets} → ${ex.sets - 1} sets)`);
       return { ...ex, sets: ex.sets - 1 };
@@ -2890,6 +3085,22 @@ function adaptWorkoutToTimeLimit(
 
 export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit {
   const { frequency, goals, location, baselines, userBodyweight, equipment, trainingType } = options;
+
+  // ✅ FIX #7: Default sessionDuration se non specificato
+  // Stima ragionevole in base a frequency e goal
+  if (!options.sessionDuration) {
+    const defaultDurations: Record<number, number> = {
+      2: 75,  // 2x/week → sessioni più lunghe
+      3: 60,  // 3x/week → bilanciato
+      4: 55,  // 4x/week → sessioni medie
+      5: 50,  // 5x/week → sessioni più corte
+      6: 45,  // 6x/week → sessioni brevi
+      7: 40   // 7x/week → sessioni molto brevi
+    };
+
+    options.sessionDuration = defaultDurations[frequency] || 60;
+    console.log(`⏱️ sessionDuration non specificato, usando default: ${options.sessionDuration}min per ${frequency}x/week`);
+  }
 
   console.log(`Generazione split settimanale per ${frequency}x/settimana`);
 

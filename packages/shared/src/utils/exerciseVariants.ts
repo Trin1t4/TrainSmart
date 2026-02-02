@@ -740,6 +740,20 @@ export function getProgressedBodyweightVariant(
   repsAchieved: number,
   variantIndex: number = 0
 ): string {
+  // ✅ FIX #6: Validation input
+  let difficulty = testedDifficulty;
+  let reps = repsAchieved;
+
+  if (!difficulty || typeof difficulty !== 'number' || difficulty < 1 || difficulty > 10) {
+    console.warn(`[getProgressedBodyweightVariant] Invalid difficulty: ${difficulty}, using 5`);
+    difficulty = 5;
+  }
+
+  if (!reps || typeof reps !== 'number' || reps < 1) {
+    console.warn(`[getProgressedBodyweightVariant] Invalid reps: ${reps}, using 10`);
+    reps = 10;
+  }
+
   const variantMap: Record<string, ExerciseVariant[]> = {
     lower_push: LOWER_PUSH_VARIANTS,
     lower_pull: LOWER_PULL_VARIANTS,
@@ -753,10 +767,10 @@ export function getProgressedBodyweightVariant(
   const variants = variantMap[patternId];
   if (!variants) return '';
 
-  // Calcola difficoltà effettiva
-  const effectiveDifficulty = getEffectiveBodyweightDifficulty(testedDifficulty, repsAchieved);
+  // Calcola difficoltà effettiva (usa variabili validate)
+  const effectiveDifficulty = getEffectiveBodyweightDifficulty(difficulty, reps);
 
-  console.log(`📊 Bodyweight progression: tested diff ${testedDifficulty} @ ${repsAchieved} reps → effective diff ${effectiveDifficulty.toFixed(1)}`);
+  console.log(`📊 Bodyweight progression: tested diff ${difficulty} @ ${reps} reps → effective diff ${effectiveDifficulty.toFixed(1)}`);
 
   // Filtra varianti bodyweight
   const bodyweightVariants = variants.filter(
@@ -896,24 +910,28 @@ export const EXERCISE_ALTERNATIVES: Record<string, ExerciseAlternative[]> = {
   // LOWER PUSH (Squat pattern)
   // ═══════════════════════════════════════════════════════════════
   'Back Squat': [
-    { name: 'Dumbbell Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri sulle spalle', weightFactor: 0.38, repsFactor: 1.0 }, // 100kg → 38kg per mano
-    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con kettlebell/manubrio', weightFactor: 0.40, repsFactor: 1.2 }, // Singolo peso, +reps
-    { name: 'Leg Press', equipment: 'gym', difficulty: 4, notes: 'Meno stress lombare', weightFactor: 1.50, repsFactor: 1.0 }, // Leg press carichi più alti
-  ],
-  'Front Squat': [
-    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Stessa enfasi su quadricipiti', weightFactor: 0.50, repsFactor: 1.0 },
-    { name: 'Dumbbell Front Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri davanti', weightFactor: 0.40, repsFactor: 1.0 },
-    { name: 'Leg Press (piedi alti)', equipment: 'gym', difficulty: 4, notes: 'Focus quadricipiti', weightFactor: 1.80, repsFactor: 1.0 },
-  ],
-  'Squat': [
-    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con manubrio/kettlebell', weightFactor: 0.40, repsFactor: 1.2 },
-    { name: 'Dumbbell Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri ai lati', weightFactor: 0.38, repsFactor: 1.0 },
-    { name: 'Leg Press', equipment: 'gym', difficulty: 4, notes: 'Macchina, meno tecnica', weightFactor: 1.50, repsFactor: 1.0 },
-  ],
-  'Squat con Bilanciere': [
+    { name: 'Leg Press', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina - meno stress lombare', weightFactor: 1.50, repsFactor: 1.0 },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina guidata', weightFactor: 0.80, repsFactor: 1.0 },
     { name: 'Dumbbell Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri sulle spalle', weightFactor: 0.38, repsFactor: 1.0 },
     { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con kettlebell/manubrio', weightFactor: 0.40, repsFactor: 1.2 },
-    { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: 'Macchina guidata', weightFactor: 0.80, repsFactor: 1.0 },
+  ],
+  'Front Squat': [
+    { name: 'Leg Press (piedi alti)', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina - focus quadricipiti', weightFactor: 1.80, repsFactor: 1.0 },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina guidata', weightFactor: 0.80, repsFactor: 1.0 },
+    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Stessa enfasi su quadricipiti', weightFactor: 0.50, repsFactor: 1.0 },
+    { name: 'Dumbbell Front Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri davanti', weightFactor: 0.40, repsFactor: 1.0 },
+  ],
+  'Squat': [
+    { name: 'Leg Press', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina guidata', weightFactor: 1.50, repsFactor: 1.0 },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina, focus quadricipiti', weightFactor: 0.80, repsFactor: 1.0 },
+    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con manubrio/kettlebell', weightFactor: 0.40, repsFactor: 1.2 },
+    { name: 'Dumbbell Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri ai lati', weightFactor: 0.38, repsFactor: 1.0 },
+  ],
+  'Squat con Bilanciere': [
+    { name: 'Leg Press', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina guidata', weightFactor: 1.50, repsFactor: 1.0 },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: '🏋️ Macchina guidata', weightFactor: 0.80, repsFactor: 1.0 },
+    { name: 'Dumbbell Squat', equipment: 'gym', difficulty: 4, notes: 'Manubri sulle spalle', weightFactor: 0.38, repsFactor: 1.0 },
+    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con kettlebell/manubrio', weightFactor: 0.40, repsFactor: 1.2 },
   ],
   'Leg Press': [
     { name: 'Hack Squat', equipment: 'gym', difficulty: 4, notes: 'Stessa meccanica', weightFactor: 0.60, repsFactor: 1.0 },
@@ -926,9 +944,18 @@ export const EXERCISE_ALTERNATIVES: Record<string, ExerciseAlternative[]> = {
     { name: 'Single Leg Press', equipment: 'gym', difficulty: 4, notes: 'Una gamba alla volta', weightFactor: 2.0, repsFactor: 1.0 },
   ],
   'Bodyweight Squat': [
-    { name: 'Box Squat', equipment: 'bodyweight', difficulty: 3, notes: 'Squat su panca' },
+    { name: 'Leg Press', equipment: 'gym', difficulty: 3, notes: '🏋️ Macchina guidata - ideale per principianti' },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 3, notes: '🏋️ Macchina, percorso fisso' },
     { name: 'Goblet Squat (leggero)', equipment: 'gym', difficulty: 3, notes: 'Con peso leggero' },
+    { name: 'Box Squat', equipment: 'bodyweight', difficulty: 3, notes: 'Squat su panca' },
     { name: 'Wall Sit', equipment: 'bodyweight', difficulty: 3, notes: 'Isometrico' },
+  ],
+  // Alias italiano per Bodyweight Squat
+  'Squat a Corpo Libero': [
+    { name: 'Leg Press', equipment: 'gym', difficulty: 3, notes: '🏋️ Macchina guidata - ideale per principianti' },
+    { name: 'Hack Squat', equipment: 'gym', difficulty: 3, notes: '🏋️ Macchina, percorso fisso' },
+    { name: 'Goblet Squat', equipment: 'gym', difficulty: 4, notes: 'Con manubrio/kettlebell' },
+    { name: 'Box Squat', equipment: 'bodyweight', difficulty: 3, notes: 'Squat su panca' },
   ],
   'Pistol Squat': [
     { name: 'Shrimp Squat', equipment: 'bodyweight', difficulty: 7, notes: 'Stessa difficoltà' },

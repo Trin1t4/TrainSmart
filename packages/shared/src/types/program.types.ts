@@ -77,7 +77,7 @@ export interface SupersetConfig {
 }
 
 export interface Exercise {
-  pattern: PatternId | 'corrective';
+  pattern: PatternId | 'corrective' | 'horizontal_pull';
   name: string;
   sets: number;
   reps: number | string; // può essere "10-15" per range
@@ -94,6 +94,16 @@ export interface Exercise {
   weight?: string; // per esercizi gym con carico
   warmup?: WarmupSet; // Serie di riscaldamento specifiche per questo esercizio
   superset?: SupersetConfig; // Configurazione superset (se abbinato ad altro esercizio)
+  /**
+   * Flag: esercizio sostituito per pain management
+   * Se true, NON riconvertire in locationAdapter
+   */
+  wasReplacedForPain?: boolean;
+  /**
+   * Nome originale prima della sostituzione per dolore
+   * Es: "Squat" → sostituito con "Leg Press"
+   */
+  originalExercise?: string;
 }
 
 /**
