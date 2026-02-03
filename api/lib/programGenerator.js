@@ -22,6 +22,8 @@ const GOAL_NORMALIZATION = {
   'generale': 'general_fitness',
   'fitness_generale': 'general_fitness',
   'general_fitness': 'general_fitness',
+  'benessere': 'general_fitness',
+  'wellness': 'general_fitness',
   // Already correct (passthrough)
   'strength': 'strength',
   'muscle_gain': 'muscle_gain',

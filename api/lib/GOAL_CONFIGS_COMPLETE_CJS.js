@@ -77,6 +77,34 @@ export const GOAL_CONFIGS = {
     homeStrategy: 'mobility_strength',
     painThreshold: true,
     progressionOrder: ['difficulty', 'load', 'rom']
+  },
+
+  general_fitness: {
+    name: 'Fitness Generale / Benessere',
+    repsRange: '10-15',
+    rest: { compound: 90, accessory: 75, isolation: 60, core: 45 },
+    intensity: 'moderate',
+    focus: 'balanced_health',
+    setsMultiplier: 1.0,
+    notes: 'Programma bilanciato per salute e benessere generale',
+    homeStrategy: 'balanced_bodyweight',
+    targetRIR: 3,
+    includesMobility: true,
+    mobilityFrequency: 2
+  },
+
+  endurance: {
+    name: 'Resistenza',
+    repsRange: '15-20',
+    rest: { compound: 60, accessory: 45, isolation: 45, core: 30 },
+    intensity: 'moderate',
+    focus: 'muscular_endurance',
+    setsMultiplier: 0.9,
+    notes: 'Alta densità, recuperi brevi',
+    homeStrategy: 'high_rep_circuits',
+    targetRIR: 2,
+    includesCardio: true,
+    cardioFrequency: 3
   }
 }
 
