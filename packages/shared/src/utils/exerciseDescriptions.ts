@@ -6,6 +6,8 @@
 export interface ExerciseDescription {
   description: string;
   technique: string[];
+  dcssNote?: string; // Nota sulla variabilità individuale (DCSS)
+  commonVariations?: string[]; // Variazioni normali basate su antropometria
 }
 
 /**

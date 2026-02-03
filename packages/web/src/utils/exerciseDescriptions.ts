@@ -539,6 +539,179 @@ export const EXERCISE_DESCRIPTIONS: Record<string, ExerciseDescription> = {
     dcssNote: 'Ginocchia dritte = gastrocnemio. Ginocchia flesse = soleo. Entrambi sono importanti.',
   },
 
+  // ============================================
+  // MACHINE VARIANTS - Esercizi su macchine guidate
+  // ============================================
+
+  'Leg Press (Machine)': {
+    description: 'Pressa per le gambe su macchina guidata. Permette di caricare in sicurezza senza stress sulla colonna.',
+    technique: [
+      'Schiena ben appoggiata allo schienale',
+      'Piedi sulla pedana nella posizione che senti più stabile',
+      'Spingi fino a estensione quasi completa senza bloccare le ginocchia',
+      'Controlla la discesa fino a 90° o dove la schiena rimane a contatto'
+    ],
+    dcssNote: 'Posizione piedi variabile: alti = più glutei, bassi = più quadricipiti, larghi = più adduttori.',
+    commonVariations: [
+      'Piedi alti e larghi → focus glutei e femorali',
+      'Piedi bassi e stretti → focus quadricipiti',
+      'Unilaterale → per correggere asimmetrie'
+    ]
+  },
+
+  'Hack Squat Machine': {
+    description: 'Squat guidato su macchina inclinata. Ottimo per isolare i quadricipiti con supporto per la schiena.',
+    technique: [
+      'Spalle sotto i cuscinetti, schiena contro lo schienale',
+      'Piedi sulla pedana alla larghezza confortevole',
+      'Scendi controllando fino a dove la schiena rimane a contatto',
+      'Spingi attraverso tutto il piede per risalire'
+    ],
+    dcssNote: 'Il percorso guidato permette di concentrarsi solo sulla spinta senza pensare all\'equilibrio.',
+    commonVariations: [
+      'Piedi bassi → massimo lavoro quadricipiti',
+      'Piedi alti → coinvolgimento glutei',
+      'Stance stretto vs largo → varia enfasi muscolare'
+    ]
+  },
+
+  'Leg Extension Machine': {
+    description: 'Estensione delle ginocchia su macchina. Isolamento puro per i quadricipiti.',
+    technique: [
+      'Regola il cuscinetto sulle caviglie e lo schienale alla tua altezza',
+      'Allinea le ginocchia con il perno della macchina',
+      'Estendi completamente contraendo i quadricipiti',
+      'Controlla la fase negativa lentamente'
+    ],
+    dcssNote: 'Nonostante i vecchi miti, la leg extension è sicura se eseguita con carico appropriato e controllo.',
+  },
+
+  'Leg Curl Machine': {
+    description: 'Flessione delle ginocchia su macchina. Isolamento per gli ischiocrurali in completa sicurezza.',
+    technique: [
+      'Regola il cuscinetto sulle caviglie',
+      'Allinea le ginocchia con il perno della macchina',
+      'Fletti le ginocchia con contrazione piena in alto',
+      'Fase negativa lenta e controllata'
+    ],
+    dcssNote: 'Puoi variare la posizione dei piedi (punte in fuori o in dentro) per enfatizzare diversi fasci dei femorali.',
+  },
+
+  'Hip Thrust Machine': {
+    description: 'Estensione delle anche su macchina dedicata. Focus massimo sui glutei con setup facilitato.',
+    technique: [
+      'Posizionati con la schiena sul supporto',
+      'Il cuscinetto appoggia sulle anche',
+      'Spingi le anche verso l\'alto fino a estensione completa',
+      'Contrai i glutei in alto, poi controlla la discesa'
+    ],
+    dcssNote: 'La macchina elimina la scomodità del bilanciere sulle anche - puoi concentrarti solo sulla contrazione.',
+  },
+
+  'Back Extension Machine': {
+    description: 'Estensione della schiena su macchina. Lavora erettori spinali, glutei e femorali.',
+    technique: [
+      'Posizionati con le anche sul cuscinetto',
+      'Scendi in avanti controllando il movimento',
+      'Risali contraendo glutei ed erettori',
+      'Non iperestendere oltre la posizione neutra'
+    ],
+    dcssNote: 'Una leggera flessione della colonna è normale durante la discesa - i dischi sono progettati per questo.',
+  },
+
+  'Chest Press Machine': {
+    description: 'Distensione su macchina per il petto. Percorso guidato che permette di focalizzarsi sulla contrazione.',
+    technique: [
+      'Regola il sedile in modo che le maniglie siano all\'altezza del petto',
+      'Schiena appoggiata allo schienale, piedi a terra',
+      'Spingi le maniglie in avanti fino a estensione quasi completa',
+      'Controlla il ritorno sentendo l\'allungamento del petto'
+    ],
+    dcssNote: 'Ottima per principianti o come finisher dopo i pesi liberi - il percorso guidato elimina la necessità di stabilizzazione.',
+    commonVariations: [
+      'Sedile più basso → enfasi sulla parte alta del petto',
+      'Sedile più alto → enfasi sulla parte media/bassa',
+      'Presa larga vs stretta → varia coinvolgimento'
+    ]
+  },
+
+  'Incline Chest Press Machine': {
+    description: 'Distensione inclinata su macchina. Focus sulla parte alta del petto con supporto guidato.',
+    technique: [
+      'Regola il sedile per l\'angolo desiderato',
+      'Schiena appoggiata, piedi stabili a terra',
+      'Spingi verso l\'alto e in avanti',
+      'Controlla il ritorno sentendo l\'allungamento'
+    ],
+    dcssNote: 'L\'angolo della macchina enfatizza naturalmente il pettorale alto e i deltoidi anteriori.',
+  },
+
+  'Shoulder Press Machine': {
+    description: 'Distensione sopra la testa su macchina guidata. Sicura per le spalle grazie al percorso fisso.',
+    technique: [
+      'Regola il sedile in modo che le maniglie partano all\'altezza delle spalle',
+      'Schiena appoggiata allo schienale',
+      'Spingi verso l\'alto fino a estensione quasi completa',
+      'Controlla la discesa fino all\'altezza delle orecchie'
+    ],
+    dcssNote: 'Il percorso guidato riduce la necessità di stabilizzazione - puoi concentrarti sulla forza pura.',
+  },
+
+  'Lat Pulldown Machine': {
+    description: 'Trazione verticale su macchina dedicata. Alternativa guidata alla lat machine tradizionale.',
+    technique: [
+      'Regola il cuscinetto sulle cosce per stabilità',
+      'Afferra le maniglie con presa confortevole',
+      'Tira verso il petto guidando con i gomiti',
+      'Controlla il ritorno sentendo l\'allungamento dei dorsali'
+    ],
+    dcssNote: 'A differenza della lat machine a cavo, il percorso guidato è fisso - ideale per chi sta imparando il movimento.',
+  },
+
+  'Assisted Pull-up Machine': {
+    description: 'Trazioni assistite su macchina con contrappeso. Permette di fare trazioni anche a chi non riesce ancora.',
+    technique: [
+      'Sali sulla pedana e afferra la sbarra',
+      'Il contrappeso ti aiuta durante la salita',
+      'Tira portando il petto verso la sbarra',
+      'Scendi controllando'
+    ],
+    dcssNote: 'Riduci gradualmente il contrappeso nel tempo - è la progressione più naturale verso le trazioni libere.',
+  },
+
+  'Seated Row Machine': {
+    description: 'Rematore seduto su macchina guidata. Lavora la schiena senza stress sulla lombare.',
+    technique: [
+      'Petto appoggiato al supporto, piedi sulle pedane',
+      'Afferra le maniglie e tira verso l\'addome',
+      'Contrai le scapole alla fine del movimento',
+      'Controlla il rilascio sentendo l\'allungamento'
+    ],
+    dcssNote: 'Il supporto per il petto elimina il carico sulla lombare - ottima scelta per chi ha fastidi alla schiena.',
+  },
+
+  'Machine Row (Chest Supported)': {
+    description: 'Rematore su macchina con supporto per il petto. Isolamento puro per i muscoli della schiena.',
+    technique: [
+      'Petto contro il supporto, regola l\'altezza del sedile',
+      'Afferra le maniglie con presa neutra o prona',
+      'Tira portando i gomiti indietro',
+      'Contrai le scapole, poi controlla il ritorno'
+    ],
+    dcssNote: 'Senza stress lombare puoi concentrarti completamente sulla contrazione della schiena.',
+  },
+
+  'Ab Crunch Machine': {
+    description: 'Crunch guidato su macchina. Isolamento per i retti addominali con carico regolabile.',
+    technique: [
+      'Regola il sedile e il peso appropriato',
+      'Afferra le maniglie e posiziona i piedi sotto i rulli',
+      'Fletti il busto contraendo gli addominali',
+      'Controlla il ritorno alla posizione iniziale'
+    ],
+    dcssNote: 'Il percorso guidato permette di aggiungere carico progressivo agli addominali in modo controllato.',
+  },
+
   // Merge corrective exercises
   ...CORRECTIVE_EXERCISE_DESCRIPTIONS,
 };

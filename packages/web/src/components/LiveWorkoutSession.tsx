@@ -4040,6 +4040,32 @@ export default function LiveWorkoutSession({
                   </ul>
                 </div>
               )}
+
+              {/* DCSS Note - Variabilità individuale */}
+              {exerciseInfo.dcssNote && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-amber-400/80 italic leading-relaxed">
+                    {exerciseInfo.dcssNote}
+                  </p>
+                </div>
+              )}
+
+              {/* Common Variations */}
+              {exerciseInfo.commonVariations && exerciseInfo.commonVariations.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-emerald-400 font-medium mb-2 uppercase tracking-wide">
+                    Variazioni comuni
+                  </p>
+                  <ul className="space-y-1">
+                    {exerciseInfo.commonVariations.map((variation, i) => (
+                      <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                        <span className="text-emerald-400 mt-0.5">•</span>
+                        <span>{variation}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </motion.div>
