@@ -7,6 +7,8 @@ export type TrainingLocation = 'gym' | 'home' | 'home_gym';
 
 export type TrainingType = 'bodyweight' | 'equipment' | 'machines';
 
+export type EquipmentPreference = 'prefer_machines' | 'prefer_free_weights' | 'mixed';
+
 export type Goal =
   // Fitness goals
   | 'forza'
@@ -190,6 +192,7 @@ export interface OnboardingData {
   // Step 2: Location & Equipment
   trainingLocation?: TrainingLocation;
   trainingType?: TrainingType;
+  equipmentPreference?: EquipmentPreference;
   equipment?: Equipment;
 
   // Step 3: Activity Level

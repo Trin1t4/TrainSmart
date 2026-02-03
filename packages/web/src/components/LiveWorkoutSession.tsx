@@ -181,10 +181,20 @@ const calculateContextAdjustment = (
 };
 
 // Helper function to parse rest time strings to seconds
-// Handles formats: "90s", "60-90s", "2-3min", "3-5min"
-const parseRestTimeToSeconds = (rest: string): number => {
+// Handles formats: "90s", "60-90s", "2-3min", "3-5min", or numbers (90, 3)
+const parseRestTimeToSeconds = (rest: string | number | undefined): number => {
+  // Handle undefined/null
+  if (rest === undefined || rest === null) {
+    return 90; // Default 90 seconds
+  }
+
+  // Handle number input (assume seconds if > 10, minutes if <= 10)
+  if (typeof rest === 'number') {
+    return rest <= 10 ? rest * 60 : rest;
+  }
+
   // Remove whitespace and convert to lowercase
-  const cleaned = rest.trim().toLowerCase();
+  const cleaned = String(rest).trim().toLowerCase();
 
   // Check if it's in minutes format
   if (cleaned.includes('min')) {

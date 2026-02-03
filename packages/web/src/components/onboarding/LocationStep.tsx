@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Home, Dumbbell, Warehouse, CheckCircle, Circle, Calendar } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n';
 
+type EquipmentPreference = 'prefer_machines' | 'prefer_free_weights' | 'mixed';
+
 interface OnboardingData {
   trainingLocation?: 'gym' | 'home' | 'home_gym';
   trainingType?: 'bodyweight' | 'equipment' | 'machines';
+  equipmentPreference?: EquipmentPreference;
   frequency?: number;
   equipment?: {
     pullupBar?: boolean;
@@ -35,6 +38,9 @@ export default function LocationStep({ data, onNext, onBack }: LocationStepProps
   );
   const [trainingType, setTrainingType] = useState<'bodyweight' | 'equipment' | 'machines'>(
     data.trainingType || 'bodyweight'
+  );
+  const [equipmentPreference, setEquipmentPreference] = useState<EquipmentPreference>(
+    data.equipmentPreference || 'mixed'
   );
   const [frequency, setFrequency] = useState<number>(data.frequency || 3);
   const [equipment, setEquipment] = useState({
@@ -79,6 +85,7 @@ export default function LocationStep({ data, onNext, onBack }: LocationStepProps
     onNext({
       trainingLocation: selectedLocation,
       trainingType,
+      equipmentPreference: selectedLocation === 'gym' && trainingType === 'equipment' ? equipmentPreference : undefined,
       frequency,
       equipment
     });
@@ -360,6 +367,52 @@ export default function LocationStep({ data, onNext, onBack }: LocationStepProps
                   ? t('onboarding.location.calisthenicsEquipment')
                   : 'Bilanciere, manubri, macchine, cavi - tutto disponibile. Sceglierai durante i test.'}
               </p>
+            </div>
+          )}
+
+          {/* Preferenza Equipment: macchine vs pesi liberi (solo per gym + equipment) */}
+          {trainingType === 'equipment' && (
+            <div className="mt-4">
+              <h4 className="font-semibold text-white mb-2 text-sm">Che tipo di attrezzi preferisci?</h4>
+              <p className="text-xs text-slate-400 mb-3">Il programma bilancerà gli esercizi in base alla tua preferenza</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button
+                  onClick={() => setEquipmentPreference('prefer_machines')}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    equipmentPreference === 'prefer_machines'
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <p className="font-semibold text-white text-sm">Preferisco macchine</p>
+                  <p className="text-xs text-slate-400 mt-1">Macchine guidate con supporto pesi liberi (~70/30)</p>
+                </button>
+
+                <button
+                  onClick={() => setEquipmentPreference('mixed')}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    equipmentPreference === 'mixed'
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <p className="font-semibold text-white text-sm">Mix di entrambi</p>
+                  <p className="text-xs text-slate-400 mt-1">Alternanza bilanciata macchine e pesi liberi (~50/50)</p>
+                </button>
+
+                <button
+                  onClick={() => setEquipmentPreference('prefer_free_weights')}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    equipmentPreference === 'prefer_free_weights'
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <p className="font-semibold text-white text-sm">Preferisco pesi liberi</p>
+                  <p className="text-xs text-slate-400 mt-1">Bilanciere, manubri e cavi come priorità</p>
+                </button>
+              </div>
             </div>
           )}
         </div>

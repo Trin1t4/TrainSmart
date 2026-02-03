@@ -10,12 +10,13 @@
  */
 
 import { getAllVariantsForPattern } from '../data/calisthenicsProgressions';
+import type { EquipmentPreference } from '../types/onboarding.types';
 
 export interface ExerciseVariant {
   id: string;
   name: string;
   difficulty: number; // 1-10 scale
-  equipment: 'bodyweight' | 'gym' | 'both';
+  equipment: 'bodyweight' | 'gym' | 'both' | 'machine';
   primary: string[]; // Muscoli primari
   secondary: string[]; // Muscoli secondari
   isometric?: boolean; // true per esercizi a tempo (secondi invece di reps)
@@ -76,12 +77,43 @@ const GYM_LOWER_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * LOWER PUSH - MACHINE VARIANTS
+ */
+const MACHINE_LOWER_PUSH_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'leg_press_machine',
+    name: 'Leg Press (Machine)',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['quadriceps', 'glutes'],
+    secondary: ['hamstrings']
+  },
+  {
+    id: 'hack_squat_machine',
+    name: 'Hack Squat Machine',
+    difficulty: 4,
+    equipment: 'machine',
+    primary: ['quadriceps', 'glutes'],
+    secondary: ['hamstrings']
+  },
+  {
+    id: 'leg_extension_machine',
+    name: 'Leg Extension Machine',
+    difficulty: 2,
+    equipment: 'machine',
+    primary: ['quadriceps'],
+    secondary: []
+  }
+];
+
+/**
  * LOWER PUSH VARIANTS (Squat pattern - Quadriceps dominanti)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const LOWER_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('lower_push'),
-  ...GYM_LOWER_PUSH_VARIANTS
+  ...GYM_LOWER_PUSH_VARIANTS,
+  ...MACHINE_LOWER_PUSH_VARIANTS
 ]);
 
 /**
@@ -139,12 +171,43 @@ const GYM_LOWER_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * LOWER PULL - MACHINE VARIANTS
+ */
+const MACHINE_LOWER_PULL_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'leg_curl_machine',
+    name: 'Leg Curl Machine',
+    difficulty: 2,
+    equipment: 'machine',
+    primary: ['hamstrings'],
+    secondary: ['calves']
+  },
+  {
+    id: 'hip_thrust_machine',
+    name: 'Hip Thrust Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['glutes', 'hamstrings'],
+    secondary: ['core']
+  },
+  {
+    id: 'back_extension_machine',
+    name: 'Back Extension Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['erectors', 'glutes'],
+    secondary: ['hamstrings']
+  }
+];
+
+/**
  * LOWER PULL VARIANTS (Deadlift/Hip Hinge - Posterior chain)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const LOWER_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('lower_pull'),
-  ...GYM_LOWER_PULL_VARIANTS
+  ...GYM_LOWER_PULL_VARIANTS,
+  ...MACHINE_LOWER_PULL_VARIANTS
 ]);
 
 /**
@@ -194,12 +257,35 @@ const GYM_HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * HORIZONTAL PUSH - MACHINE VARIANTS
+ */
+const MACHINE_HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'chest_press_machine',
+    name: 'Chest Press Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['pectorals', 'triceps'],
+    secondary: ['front_delts']
+  },
+  {
+    id: 'incline_chest_press_machine',
+    name: 'Incline Chest Press Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['upper_pectorals', 'triceps'],
+    secondary: ['front_delts']
+  }
+];
+
+/**
  * HORIZONTAL PUSH VARIANTS (Bench Press pattern - Pectorals)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const HORIZONTAL_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('horizontal_push'),
-  ...GYM_HORIZONTAL_PUSH_VARIANTS
+  ...GYM_HORIZONTAL_PUSH_VARIANTS,
+  ...MACHINE_HORIZONTAL_PUSH_VARIANTS
 ]);
 
 /**
@@ -241,12 +327,27 @@ const GYM_VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * VERTICAL PUSH - MACHINE VARIANTS
+ */
+const MACHINE_VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'shoulder_press_machine',
+    name: 'Shoulder Press Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['front_delts', 'triceps'],
+    secondary: ['upper_pectorals']
+  }
+];
+
+/**
  * VERTICAL PUSH VARIANTS (Overhead Press - Shoulders)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const VERTICAL_PUSH_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('vertical_push'),
-  ...GYM_VERTICAL_PUSH_VARIANTS
+  ...GYM_VERTICAL_PUSH_VARIANTS,
+  ...MACHINE_VERTICAL_PUSH_VARIANTS
 ]);
 
 /**
@@ -272,12 +373,35 @@ const GYM_VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * VERTICAL PULL - MACHINE VARIANTS
+ */
+const MACHINE_VERTICAL_PULL_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'lat_pulldown_machine',
+    name: 'Lat Pulldown Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['lats', 'biceps'],
+    secondary: ['rear_delts', 'traps']
+  },
+  {
+    id: 'assisted_pullup_machine',
+    name: 'Assisted Pull-up Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['lats', 'biceps'],
+    secondary: ['rear_delts', 'core']
+  }
+];
+
+/**
  * VERTICAL PULL VARIANTS (Pull-up/Lat Pulldown - Lats)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const VERTICAL_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('vertical_pull'),
-  ...GYM_VERTICAL_PULL_VARIANTS
+  ...GYM_VERTICAL_PULL_VARIANTS,
+  ...MACHINE_VERTICAL_PULL_VARIANTS
 ]);
 
 /**
@@ -319,12 +443,35 @@ const GYM_HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * HORIZONTAL PULL - MACHINE VARIANTS
+ */
+const MACHINE_HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'seated_row_machine',
+    name: 'Seated Row Machine',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['mid_back', 'lats'],
+    secondary: ['biceps', 'rear_delts']
+  },
+  {
+    id: 'machine_row_chest_supported',
+    name: 'Machine Row (Chest Supported)',
+    difficulty: 3,
+    equipment: 'machine',
+    primary: ['mid_back', 'lats'],
+    secondary: ['biceps', 'rear_delts']
+  }
+];
+
+/**
  * HORIZONTAL PULL VARIANTS (Row pattern - Mid-back)
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const HORIZONTAL_PULL_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('horizontal_pull'),
-  ...GYM_HORIZONTAL_PULL_VARIANTS
+  ...GYM_HORIZONTAL_PULL_VARIANTS,
+  ...MACHINE_HORIZONTAL_PULL_VARIANTS
 ]);
 
 /**
@@ -350,12 +497,27 @@ const GYM_CORE_VARIANTS: ExerciseVariant[] = [
 ];
 
 /**
+ * CORE - MACHINE VARIANTS
+ */
+const MACHINE_CORE_VARIANTS: ExerciseVariant[] = [
+  {
+    id: 'ab_crunch_machine',
+    name: 'Ab Crunch Machine',
+    difficulty: 2,
+    equipment: 'machine',
+    primary: ['rectus_abdominis'],
+    secondary: ['obliques']
+  }
+];
+
+/**
  * CORE VARIANTS
- * SSOT bodyweight + GYM variants
+ * SSOT bodyweight + GYM + MACHINE variants
  */
 export const CORE_VARIANTS: ExerciseVariant[] = deduplicateVariants([
   ...getAllVariantsForPattern('core'),
-  ...GYM_CORE_VARIANTS
+  ...GYM_CORE_VARIANTS,
+  ...MACHINE_CORE_VARIANTS
 ]);
 
 /**
@@ -644,7 +806,8 @@ export function getVariantForPattern(
   baselineVariantId: string,
   variantIndex: number,
   equipment: 'bodyweight' | 'gym',
-  baselineDifficulty?: number // Difficoltà dal test di screening (1-10)
+  baselineDifficulty?: number, // Difficoltà dal test di screening (1-10)
+  equipmentPreference?: EquipmentPreference
 ): string {
   const variantMap: Record<string, ExerciseVariant[]> = {
     lower_push: LOWER_PUSH_VARIANTS,
@@ -659,10 +822,53 @@ export function getVariantForPattern(
   const variants = variantMap[patternId];
   if (!variants) return baselineVariantId; // Fallback
 
-  // Filtra per equipment
-  let validVariants = variants.filter(
-    v => v.equipment === equipment || v.equipment === 'both'
-  );
+  // Filtra per equipment con supporto equipmentPreference
+  let validVariants: ExerciseVariant[];
+
+  if (equipment === 'gym' && equipmentPreference) {
+    switch (equipmentPreference) {
+      case 'prefer_machines': {
+        // ~70% macchine: prima prova solo macchine, se insufficienti integra con gym/both
+        const machineVariants = variants.filter(v => v.equipment === 'machine');
+        if (machineVariants.length >= 2) {
+          validVariants = machineVariants;
+        } else {
+          // Integra con gym/both ma metti macchine prima
+          validVariants = [
+            ...machineVariants,
+            ...variants.filter(v => v.equipment === 'gym' || v.equipment === 'both')
+          ];
+        }
+        break;
+      }
+      case 'mixed': {
+        // 50/50: includi tutte le varianti (machine + gym + both)
+        // Alterna basandosi su variantIndex: pari = free weights, dispari = machine
+        const machineVars = variants.filter(v => v.equipment === 'machine');
+        const freeWeightVars = variants.filter(v => v.equipment === 'gym' || v.equipment === 'both');
+        if (variantIndex % 2 === 0) {
+          // Priorità pesi liberi per questo slot
+          validVariants = [...freeWeightVars, ...machineVars];
+        } else {
+          // Priorità macchine per questo slot
+          validVariants = [...machineVars, ...freeWeightVars];
+        }
+        break;
+      }
+      case 'prefer_free_weights':
+      default:
+        // Comportamento originale: solo gym + both
+        validVariants = variants.filter(
+          v => v.equipment === equipment || v.equipment === 'both'
+        );
+        break;
+    }
+  } else {
+    // Comportamento originale per bodyweight o senza preference
+    validVariants = variants.filter(
+      v => v.equipment === equipment || v.equipment === 'both'
+    );
+  }
 
   if (validVariants.length === 0) return baselineVariantId;
 

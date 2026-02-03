@@ -1366,6 +1366,7 @@ interface SplitGeneratorOptions {
   muscularFocus?: string; // glutei, addome, petto, dorso, spalle, gambe, braccia, polpacci
   sessionDuration?: number; // Durata sessione disponibile in minuti (15, 20, 30, 45, 60, 90)
   userBodyweight?: number; // Peso corporeo utente in kg - fondamentale per location adapter
+  equipmentPreference?: 'prefer_machines' | 'prefer_free_weights' | 'mixed';
   equipment?: {
     pullupBar?: boolean;
     loopBands?: boolean;
@@ -2414,10 +2415,16 @@ function createExercise(
       console.log(`⚖️ DUP Bodyweight Moderate: ${baseVariantName} (base)`);
     }
   } else {
-    // GYM: Logica invariata - varia carico, non variante
-    exerciseName = variantIndex === 0
-      ? translatedBaselineName
-      : getVariantForPattern(patternId, translatedBaselineName, variantIndex, equipment);
+    // GYM: Logica varianti - con supporto equipmentPreference
+    if (variantIndex === 0 && !options.equipmentPreference) {
+      exerciseName = translatedBaselineName;
+    } else {
+      exerciseName = getVariantForPattern(
+        patternId, translatedBaselineName, variantIndex, equipment,
+        undefined, // baselineDifficulty
+        options.equipmentPreference
+      );
+    }
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -2485,9 +2492,9 @@ function createExercise(
     }
   }
 
-  // Conversione a macchine se richiesto
+  // Conversione a macchine se richiesto (solo per trainingType 'machines' legacy, non per equipmentPreference)
   let machineNotes = '';
-  if (location === 'gym' && trainingType === 'machines') {
+  if (location === 'gym' && trainingType === 'machines' && !options.equipmentPreference) {
     const originalExercise = exerciseName;
     exerciseName = convertToMachineVariant(exerciseName);
 
@@ -2593,9 +2600,33 @@ function createHorizontalPullExercise(
   const safeDayType = applySafetyCap(effectiveDayType, maxAllowed);
 
   const equipment = location === 'gym' ? 'gym' : 'bodyweight';
-  const variants = HORIZONTAL_PULL_VARIANTS.filter(
-    v => v.equipment === equipment || v.equipment === 'both'
-  );
+
+  // Filtra varianti con supporto equipmentPreference
+  let variants: typeof HORIZONTAL_PULL_VARIANTS;
+  if (equipment === 'gym' && options.equipmentPreference) {
+    switch (options.equipmentPreference) {
+      case 'prefer_machines': {
+        const machineVars = HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === 'machine');
+        if (machineVars.length >= 2) {
+          variants = machineVars;
+        } else {
+          variants = [...machineVars, ...HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === 'gym' || v.equipment === 'both')];
+        }
+        break;
+      }
+      case 'mixed': {
+        const machineVars = HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === 'machine');
+        const freeVars = HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === 'gym' || v.equipment === 'both');
+        variants = variantIndex % 2 === 0 ? [...freeVars, ...machineVars] : [...machineVars, ...freeVars];
+        break;
+      }
+      default:
+        variants = HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === equipment || v.equipment === 'both');
+        break;
+    }
+  } else {
+    variants = HORIZONTAL_PULL_VARIANTS.filter(v => v.equipment === equipment || v.equipment === 'both');
+  }
 
   const selectedVariant = variants[variantIndex % variants.length];
   let exerciseName = selectedVariant.name;
@@ -2604,8 +2635,8 @@ function createHorizontalPullExercise(
   const baselineReps = verticalPullBaseline?.reps || 12;
   const volumeCalc = calculateVolume(baselineReps, goal, level, location, safeDayType);
 
-  // Conversione a macchine
-  if (location === 'gym' && trainingType === 'machines') {
+  // Conversione a macchine (solo per trainingType 'machines' legacy)
+  if (location === 'gym' && trainingType === 'machines' && !options.equipmentPreference) {
     exerciseName = convertToMachineVariant(exerciseName);
   }
 
@@ -2706,8 +2737,8 @@ function createAccessoryExercise(
   const sets = level === 'advanced' ? 4 : 3;
   const reps = muscleGroup === 'calves' ? 15 : 12;
 
-  // Conversione a macchine
-  if (location === 'gym' && trainingType === 'machines') {
+  // Conversione a macchine (solo per trainingType 'machines' legacy)
+  if (location === 'gym' && trainingType === 'machines' && !options.equipmentPreference) {
     exerciseName = convertToMachineVariant(exerciseName);
   }
 

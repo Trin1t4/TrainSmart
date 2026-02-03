@@ -1104,6 +1104,7 @@ export default function Dashboard() {
     const finalSessionDuration = betaOverrides.sessionDuration || onboarding?.activityLevel?.sessionDuration;
 
     const trainingType = onboarding?.trainingType || 'bodyweight';
+    const equipmentPreference = onboarding?.equipmentPreference;
     const equipment = onboarding?.equipment || {};
     const userBodyweight = onboarding?.personalInfo?.weight || 75;
 
@@ -1280,6 +1281,7 @@ export default function Dashboard() {
       baselines,
       painAreas,
       equipment,
+      equipmentPreference,
       muscularFocus,
       sessionDuration: finalSessionDuration,
       sport,

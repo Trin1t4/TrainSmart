@@ -77,6 +77,8 @@ export interface ProgramGeneratorOptions {
   // Legs goal type for females (PHA, rebalance, or standard toning)
   legsGoalType?: 'toning' | 'slimming' | 'rebalance';
   gender?: 'M' | 'F';
+  // Equipment preference for gym users (machines vs free weights)
+  equipmentPreference?: 'prefer_machines' | 'prefer_free_weights' | 'mixed';
   // Running/Cardio preferences
   runningPrefs?: RunningPreferences;
   userAge?: number;
@@ -3699,6 +3701,8 @@ export function generateProgramWithSplit(
     userBodyweight: correctedOptions.userBodyweight,
     // CRITICO: passa equipment per filtro tirate senza attrezzi!
     equipment: correctedOptions.equipment,
+    // Equipment preference (macchine vs pesi liberi)
+    equipmentPreference: correctedOptions.equipmentPreference,
     // Pass screening granular data for safety checks
     quizScore: correctedOptions.quizScore,
     practicalScore: correctedOptions.practicalScore,

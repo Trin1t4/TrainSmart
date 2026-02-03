@@ -59,6 +59,11 @@ const Community = lazy(() => import('./pages/Community'));
 const Achievements = lazy(() => import('./pages/Achievements'));
 const About = lazy(() => import('./pages/About'));
 
+// V2 pages (UX migliorata)
+const DashboardV2 = lazy(() => import('./pages/DashboardV2'));
+const WorkoutSessionV2 = lazy(() => import('./pages/WorkoutSessionV2'));
+const QuickStartFlowV2 = lazy(() => import('./components/onboarding/QuickStartFlowV2'));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -137,6 +142,11 @@ function App() {
               {/* SOCIAL FEATURES - Protected */}
               <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
               <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+
+              {/* V2 PAGES - Protected */}
+              <Route path="/dashboard-v2" element={<ProtectedRoute><DashboardV2 /></ProtectedRoute>} />
+              <Route path="/workout-session-v2" element={<ProtectedRoute><WorkoutSessionV2 /></ProtectedRoute>} />
+              <Route path="/quickstart-v2" element={<ProtectedRoute><QuickStartFlowV2 /></ProtectedRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

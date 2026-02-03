@@ -7,6 +7,7 @@
 export type {
   TrainingLocation,
   TrainingType,
+  EquipmentPreference,
   Goal,
   Level,
   PersonalInfo,
