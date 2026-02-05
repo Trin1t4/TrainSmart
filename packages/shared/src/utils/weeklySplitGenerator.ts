@@ -2467,7 +2467,7 @@ function createExercise(
       // - severe: sostituzione completa con pattern diverso (es. Deadlift → Glute Bridge)
       if (deload.needsReplacement) {
         // SEVERE: sostituzione completa
-        const alternative = findSafeAlternative(exerciseName, painArea, severity);
+        const alternative = findSafeAlternative(exerciseName, painArea, severity, { location, equipment });
         console.log(`  🔄 Sostituzione (${severity}): ${exerciseName} → ${alternative}`);
         exerciseName = alternative;
         wasReplaced = true;
@@ -2476,7 +2476,7 @@ function createExercise(
         painNotes = `${painNotes} | Sostituito con ${alternative}`;
       } else if (deload.needsEasierVariant) {
         // MODERATE: variante più facile stesso pattern
-        const alternative = findSafeAlternative(exerciseName, painArea, severity);
+        const alternative = findSafeAlternative(exerciseName, painArea, severity, { location, equipment });
         console.log(`  📉 Variante ridotta (${severity}): ${exerciseName} → ${alternative}`);
         exerciseName = alternative;
         wasReplaced = true;

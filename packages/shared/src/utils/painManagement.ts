@@ -518,19 +518,64 @@ export function isExerciseConflicting(
 }
 
 /**
+ * Esercizi che richiedono attrezzatura specifica (non disponibili a casa senza equipment)
+ */
+const GYM_ONLY_EXERCISES = new Set([
+  'leg press', 'belt squat', 'cable pull through', 'lat pulldown',
+  'cable row', 'leg extension', 'leg curl', 'hack squat', 'smith machine',
+  'pec deck', 'cable fly', 'cable crossover', 'machine press'
+]);
+
+/**
+ * Esercizi che richiedono sbarra per trazioni
+ */
+const REQUIRES_PULLUP_BAR = new Set([
+  'pull-up', 'pullup', 'chin-up', 'chinup', 'trazioni', 'hanging'
+]);
+
+/**
+ * Mappa alternative home-friendly per esercizi gym-only
+ */
+const HOME_ALTERNATIVES: Record<string, string> = {
+  'leg press': 'Squat a Corpo Libero',
+  'belt squat': 'Squat a Corpo Libero',
+  'cable pull through': 'Hip Thrust',
+  'lat pulldown': 'Superman Row',
+  'cable row': 'Inverted Row (tavolo)',
+  'leg extension': 'Wall Sit Isometric',
+  'leg curl': 'Nordic Curl (assistito)',
+  'hip thrust': 'Glute Bridge',
+};
+
+export interface FindSafeAlternativeOptions {
+  location?: 'gym' | 'home' | 'home_gym';
+  equipment?: {
+    pullupBar?: boolean;
+    dumbbell?: boolean;
+    barbell?: boolean;
+    bands?: boolean;
+    bench?: boolean;
+  };
+}
+
+/**
  * Trova alternativa sicura per esercizio usando GERARCHIA PROGRESSIVA
  * @param originalExercise - Nome esercizio originale
  * @param painArea - Zona dolente
  * @param severity - Severità dolore (mild/moderate/severe)
+ * @param options - Opzioni per location e equipment (per compatibilità home)
  * @returns - Nome alternativa appropriata
  */
 export function findSafeAlternative(
   originalExercise: string,
   painArea: PainArea,
-  severity: PainSeverity
+  severity: PainSeverity,
+  options?: FindSafeAlternativeOptions
 ): string {
   const substitutions = PAIN_EXERCISE_MAP[painArea]?.substitutions || {};
   const exerciseLower = originalExercise.toLowerCase();
+  const location = options?.location || 'gym';
+  const equipment = options?.equipment;
 
   // Trova la chiave che matcha l'esercizio
   let matchedKey: string | null = null;
@@ -560,8 +605,51 @@ export function findSafeAlternative(
     index = alternatives.length - 1; // Ultima (più conservativa)
   }
 
-  const alternative = alternatives[index];
-  console.log(`Sostituzione (${severity}): ${originalExercise} -> ${alternative}`);
+  let alternative = alternatives[index];
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LOCATION-AWARE: Se utente è a casa, verifica che l'alternativa sia fattibile
+  // ═══════════════════════════════════════════════════════════════════
+  if (location === 'home' || location === 'home_gym') {
+    const altLower = alternative.toLowerCase();
+
+    // Controlla se l'alternativa richiede attrezzatura gym-only
+    const isGymOnly = GYM_ONLY_EXERCISES.has(altLower) ||
+                      Array.from(GYM_ONLY_EXERCISES).some(gym => altLower.includes(gym));
+
+    // Controlla se richiede sbarra e utente non ce l'ha
+    const needsPullupBar = REQUIRES_PULLUP_BAR.has(altLower) ||
+                           Array.from(REQUIRES_PULLUP_BAR).some(bar => altLower.includes(bar));
+    const hasPullupBar = equipment?.pullupBar ?? false;
+
+    // Se l'alternativa non è fattibile a casa, cerca una versione home-friendly
+    if (isGymOnly || (needsPullupBar && !hasPullupBar)) {
+      // Cerca nella mappa delle alternative home
+      const homeAlt = HOME_ALTERNATIVES[altLower] ||
+                      Object.entries(HOME_ALTERNATIVES).find(([key]) => altLower.includes(key))?.[1];
+
+      if (homeAlt) {
+        console.log(`Location adaptation: ${alternative} -> ${homeAlt} (home-friendly)`);
+        alternative = homeAlt;
+      } else {
+        // Fallback: cerca tra le altre alternative una che sia home-friendly
+        for (let i = 0; i < alternatives.length; i++) {
+          const alt = alternatives[i];
+          const altL = alt.toLowerCase();
+          const isAltGymOnly = Array.from(GYM_ONLY_EXERCISES).some(gym => altL.includes(gym));
+          const altNeedsBar = Array.from(REQUIRES_PULLUP_BAR).some(bar => altL.includes(bar));
+
+          if (!isAltGymOnly && (!altNeedsBar || hasPullupBar)) {
+            console.log(`Location fallback: ${alternative} -> ${alt} (prima alternativa home-friendly)`);
+            alternative = alt;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  console.log(`Sostituzione (${severity}, ${location}): ${originalExercise} -> ${alternative}`);
 
   return alternative;
 }

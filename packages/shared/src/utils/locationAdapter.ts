@@ -530,8 +530,24 @@ function findBodyweightAlternative(
 
   // Helper per verificare se un esercizio è disponibile con l'equipment dell'utente
   const isExerciseAvailable = (exerciseName: string): boolean => {
-    // Se non ci sono restrizioni equipment, tutto è disponibile
-    if (!equipment) return true;
+    // FIX: Se equipment è undefined E siamo a casa, assumiamo NESSUN attrezzo (conservativo)
+    // Prima era: if (!equipment) return true; — questo causava esercizi impossibili
+    if (!equipment) {
+      // Se location è 'home' senza equipment specificato, assumiamo solo bodyweight
+      const exLower = exerciseName.toLowerCase();
+      const REQUIRES_EQUIPMENT_KEYWORDS = [
+        'pull-up', 'pullup', 'chin-up', 'chinup', 'trazioni', 'trazione',
+        'inverted row', 'inverted', 'rematore inverso', 'australian',
+        'band', 'elastico', 'elastic', 'dumbbell', 'manubrio', 'barbell', 'bilanciere',
+        'cable', 'cavo', 'machine', 'macchina', 'lat pulldown', 'leg press'
+      ];
+      const needsEquipment = REQUIRES_EQUIPMENT_KEYWORDS.some(kw => exLower.includes(kw));
+      if (needsEquipment) {
+        console.log(`🚫 ${exerciseName} richiede attrezzatura ma equipment non specificato - assumo non disponibile`);
+        return false;
+      }
+      return true;
+    }
 
     const exLower = exerciseName.toLowerCase();
 
