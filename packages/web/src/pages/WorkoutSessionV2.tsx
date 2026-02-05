@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   X, Check, Timer, SkipForward, ChevronRight,
-  AlertCircle, Dumbbell, Play
+  AlertCircle, Dumbbell, Play, Video, Minus, Plus
 } from 'lucide-react';
 import {
   startProgressiveWorkout,
@@ -29,6 +29,9 @@ import { supabase } from '../lib/supabaseClient';
 import { Button } from '../components/ui/button';
 import { BottomSheet, BottomSheetFooter } from '../components/ui/BottomSheet';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import VideoUploadModal from '../components/VideoUploadModal';
+import { isExerciseSupportedInternally } from '../lib/videoCorrectionEngine';
+import painManagementService from '../lib/painManagementService';
 
 // =============================================================================
 // TYPES
@@ -105,6 +108,15 @@ export default function WorkoutSessionV2() {
 
   // UI state
   const [showExitSheet, setShowExitSheet] = useState(false);
+  const [showFeedbackSheet, setShowFeedbackSheet] = useState(false);
+  const [showVideoUpload, setShowVideoUpload] = useState(false);
+
+  // Feedback state (RPE, RIR, Pain, Weight)
+  const [currentRPE, setCurrentRPE] = useState(7);
+  const [currentRIR, setCurrentRIR] = useState(2);
+  const [currentPainLevel, setCurrentPainLevel] = useState(0);
+  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
+  const [adjustedWeights, setAdjustedWeights] = useState<Record<string, number>>({});
 
   // Auto-save state
   const [workoutLogId, setWorkoutLogId] = useState<string | null>(null);
@@ -167,49 +179,71 @@ export default function WorkoutSessionV2() {
     return () => clearInterval(interval);
   }, [isResting, restTimeLeft]);
 
-  // ---------- Early return if no state ----------
+  // ---------- Computed values (safe for hooks) ----------
 
-  if (!state?.program) return null;
-
-  const workout = state.program.weekly_schedule?.[state.dayIndex];
-  if (!workout?.exercises?.length) return null;
-
-  const adjustment = state.adjustment || {
+  const workout = state?.program?.weekly_schedule?.[state?.dayIndex ?? 0];
+  const adjustment = state?.adjustment || {
     volumeMultiplier: 1,
     intensityMultiplier: 1,
     restMultiplier: 1,
-    skipExercises: [],
+    skipExercises: [] as string[],
     recommendation: '',
   };
 
   // Filter & limit exercises
-  let exercises: Exercise[] = (workout.exercises || []).filter(
+  const rawExercises: Exercise[] = (workout?.exercises || []).filter(
     (ex: Exercise) => !adjustment.skipExercises.some(skip => ex.name.includes(skip))
   );
   const mode = adjustment.exerciseMode || 'standard';
-  if (mode === 'express') exercises = exercises.slice(0, 3);
-  else if (mode === 'reduced') exercises = exercises.slice(0, 4);
+  const exercises = mode === 'express' ? rawExercises.slice(0, 3)
+    : mode === 'reduced' ? rawExercises.slice(0, 4)
+    : rawExercises;
 
   const currentExercise = exercises[exerciseIndex];
-  if (!currentExercise) {
-    return <EmptyExercises onBack={() => navigate('/workout')} />;
-  }
-
-  const adjustedSets = Math.max(1, Math.round(currentExercise.sets * adjustment.volumeMultiplier));
-  const adjustedWeight = currentExercise.weight
+  const adjustedSets = currentExercise ? Math.max(1, Math.round(currentExercise.sets * adjustment.volumeMultiplier)) : 1;
+  const baseWeight = currentExercise?.weight
     ? Math.round(Number(currentExercise.weight) * adjustment.intensityMultiplier)
     : null;
-  const totalRestSeconds = parseRestSeconds(currentExercise.rest);
+  // Use user-adjusted weight if available, otherwise use base weight
+  const adjustedWeight = currentExercise ? (adjustedWeights[currentExercise.name] ?? baseWeight) : null;
+  const totalRestSeconds = currentExercise ? parseRestSeconds(currentExercise.rest) : 90;
   const adjustedRest = Math.max(30, Math.round(totalRestSeconds * (adjustment.restMultiplier || 1)));
 
   const progress = exercises.length > 0
     ? ((exerciseIndex + (setNumber - 1) / adjustedSets) / exercises.length) * 100
     : 0;
 
-  // ---------- Handlers ----------
+  // Initialize weight when exercise changes (must be before early returns)
+  useEffect(() => {
+    if (currentExercise && adjustedWeight !== null) {
+      setCurrentWeight(adjustedWeight);
+    }
+  }, [exerciseIndex, currentExercise?.name]);
 
-  const handleCompleteSet = async () => {
-    // Auto-save set
+  // ---------- Early return if no state ----------
+
+  if (!state?.program) return null;
+  if (!workout?.exercises?.length) return null;
+  if (!currentExercise) {
+    return <EmptyExercises onBack={() => navigate('/workout')} />;
+  }
+
+  const handleCompleteSet = () => {
+    // Open feedback sheet instead of immediately completing
+    setCurrentWeight(adjustedWeight);
+    setShowFeedbackSheet(true);
+  };
+
+  const handleFeedbackSubmit = async () => {
+    setShowFeedbackSheet(false);
+
+    // Save weight adjustment if user changed it
+    if (currentWeight !== null && currentWeight !== adjustedWeight) {
+      setAdjustedWeights(prev => ({ ...prev, [currentExercise.name]: currentWeight }));
+      toast.info(`Peso aggiornato: ${currentWeight}kg`);
+    }
+
+    // Auto-save set with feedback data
     if (workoutLogId) {
       await saveProgressiveSet({
         workout_log_id: workoutLogId,
@@ -219,11 +253,46 @@ export default function WorkoutSessionV2() {
         reps_completed: typeof currentExercise.reps === 'number'
           ? currentExercise.reps
           : parseInt(String(currentExercise.reps)) || 10,
-        weight_used: adjustedWeight || undefined,
-        rpe: undefined,
+        weight_used: currentWeight || undefined,
+        rpe: currentRPE,
+        rir: currentRIR,
       });
     }
 
+    // Log pain if reported
+    if (currentPainLevel > 0 && userId) {
+      try {
+        await painManagementService.logPain({
+          user_id: userId,
+          program_id: state?.program?.id,
+          exercise_name: currentExercise.name,
+          day_name: workout?.dayName || workout?.name || 'Workout',
+          set_number: setNumber,
+          weight_used: currentWeight || undefined,
+          reps_completed: typeof currentExercise.reps === 'number' ? currentExercise.reps : 10,
+          rom_percentage: 100,
+          pain_level: currentPainLevel,
+          rpe: currentRPE,
+          adaptations: []
+        });
+
+        // Show warning for moderate/high pain
+        if (currentPainLevel >= 4 && currentPainLevel < 7) {
+          toast.warning('Dolore moderato rilevato. Considera di ridurre il carico.');
+        } else if (currentPainLevel >= 7) {
+          toast.error('Dolore alto! Considera di saltare questo esercizio o ridurre significativamente il carico.');
+        }
+      } catch (error) {
+        console.error('Error logging pain:', error);
+      }
+    }
+
+    // Reset feedback state for next set
+    setCurrentRPE(7);
+    setCurrentRIR(2);
+    setCurrentPainLevel(0);
+
+    // Continue with set progression
     if (setNumber < adjustedSets) {
       // Prossimo set, inizia rest
       setSetNumber(prev => prev + 1);
@@ -424,6 +493,175 @@ export default function WorkoutSessionV2() {
           </Button>
         </BottomSheetFooter>
       </BottomSheet>
+
+      {/* Post-Set Feedback BottomSheet */}
+      <BottomSheet
+        open={showFeedbackSheet}
+        onOpenChange={setShowFeedbackSheet}
+        title="Feedback Set"
+        description={`${currentExercise?.name} - Serie ${setNumber}/${adjustedSets}`}
+      >
+        <div className="space-y-6 pt-2">
+          {/* Weight Modifier */}
+          {currentWeight !== null && (
+            <div className="bg-slate-800/60 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-slate-300 font-medium">Peso usato</p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setCurrentWeight(Math.max(0, (currentWeight || 0) - 2.5))}
+                    className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <Minus className="w-5 h-5 text-slate-300" />
+                  </button>
+                  <span className="text-2xl font-bold text-emerald-400 min-w-[80px] text-center">
+                    {currentWeight}kg
+                  </span>
+                  <button
+                    onClick={() => setCurrentWeight((currentWeight || 0) + 2.5)}
+                    className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <Plus className="w-5 h-5 text-slate-300" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* RPE Slider */}
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-emerald-300 font-bold text-sm">RPE - Sforzo Percepito</p>
+                <p className="text-slate-500 text-xs">Quanto è stato faticoso?</p>
+              </div>
+              <span className="text-3xl font-bold text-emerald-400">{currentRPE}</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={currentRPE}
+              onChange={(e) => setCurrentRPE(parseInt(e.target.value))}
+              className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+            />
+            <div className="flex justify-between text-xs text-slate-500 mt-2">
+              <span>Facile</span>
+              <span>Massimo</span>
+            </div>
+          </div>
+
+          {/* RIR Buttons */}
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-purple-300 font-bold text-sm">RIR - Ripetizioni in Riserva</p>
+                <p className="text-slate-500 text-xs">Quante reps potevi ancora fare?</p>
+              </div>
+              <span className="text-3xl font-bold text-purple-400">{currentRIR}</span>
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+              {[0, 1, 2, 3, 4, 5].map(rir => (
+                <button
+                  key={rir}
+                  onClick={() => setCurrentRIR(rir)}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    currentRIR === rir
+                      ? 'bg-purple-500/30 border-purple-500 text-purple-300'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="text-lg font-bold">{rir}</div>
+                  <div className="text-xs">
+                    {rir === 0 ? 'Max' : rir === 5 ? '5+' : `${rir}`}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Pain Level */}
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-red-300 font-bold text-sm">Dolore</p>
+                <p className="text-slate-500 text-xs">0 = nessuno, 10 = insopportabile</p>
+              </div>
+              <span className={`text-3xl font-bold ${
+                currentPainLevel === 0 ? 'text-green-400' :
+                currentPainLevel <= 3 ? 'text-yellow-400' :
+                currentPainLevel <= 6 ? 'text-orange-400' : 'text-red-400'
+              }`}>{currentPainLevel}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              value={currentPainLevel}
+              onChange={(e) => setCurrentPainLevel(parseInt(e.target.value))}
+              className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500"
+            />
+            <div className="flex justify-between text-xs mt-2">
+              <span className="text-green-400">Nessuno</span>
+              <span className="text-yellow-400">Lieve</span>
+              <span className="text-orange-400">Moderato</span>
+              <span className="text-red-400">Severo</span>
+            </div>
+            {currentPainLevel >= 4 && (
+              <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                <p className="text-amber-300 text-xs font-semibold">
+                  {currentPainLevel >= 7
+                    ? '⚠️ Dolore alto! Considera di interrompere o ridurre il carico.'
+                    : '⚠️ Dolore moderato. Il sistema adatterà le prossime sessioni.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Video Form Check Button */}
+          {currentExercise && isExerciseSupportedInternally(currentExercise.name) && (
+            <button
+              onClick={() => {
+                setShowFeedbackSheet(false);
+                setShowVideoUpload(true);
+              }}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <Video className="w-5 h-5" />
+              Carica Video Form Check
+            </button>
+          )}
+        </div>
+        <BottomSheetFooter>
+          <Button
+            variant="primary"
+            className="flex-1"
+            size="lg"
+            onClick={handleFeedbackSubmit}
+          >
+            <Check className="w-5 h-5 mr-2" />
+            Conferma
+          </Button>
+        </BottomSheetFooter>
+      </BottomSheet>
+
+      {/* Video Upload Modal */}
+      {currentExercise && (
+        <VideoUploadModal
+          open={showVideoUpload}
+          onClose={() => {
+            setShowVideoUpload(false);
+            setShowFeedbackSheet(true);
+          }}
+          exerciseName={currentExercise.name}
+          exercisePattern={currentExercise.pattern}
+          workoutLogId={workoutLogId || undefined}
+          setNumber={setNumber}
+          onUploadComplete={(correctionId) => {
+            toast.success('Video analizzato! Controlla i risultati nella cronologia.');
+          }}
+        />
+      )}
     </div>
   );
 }

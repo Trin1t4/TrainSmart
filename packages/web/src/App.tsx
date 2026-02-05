@@ -123,7 +123,9 @@ function App() {
 
               {/* WORKOUT - Protected */}
               <Route path="/workout" element={<ProtectedRoute><Workout /></ProtectedRoute>} />
-              <Route path="/workout-session" element={<ProtectedRoute><WorkoutSession /></ProtectedRoute>} />
+              <Route path="/workout-session" element={<ProtectedRoute><WorkoutSessionV2 /></ProtectedRoute>} />
+              {/* V1 fallback - TODO: remove after V2 is verified */}
+              <Route path="/workout-session-v1" element={<ProtectedRoute><WorkoutSession /></ProtectedRoute>} />
 
               {/* ADMIN DASHBOARD - Protected + Role Check in component */}
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
@@ -145,7 +147,6 @@ function App() {
 
               {/* V2 PAGES - Protected */}
               <Route path="/dashboard-v2" element={<ProtectedRoute><DashboardV2 /></ProtectedRoute>} />
-              <Route path="/workout-session-v2" element={<ProtectedRoute><WorkoutSessionV2 /></ProtectedRoute>} />
               <Route path="/quickstart-v2" element={<ProtectedRoute><QuickStartFlowV2 /></ProtectedRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
