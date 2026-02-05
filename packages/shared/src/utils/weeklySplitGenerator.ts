@@ -835,11 +835,11 @@ function getIntensityForPattern(
   }
 
   // ============================================================
-  // FREQUENZA 4+: DUP vera - 1 HEAVY per giorno + resto VOLUME
+  // FREQUENZA 4-5: DUP vera - 1 HEAVY per giorno + resto VOLUME
   // Ruota i compound principali, il resto sempre volume
   // ✅ FIX #4: Aggiunto goal bias
   // ============================================================
-  if (frequency >= 4) {
+  if (frequency === 4 || frequency === 5) {
     // Solo i 3 compound principali possono essere heavy
     const heavyPatterns = ['lower_push', 'lower_pull', 'horizontal_push'];
     let baseIntensity: 'heavy' | 'volume';
@@ -852,6 +852,74 @@ function getIntensityForPattern(
       } else {
         baseIntensity = 'volume';
       }
+    } else {
+      baseIntensity = 'volume';
+    }
+
+    return applyGoalBias(baseIntensity, goalBias, patternId);
+  }
+
+  // ============================================================
+  // FREQUENZA 6: PPL x2 - Heavy su prima sessione di ogni split
+  // Push/Pull/Legs x 2 a settimana
+  // G1: Push Heavy | G2: Pull Heavy | G3: Legs Heavy
+  // G4: Push Volume | G5: Pull Volume | G6: Legs Volume
+  // ============================================================
+  if (frequency === 6) {
+    const pushPatterns = ['horizontal_push', 'vertical_push'];
+    const pullPatterns = ['horizontal_pull', 'vertical_pull'];
+    const legsPatterns = ['lower_push', 'lower_pull'];
+
+    let baseIntensity: 'heavy' | 'volume';
+
+    // Prima metà settimana = Heavy, seconda metà = Volume
+    const isHeavyDay = dayIndex < 3;
+
+    if (dayIndex === 0 || dayIndex === 3) {
+      // Push day
+      baseIntensity = pushPatterns.includes(patternId) && isHeavyDay ? 'heavy' : 'volume';
+    } else if (dayIndex === 1 || dayIndex === 4) {
+      // Pull day
+      baseIntensity = pullPatterns.includes(patternId) && isHeavyDay ? 'heavy' : 'volume';
+    } else {
+      // Legs day (2 o 5)
+      baseIntensity = legsPatterns.includes(patternId) && isHeavyDay ? 'heavy' : 'volume';
+    }
+
+    return applyGoalBias(baseIntensity, goalBias, patternId);
+  }
+
+  // ============================================================
+  // FREQUENZA 7: PPL + Upper/Lower + Rest
+  // Non raccomandato, ma se l'utente lo vuole, distribuisci heavy su 6 giorni
+  // G7 = giorno più leggero (active recovery)
+  // ============================================================
+  if (frequency === 7) {
+    console.warn('⚠️ Frequenza 7 giorni: alto rischio overtraining. Considera 5-6 giorni.');
+
+    const pushPatterns = ['horizontal_push', 'vertical_push'];
+    const pullPatterns = ['horizontal_pull', 'vertical_pull'];
+    const legsPatterns = ['lower_push', 'lower_pull'];
+
+    let baseIntensity: 'heavy' | 'volume' | 'moderate';
+
+    // Giorno 7 = recovery day, tutto moderate/volume
+    if (dayIndex === 6) {
+      return 'moderate';
+    }
+
+    // Distribuzione su 6 giorni: heavy ruota tra i pattern
+    const heavyDayForPattern: Record<string, number> = {
+      'horizontal_push': 0,  // Day 1
+      'vertical_push': 0,
+      'horizontal_pull': 1,  // Day 2
+      'vertical_pull': 1,
+      'lower_push': 2,       // Day 3
+      'lower_pull': 3,       // Day 4
+    };
+
+    if (heavyDayForPattern[patternId] === dayIndex) {
+      baseIntensity = 'heavy';
     } else {
       baseIntensity = 'volume';
     }

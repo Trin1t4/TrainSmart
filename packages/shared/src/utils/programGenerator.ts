@@ -2619,20 +2619,32 @@ export function recalibrateProgram(assessments: any[], detrainingFactor: number)
  * - location === 'home' -> logica bodyweight (stesse reps, progressione = variante più difficile)
  */
 export function calculateVolume(
-  baselineMaxReps: number,
+  baselineMaxReps: number | undefined | null,
   goal: string,
   level: string,
   location: 'gym' | 'home' | 'home_gym' = 'gym',
   dayType: 'heavy' | 'volume' | 'moderate' = 'moderate'
 ): VolumeResult {
 
+  // ════════════════════════════════════════════════════════════════════
+  // FIX: Validazione input per prevenire NaN
+  // Se baselineMaxReps è undefined/null/NaN/0, usa default conservativo
+  // ════════════════════════════════════════════════════════════════════
+  let safeBaselineReps: number;
+  if (!baselineMaxReps || isNaN(baselineMaxReps) || baselineMaxReps < 1) {
+    console.warn(`[calculateVolume] Invalid baseline: ${baselineMaxReps}, using default 8`);
+    safeBaselineReps = 8; // Default conservativo per sicurezza
+  } else {
+    safeBaselineReps = baselineMaxReps;
+  }
+
   // Determina modalità: WEIGHTED vs BODYWEIGHT
   const isWeightedTraining = location === 'gym' || location === 'home_gym';
 
   if (isWeightedTraining) {
-    return calculateVolumeWeighted(baselineMaxReps, goal, level, dayType);
+    return calculateVolumeWeighted(safeBaselineReps, goal, level, dayType);
   } else {
-    return calculateVolumeBodyweight(baselineMaxReps, goal, level, dayType);
+    return calculateVolumeBodyweight(safeBaselineReps, goal, level, dayType);
   }
 }
 

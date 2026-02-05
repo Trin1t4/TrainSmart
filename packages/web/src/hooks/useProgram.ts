@@ -68,6 +68,40 @@ export function useCurrentProgram() {
             const parsed = JSON.parse(localProgram);
             console.log('[useCurrentProgram] Found program in localStorage fallback:', parsed?.name);
             const normalized = normalizeProgram(parsed) as NormalizedProgram;
+
+            // ════════════════════════════════════════════════════════════════════
+            // FIX: Sync localStorage program to Supabase per evitare perdita dati
+            // Se il programma esiste solo in localStorage, salvalo anche su Supabase
+            // ════════════════════════════════════════════════════════════════════
+            if (currentUserId && normalized) {
+              console.log('[useCurrentProgram] Syncing localStorage program to Supabase...');
+              try {
+                const { error: syncError } = await supabase
+                  .from('training_programs')
+                  .upsert({
+                    user_id: currentUserId,
+                    name: normalized.name || 'Programma Recuperato',
+                    weekly_split: normalized.weekly_schedule || normalized.weekly_split,
+                    weekly_schedule: normalized.weekly_schedule,
+                    is_active: true,
+                    updated_at: new Date().toISOString(),
+                    // Preserve other fields if they exist
+                    ...(normalized.id ? { id: normalized.id } : {})
+                  }, {
+                    onConflict: 'id',
+                    ignoreDuplicates: false
+                  });
+
+                if (syncError) {
+                  console.warn('[useCurrentProgram] Failed to sync to Supabase:', syncError);
+                } else {
+                  console.log('[useCurrentProgram] ✅ Program synced to Supabase successfully');
+                }
+              } catch (syncErr) {
+                console.warn('[useCurrentProgram] Sync error:', syncErr);
+              }
+            }
+
             return normalized;
           }
         } catch (e) {
