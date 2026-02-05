@@ -24,7 +24,7 @@ import { supabase } from './supabaseClient';
 
 export interface CorrectionResult {
   success: boolean;
-  source: 'internal' | 'gemini' | 'failed';
+  source: 'internal' | 'failed';
 
   // Risultato analisi
   score?: number;
@@ -60,7 +60,7 @@ export interface CorrectionResult {
 }
 
 export interface CorrectionProgress {
-  stage: 'initializing' | 'extracting' | 'analyzing' | 'fallback' | 'completed' | 'failed';
+  stage: 'initializing' | 'extracting' | 'analyzing' | 'completed' | 'failed';
   percentage: number;
   message: string;
 }

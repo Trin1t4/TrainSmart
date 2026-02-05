@@ -1,15 +1,16 @@
 /**
  * Video Upload Modal - Record or upload exercise video for AI analysis
  *
- * Usa il sistema ibrido:
+ * Sistema di analisi locale:
  * 1. MediaPipe per estrazione landmark (in-browser)
  * 2. Biomechanics Engine interno per analisi
- * 3. Gemini 1.5 Pro come fallback
+ *
+ * Se l'analisi fallisce, l'utente deve riprovare con un video migliore.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Video, Upload, CheckCircle, AlertCircle, Loader2, Cpu, Sparkles, Camera, Eye, RotateCcw } from 'lucide-react';
+import { X, Video, Upload, CheckCircle, AlertCircle, Loader2, Cpu, Camera, Eye, RotateCcw } from 'lucide-react';
 import { checkVideoQuota, type QuotaInfo } from '../lib/videoCorrectionService';
 import { analyzeExerciseVideo, isExerciseSupportedInternally, type CorrectionProgress, type CorrectionResult } from '../lib/videoCorrectionEngine';
 import { supabase } from '../lib/supabaseClient';
@@ -62,7 +63,7 @@ export default function VideoUploadModal({
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [processingStatus, setProcessingStatus] = useState<string>('');
-  const [analysisSource, setAnalysisSource] = useState<'internal' | 'gemini' | null>(null);
+  const [analysisSource, setAnalysisSource] = useState<'internal' | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CorrectionResult | null>(null);
   const [showCameraGuide, setShowCameraGuide] = useState(true);  // Mostra guida per prima
 
@@ -203,12 +204,9 @@ export default function VideoUploadModal({
 
       setUploadProgress(30);
       setUploadStatus('processing');
+      setAnalysisSource('internal');
 
-      // Check if exercise is supported internally
-      const useInternal = isExerciseSupportedInternally(exerciseName);
-      setAnalysisSource(useInternal ? 'internal' : 'gemini');
-
-      // 2. Analyze with hybrid engine
+      // 2. Analyze with local engine (no external fallback)
       const result = await analyzeExerciseVideo(
         recordedBlob,
         exerciseName,
@@ -218,10 +216,6 @@ export default function VideoUploadModal({
           // Map progress to our UI
           setUploadProgress(30 + (progress.percentage * 0.7)); // 30-100%
           setProcessingStatus(progress.message);
-
-          if (progress.stage === 'fallback') {
-            setAnalysisSource('gemini');
-          }
         }
       );
 
@@ -229,11 +223,10 @@ export default function VideoUploadModal({
       if (result.success) {
         setUploadStatus('success');
         setAnalysisResult(result);
-        setAnalysisSource(result.source === 'internal' ? 'internal' : 'gemini');
         setProcessingStatus('Analisi completata!');
         onUploadComplete?.(correctionData.id);
       } else {
-        throw new Error(result.error || 'Analisi fallita');
+        throw new Error(result.error || 'Analisi fallita. Riprova con un video più chiaro e ben illuminato.');
       }
 
     } catch (error) {
@@ -366,15 +359,9 @@ export default function VideoUploadModal({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-green-400 font-medium">Analisi Completata!</p>
-                    {analysisSource && (
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        analysisSource === 'internal'
-                          ? 'bg-blue-800 text-blue-300'
-                          : 'bg-purple-800 text-purple-300'
-                      }`}>
-                        {analysisSource === 'internal' ? 'Biomechanica' : 'Gemini AI'}
-                      </span>
-                    )}
+                    <span className="text-xs px-2 py-0.5 rounded bg-blue-800 text-blue-300">
+                      Biomechanica
+                    </span>
                   </div>
                   {analysisResult?.score && (
                     <div className="flex items-center gap-2 mt-1">
@@ -412,37 +399,23 @@ export default function VideoUploadModal({
         {uploadStatus === 'processing' && (
           <div className="bg-blue-900/50 border border-blue-700 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-3">
-              {analysisSource === 'internal' ? (
-                <Cpu className="w-6 h-6 text-blue-400 animate-pulse" />
-              ) : (
-                <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
-              )}
+              <Cpu className="w-6 h-6 text-blue-400 animate-pulse" />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="text-blue-400 font-medium">{processingStatus}</p>
-                  {analysisSource && (
-                    <span className={`text-xs px-2 py-0.5 rounded ${
-                      analysisSource === 'internal'
-                        ? 'bg-blue-800 text-blue-300'
-                        : 'bg-purple-800 text-purple-300'
-                    }`}>
-                      {analysisSource === 'internal' ? 'Analisi Locale' : 'Gemini AI'}
-                    </span>
-                  )}
+                  <span className="text-xs px-2 py-0.5 rounded bg-blue-800 text-blue-300">
+                    Analisi Locale
+                  </span>
                 </div>
                 <p className="text-sm text-gray-300">
-                  {analysisSource === 'internal'
-                    ? 'Analisi in tempo reale sul tuo dispositivo'
-                    : 'Analisi cloud con AI avanzata'}
+                  Analisi in tempo reale sul tuo dispositivo
                 </p>
               </div>
             </div>
             {/* Progress bar */}
             <div className="mt-3 w-full bg-gray-700 rounded-full h-2">
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  analysisSource === 'internal' ? 'bg-blue-500' : 'bg-purple-500'
-                }`}
+                className="h-2 rounded-full transition-all duration-300 bg-blue-500"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
