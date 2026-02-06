@@ -27,15 +27,22 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { isAdmin as checkIsAdmin, getAdminDashboardData, type AdminDashboardData } from '@trainsmart/shared';
+import {
+  isAdmin as checkIsAdmin,
+  getAdminDashboardData,
+  getUserInsightsData,
+  type AdminDashboardData,
+  type UserInsightsData,
+} from '@trainsmart/shared';
 import { supabase } from '../lib/supabaseClient';
-import { RefreshCw, AlertTriangle, X, Trash2 } from 'lucide-react';
+import { RefreshCw, AlertTriangle, X, Trash2, Users, Clock, MousePointerClick } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
+  const [insightsData, setInsightsData] = useState<UserInsightsData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Reset modal state
@@ -116,14 +123,21 @@ export default function AdminDashboard() {
 
       setIsAdmin(true);
 
-      // Load dashboard data
-      const { data, error: dataError } = await getAdminDashboardData();
+      // Load dashboard data + user insights in parallel
+      const [dashResult, insightsResult] = await Promise.all([
+        getAdminDashboardData(),
+        getUserInsightsData(),
+      ]);
 
-      if (dataError) {
-        throw new Error('Errore caricamento dati: ' + dataError.message);
+      if (dashResult.error) {
+        throw new Error('Errore caricamento dati: ' + dashResult.error.message);
       }
 
-      setDashboardData(data);
+      setDashboardData(dashResult.data);
+      // Insights are optional — don't fail if they error
+      if (insightsResult.data) {
+        setInsightsData(insightsResult.data);
+      }
       setLoading(false);
     } catch (err: any) {
       console.error('[AdminDashboard] Error:', err);
@@ -239,6 +253,11 @@ export default function AdminDashboard() {
             />
           </div>
         </motion.div>
+
+        {/* ============ USER INSIGHTS SECTION ============ */}
+        {insightsData && (
+          <UserInsightsSection data={insightsData} />
+        )}
 
         {/* Business Metrics Chart */}
         <motion.div
@@ -565,5 +584,308 @@ function ConversionCard({ title, rate }: ConversionCardProps) {
         {displayRate.toFixed(1)}%
       </div>
     </div>
+  );
+}
+
+// ================================================================
+// USER INSIGHTS SECTION
+// ================================================================
+
+const GOAL_LABELS: Record<string, string> = {
+  ipertrofia: 'Ipertrofia',
+  forza: 'Forza',
+  tonificazione: 'Tonificazione',
+  dimagrimento: 'Dimagrimento',
+  resistenza: 'Resistenza',
+  prestazioni_sportive: 'Prestazioni',
+  benessere: 'Benessere',
+  motor_recovery: 'Riabilitazione',
+  pre_partum: 'Pre-partum',
+  post_partum: 'Post-partum',
+  disabilita: 'Accessibilità',
+};
+
+const GENDER_LABELS: Record<string, string> = {
+  M: 'Uomo',
+  F: 'Donna',
+  Other: 'Altro',
+  'N/A': 'N/D',
+};
+
+const LOCATION_LABELS: Record<string, string> = {
+  gym: 'Palestra',
+  home: 'Casa',
+  home_gym: 'Home Gym',
+  'N/A': 'N/D',
+};
+
+const GENDER_COLORS = ['#3B82F6', '#EC4899', '#8B5CF6', '#6B7280'];
+const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
+
+const CLICK_TARGET_LABELS: Record<string, string> = {
+  pain_monitoring: 'Monitoraggio Dolore',
+  strength_volume: 'Forza & Volume',
+  workout_history: 'Storico Allenamenti',
+  personal_records: 'Record Personali',
+  start_workout: 'Inizia Allenamento',
+  running_session: 'Sessione Corsa',
+  view_program: 'Vedi Programma',
+};
+
+function UserInsightsSection({ data }: { data: UserInsightsData }) {
+  const { demographics, onboarding, clicks } = data;
+
+  return (
+    <>
+      {/* Section Header */}
+      <div className="flex items-center gap-3 pt-4">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+        <h2 className="text-lg font-bold text-blue-400 uppercase tracking-wider">User Insights</h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+      </div>
+
+      {/* Row 1: Demografia */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800/50 rounded-xl p-6 border border-gray-700"
+      >
+        <div className="flex items-center gap-2 mb-6">
+          <Users className="w-5 h-5 text-blue-400" />
+          <h2 className="text-xl font-bold">Demografia Utenti</h2>
+          <span className="text-gray-400 text-sm ml-auto">{demographics.totalUsers} utenti con onboarding</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Genere - Pie */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">Genere</h3>
+            {demographics.genderDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={demographics.genderDistribution.map(d => ({
+                      name: GENDER_LABELS[d.gender] || d.gender,
+                      value: d.count
+                    }))}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={70}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
+                  >
+                    {demographics.genderDistribution.map((_, i) => (
+                      <Cell key={i} fill={GENDER_COLORS[i % GENDER_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    formatter={(value: number) => [`${value} utenti`, 'Totale']}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-8 text-sm">Nessun dato</p>
+            )}
+          </div>
+
+          {/* Età - Bar */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">Fasce d'età</h3>
+            {demographics.ageDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={demographics.ageDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="age_range" stroke="#9CA3AF" fontSize={11} />
+                  <YAxis stroke="#9CA3AF" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    formatter={(value: number) => [`${value}`, 'Utenti']}
+                  />
+                  <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-8 text-sm">Nessun dato</p>
+            )}
+          </div>
+
+          {/* Goal - Bar orizzontale */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">Obiettivi</h3>
+            {demographics.goalDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart
+                  data={demographics.goalDistribution.map(d => ({
+                    name: GOAL_LABELS[d.goal] || d.goal,
+                    count: d.count
+                  }))}
+                  layout="vertical"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" stroke="#9CA3AF" fontSize={11} />
+                  <YAxis dataKey="name" type="category" stroke="#9CA3AF" fontSize={10} width={80} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    formatter={(value: number) => [`${value}`, 'Utenti']}
+                  />
+                  <Bar dataKey="count" fill="#10B981" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-8 text-sm">Nessun dato</p>
+            )}
+          </div>
+
+          {/* Location + Frequenza - Pills */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">Location</h3>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {demographics.locationDistribution.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 bg-gray-700/50 rounded-full px-4 py-2"
+                  >
+                    <span className="text-sm font-medium">{LOCATION_LABELS[item.location] || item.location}</span>
+                    <span className="text-xs bg-blue-500/20 text-blue-400 rounded-full px-2 py-0.5 font-bold">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">Frequenza settimanale</h3>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {demographics.frequencyDistribution.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 bg-gray-700/50 rounded-full px-4 py-2"
+                  >
+                    <span className="text-sm font-medium">{item.frequency}x/sett</span>
+                    <span className="text-xs bg-purple-500/20 text-purple-400 rounded-full px-2 py-0.5 font-bold">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Row 2: Onboarding Timing + Dashboard Engagement */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Onboarding Insights */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-gray-800/50 rounded-xl p-6 border border-gray-700"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-5 h-5 text-amber-400" />
+            <h2 className="text-xl font-bold">Onboarding</h2>
+          </div>
+
+          {/* KPI row */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-amber-400">{onboarding.avgTimeMinutes}m</div>
+              <div className="text-xs text-gray-400">Tempo medio</div>
+            </div>
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-green-400">{onboarding.completionRate}%</div>
+              <div className="text-xs text-gray-400">Completion</div>
+            </div>
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-blue-400">{onboarding.totalCompleted}</div>
+              <div className="text-xs text-gray-400">Completati</div>
+            </div>
+          </div>
+
+          {/* Time distribution */}
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Distribuzione tempi</h3>
+          {onboarding.timeDistribution.length > 0 ? (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={onboarding.timeDistribution}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time_bucket" stroke="#9CA3AF" fontSize={10} />
+                <YAxis stroke="#9CA3AF" fontSize={11} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                  formatter={(value: number) => [`${value}`, 'Utenti']}
+                />
+                <Bar dataKey="count" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-gray-500 text-center py-8 text-sm">Nessun dato onboarding timing</p>
+          )}
+        </motion.div>
+
+        {/* Dashboard Clicks */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gray-800/50 rounded-xl p-6 border border-gray-700"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <MousePointerClick className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-bold">Dashboard Engagement</h2>
+            <span className="text-gray-400 text-sm ml-auto">30 giorni</span>
+          </div>
+
+          {/* KPI row */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-emerald-400">{clicks.totalClicks}</div>
+              <div className="text-xs text-gray-400">Click totali</div>
+            </div>
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-blue-400">{clicks.uniqueUsers}</div>
+              <div className="text-xs text-gray-400">Utenti unici</div>
+            </div>
+          </div>
+
+          {/* Click by target - horizontal bars */}
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Azioni più cliccate</h3>
+          {clicks.clicksByTarget.length > 0 ? (
+            <div className="space-y-2">
+              {clicks.clicksByTarget.map((item, i) => {
+                const maxClicks = clicks.clicksByTarget[0]?.clicks || 1;
+                const percent = Math.round((item.clicks / maxClicks) * 100);
+                return (
+                  <div key={item.click_target} className="flex items-center gap-3">
+                    <div className="w-32 text-xs text-gray-300 truncate">
+                      {CLICK_TARGET_LABELS[item.click_target] || item.click_target}
+                    </div>
+                    <div className="flex-1 h-6 bg-gray-700/50 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${percent}%`,
+                          backgroundColor: CHART_COLORS[i % CHART_COLORS.length]
+                        }}
+                      />
+                    </div>
+                    <div className="w-16 text-right">
+                      <span className="text-sm font-bold">{item.clicks}</span>
+                      <span className="text-xs text-gray-500 ml-1">({item.unique_users}u)</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8 text-sm">Nessun click registrato. I dati appariranno quando gli utenti useranno la dashboard.</p>
+          )}
+        </motion.div>
+      </div>
+    </>
   );
 }

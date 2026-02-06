@@ -75,13 +75,30 @@ export {
   getAdminDashboardData,
   grantAdminRole,
   getAllUserRoles,
+  // User Insights
+  getUserDemographics,
+  getOnboardingInsights,
+  getDashboardClicks,
+  getUserInsightsData,
   type UserRole,
   type BusinessMetrics,
   type UserAnalytics,
   type RPETrend,
   type ProgramPopularity,
   type AdminDashboardData,
+  type UserDemographics,
+  type OnboardingInsights,
+  type DashboardClicks,
+  type ClicksByTarget,
+  type UserInsightsData,
 } from './adminService';
+
+// Click Tracking Service
+export {
+  initClickTrackingService,
+  trackDashboardClick,
+  type DashboardClickTarget,
+} from './clickTrackingService';
 
 // Streak Service
 export {

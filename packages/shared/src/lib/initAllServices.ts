@@ -38,6 +38,9 @@ import { initAdaptationService } from './exerciseAdaptationService';
 // GDPR & Compliance
 import { initGDPRService } from './gdprComplianceService';
 
+// Click Tracking
+import { initClickTrackingService } from './clickTrackingService';
+
 let initialized = false;
 
 export interface InitServicesOptions {
@@ -149,6 +152,10 @@ export function initAllServices(
       initGDPRService(client);
       log('[InitServices] ✓ GDPRService');
     }
+
+    // Click Tracking (always init, lightweight)
+    initClickTrackingService(client);
+    log('[InitServices] ✓ ClickTrackingService');
 
     initialized = true;
     log('[InitServices] All services initialized successfully');

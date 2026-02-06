@@ -43,6 +43,7 @@ import VideoMosaicBackground from './VideoMosaicBackground';
 import { useAppStore } from '../store/useAppStore';
 import AddRunningModal from './AddRunningModal';
 import QuickActionsGrid from './QuickActionsGrid';
+import { trackDashboardClick } from '@trainsmart/shared';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -1878,10 +1879,10 @@ export default function Dashboard() {
           totalWorkouts={completedSessions?.total || 0}
           personalRecords={0}
           latestPR={undefined}
-          onPainClick={() => navigate('/stats#pain')}
-          onProgressClick={() => navigate('/stats#progress')}
-          onDatabaseClick={() => navigate('/stats#history')}
-          onRecordsClick={() => navigate('/stats#records')}
+          onPainClick={() => { trackDashboardClick('pain_monitoring'); navigate('/stats#pain'); }}
+          onProgressClick={() => { trackDashboardClick('strength_volume'); navigate('/stats#progress'); }}
+          onDatabaseClick={() => { trackDashboardClick('workout_history'); navigate('/stats#history'); }}
+          onRecordsClick={() => { trackDashboardClick('personal_records'); navigate('/stats#records'); }}
         />
 
         {/* Deload Week Notification */}
@@ -2265,6 +2266,7 @@ export default function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      trackDashboardClick('start_workout');
                       // Get first day or full program exercises
                       const firstDay = program.weekly_split?.days?.[0];
                       if (!firstDay) return;
@@ -2292,6 +2294,7 @@ export default function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      trackDashboardClick('running_session');
                       // Trova il primo giorno running o crea una sessione running
                       const runningDay = program.weekly_split?.days?.find((day: any) => day.type === 'running' || day.runningSession);
                       if (runningDay) {

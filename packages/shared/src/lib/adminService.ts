@@ -383,6 +383,129 @@ export async function getAllUserRoles(): Promise<{ data: UserRole[] | null; erro
 }
 
 // ================================================================
+// USER INSIGHTS TYPES
+// ================================================================
+
+export interface DistributionItem {
+  [key: string]: string | number;
+  count: number;
+}
+
+export interface UserDemographics {
+  totalUsers: number;
+  genderDistribution: { gender: string; count: number }[];
+  ageDistribution: { age_range: string; count: number }[];
+  goalDistribution: { goal: string; count: number }[];
+  locationDistribution: { location: string; count: number }[];
+  frequencyDistribution: { frequency: string; count: number }[];
+}
+
+export interface OnboardingInsights {
+  totalCompleted: number;
+  totalStarted: number;
+  completionRate: number;
+  avgTimeMinutes: number;
+  timeDistribution: { time_bucket: string; count: number }[];
+  recentCompletions: { completed_date: string; completions: number; avg_time: number }[];
+}
+
+export interface ClicksByTarget {
+  click_target: string;
+  clicks: number;
+  unique_users: number;
+}
+
+export interface DashboardClicks {
+  totalClicks: number;
+  uniqueUsers: number;
+  clicksByTarget: ClicksByTarget[];
+  dailyTrend: { date: string; clicks: number; unique_users: number }[];
+}
+
+export interface UserInsightsData {
+  demographics: UserDemographics;
+  onboarding: OnboardingInsights;
+  clicks: DashboardClicks;
+}
+
+// ================================================================
+// USER INSIGHTS FUNCTIONS
+// ================================================================
+
+/**
+ * Ottieni profilo demografico degli utenti
+ */
+export async function getUserDemographics(): Promise<{ data: UserDemographics | null; error: any }> {
+  try {
+    const { data, error } = await getSupabase().rpc('get_user_demographics_admin');
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('[AdminService] Error fetching user demographics:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Ottieni insights sull'onboarding
+ */
+export async function getOnboardingInsights(): Promise<{ data: OnboardingInsights | null; error: any }> {
+  try {
+    const { data, error } = await getSupabase().rpc('get_onboarding_insights_admin');
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('[AdminService] Error fetching onboarding insights:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Ottieni dati click dashboard
+ */
+export async function getDashboardClicks(daysBack: number = 30): Promise<{ data: DashboardClicks | null; error: any }> {
+  try {
+    const { data, error } = await getSupabase().rpc('get_dashboard_clicks_admin', {
+      days_back: daysBack
+    });
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('[AdminService] Error fetching dashboard clicks:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Ottieni tutti i dati user insights in una chiamata
+ */
+export async function getUserInsightsData(): Promise<{ data: UserInsightsData | null; error: any }> {
+  try {
+    const [demographicsResult, onboardingResult, clicksResult] = await Promise.all([
+      getUserDemographics(),
+      getOnboardingInsights(),
+      getDashboardClicks(30)
+    ]);
+
+    if (demographicsResult.error) throw demographicsResult.error;
+    if (onboardingResult.error) throw onboardingResult.error;
+    if (clicksResult.error) throw clicksResult.error;
+
+    return {
+      data: {
+        demographics: demographicsResult.data!,
+        onboarding: onboardingResult.data!,
+        clicks: clicksResult.data!,
+      },
+      error: null
+    };
+  } catch (error) {
+    console.error('[AdminService] Error fetching user insights:', error);
+    return { data: null, error };
+  }
+}
+
+// ================================================================
 // UTILS
 // ================================================================
 
