@@ -20,8 +20,8 @@ export function initClickTrackingService(client: SupabaseClient): void {
 export function trackDashboardClick(target: DashboardClickTarget): void {
   if (!supabase) return;
 
-  supabase.rpc('track_dashboard_click', { target }).catch(() => {
-    // Silent fail — tracking should never break the app
+  supabase.rpc('track_dashboard_click', { target }).then(() => {
+    // Silent — fire and forget
   });
 }
 
