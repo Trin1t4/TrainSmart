@@ -393,3 +393,51 @@ export {
   type PainArea as WellnessPainArea,
   type PainRestriction,
 } from './unifiedWellnessService';
+
+// Feedback History Service (feedback loop for program generation)
+export {
+  initFeedbackHistoryService,
+  getFeedbackContext,
+  calculateWeightCalibrations,
+  calculateVolumeCalibrations,
+  applyPendingAdjustments,
+  shouldForceDeload,
+  getSuggestedWeight,
+  type ExerciseFeedback as FeedbackExerciseData,
+  type SessionFeedbackSummary,
+  type PendingAdjustment,
+  type FeedbackContext,
+  type WeightCalibration,
+  type VolumeCalibration,
+} from './feedbackHistoryService';
+
+// Volume Profile Service (MEV/MRV)
+export {
+  initVolumeProfileService,
+  initializeVolumeProfile,
+  getVolumeProfile,
+  updateVolumeProfileFromFeedback,
+  getVolumeRecommendations,
+  distributeSetsPerSession,
+  getRecommendedSetsForPattern,
+  calculateMesocycleVolume,
+  PATTERN_TO_MUSCLES,
+  VOLUME_DEFAULTS,
+  type MuscleVolumeProfile,
+  type VolumeRecommendation,
+} from './volumeProfileService';
+
+// Mesocycle Retest Service
+export {
+  initMesocycleRetestService,
+  processRetest,
+  generateRetestRecommendations,
+  getLatestRetest,
+  acceptRetestRecommendations,
+  estimate1RM,
+  calculateChangePercent,
+  type RetestExerciseResult,
+  type RetestInput,
+  type RetestRecommendations,
+  type RetestSummary,
+} from './mesocycleRetestService';

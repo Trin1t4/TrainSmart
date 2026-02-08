@@ -34,6 +34,8 @@ import type { NormalizedPainArea } from './validators';
 import { generateWeeklySplit } from './weeklySplitGenerator';
 import { integrateRunningIntoSplit } from './runningProgramGenerator';
 import type { RunningPreferences } from '../types/onboarding.types';
+import type { FeedbackContext, WeightCalibration, VolumeCalibration } from '../lib/feedbackHistoryService';
+import type { MuscleVolumeProfile, VolumeRecommendation } from '../lib/volumeProfileService';
 import {
   validateProgramInput,
   applyCorrections,
@@ -86,6 +88,14 @@ export interface ProgramGeneratorOptions {
   quizScore?: number;           // Score quiz teorico (0-100)
   practicalScore?: number;      // Score test pratici (0-100)
   discrepancyType?: 'intuitive_mover' | 'theory_practice_gap' | null;
+  // Feedback loop data (populated after 3+ sessions)
+  feedbackContext?: FeedbackContext;
+  weightCalibrations?: WeightCalibration[];
+  volumeCalibrations?: VolumeCalibration[];
+  volumeProfile?: MuscleVolumeProfile[];
+  volumeRecommendations?: VolumeRecommendation[];
+  // Retest baselines override (from end-of-mesocycle retest)
+  retestBaselines?: Record<string, { estimated1RM: number; weight10RM: number }>;
 }
 
 export interface ScreeningResult {
@@ -157,6 +167,53 @@ export const ANTAGONIST_SUPERSET_PAIRS: Record<string, string> = {
   'hamstrings': 'quadriceps',
   'hip_flexors': 'glutes',
   'glutes': 'hip_flexors',
+};
+
+// ============================================================================
+// FEEDBACK LOOP HELPERS
+// ============================================================================
+
+/**
+ * Maps exercise names to movement patterns for feedback lookup
+ */
+const EXERCISE_TO_PATTERN: Record<string, string> = {
+  'squat': 'lower_push', 'squat bodyweight': 'lower_push', 'pressa': 'lower_push',
+  'leg press': 'lower_push', 'hack squat': 'lower_push', 'affondi': 'lower_push',
+  'leg extension': 'lower_push', 'goblet squat': 'lower_push',
+  'panca piana': 'horizontal_push', 'panca inclinata': 'horizontal_push',
+  'panca con manubri': 'horizontal_push', 'piegamenti': 'horizontal_push',
+  'push-up': 'horizontal_push', 'chest press': 'horizontal_push',
+  'military press': 'vertical_push', 'lento avanti': 'vertical_push',
+  'shoulder press': 'vertical_push', 'arnold press': 'vertical_push',
+  'trazioni': 'vertical_pull', 'lat machine': 'vertical_pull',
+  'pull-up': 'vertical_pull', 'chin-up': 'vertical_pull',
+  'rematore': 'horizontal_pull', 'pulley basso': 'horizontal_pull',
+  'rematore con bilanciere': 'horizontal_pull', 'rematore con manubrio': 'horizontal_pull',
+  'stacco': 'lower_pull', 'stacco rumeno': 'lower_pull', 'leg curl': 'lower_pull',
+  'hip thrust': 'lower_pull', 'good morning': 'lower_pull',
+  'plank': 'core', 'crunch': 'core', 'russian twist': 'core',
+};
+
+function getPatternForExercise(exerciseName: string): string {
+  const lower = exerciseName.toLowerCase();
+  for (const [key, pattern] of Object.entries(EXERCISE_TO_PATTERN)) {
+    if (lower.includes(key)) return pattern;
+  }
+  return 'accessory';
+}
+
+/**
+ * Maps patterns to primary muscle groups (for volume recommendations)
+ */
+const PATTERN_TO_MUSCLE_MAP: Record<string, string[]> = {
+  horizontal_push: ['chest', 'triceps', 'shoulders'],
+  vertical_push: ['shoulders', 'triceps'],
+  horizontal_pull: ['back', 'biceps'],
+  vertical_pull: ['back', 'biceps'],
+  lower_push: ['quads', 'glutes'],
+  lower_pull: ['hamstrings', 'glutes'],
+  core: ['core'],
+  accessory: [],
 };
 
 /**
@@ -3929,7 +3986,14 @@ export function generateProgramAPI(input: any): any {
     assessments = [],
     goal,
     disabilityType,
-    sportRole
+    sportRole,
+    // Feedback loop data
+    feedbackContext,
+    weightCalibrations,
+    volumeCalibrations,
+    volumeProfile,
+    volumeRecommendations,
+    retestBaselines,
   } = input;
 
   console.log('[PROGRAM] ENTRY POINT:', { level, frequency, location, goal, sportRole });
@@ -3967,7 +4031,13 @@ export function generateProgramAPI(input: any): any {
     assessments,
     goal,
     disabilityType,
-    sportRole
+    sportRole,
+    feedbackContext,
+    weightCalibrations,
+    volumeCalibrations,
+    volumeProfile,
+    volumeRecommendations,
+    retestBaselines,
   });
 }
 
@@ -4233,10 +4303,18 @@ function generateStandardProgram(input: any): any {
     goal,
     disabilityType,
     sportRole,
-    userPreferences
+    userPreferences,
+    // Feedback loop
+    feedbackContext,
+    weightCalibrations,
+    volumeCalibrations,
+    volumeProfile,
+    volumeRecommendations,
+    retestBaselines,
   } = input;
 
-  console.log('[PROGRAM] generateStandardProgram with:', { level, frequency, location, goal });
+  const hasFeedback = feedbackContext?.hasEnoughData === true;
+  console.log('[PROGRAM] generateStandardProgram with:', { level, frequency, location, goal, hasFeedback, sessionsCompleted: feedbackContext?.sessionsCompleted });
 
   // Check if this goal uses metabolic circuits
   const metabolicCircuit = generateMetabolicCircuit({
@@ -4322,7 +4400,8 @@ function generateStandardProgram(input: any): any {
 
   const weeklySchedule = generateWeeklyScheduleAPI(
     split, daysPerWeek, location || 'gym', equipment, painAreas,
-    assessments, level, goal, disabilityType, sportRole
+    assessments, level, goal, disabilityType, sportRole,
+    { weightCalibrations, volumeCalibrations, volumeRecommendations, feedbackContext, retestBaselines }
   );
 
   // TONING: Aggiungi finisher metabolico a ogni giornata
@@ -4346,8 +4425,25 @@ function generateStandardProgram(input: any): any {
     });
   }
 
-  const includesDeload = level === 'intermediate' || level === 'advanced';
-  const deloadFrequency = includesDeload ? 4 : undefined;
+  // Deload adattivo: usa feedback se disponibile, altrimenti default
+  let includesDeload = level === 'intermediate' || level === 'advanced';
+  let deloadFrequency: number | undefined = includesDeload ? 4 : undefined;
+
+  if (hasFeedback && feedbackContext?.sessionSummary) {
+    const avgRpe = feedbackContext.sessionSummary.avg_session_rpe;
+    const needsDeload = feedbackContext.sessionSummary.needs_deload;
+
+    if (needsDeload || avgRpe > 8.5) {
+      // Deload forzato — inizio programma con settimana leggera
+      includesDeload = true;
+      deloadFrequency = 3; // Deload più frequente se sovraccarico
+      console.log('[PROGRAM] Deload anticipato: RPE medio', avgRpe);
+    } else if (avgRpe < 6.5 && level !== 'beginner') {
+      // Sotto-stimolato — deload meno frequente
+      deloadFrequency = 5;
+      console.log('[PROGRAM] Deload posticipato: RPE basso', avgRpe);
+    }
+  }
 
   // Normalizza goal per confronti sicuri
   const goalLowerForWeeks = (goal || '').toLowerCase();
@@ -4379,7 +4475,17 @@ function generateStandardProgram(input: any): any {
     deloadFrequency,
     totalWeeks,
     requiresEndCycleTest,
-    hasMetabolicFinisher: metabolicCircuit?.mode === 'finisher'
+    hasMetabolicFinisher: metabolicCircuit?.mode === 'finisher',
+    // Feedback loop metadata
+    feedbackApplied: hasFeedback,
+    feedbackSummary: hasFeedback ? {
+      sessionsAnalyzed: feedbackContext?.sessionsCompleted ?? 0,
+      avgSessionRpe: feedbackContext?.sessionSummary?.avg_session_rpe ?? null,
+      rpeTrend: feedbackContext?.sessionSummary?.rpe_trend ?? null,
+      weightCalibrationsApplied: weightCalibrations?.length ?? 0,
+      volumeCalibrationsApplied: volumeCalibrations?.length ?? 0,
+      retestBaselinesApplied: retestBaselines ? Object.keys(retestBaselines).length > 0 : false,
+    } : undefined,
   };
 }
 
@@ -4393,10 +4499,29 @@ function generateWeeklyScheduleAPI(
   level: string,
   goal: string,
   disabilityType?: string,
-  sportRole?: any
+  sportRole?: any,
+  feedbackData?: {
+    weightCalibrations?: WeightCalibration[];
+    volumeCalibrations?: VolumeCalibration[];
+    volumeRecommendations?: VolumeRecommendation[];
+    feedbackContext?: FeedbackContext;
+    retestBaselines?: Record<string, { estimated1RM: number; weight10RM: number }>;
+  }
 ): any[] {
   const schedule: any[] = [];
   const baseLoad = getBaseLoads(assessments || []);
+
+  // Override baselines with retest data if available
+  if (feedbackData?.retestBaselines) {
+    const rt = feedbackData.retestBaselines;
+    if (rt.lower_push?.estimated1RM) baseLoad.squat = rt.lower_push.estimated1RM;
+    if (rt.lower_pull?.estimated1RM) baseLoad.deadlift = rt.lower_pull.estimated1RM;
+    if (rt.horizontal_push?.estimated1RM) baseLoad.bench = rt.horizontal_push.estimated1RM;
+    if (rt.vertical_pull?.estimated1RM) baseLoad.pull = rt.vertical_pull.estimated1RM;
+    if (rt.vertical_push?.estimated1RM) baseLoad.press = rt.vertical_push.estimated1RM;
+    console.log('[PROGRAM] Baselines aggiornate da retest:', baseLoad);
+  }
+
   // Normalizza goal per lookup sicuro
   const goalLowerAPI = (goal || 'muscle_gain').toLowerCase();
   const goalConfig = GOAL_CONFIGS[goalLowerAPI] || GOAL_CONFIGS.muscle_gain;
@@ -4423,16 +4548,71 @@ function generateWeeklyScheduleAPI(
     const safeName = safeExercise(name);
     let sets = type === 'compound' ? config.compoundSets : config.accessorySets;
     sets = Math.round(sets * goalConfig.setsMultiplier);
+
+    // Apply volume calibration from feedback (adjust sets per pattern)
+    if (feedbackData?.volumeCalibrations) {
+      const exercisePattern = getPatternForExercise(safeName);
+      const volCal = feedbackData.volumeCalibrations.find(v => v.pattern === exercisePattern);
+      if (volCal) {
+        sets = Math.max(2, Math.min(6, sets + volCal.suggested_sets_change));
+      }
+    }
+
+    // Apply volume recommendations from MEV/MRV profile
+    if (feedbackData?.volumeRecommendations) {
+      const exercisePattern = getPatternForExercise(safeName);
+      const volRec = feedbackData.volumeRecommendations.find(r => {
+        const patternMuscles = PATTERN_TO_MUSCLE_MAP[exercisePattern];
+        return patternMuscles && patternMuscles.includes(r.muscle_group);
+      });
+      if (volRec) {
+        // Distribute recommended weekly sets across sessions
+        const setsPerSession = Math.round(volRec.recommended_sets_per_week / Math.max(daysPerWeek, 1));
+        // Blend with existing sets (don't override completely, bias toward recommendation)
+        sets = Math.max(2, Math.min(6, Math.round(sets * 0.4 + setsPerSession * 0.6)));
+      }
+    }
+
     const rest = goalConfig.rest[type] || (type === 'compound' ? 180 : 120);
     const [minReps, maxReps] = goalConfig.repsRange.split('-').map(Number);
     const reps = type === 'compound' ? `${minReps}-${maxReps}` : `${maxReps}`;
 
     const isBodyweight = isBodyweightExercise(safeName);
     let weight = null;
+    let feedbackNotes = '';
 
     if (!isBodyweight && (location === 'gym' || hasWeightedEquipment(equipment))) {
       if (baseWeight > 0) {
         weight = calculateTrainingWeight(baseWeight, maxReps, config.RIR);
+
+        // Apply weight calibration from feedback history
+        if (feedbackData?.weightCalibrations) {
+          const cal = feedbackData.weightCalibrations.find(
+            c => c.exercise_name.toLowerCase() === safeName.toLowerCase()
+          );
+          if (cal && weight) {
+            const adjusted = weight * (1 + cal.suggested_weight_change_percent / 100);
+            weight = Math.round(adjusted / 2.5) * 2.5;
+            feedbackNotes = ` | Calibrato: ${cal.reason}`;
+          }
+        }
+
+        // Override with last-used weight from feedback if available and more reliable
+        if (feedbackData?.feedbackContext?.hasEnoughData) {
+          const exFeedback = feedbackData.feedbackContext.exerciseFeedback?.find(
+            e => e.exercise_name.toLowerCase() === safeName.toLowerCase()
+          );
+          if (exFeedback?.last_weight_used && exFeedback.sessions_count >= 3) {
+            // Use actual performance data instead of formula
+            const lastWeight = exFeedback.last_weight_used;
+            const cal = feedbackData.weightCalibrations?.find(
+              c => c.exercise_name.toLowerCase() === safeName.toLowerCase()
+            );
+            const changePercent = cal?.suggested_weight_change_percent ?? 0;
+            weight = Math.round((lastWeight * (1 + changePercent / 100)) / 2.5) * 2.5;
+            feedbackNotes = ` | Basato su storico (${exFeedback.sessions_count} sessioni)`;
+          }
+        }
       }
     }
 
@@ -4443,7 +4623,7 @@ function generateWeeklyScheduleAPI(
       rest,
       weight,
       category: type,
-      notes: `${goalConfig.name} - ${type === 'compound' ? `RIR ${config.RIR}` : 'Complementare'}`
+      notes: `${goalConfig.name} - ${type === 'compound' ? `RIR ${config.RIR}` : 'Complementare'}${feedbackNotes}`
     };
   };
 

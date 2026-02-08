@@ -41,6 +41,11 @@ import { initGDPRService } from './gdprComplianceService';
 // Click Tracking
 import { initClickTrackingService } from './clickTrackingService';
 
+// Feedback Loop
+import { initFeedbackHistoryService } from './feedbackHistoryService';
+import { initVolumeProfileService } from './volumeProfileService';
+import { initMesocycleRetestService } from './mesocycleRetestService';
+
 let initialized = false;
 
 export interface InitServicesOptions {
@@ -156,6 +161,16 @@ export function initAllServices(
     // Click Tracking (always init, lightweight)
     initClickTrackingService(client);
     log('[InitServices] ✓ ClickTrackingService');
+
+    // Feedback Loop services (always init, lightweight)
+    initFeedbackHistoryService(client);
+    log('[InitServices] ✓ FeedbackHistoryService');
+
+    initVolumeProfileService(client);
+    log('[InitServices] ✓ VolumeProfileService');
+
+    initMesocycleRetestService(client);
+    log('[InitServices] ✓ MesocycleRetestService');
 
     initialized = true;
     log('[InitServices] All services initialized successfully');
