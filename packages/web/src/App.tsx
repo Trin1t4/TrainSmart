@@ -55,8 +55,6 @@ const VideoFeedback = lazy(() => import('./pages/VideoFeedback'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const Stats = lazy(() => import('./pages/Stats'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Community = lazy(() => import('./pages/Community'));
-const Achievements = lazy(() => import('./pages/Achievements'));
 const About = lazy(() => import('./pages/About'));
 
 // V2 pages (UX migliorata)
@@ -140,10 +138,6 @@ function App() {
               {/* MOBILE NAV ROUTES - Protected */}
               <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-
-              {/* SOCIAL FEATURES - Protected */}
-              <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
-              <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
 
               {/* V2 PAGES - Protected */}
               <Route path="/dashboard-v2" element={<ProtectedRoute><DashboardV2 /></ProtectedRoute>} />

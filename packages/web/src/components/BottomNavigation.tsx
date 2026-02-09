@@ -25,10 +25,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ['/workout']
   },
   {
-    path: '/workout-session',
+    path: '/workout',
     icon: Play,
     labelKey: 'nav.train',
-    matchPaths: ['/workout-session'],
+    matchPaths: ['/workout-session', '/workout'],
     isCTA: true
   },
   {

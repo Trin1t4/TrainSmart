@@ -830,12 +830,13 @@ function convertGymExerciseToHome(exercise, assessments, goal = 'muscle_gain', e
   console.log(`[ADAPT] Gym→Home: ${exercise.name}`)
 
   // ✅ USA selectExerciseVariant invece di convertToBodyweight
+  const level = exercise.level || 'intermediate'
   const variant = selectExerciseVariant(
-    exercise.name, 
-    'home', 
-    equipment, 
-    goal, 
-    exercise.weight || 0
+    exercise.name,
+    'home',
+    equipment,
+    goal,
+    level
   )
   
   // Se è un Giant Set, ritorna quello
@@ -911,14 +912,19 @@ function adaptExerciseForPain(exercise, painAreas) {
   const name = exercise.name.toLowerCase()
 
   const painContraindications = {
-    'neck': ['neck', 'heavy rows', 'shrugs'],
-    'shoulder': ['panca', 'press', 'lateral raise', 'dips', 'push-up', 'pull-up'],
-    'lower_back': ['stacco', 'deadlift', 'good morning', 'back squat', 'heavy rows'],
-    'knee': ['squat', 'leg press', 'leg curl', 'leg extension', 'lunge', 'jump'],
-    'ankle': ['calf raises', 'jump', 'single leg'],
-    'wrist': ['curl', 'tricep', 'close grip', 'push-up'],
-    'elbow': ['curl', 'tricep', 'close grip']
+    'neck': ['neck', 'heavy rows', 'shrugs', 'cervical'],
+    'shoulder': ['panca', 'press', 'lateral raise', 'dips', 'push-up', 'pull-up', 'fly', 'croci'],
+    'upper_back': ['row', 'pull-up', 'trazioni', 'lat', 'shrugs', 'face pull'],
+    'lower_back': ['stacco', 'deadlift', 'good morning', 'back squat', 'heavy rows', 'hyperextension'],
+    'hip': ['squat', 'lunge', 'hip thrust', 'deadlift', 'leg press', 'affondi', 'bulgaro', 'abduct'],
+    'knee': ['squat', 'leg press', 'leg curl', 'leg extension', 'lunge', 'jump', 'affondi'],
+    'ankle': ['calf raises', 'jump', 'single leg', 'box jump', 'lunge'],
+    'wrist': ['curl', 'tricep', 'close grip', 'push-up', 'clean', 'snatch'],
+    'elbow': ['curl', 'tricep', 'close grip', 'french press', 'pushdown']
   }
+
+  // Determina quali aree del corpo coinvolge l'esercizio
+  const exerciseAreas = getExerciseBodyAreas(name)
 
   for (const painArea of painAreas) {
     const contraindications = painContraindications[painArea] || []
@@ -928,12 +934,42 @@ function adaptExerciseForPain(exercise, painAreas) {
     }
   }
 
-  return {
-    ...exercise,
-    weight: exercise.weight ? exercise.weight * 0.7 : null,
-    sets: Math.max(exercise.sets - 1, 1),
-    notes: `⚠️ Pain-adapted: reduced intensity`
+  // Riduci intensità SOLO se l'esercizio coinvolge una zona adiacente al dolore
+  const isNearPainArea = painAreas.some(painArea => exerciseAreas.includes(painArea))
+
+  if (isNearPainArea) {
+    return {
+      ...exercise,
+      weight: exercise.weight ? exercise.weight * 0.7 : null,
+      sets: Math.max(exercise.sets - 1, 1),
+      notes: `⚠️ Pain-adapted: reduced intensity`
+    }
   }
+
+  // Esercizio non coinvolge zone doloranti → mantieni programmazione originale
+  return exercise
+}
+
+function getExerciseBodyAreas(name) {
+  const areaMapping = [
+    { areas: ['knee', 'hip'], keywords: ['squat', 'leg press', 'lunge', 'leg extension', 'leg curl', 'affondi', 'bulgaro'] },
+    { areas: ['lower_back', 'hip'], keywords: ['stacco', 'deadlift', 'good morning', 'hyperextension'] },
+    { areas: ['shoulder'], keywords: ['press', 'lateral raise', 'fly', 'croci', 'alzate', 'dips'] },
+    { areas: ['shoulder', 'upper_back'], keywords: ['pull-up', 'trazioni', 'lat', 'row', 'rematore'] },
+    { areas: ['elbow'], keywords: ['curl', 'tricep', 'french press', 'pushdown'] },
+    { areas: ['wrist'], keywords: ['curl', 'clean', 'snatch'] },
+    { areas: ['ankle'], keywords: ['calf', 'jump', 'box jump'] },
+    { areas: ['neck'], keywords: ['shrug', 'neck', 'cervical'] },
+    { areas: ['hip'], keywords: ['hip thrust', 'glute', 'abduct'] }
+  ]
+
+  const areas = new Set()
+  for (const mapping of areaMapping) {
+    if (mapping.keywords.some(keyword => name.includes(keyword))) {
+      mapping.areas.forEach(area => areas.add(area))
+    }
+  }
+  return [...areas]
 }
 
 function recalibrateSessionForDetraining(plannedSession, detrainingFactor) {
@@ -1145,7 +1181,6 @@ function generatePerformanceProgram(input) {
     deloadFrequency: 3,
     totalWeeks: 8,
     requiresEndCycleTest: true,
-    sportSpecific: true,
     sportSpecific: true
   }
 }
@@ -1298,7 +1333,7 @@ function generateStandardProgram(input) {
   }
 
   let progression
-  if (level === 'beginner') progression = 'wave_loading'
+  if (level === 'beginner') progression = 'linear'
   else if (level === 'intermediate') progression = 'ondulata_settimanale'
   else progression = 'ondulata_giornaliera'
 console.log('[GENERATOR] 🔍 DEBUG - location value:', location);
@@ -1402,8 +1437,6 @@ function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAre
     
     console.log('[PROGRAM] 🔥 Fat loss: circuiti + cardio applicati')
   }
-
-  return schedule
 
   return schedule
 }

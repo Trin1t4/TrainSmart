@@ -2688,7 +2688,24 @@ export default function LiveWorkoutSession({
       return 'ankle';
     }
 
-    return 'lower_back'; // Default
+    // Esercizi di core/addominali
+    if (name.includes('plank') || name.includes('crunch') || name.includes('sit-up') || name.includes('ab ') || name.includes('core')) {
+      return 'lower_back';
+    }
+    // Esercizi per il collo/trapezio
+    if (name.includes('shrug') || name.includes('neck') || name.includes('trap')) {
+      return 'neck';
+    }
+    // Esercizi per la parte alta della schiena
+    if (name.includes('face pull') || name.includes('rear delt') || name.includes('band pull')) {
+      return 'upper_back';
+    }
+    // Esercizi per i polsi
+    if (name.includes('wrist')) {
+      return 'wrist';
+    }
+
+    return 'lower_back'; // Default conservativo
   };
 
   const mapToPainDetectArea = (legacyArea: string): BodyArea => {

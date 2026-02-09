@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom"; // ✅ Aggiunto Link
+import { useState, useEffect, lazy, Suspense } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react"; // ✅ Icone
+import { LogIn, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useTranslation } from '../lib/i18n';
-import { usePrefetchCurrentProgram } from '../hooks/useProgram'; // ✅ Prefetch hook
-import VideoMosaicBackground from '../components/VideoMosaicBackground';
+import { usePrefetchCurrentProgram } from '../hooks/useProgram';
+const VideoMosaicBackground = lazy(() => import('../components/VideoMosaicBackground'));
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function Login() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       }
     });
   }, []);
@@ -55,7 +55,7 @@ export default function Login() {
           console.log('[LOGIN] ✅ Has active program → dashboard');
           // ✅ Prefetch program data before navigation for instant load
           prefetchProgram();
-          window.location.href = "/dashboard";
+          navigate("/dashboard");
           return;
         }
 
@@ -71,7 +71,7 @@ export default function Login() {
         if (!profileError && profile?.onboarding_completed) {
           // Ha completato onboarding ma non ha programma → dashboard (genererà programma)
           console.log('[LOGIN] ℹ️ Has onboarding, no program → dashboard');
-          window.location.href = "/dashboard";
+          navigate("/dashboard");
           return;
         }
 
@@ -82,20 +82,20 @@ export default function Login() {
         if (hasOnboarding) {
           // Ha dati locali → dashboard
           console.log('[LOGIN] ℹ️ Has localStorage data → dashboard');
-          window.location.href = "/dashboard";
+          navigate("/dashboard");
         } else {
           // Nuovo utente → onboarding
           console.log('[LOGIN] 🆕 New user → onboarding');
-          window.location.href = "/onboarding";
+          navigate("/onboarding");
         }
       } catch (err) {
         console.error('[LOGIN] Error:', err);
         // Fallback sicuro: vai a dashboard che gestirà il caso
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       }
     } else {
       // fallback: redirect
-      window.location.href = "/";
+      navigate("/");
     }
   };
 
@@ -108,8 +108,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Video Mosaic Background */}
-      <VideoMosaicBackground videoCount={12} opacity={0.06} blur={2} />
+      {/* Video Mosaic Background - Lazy loaded */}
+      <Suspense fallback={null}>
+        <VideoMosaicBackground videoCount={12} opacity={0.06} blur={2} />
+      </Suspense>
 
       <div className="max-w-md w-full relative z-10">
         {/* Header */}

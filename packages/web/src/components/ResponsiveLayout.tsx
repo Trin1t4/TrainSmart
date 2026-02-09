@@ -39,8 +39,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/stats': 'Statistiche',
   '/profile': 'Profilo',
   '/settings': 'Impostazioni',
-  '/community': 'Community',
-  '/achievements': 'Achievements',
   '/recovery-screening': 'Recovery',
 };
 

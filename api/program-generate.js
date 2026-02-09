@@ -1,38 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { rateLimitMiddleware } from './lib/rateLimit.js';
-
-// Helper function to determine split based on frequency
-function determineSplit(freq) {
-  if (freq <= 2) return 'FULL_BODY';
-  if (freq === 3) return 'FULL_BODY';
-  if (freq === 4) return 'UPPER_LOWER';
-  if (freq === 5) return 'PPL_PLUS';
-  return 'PPL';
-}
-
-// Helper function to create program name
-function createProgramName(level, goal) {
-  const goalNames = {
-    'muscle_gain': 'Ipertrofia',
-    'strength': 'Forza',
-    'fat_loss': 'Dimagrimento',
-    'toning': 'Tonificazione',
-    'performance': 'Performance',
-    'endurance': 'Resistenza',
-    'general_fitness': 'Fitness Generale',
-    'motor_recovery': 'Recupero Motorio'
-  };
-  
-  const levelNames = {
-    'beginner': 'Principiante',
-    'intermediate': 'Intermedio',
-    'advanced': 'Avanzato'
-  };
-  
-  const goalName = goalNames[goal] || 'Personalizzato';
-  const levelName = levelNames[level] || 'Intermedio';
-  return `Programma ${levelName} - ${goalName}`;
-}
+import { generateProgram } from './lib/programGenerator.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -47,7 +15,11 @@ export default async function handler(req, res) {
   try {
     console.log('[API] Received:', req.body);
 
-    const { level, goal, location, frequency, assessmentData, userId, assessmentId } = req.body;
+    const {
+      level, goal, location, frequency, assessmentData,
+      userId, assessmentId, bodyweight, painAreas,
+      equipment, disabilityType, sportRole
+    } = req.body;
 
     console.log('[API] Data received:', {
       level,
@@ -58,42 +30,59 @@ export default async function handler(req, res) {
       userId: userId ? 'present' : 'missing',
     });
 
+    // Calcolo livello basato su bodyweight ratio (se assessmentData presente)
     let calculatedLevel = level || 'intermediate';
 
     if (assessmentData && typeof assessmentData === 'object' && Object.keys(assessmentData).length > 0) {
-      const levels = Object.values(assessmentData).map((test) => test.oneRepMax > 80 ? 'advanced' : 'intermediate');
-      calculatedLevel = levels.includes('advanced') ? 'advanced' : 'intermediate';
+      const bw = bodyweight || 70;
+      const levels = Object.values(assessmentData).map((test) => {
+        const ratio = test.oneRepMax / bw;
+        if (ratio >= 1.5) return 'advanced';
+        if (ratio >= 1.0) return 'intermediate';
+        return 'beginner';
+      });
+      const advancedCount = levels.filter(l => l === 'advanced').length;
+      const intermediateCount = levels.filter(l => l === 'intermediate').length;
+      if (advancedCount >= 2) calculatedLevel = 'advanced';
+      else if (intermediateCount >= 2 || advancedCount >= 1) calculatedLevel = 'intermediate';
+      else calculatedLevel = 'beginner';
     }
 
-    console.log('Level calculated from score:', calculatedLevel);
+    console.log('[API] Level calculated:', calculatedLevel);
 
-    const program = {
-          name: createProgramName(calculatedLevel, goal || 'general_fitness'),
-    description: `Programma ${calculatedLevel} per ${goal || 'fitness generale'}`,
-
+    // Converti assessmentData in formato standard per programGenerator
+    const assessments = assessmentData ? Object.entries(assessmentData).map(([name, test], i) => ({
+      id: `api-${i}`,
+      exerciseName: name,
+      variant: location === 'gym' ? 'gym' : 'bodyweight',
       level: calculatedLevel,
-      goal: goal,
-      location: location,
-      frequency: frequency,
-      generatedAt: new Date().toISOString(),
-      assessmentData: assessmentData || null,
-      assessmentId: assessmentId,
-      userId: userId,
-          split: determineSplit(frequency || 3),
-    days_per_week: frequency || 3,
-    total_weeks: 4,
-    weekly_schedule: [],
-    progression: [],
-    includes_deload: false,
-    deload_frequency: 4,
-    metadata: {},
-    status: 'active',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+      maxReps: test.reps || 10,
+      oneRepMax: test.oneRepMax || 0,
+      weight: test.weight || 0,
+      bodyweight: bodyweight || 70
+    })) : [];
 
-    };
+    // Genera programma COMPLETO usando programGenerator
+    const generatedProgram = await generateProgram({
+      userId,
+      assessmentId,
+      location: location || 'gym',
+      equipment: equipment || {},
+      goal: goal || 'muscle_gain',
+      level: calculatedLevel,
+      frequency: frequency || 3,
+      painAreas: painAreas || [],
+      disabilityType: disabilityType || null,
+      sportRole: sportRole || null,
+      assessments
+    });
 
-    console.log('[API] Generated:', program);
+    if (!generatedProgram || !generatedProgram.weeklySchedule) {
+      console.error('[API] Program generation failed');
+      return res.status(500).json({ error: 'Failed to generate program' });
+    }
+
+    console.log('[API] Program generated:', generatedProgram.name);
 
     // SAVE TO SUPABASE WITH SERVICE ROLE
     const adminSupabase = createClient(
@@ -103,39 +92,39 @@ export default async function handler(req, res) {
 
     const { data: dbData, error: dbError } = await adminSupabase
       .from('training_programs')
-.insert({
-    user_id: userId,
-    assessment_id: assessmentId,
-    name: program.name,
-    description: program.description,
-    level: program.level,
-    goal: program.goal,
-    location: program.location,
-    frequency: program.frequency,
-    split: program.split,
-    days_per_week: program.days_per_week,
-    total_weeks: program.total_weeks,
-    weekly_schedule: program.weekly_schedule,
-    progression: program.progression,
-    includes_deload: program.includes_deload,
-    deload_frequency: program.deload_frequency,
-    metadata: program.metadata,
-    status: 'active',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  })
-  .select()
-  .single();
+      .insert({
+        user_id: userId,
+        assessment_id: assessmentId,
+        name: generatedProgram.name,
+        description: generatedProgram.description,
+        level: calculatedLevel,
+        goal: goal,
+        location: location,
+        frequency: frequency,
+        split: generatedProgram.split,
+        days_per_week: generatedProgram.daysPerWeek || frequency || 3,
+        total_weeks: generatedProgram.totalWeeks || 4,
+        weekly_schedule: generatedProgram.weeklySchedule,
+        progression: generatedProgram.progression || 'linear',
+        includes_deload: generatedProgram.includesDeload || false,
+        deload_frequency: generatedProgram.deloadFrequency || 4,
+        requires_end_cycle_test: generatedProgram.requiresEndCycleTest || false,
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
     if (dbError) {
       console.error('[API] Supabase INSERT Error:', dbError);
     } else {
-      console.log('[API] Program saved to Supabase:', dbData);
+      console.log('[API] Program saved to Supabase:', dbData?.id);
     }
 
     return res.status(200).json({
       success: true,
-      program: program
+      program: dbData || generatedProgram
     });
   } catch (error) {
     console.error('[API] Error:', error);

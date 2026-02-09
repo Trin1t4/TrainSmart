@@ -44,6 +44,7 @@ import { useAppStore } from '../store/useAppStore';
 import AddRunningModal from './AddRunningModal';
 import QuickActionsGrid from './QuickActionsGrid';
 import { trackDashboardClick } from '@trainsmart/shared';
+import { useWorkoutFlow } from '../hooks/useWorkoutFlow';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -67,13 +68,12 @@ export default function Dashboard() {
   const [resetting, setResetting] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showProgramHistory, setShowProgramHistory] = useState(false);
-  const [showWorkoutLogger, setShowWorkoutLogger] = useState(false);
-  const [currentWorkoutDay, setCurrentWorkoutDay] = useState<any>(null);
-  const [showLiveWorkout, setShowLiveWorkout] = useState(false);
-  const [showRunningSession, setShowRunningSession] = useState(false);
-  const [runningDayData, setRunningDayData] = useState<any>(null);
-  const [showRecoveryScreening, setShowRecoveryScreening] = useState(false);
-  const [recoveryData, setRecoveryData] = useState<RecoveryData | null>(null);
+  // Workout flow state machine (replaces individual workout-related state vars)
+  const workoutFlow = useWorkoutFlow();
+  const {
+    showWorkoutLogger, showLiveWorkout, showRunningSession, showRecoveryScreening,
+    currentWorkoutDay, recoveryData, runningDayData,
+  } = workoutFlow;
   const [showLocationSwitch, setShowLocationSwitch] = useState(false);
   const [switchingLocation, setSwitchingLocation] = useState(false);
   const [switchStep, setSwitchStep] = useState<'choose' | 'equipment'>('choose');
@@ -389,16 +389,54 @@ export default function Dashboard() {
     return result;
   }, [program, dataStatus.screening?.patternBaselines]);
 
-  function loadData() {
-    // Carica TUTTI i dati salvati
+  async function loadData() {
+    // 1. Carica da localStorage (immediato)
     const onboarding = localStorage.getItem('onboarding_data');
     const quiz = localStorage.getItem('quiz_data');
     const screening = localStorage.getItem('screening_data');
     const pendingScreening = localStorage.getItem('screening_pending');
 
-    if (onboarding) setDataStatus(prev => ({ ...prev, onboarding: JSON.parse(onboarding) }));
-    if (quiz) setDataStatus(prev => ({ ...prev, quiz: JSON.parse(quiz) }));
-    if (screening) setDataStatus(prev => ({ ...prev, screening: JSON.parse(screening) }));
+    let onboardingData = onboarding ? JSON.parse(onboarding) : null;
+    let quizData = quiz ? JSON.parse(quiz) : null;
+    let screeningData = screening ? JSON.parse(screening) : null;
+
+    // 2. Se manca qualcosa, prova da Supabase (fallback per cambio dispositivo)
+    if (!onboardingData || !screeningData) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('onboarding_data, screening_data, quiz_data')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (profile) {
+            if (!onboardingData && profile.onboarding_data) {
+              onboardingData = profile.onboarding_data;
+              localStorage.setItem('onboarding_data', JSON.stringify(onboardingData));
+              console.log('[loadData] Synced onboarding from Supabase');
+            }
+            if (!screeningData && profile.screening_data) {
+              screeningData = profile.screening_data;
+              localStorage.setItem('screening_data', JSON.stringify(screeningData));
+              console.log('[loadData] Synced screening from Supabase');
+            }
+            if (!quizData && profile.quiz_data) {
+              quizData = profile.quiz_data;
+              localStorage.setItem('quiz_data', JSON.stringify(quizData));
+              console.log('[loadData] Synced quiz from Supabase');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[loadData] Failed to sync from Supabase:', err);
+      }
+    }
+
+    if (onboardingData) setDataStatus(prev => ({ ...prev, onboarding: onboardingData }));
+    if (quizData) setDataStatus(prev => ({ ...prev, quiz: quizData }));
+    if (screeningData) setDataStatus(prev => ({ ...prev, screening: screeningData }));
 
     // Check if user chose "test later" during onboarding
     if (pendingScreening === 'true') {
@@ -406,11 +444,11 @@ export default function Dashboard() {
     }
 
     console.log('📊 DATA STATUS:', {
-      hasOnboarding: !!onboarding,
-      hasQuiz: !!quiz,
-      hasScreening: !!screening,
+      hasOnboarding: !!onboardingData,
+      hasQuiz: !!quizData,
+      hasScreening: !!screeningData,
       screeningPending: pendingScreening === 'true',
-      screeningLevel: screening ? JSON.parse(screening).level : null
+      screeningLevel: screeningData?.level || null
     });
   }
 
@@ -1661,13 +1699,11 @@ export default function Dashboard() {
     }
 
     // Chiudi e reset
-    setShowRunningSession(false);
-    setRunningDayData(null);
+    workoutFlow.completeRunning();
   }
 
   function handleRunningCancel() {
-    setShowRunningSession(false);
-    setRunningDayData(null);
+    workoutFlow.cancelRunning();
   }
 
   return (
@@ -2272,17 +2308,8 @@ export default function Dashboard() {
                       if (!firstDay) return;
 
                       // CHECK: Se è giorno running puro, mostra interfaccia running
-                      if (firstDay.type === 'running' && firstDay.runningSession && (!firstDay.exercises || firstDay.exercises.length === 0)) {
-                        console.log('[Dashboard] Running day detected, showing RunningSessionView');
-                        setRunningDayData(firstDay);
-                        setShowRunningSession(true);
-                        return;
-                      }
-
-                      // Giorno normale (strength/mixed)
-                      setCurrentWorkoutDay(firstDay);
-                      // Mostra prima il RecoveryScreening per chiedere tempo disponibile
-                      setShowRecoveryScreening(true);
+                      // Usa workoutFlow state machine per gestire la transizione
+                      workoutFlow.startWorkout(firstDay);
                     }}
                     className="flex-1 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 text-sm md:text-base"
                   >
@@ -2298,11 +2325,10 @@ export default function Dashboard() {
                       // Trova il primo giorno running o crea una sessione running
                       const runningDay = program.weekly_split?.days?.find((day: any) => day.type === 'running' || day.runningSession);
                       if (runningDay) {
-                        setRunningDayData(runningDay);
-                        setShowRunningSession(true);
+                        workoutFlow.startRunning(runningDay);
                       } else {
                         // Se non c'è running nel programma, crea una sessione base
-                        setRunningDayData({
+                        workoutFlow.startRunning({
                           dayName: 'Corsa',
                           type: 'running',
                           runningSession: {
@@ -2311,7 +2337,6 @@ export default function Dashboard() {
                             notes: 'Corsa libera'
                           }
                         });
-                        setShowRunningSession(true);
                       }
                     }}
                     className="flex-1 bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold py-3 md:py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 transition-all duration-300 text-sm md:text-base"
@@ -2782,24 +2807,10 @@ export default function Dashboard() {
       {showRecoveryScreening && (
         <RecoveryScreening
           onComplete={(data: RecoveryData) => {
-            setRecoveryData(data);
-            setShowRecoveryScreening(false);
-            setShowLiveWorkout(true);
+            workoutFlow.completeRecovery(data);
           }}
           onSkip={() => {
-            // Default values se salta
-            setRecoveryData({
-              sleepHours: 7,
-              stressLevel: 5,
-              hasInjury: false,
-              injuryDetails: null,
-              menstrualCycle: null,
-              availableTime: 45,
-              isFemale: false,
-              timestamp: new Date().toISOString(),
-            });
-            setShowRecoveryScreening(false);
-            setShowLiveWorkout(true);
+            workoutFlow.skipRecovery();
           }}
         />
       )}
@@ -2809,9 +2820,7 @@ export default function Dashboard() {
         <LiveWorkoutSession
           open={showLiveWorkout}
           onClose={() => {
-            setShowLiveWorkout(false);
-            setCurrentWorkoutDay(null);
-            setRecoveryData(null);
+            workoutFlow.closeLiveWorkout();
           }}
           userId={dataStatus.screening?.userId || program.user_id || ''}
           programId={program.id || ''}
@@ -2824,16 +2833,13 @@ export default function Dashboard() {
             // ✅ React Query: Invalidate to refetch updated program
             await queryClient.invalidateQueries({ queryKey: programKeys.all });
 
-            setShowLiveWorkout(false);
-            // NON resettare currentWorkoutDay qui, serve per WorkoutLogger
-
-            // ✅ Apri WorkoutLogger dopo LiveWorkout
-            setShowWorkoutLogger(true);
+            // Transition: LiveWorkout → WorkoutLogger
+            workoutFlow.completeLiveWorkout();
 
             // Check for pending deload adjustments after workout completion
             setTimeout(() => {
               checkPendingAdjustments();
-            }, 1000); // Small delay to allow auto-regulation to process
+            }, 1000);
           }}
         />
       )}
@@ -2843,8 +2849,7 @@ export default function Dashboard() {
         <WorkoutLogger
           open={showWorkoutLogger}
           onClose={() => {
-            setShowWorkoutLogger(false);
-            setCurrentWorkoutDay(null);
+            workoutFlow.closeWorkoutLogger();
           }}
           userId={dataStatus.screening?.userId || ''}
           programId={program.id || ''}
@@ -2857,8 +2862,7 @@ export default function Dashboard() {
             // ✅ React Query: Invalidate to refetch updated program
             await queryClient.invalidateQueries({ queryKey: programKeys.all });
 
-            setShowWorkoutLogger(false);
-            setCurrentWorkoutDay(null);
+            workoutFlow.logWorkout();
           }}
         />
       )}

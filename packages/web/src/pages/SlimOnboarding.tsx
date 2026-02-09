@@ -33,6 +33,7 @@ interface SlimOnboardingData {
   gender: 'M' | 'F';
   age: number;
   weight?: number; // Opzionale
+  height?: number; // Opzionale
 
   // Step 2: Cosa vuoi
   goal: string;
@@ -45,6 +46,7 @@ interface SlimOnboardingData {
   sessionDuration: 30 | 45 | 60 | 90; // Durata sessione in minuti
   painAreas: PainEntry[];
   equipment?: Record<string, boolean>;
+  screeningType: 'light' | 'full';
 }
 
 // ============================================================================
@@ -119,6 +121,7 @@ export default function SlimOnboarding() {
     sessionDuration: 60, // Default: 60 minuti
     painAreas: [],
     equipment: {},
+    screeningType: 'light',
   });
 
   // Pain selection state
@@ -198,9 +201,9 @@ export default function SlimOnboarding() {
         personalInfo: {
           gender: data.gender,
           age: data.age,
-          height: 170, // Default, può essere aggiornato dopo
-          weight: data.weight || 70, // Default se non fornito
-          bmi: 0, // Calcolato dopo se necessario
+          height: data.height || null, // Sarà richiesto o calcolato dopo
+          weight: data.weight || null, // Sarà richiesto o calcolato dopo
+          bmi: data.weight && data.height ? +(data.weight / ((data.height / 100) ** 2)).toFixed(1) : 0,
         },
         goal: data.goal,
         goals: [data.goal],
@@ -230,7 +233,7 @@ export default function SlimOnboarding() {
         },
         painAreas: data.painAreas,
         equipment: data.equipment,
-        screeningType: 'light', // Default: light screening
+        screeningType: data.screeningType,
       };
 
       // Salva su Supabase
@@ -365,20 +368,36 @@ export default function SlimOnboarding() {
         />
       </div>
 
-      {/* Peso (opzionale) */}
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
-          Peso <span className="text-slate-500">(opzionale)</span>
-        </label>
-        <input
-          type="number"
-          min="30"
-          max="250"
-          value={data.weight || ''}
-          onChange={(e) => updateData({ weight: e.target.value ? parseInt(e.target.value) : undefined })}
-          placeholder="kg"
-          className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-        />
+      {/* Altezza e Peso */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Altezza <span className="text-slate-500">(cm)</span>
+          </label>
+          <input
+            type="number"
+            min="100"
+            max="250"
+            value={data.height || ''}
+            onChange={(e) => updateData({ height: e.target.value ? parseInt(e.target.value) : undefined })}
+            placeholder="170"
+            className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Peso <span className="text-slate-500">(kg)</span>
+          </label>
+          <input
+            type="number"
+            min="30"
+            max="250"
+            value={data.weight || ''}
+            onChange={(e) => updateData({ weight: e.target.value ? parseInt(e.target.value) : undefined })}
+            placeholder="70"
+            className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+          />
+        </div>
       </div>
     </motion.div>
   );
@@ -678,6 +697,39 @@ export default function SlimOnboarding() {
               <div className="text-xs opacity-75">min</div>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Screening Type */}
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">
+          Tipo di assessment
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => updateData({ screeningType: 'light' })}
+            className={`p-3 rounded-lg border-2 transition-all text-left ${
+              data.screeningType === 'light'
+                ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+            }`}
+          >
+            <div className="font-semibold text-sm">Veloce</div>
+            <div className="text-xs text-slate-400 mt-1">Test rapidi, inizia subito</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => updateData({ screeningType: 'full' })}
+            className={`p-3 rounded-lg border-2 transition-all text-left ${
+              data.screeningType === 'full'
+                ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+            }`}
+          >
+            <div className="font-semibold text-sm">Completo</div>
+            <div className="text-xs text-slate-400 mt-1">Assessment dettagliato</div>
+          </button>
         </div>
       </div>
 

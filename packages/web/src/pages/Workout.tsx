@@ -325,25 +325,35 @@ export default function Workout() {
   // NOTE: generateWeeklySchedule() rimossa - ora normalizeOnLoad() gestisce tutti i formati
 
   // Helper: converte rest da formato "2-3min" o "90s" a secondi
-  function parseRestToSeconds(rest: string | number): number {
-    if (typeof rest === 'number') return rest;
-    if (!rest) return 90;
+  function parseRestToSeconds(rest: string | number | undefined | null): number {
+    if (rest == null) return 90;
+    if (typeof rest === 'number') return isNaN(rest) ? 90 : rest;
+    if (!rest || typeof rest !== 'string') return 90;
+
+    const str = rest.trim();
 
     // Formato: "2-3min" → prendi valore medio
-    if (rest.includes('-') && rest.includes('min')) {
-      const [min, max] = rest.replace('min', '').split('-').map(s => parseInt(s.trim()));
-      return ((min + max) / 2) * 60;
+    if (str.includes('-') && str.includes('min')) {
+      const [min, max] = str.replace('min', '').split('-').map(s => parseInt(s.trim()));
+      const result = ((min + max) / 2) * 60;
+      return isNaN(result) ? 90 : result;
     }
 
     // Formato: "90s" → rimuovi 's'
-    if (rest.includes('s')) {
-      return parseInt(rest.replace('s', ''));
+    if (str.includes('s')) {
+      const result = parseInt(str.replace('s', ''));
+      return isNaN(result) ? 90 : result;
     }
 
     // Formato: "2min" → converti a secondi
-    if (rest.includes('min')) {
-      return parseInt(rest.replace('min', '')) * 60;
+    if (str.includes('min')) {
+      const result = parseInt(str.replace('min', '')) * 60;
+      return isNaN(result) ? 90 : result;
     }
+
+    // Prova a parsare come numero puro
+    const parsed = parseInt(str);
+    if (!isNaN(parsed)) return parsed;
 
     // Default
     return 90;

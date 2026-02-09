@@ -76,21 +76,47 @@ export function useCurrentProgram() {
             if (currentUserId && normalized) {
               console.log('[useCurrentProgram] Syncing localStorage program to Supabase...');
               try {
-                const { error: syncError } = await supabase
-                  .from('training_programs')
-                  .upsert({
-                    user_id: currentUserId,
-                    name: normalized.name || 'Programma Recuperato',
-                    weekly_split: normalized.weekly_schedule || normalized.weekly_split,
-                    weekly_schedule: normalized.weekly_schedule,
-                    is_active: true,
-                    updated_at: new Date().toISOString(),
-                    // Preserve other fields if they exist
-                    ...(normalized.id ? { id: normalized.id } : {})
-                  }, {
-                    onConflict: 'id',
-                    ignoreDuplicates: false
-                  });
+                let syncError;
+                if (normalized.id) {
+                  // Programma con ID → upsert con conflitto su id
+                  ({ error: syncError } = await supabase
+                    .from('training_programs')
+                    .upsert({
+                      id: normalized.id,
+                      user_id: currentUserId,
+                      name: normalized.name || 'Programma Recuperato',
+                      weekly_split: normalized.weekly_schedule || normalized.weekly_split,
+                      weekly_schedule: normalized.weekly_schedule,
+                      is_active: true,
+                      updated_at: new Date().toISOString(),
+                    }, {
+                      onConflict: 'id',
+                      ignoreDuplicates: false
+                    }));
+                } else {
+                  // Programma senza ID → insert (evita duplicati controllando se già esiste)
+                  const { data: existing } = await supabase
+                    .from('training_programs')
+                    .select('id')
+                    .eq('user_id', currentUserId)
+                    .eq('is_active', true)
+                    .maybeSingle();
+
+                  if (!existing) {
+                    ({ error: syncError } = await supabase
+                      .from('training_programs')
+                      .insert({
+                        user_id: currentUserId,
+                        name: normalized.name || 'Programma Recuperato',
+                        weekly_split: normalized.weekly_schedule || normalized.weekly_split,
+                        weekly_schedule: normalized.weekly_schedule,
+                        is_active: true,
+                        updated_at: new Date().toISOString(),
+                      }));
+                  } else {
+                    console.log('[useCurrentProgram] Active program already exists, skipping insert');
+                  }
+                }
 
                 if (syncError) {
                   console.warn('[useCurrentProgram] Failed to sync to Supabase:', syncError);

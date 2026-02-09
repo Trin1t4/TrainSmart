@@ -3,7 +3,7 @@
 // Mantiene GOAL e progressione
 
 import { createClient } from '@supabase/supabase-js';
-import { selectExerciseVariant } from '../../server/exerciseSubstitutions.js';
+import { selectExerciseVariant } from '../lib/exerciseSubstitutions.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
       newLocation,
       equipment || {},
       goal,
-      targetExercise.weight || 0
+      level
     );
 
     console.log('[ADAPT] ✅ New variant:', newVariant);

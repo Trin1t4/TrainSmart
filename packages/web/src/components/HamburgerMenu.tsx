@@ -10,9 +10,6 @@ import {
   FileQuestion,
   Dumbbell,
   Moon,
-  Users,
-  Award,
-  TrendingUp,
   Settings,
   CreditCard,
   Mail,
@@ -79,14 +76,6 @@ export default function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
         { icon: FileQuestion, labelKey: 'menu.quiz', path: '/quiz-full' },
         { icon: Dumbbell, labelKey: 'menu.progressions', path: '/first-session-assessment' },
         { icon: Moon, labelKey: 'menu.recovery', path: '/recovery-screening' },
-      ]
-    },
-    {
-      titleKey: 'menu.community',
-      items: [
-        { icon: Users, labelKey: 'menu.feed', path: '/community', disabled: true, badge: 'Coming Soon' },
-        { icon: Award, labelKey: 'menu.achievements', path: '/achievements', disabled: true, badge: 'Coming Soon' },
-        { icon: TrendingUp, labelKey: 'menu.leaderboard', path: '/community', disabled: true, badge: 'Coming Soon' },
       ]
     },
     {
