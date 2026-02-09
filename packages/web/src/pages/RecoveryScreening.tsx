@@ -200,19 +200,19 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
   const hasWarnings = sleepHours < 6 || stressLevel >= 6 || hasInjury;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 my-8">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full p-8 my-8 border border-slate-700">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('screening.title')}</h2>
-          <p className="text-gray-600">{t('screening.subtitle')}</p>
+          <h2 className="text-3xl font-bold text-white mb-2">{t('screening.title')}</h2>
+          <p className="text-slate-400">{t('screening.subtitle')}</p>
         </div>
 
         <div className="space-y-8">
           {/* Tempo Disponibile */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">⏱️ Quanto tempo hai oggi?</span>
+              <span className="text-lg font-semibold text-white">⏱️ Quanto tempo hai oggi?</span>
             </label>
             <div className="grid grid-cols-5 gap-2">
               {[
@@ -227,13 +227,13 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => setAvailableTime(option.min)}
                   className={`p-3 border-2 rounded-xl text-center transition-all ${
                     availableTime === option.min
-                      ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   <div className="text-xl">{option.icon}</div>
                   <div className="font-bold text-sm">{option.label}</div>
-                  <div className="text-xs text-gray-500">{option.desc}</div>
+                  <div className="text-xs text-slate-500">{option.desc}</div>
                 </button>
               ))}
             </div>
@@ -242,7 +242,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Sonno */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">💤 {t('screening.sleep')}</span>
+              <span className="text-lg font-semibold text-white">💤 {t('screening.sleep')}</span>
               <div className="mt-3 flex items-center gap-4">
                 <input
                   type="range"
@@ -251,14 +251,14 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   step="0.5"
                   value={sleepHours}
                   onChange={(e) => setSleepHours(parseFloat(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
-                <span className="text-3xl font-bold text-emerald-600 w-16 text-center">{sleepHours}h</span>
+                <span className="text-3xl font-bold text-emerald-400 w-16 text-center">{sleepHours}h</span>
               </div>
               <div className="mt-2 text-sm">
-                {sleepHours < 6 && <span className="text-red-600 font-medium">⚠️ {t('screening.sleep_insufficient')}</span>}
-                {sleepHours >= 6 && sleepHours <= 9 && <span className="text-emerald-600 font-medium">✅ {t('screening.sleep_optimal')}</span>}
-                {sleepHours > 9 && <span className="text-amber-600 font-medium">⚠️ {t('screening.sleep_excessive')}</span>}
+                {sleepHours < 6 && <span className="text-red-400 font-medium">⚠️ {t('screening.sleep_insufficient')}</span>}
+                {sleepHours >= 6 && sleepHours <= 9 && <span className="text-emerald-400 font-medium">✅ {t('screening.sleep_optimal')}</span>}
+                {sleepHours > 9 && <span className="text-amber-400 font-medium">⚠️ {t('screening.sleep_excessive')}</span>}
               </div>
             </label>
           </div>
@@ -266,7 +266,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Stress */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">😰 {t('screening.stress')}</span>
+              <span className="text-lg font-semibold text-white">😰 {t('screening.stress')}</span>
               <div className="mt-3 flex items-center gap-4">
                 <input
                   type="range"
@@ -274,11 +274,11 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   max="10"
                   value={stressLevel}
                   onChange={(e) => setStressLevel(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
-                <span className="text-3xl font-bold text-emerald-600 w-16 text-center">{stressLevel}</span>
+                <span className="text-3xl font-bold text-emerald-400 w-16 text-center">{stressLevel}</span>
               </div>
-              <div className="mt-2 text-xs text-gray-500">
+              <div className="mt-2 text-xs text-slate-500">
                 1 = Completamente rilassato | 10 = Stress massimo
               </div>
             </label>
@@ -287,7 +287,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Dolori */}
           <div className="space-y-3">
             <label className="block">
-              <span className="text-lg font-semibold text-gray-900">🩹 {t('screening.pain_question')}</span>
+              <span className="text-lg font-semibold text-white">🩹 {t('screening.pain_question')}</span>
             </label>
             <div className="flex gap-3">
               <button
@@ -297,8 +297,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 }}
                 className={`flex-1 p-4 border-2 rounded-xl font-semibold transition-all ${
                   !hasInjury
-                    ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300'
+                    : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                 }`}
               >
                 ✅ {t('screening.no_pain')}
@@ -307,8 +307,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 onClick={() => setHasInjury(true)}
                 className={`flex-1 p-4 border-2 rounded-xl font-semibold transition-all ${
                   hasInjury
-                    ? 'bg-red-100 border-red-500 text-red-900'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    ? 'bg-red-900/50 border-red-500 text-red-300'
+                    : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                 }`}
               >
                 🩹 {t('screening.have_pain')}
@@ -320,7 +320,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                 value={injuryDetails}
                 onChange={(e) => setInjuryDetails(e.target.value)}
                 placeholder="Descrivi dove hai dolore (es. spalla destra, ginocchio sinistro, lombare...)"
-                className="w-full p-4 border-2 border-gray-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                className="w-full p-4 border-2 border-slate-600 rounded-xl text-sm text-white bg-slate-700 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 rows={3}
               />
             )}
@@ -330,8 +330,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {isFemale && !hasMenopausePreference && (
             <div className="space-y-3">
               <label className="block">
-                <span className="text-lg font-semibold text-gray-900">🩸 Fase del ciclo mestruale</span>
-                <p className="text-xs text-gray-500 mt-1">
+                <span className="text-lg font-semibold text-white">🩸 Fase del ciclo mestruale</span>
+                <p className="text-xs text-slate-500 mt-1">
                   Se scegli "Menopausa", non ti chiederemo più questa domanda
                 </p>
               </label>
@@ -340,8 +340,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('menstruation')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'menstruation'
-                      ? 'bg-red-100 border-red-500 text-red-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-red-900/50 border-red-500 text-red-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🔴 Mestruazione<br/><span className="text-xs font-normal">(Giorni 1-5)</span>
@@ -350,8 +350,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('follicular')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'follicular'
-                      ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🟢 Follicolare<br/><span className="text-xs font-normal">(Giorni 6-12)</span>
@@ -360,8 +360,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('ovulation')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'ovulation'
-                      ? 'bg-amber-100 border-amber-500 text-amber-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-amber-900/50 border-amber-500 text-amber-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🟡 Ovulazione<br/><span className="text-xs font-normal">(Giorni 13-15)</span>
@@ -370,8 +370,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('luteal')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'luteal'
-                      ? 'bg-orange-100 border-orange-500 text-orange-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-orange-900/50 border-orange-500 text-orange-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🟠 Luteale<br/><span className="text-xs font-normal">(Giorni 16-28)</span>
@@ -381,8 +381,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('menopause')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'menopause'
-                      ? 'bg-purple-100 border-purple-500 text-purple-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-purple-900/50 border-purple-500 text-purple-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🧘‍♀️ Menopausa<br/><span className="text-xs font-normal">(Non chiederò più)</span>
@@ -391,8 +391,8 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
                   onClick={() => handleMenstrualChoice('prefer_not_say')}
                   className={`p-4 border-2 rounded-xl font-semibold text-sm transition-all ${
                     menstrualCycle === 'prefer_not_say'
-                      ? 'bg-gray-100 border-gray-500 text-gray-900'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-slate-700 border-slate-500 text-slate-300'
+                      : 'border-slate-600 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
                   🙅‍♀️ Preferisco non rispondere<br/><span className="text-xs font-normal">(Chiederò ogni volta)</span>
@@ -403,14 +403,14 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
 
           {/* Badge info se ha menopausa salvata */}
           {isFemale && hasMenopausePreference && (
-            <div className="p-4 bg-purple-50 border-2 border-purple-300 rounded-xl">
+            <div className="p-4 bg-purple-900/30 border-2 border-purple-700 rounded-xl">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🧘‍♀️</span>
                 <div>
-                  <p className="text-sm font-semibold text-purple-900">
+                  <p className="text-sm font-semibold text-purple-300">
                     Programma ottimizzato per menopausa
                   </p>
-                  <p className="text-xs text-purple-700 mt-0.5">
+                  <p className="text-xs text-purple-400 mt-0.5">
                     Focus su resistenza, densità ossea e recupero. Preferenza salvata.
                   </p>
                 </div>
@@ -437,14 +437,14 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
 
           {/* Badge se ha accettato la proposta */}
           {acceptedFreeWeight && (
-            <div className="p-4 bg-blue-50 border-2 border-blue-300 rounded-xl">
+            <div className="p-4 bg-blue-900/30 border-2 border-blue-700 rounded-xl">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">💪</span>
                 <div>
-                  <p className="text-sm font-semibold text-blue-900">
+                  <p className="text-sm font-semibold text-blue-300">
                     Oggi provi: {acceptedFreeWeight}
                   </p>
-                  <p className="text-xs text-blue-700 mt-0.5">
+                  <p className="text-xs text-blue-400 mt-0.5">
                     Inizierai con peso leggero per imparare la tecnica
                   </p>
                 </div>
@@ -455,16 +455,16 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
           {/* Box Adattamenti AdaptFlow */}
           <div className={`p-5 rounded-xl border-2 ${
             hasWarnings
-              ? 'bg-amber-50 border-amber-300'
-              : 'bg-emerald-50 border-emerald-300'
+              ? 'bg-amber-900/30 border-amber-700'
+              : 'bg-emerald-900/30 border-emerald-700'
           }`}>
-            <h3 className="font-bold text-lg mb-3 text-gray-900">
+            <h3 className="font-bold text-lg mb-3 text-white">
               🎯 AdaptFlow - Adattamenti per oggi
             </h3>
             <div className="space-y-2">
               {adaptations.map((adaptation, index) => (
                 <div key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-gray-900 font-medium">{adaptation}</span>
+                  <span className="text-slate-200 font-medium">{adaptation}</span>
                 </div>
               ))}
             </div>
@@ -475,7 +475,7 @@ export const RecoveryScreening: React.FC<RecoveryScreeningProps> = ({
             {onSkip && (
               <button
                 onClick={onSkip}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 py-4 rounded-xl font-semibold transition-colors"
               >
                 Salta
               </button>

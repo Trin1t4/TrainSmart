@@ -393,6 +393,8 @@ export default function LiveWorkoutSession({
   const [availableTime] = useState(recoveryData?.availableTime ?? 45);
   const [nutritionQuality, setNutritionQuality] = useState<'good' | 'normal' | 'poor'>('normal');
   const [hydration, setHydration] = useState<'good' | 'normal' | 'poor'>('normal');
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] = useState<{ duration: number; exerciseCount: number; avgRPE: number; totalVolume: number } | null>(null);
   const [showLocationSwitch, setShowLocationSwitch] = useState(false);
   const [switchingLocation, setSwitchingLocation] = useState(false);
   const [homeEquipment, setHomeEquipment] = useState({
@@ -2839,9 +2841,10 @@ export default function LiveWorkoutSession({
     const duration = Math.round((new Date().getTime() - workoutStartTime.getTime()) / 1000 / 60);
     const avgRPE = calculateAverageRPE();
 
-    toast.success('🎉 Workout completato!', {
-      description: `${duration} minuti • RPE medio: ${avgRPE}`
-    });
+    // Calculate total volume for celebration
+    const totalVolume = Object.values(setLogs).flat().reduce((sum, s) => {
+      return sum + (s.weight_used || 0) * (s.reps_completed || 0);
+    }, 0);
 
     // Save to database via autoRegulationService
     try {
@@ -2941,7 +2944,14 @@ export default function LiveWorkoutSession({
         onWorkoutComplete(exerciseLogs);
       }
 
-      onClose();
+      // Show celebration screen instead of closing immediately
+      setCelebrationData({
+        duration,
+        exerciseCount: Object.keys(setLogs).length,
+        avgRPE: adjustedAvgRPE,
+        totalVolume: Math.round(totalVolume),
+      });
+      setShowCelebration(true);
     } catch (error) {
       console.error('Error saving workout:', error);
       toast.error('Errore salvataggio workout');
@@ -3208,6 +3218,97 @@ export default function LiveWorkoutSession({
   };
 
   if (!open) return null;
+
+  // POST-WORKOUT CELEBRATION
+  if (showCelebration && celebrationData) {
+    const getRPEMessage = (rpe: number) => {
+      if (rpe <= 6) return { text: 'Sessione controllata', color: 'text-emerald-400' };
+      if (rpe <= 8) return { text: 'Intensità ottimale', color: 'text-blue-400' };
+      return { text: 'Sessione intensa!', color: 'text-amber-400' };
+    };
+    const rpeMsg = getRPEMessage(celebrationData.avgRPE);
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      >
+        <motion.div
+          initial={{ scale: 0.8, y: 30 }}
+          animate={{ scale: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+          className="bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-slate-700 shadow-2xl text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', damping: 10 }}
+            className="text-7xl mb-4"
+          >
+            {celebrationData.avgRPE >= 8 ? '🔥' : '💪'}
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl font-bold text-white mb-2"
+          >
+            Workout Completato!
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className={`text-sm font-medium mb-6 ${rpeMsg.color}`}
+          >
+            {rpeMsg.text}
+          </motion.p>
+
+          {/* Stats grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid grid-cols-2 gap-3 mb-6"
+          >
+            <div className="bg-slate-800 rounded-xl p-3">
+              <p className="text-2xl font-bold text-emerald-400">{celebrationData.duration}'</p>
+              <p className="text-xs text-slate-500">Durata</p>
+            </div>
+            <div className="bg-slate-800 rounded-xl p-3">
+              <p className="text-2xl font-bold text-blue-400">{celebrationData.exerciseCount}</p>
+              <p className="text-xs text-slate-500">Esercizi</p>
+            </div>
+            <div className="bg-slate-800 rounded-xl p-3">
+              <p className="text-2xl font-bold text-purple-400">{celebrationData.avgRPE.toFixed(1)}</p>
+              <p className="text-xs text-slate-500">RPE Medio</p>
+            </div>
+            <div className="bg-slate-800 rounded-xl p-3">
+              <p className="text-2xl font-bold text-amber-400">
+                {celebrationData.totalVolume > 1000
+                  ? `${(celebrationData.totalVolume / 1000).toFixed(1)}k`
+                  : celebrationData.totalVolume}
+              </p>
+              <p className="text-xs text-slate-500">Volume (kg)</p>
+            </div>
+          </motion.div>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            onClick={onClose}
+            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all"
+          >
+            Chiudi
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // PRE-WORKOUT CHECK-IN
   if (showPreWorkout) {

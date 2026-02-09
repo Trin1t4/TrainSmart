@@ -34,7 +34,7 @@ export default function FreeWeightSuggestionCard({
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-2xl p-5 shadow-lg animate-in slide-in-from-top duration-300">
+    <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border-2 border-blue-700 rounded-2xl p-5 shadow-lg animate-in slide-in-from-top duration-300">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -42,22 +42,22 @@ export default function FreeWeightSuggestionCard({
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">Prova qualcosa di nuovo!</h3>
-            <p className="text-sm text-blue-600 font-medium">Oggi sei in forma perfetta</p>
+            <h3 className="font-bold text-white text-lg">Prova qualcosa di nuovo!</h3>
+            <p className="text-sm text-blue-400 font-medium">Oggi sei in forma perfetta</p>
           </div>
         </div>
         <button
           onClick={handleDecline}
-          className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition"
+          className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-slate-300 transition"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Proposta */}
-      <div className="bg-white/80 rounded-xl p-4 mb-4 border border-blue-200">
-        <p className="text-gray-700 mb-3">
-          Visto che oggi usi <span className="font-semibold text-gray-900">{machineExercise}</span>,
+      <div className="bg-slate-700/50 rounded-xl p-4 mb-4 border border-blue-800">
+        <p className="text-slate-300 mb-3">
+          Visto che oggi usi <span className="font-semibold text-white">{machineExercise}</span>,
           perche non provi:
         </p>
 
@@ -66,11 +66,11 @@ export default function FreeWeightSuggestionCard({
             <Dumbbell className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-blue-700 text-lg">{freeWeightAlternative}</p>
+            <p className="font-bold text-blue-400 text-lg">{freeWeightAlternative}</p>
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 leading-relaxed">
+        <p className="text-sm text-slate-400 leading-relaxed">
           {freeWeightDescription}
         </p>
 
@@ -92,7 +92,7 @@ export default function FreeWeightSuggestionCard({
             ) : (
               <button
                 onClick={() => setShowVideo(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition font-medium"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-900/50 hover:bg-blue-800/50 text-blue-400 rounded-lg transition font-medium"
               >
                 <Play className="w-4 h-4 fill-current" />
                 Guarda come si esegue
@@ -103,8 +103,8 @@ export default function FreeWeightSuggestionCard({
       </div>
 
       {/* Info */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
-        <p className="text-emerald-700 text-sm font-medium">
+      <div className="bg-emerald-900/30 border border-emerald-700 rounded-lg p-3 mb-4">
+        <p className="text-emerald-400 text-sm font-medium">
           Inizierai con peso leggero per imparare la tecnica. Poi alternerai tra macchina e peso libero.
         </p>
       </div>
@@ -113,7 +113,7 @@ export default function FreeWeightSuggestionCard({
       <div className="flex gap-3">
         <button
           onClick={handleDecline}
-          className="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition"
+          className="flex-1 py-3 px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl font-semibold transition"
         >
           No, resto sulla macchina
         </button>
