@@ -3279,12 +3279,13 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
         reps: '10-15',
         rest: '30s',
         intensity: 'Low',
-        notes: `Correttivo per ${painArea} - Eseguire a fine sessione`
+        notes: `Attivazione/mobilità per ${painArea} - Eseguire prima degli esercizi principali`
       });
     }
   }
 
-  exercises.push(...correctiveExercises);
+  // Correttivi ALL'INIZIO: attivazione e mobilità pre-workout
+  exercises.unshift(...correctiveExercises);
 
   let split = 'FULL BODY';
   if (frequency >= 5) split = 'PUSH/PULL/LEGS';

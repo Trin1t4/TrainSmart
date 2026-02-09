@@ -149,6 +149,23 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
                 <RunningSessionRow session={day.runningSession} />
               )}
 
+              {/* Esercizi correttivi/attivazione (se presenti) - PRIMA degli esercizi principali */}
+              {correctiveExercises.length > 0 && (
+                <div className="mb-3 pb-3 border-b border-gray-700">
+                  <p className="text-xs text-amber-400/80 mb-2 uppercase tracking-wider">
+                    Attivazione & Mobilità
+                  </p>
+                  {correctiveExercises.map((exercise, exIndex) => (
+                    <ExerciseRow
+                      key={`corrective-${exIndex}`}
+                      exercise={exercise}
+                      index={exIndex}
+                      isCorrective
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Separatore se ci sono sia running che esercizi */}
               {hasRunning && hasStrength && (
                 <div className="flex items-center gap-2 py-2">
@@ -162,23 +179,6 @@ const DayCard = React.memo(function DayCard({ day, index, showDetails }: DayCard
               {mainExercises.map((exercise, exIndex) => (
                 <ExerciseRow key={exIndex} exercise={exercise} index={exIndex} />
               ))}
-
-              {/* Esercizi correttivi (se presenti) */}
-              {correctiveExercises.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">
-                    Esercizi Correttivi
-                  </p>
-                  {correctiveExercises.map((exercise, exIndex) => (
-                    <ExerciseRow
-                      key={`corrective-${exIndex}`}
-                      exercise={exercise}
-                      index={exIndex}
-                      isCorrective
-                    />
-                  ))}
-                </div>
-              )}
 
               {/* Messaggio riposo */}
               {dayType === 'rest' && !hasStrength && !hasRunning && (

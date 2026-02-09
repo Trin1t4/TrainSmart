@@ -489,10 +489,14 @@ function enrichExercisesWithWeights(
       };
     }
 
-    // Prova a trovare il pattern dall'esercizio
+    // Prova a trovare il pattern dall'esercizio (mai sovrascrivere corrective)
     let pattern = exercise.pattern as string | undefined;
-    if (!pattern || pattern === 'corrective') {
+    if (!pattern) {
       pattern = findPatternForExercise(exercise.name) || undefined;
+    }
+    // Corrective mantiene il suo pattern originale
+    if (exercise.pattern === 'corrective') {
+      return exercise;
     }
 
     if (!pattern) {
@@ -1414,7 +1418,9 @@ function estimateWorkoutDurationWithSupersets(exercises: Exercise[]): number {
       // Esercizio normale
       const restSeconds = parseRestTime(exercise.rest || '60s');
       const exerciseTime = (sets * secondsPerSet) + ((sets - 1) * restSeconds);
-      totalSeconds += exerciseTime + 30;
+      // Corrective: 15s setup (corpo libero/banda), altri: 30s
+      const setupTime = exercise.pattern === 'corrective' ? 15 : 30;
+      totalSeconds += exerciseTime + setupTime;
     }
   }
 
@@ -1659,11 +1665,13 @@ export function estimateWorkoutDuration(exercises: Exercise[]): number {
     // Il rest è tra i set, quindi ne abbiamo sets-1
     const exerciseTime = (sets * secondsPerSet) + ((sets - 1) * restSeconds);
 
-    // ✅ FIX BUG #3: Setup/transizione differenziato per compound vs isolation
+    // Setup/transizione differenziato per tipo esercizio
     // Compound: 90s (setup bilanciere/macchina, regolazioni)
-    // Isolation/Core: 45s (setup minimo)
+    // Isolation/Core: 45s (setup moderato)
+    // Corrective: 15s (setup minimo - esercizi a corpo libero/banda)
+    const isCorrective = exercise.pattern === 'corrective';
     const isCompound = COMPOUND_PATTERNS.includes(exercise.pattern as string);
-    const setupTime = isCompound ? 90 : 45;
+    const setupTime = isCorrective ? 15 : isCompound ? 90 : 45;
 
     totalSeconds += exerciseTime + setupTime;
   }
@@ -2075,9 +2083,9 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2, goal, 3))
   ]);
 
-  // Aggiungi correttivi a tutti i giorni se necessario (con filtro gravidanza)
+  // Aggiungi correttivi ALL'INIZIO di tutti i giorni (attivazione/mobilità pre-workout)
   const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.push(...correctives));
+  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2145,9 +2153,9 @@ function generate2DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1, goal, 2))
   ]);
 
-  // Aggiungi correttivi se necessario
+  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
   const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.push(...correctives));
+  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2237,9 +2245,9 @@ function generate4DayUpperLower(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('core', baselines.core, 3, options, 'volume')
   ]);
 
-  // Aggiungi correttivi (con filtro gravidanza)
+  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
   const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.push(...correctives));
+  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2358,9 +2366,9 @@ function generate6DayPPL(options: SplitGeneratorOptions): WeeklySplit {
     createAccessoryExercise('calves', 1, options, 'volume')
   ]);
 
-  // Aggiungi correttivi (con filtro gravidanza)
+  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
   const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.push(...correctives));
+  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2870,7 +2878,7 @@ function generateCorrectiveExercises(
         reps: '10-15',
         rest: '30s',
         intensity: 'Low',
-        notes: [pregnancyNote, `Correttivo per ${painArea} - Focus sulla qualità`].filter(Boolean).join(' | ')
+        notes: [pregnancyNote, `Attivazione/mobilità per ${painArea} - Eseguire prima degli esercizi principali`].filter(Boolean).join(' | ')
       });
     }
   }
@@ -3034,8 +3042,8 @@ function adaptWorkoutToTimeLimit(
    *  3 = Accessorio + Non goal-aligned (MIN priorità)
    */
   function getExercisePriority(exercise: Exercise): number {
-    // ✅ FIX BUG #3: Esercizi critici (pain management, DUP heavy) MAI rimuovere
-    if (exercise.wasReplacedForPain || exercise.dayType === 'heavy') {
+    // Esercizi critici MAI rimuovere: pain management, corrective, DUP heavy
+    if (exercise.wasReplacedForPain || exercise.pattern === 'corrective' || exercise.dayType === 'heavy') {
       return -1; // Priorità massima, non toccare
     }
 
