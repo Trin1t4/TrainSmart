@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BETA_FLAGS } from '../config/featureFlags';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../lib/i18n';
@@ -658,7 +659,7 @@ export default function SlimOnboarding() {
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-slate-400" />
           <div className="flex gap-2 flex-1">
-            {[2, 3, 4, 5, 6].map(f => (
+            {(BETA_FLAGS.ADVANCED_SPLITS ? [2, 3, 4, 5, 6] : [2, 3, 4]).map(f => (
               <button
                 key={f}
                 type="button"
@@ -701,37 +702,39 @@ export default function SlimOnboarding() {
       </div>
 
       {/* Screening Type */}
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
-          Tipo di assessment
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => updateData({ screeningType: 'light' })}
-            className={`p-3 rounded-lg border-2 transition-all text-left ${
-              data.screeningType === 'light'
-                ? 'border-emerald-500 bg-emerald-500/20 text-white'
-                : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-            }`}
-          >
-            <div className="font-semibold text-sm">Veloce</div>
-            <div className="text-xs text-slate-400 mt-1">Test rapidi, inizia subito</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => updateData({ screeningType: 'full' })}
-            className={`p-3 rounded-lg border-2 transition-all text-left ${
-              data.screeningType === 'full'
-                ? 'border-emerald-500 bg-emerald-500/20 text-white'
-                : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-            }`}
-          >
-            <div className="font-semibold text-sm">Completo</div>
-            <div className="text-xs text-slate-400 mt-1">Assessment dettagliato</div>
-          </button>
+      {BETA_FLAGS.FULL_SCREENING ? (
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Tipo di assessment
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => updateData({ screeningType: 'light' })}
+              className={`p-3 rounded-lg border-2 transition-all text-left ${
+                data.screeningType === 'light'
+                  ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <div className="font-semibold text-sm">Veloce</div>
+              <div className="text-xs text-slate-400 mt-1">Test rapidi, inizia subito</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => updateData({ screeningType: 'full' })}
+              className={`p-3 rounded-lg border-2 transition-all text-left ${
+                data.screeningType === 'full'
+                  ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <div className="font-semibold text-sm">Completo</div>
+              <div className="text-xs text-slate-400 mt-1">Assessment dettagliato</div>
+            </button>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Pain Areas */}
       <div>

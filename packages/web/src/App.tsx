@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from 'react';
+import { BETA_FLAGS } from './config/featureFlags';
 import { Toaster } from 'sonner';
 import { LanguageProvider } from './lib/i18n';
 import { ThemeProvider } from './lib/theme';
@@ -109,7 +110,7 @@ function App() {
               <Route path="/first-session-assessment" element={<ProtectedRoute><FirstSessionAssessment /></ProtectedRoute>} />
 
               {/* PERCORSO PRINCIPALE - Protected */}
-              <Route path="/body-scan" element={<ProtectedRoute><BodyCompositionScan /></ProtectedRoute>} />
+              <Route path="/body-scan" element={BETA_FLAGS.BODY_SCAN ? <ProtectedRoute><BodyCompositionScan /></ProtectedRoute> : <Navigate to="/dashboard" replace />} />
               <Route path="/quiz" element={<ProtectedRoute><BiomechanicsQuiz /></ProtectedRoute>} />
               <Route path="/quiz-full" element={<ProtectedRoute><BiomechanicsQuizFull /></ProtectedRoute>} />
               <Route path="/screening" element={<ProtectedRoute><Screening /></ProtectedRoute>} />
@@ -130,7 +131,7 @@ function App() {
               <Route path="/admin/features" element={<ProtectedRoute><AdminFeatures /></ProtectedRoute>} />
 
               {/* VIDEO FEEDBACK - Protected */}
-              <Route path="/video-feedback/:correctionId" element={<ProtectedRoute><VideoFeedback /></ProtectedRoute>} />
+              <Route path="/video-feedback/:correctionId" element={BETA_FLAGS.VIDEO_ANALYSIS ? <ProtectedRoute><VideoFeedback /></ProtectedRoute> : <Navigate to="/dashboard" replace />} />
 
               {/* PAYMENT - Protected */}
               <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />

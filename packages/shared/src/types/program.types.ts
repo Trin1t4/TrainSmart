@@ -150,6 +150,10 @@ export interface ProgressionStrategy {
   weightIncrementWhenUpgrade?: number;
   deloadWeeks: number[];
   deloadPercent: number;
+  /** Serie incrementali: +N set per settimana (0 = disabilitato) */
+  incrementSets?: number;
+  /** Numero massimo di serie raggiungibile con serie incrementali */
+  maxSets?: number;
 }
 
 export interface Program {

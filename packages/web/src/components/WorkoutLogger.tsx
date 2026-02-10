@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '../lib/i18n';
 import VideoUploadModal from './VideoUploadModal';
 import { isExerciseSupportedInternally } from '../lib/videoCorrectionEngine';
+import { BETA_FLAGS } from '../config/featureFlags';
 
 interface Exercise {
   name: string;
@@ -295,8 +296,8 @@ export default function WorkoutLogger({
                         id={`sets-${idx}`}
                         type="number"
                         min={1}
-                        value={log.sets_completed}
-                        onChange={(e) => updateExerciseLog(exercise.name, 'sets_completed', parseInt(e.target.value))}
+                        value={log.sets_completed || ''}
+                        onChange={(e) => updateExerciseLog(exercise.name, 'sets_completed', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                         className="h-9"
                       />
                     </div>
@@ -306,8 +307,8 @@ export default function WorkoutLogger({
                         id={`reps-${idx}`}
                         type="number"
                         min={1}
-                        value={log.reps_completed}
-                        onChange={(e) => updateExerciseLog(exercise.name, 'reps_completed', parseInt(e.target.value))}
+                        value={log.reps_completed || ''}
+                        onChange={(e) => updateExerciseLog(exercise.name, 'reps_completed', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                         className="h-9"
                       />
                     </div>
@@ -384,7 +385,7 @@ export default function WorkoutLogger({
                   </div>
 
                   {/* Video Form Check Button - only for supported exercises */}
-                  {isExerciseSupportedInternally(exercise.name) && (
+                  {BETA_FLAGS.VIDEO_ANALYSIS && isExerciseSupportedInternally(exercise.name) && (
                     <div>
                       <Button
                         type="button"
@@ -493,7 +494,7 @@ export default function WorkoutLogger({
       </DialogContent>
 
       {/* Video Upload Modal */}
-      {showVideoUpload && selectedExercise && (
+      {BETA_FLAGS.VIDEO_ANALYSIS && showVideoUpload && selectedExercise && (
         <VideoUploadModal
           open={showVideoUpload}
           onClose={() => {
@@ -506,8 +507,6 @@ export default function WorkoutLogger({
             setShowVideoUpload(false);
             setSelectedExercise(null);
             toast.success('Video caricato! Analisi in corso...');
-            // Opzionale: naviga a feedback view
-            // window.location.href = `/video-feedback/${correctionId}`;
           }}
         />
       )}

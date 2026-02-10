@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Pause, SkipForward, CheckCircle } from 'lucide-react';
+import { BETA_FLAGS } from '../config/featureFlags';
 
 interface Exercise {
   name: string;
@@ -299,7 +300,7 @@ export default function WorkoutGridView({
                 </p>
 
                 {/* Superset indicator */}
-                {exercise.supersetGroup && (
+                {BETA_FLAGS.SUPERSET && exercise.supersetGroup && (
                   <span style={{
                     display: 'inline-block',
                     marginTop: '0.5rem',
@@ -430,8 +431,8 @@ export default function WorkoutGridView({
                         </button>
                         <input
                           type="number"
-                          value={setReps}
-                          onChange={(e) => setSetReps(parseInt(e.target.value) || 0)}
+                          value={setReps || ''}
+                          onChange={(e) => setSetReps(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                           style={{
                             flex: 1,
                             padding: '0.75rem',
@@ -484,8 +485,8 @@ export default function WorkoutGridView({
                         </button>
                         <input
                           type="number"
-                          value={setWeight}
-                          onChange={(e) => setSetWeight(parseFloat(e.target.value) || 0)}
+                          value={setWeight || ''}
+                          onChange={(e) => setSetWeight(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
                           step="0.5"
                           style={{
                             flex: 1,

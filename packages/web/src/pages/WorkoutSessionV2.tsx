@@ -26,6 +26,7 @@ import {
   abandonProgressiveWorkout,
 } from '@trainsmart/shared';
 import { supabase } from '../lib/supabaseClient';
+import { BETA_FLAGS } from '../config/featureFlags';
 import { Button } from '../components/ui/button';
 import { BottomSheet, BottomSheetFooter } from '../components/ui/BottomSheet';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -619,7 +620,7 @@ export default function WorkoutSessionV2() {
           </div>
 
           {/* Video Form Check Button */}
-          {currentExercise && isExerciseSupportedInternally(currentExercise.name) && (
+          {BETA_FLAGS.VIDEO_ANALYSIS && currentExercise && isExerciseSupportedInternally(currentExercise.name) && (
             <button
               onClick={() => {
                 setShowFeedbackSheet(false);
@@ -646,7 +647,7 @@ export default function WorkoutSessionV2() {
       </BottomSheet>
 
       {/* Video Upload Modal */}
-      {currentExercise && (
+      {BETA_FLAGS.VIDEO_ANALYSIS && currentExercise && (
         <VideoUploadModal
           open={showVideoUpload}
           onClose={() => {

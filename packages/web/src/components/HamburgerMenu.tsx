@@ -19,6 +19,7 @@ import {
 import { useTranslation } from '../lib/i18n';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from 'sonner';
+import { BETA_FLAGS } from '../config/featureFlags';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
         { icon: Calendar, labelKey: 'menu.calendar', path: '/workout' },
         { icon: Target, labelKey: 'menu.goals', path: '/profile' },
         { icon: Trophy, labelKey: 'menu.records', path: '/stats' },
-        { icon: Video, labelKey: 'menu.videoFeedback', path: '/video-feedback' },
+        ...(BETA_FLAGS.VIDEO_ANALYSIS ? [{ icon: Video, labelKey: 'menu.videoFeedback', path: '/video-feedback' }] : []),
       ]
     },
     {

@@ -1462,7 +1462,7 @@ function generateFullBodyDay(variant, location, equipment, painAreas, assessment
     }
     exercises.push(createExercise('Trazioni', location, equipment, baseLoad.pull, level, goal, 'compound', assessments))
     if (!painAreas?.includes('lower_back')) {
-      exercises.push(createExercise('Stacco Rumeno', location, equipment, baseLoad.deadlift * 0.7, level, goal, 'accessory', assessments))
+      exercises.push(createExercise('Stacco Rumeno', location, equipment, baseLoad.deadlift * 0.65, level, goal, 'accessory', assessments))
     }
     if (!painAreas?.includes('shoulder')) {
       exercises.push(createExercise('Alzate Laterali', location, equipment, baseLoad.press * 0.3, level, goal, 'isolation', assessments))
@@ -1490,7 +1490,7 @@ function generateFullBodyDay(variant, location, equipment, painAreas, assessment
     exercises.push(createExercise('Dips', location, equipment, 0, level, goal, 'compound', assessments))
     exercises.push(createExercise('Trazioni Presa Stretta', location, equipment, baseLoad.pull * 0.95, level, goal, 'compound', assessments))
     if (!painAreas?.includes('lower_back')) {
-      exercises.push(createExercise('Good Morning', location, equipment, baseLoad.deadlift * 0.5, level, goal, 'accessory', assessments))
+      exercises.push(createExercise('Good Morning', location, equipment, baseLoad.deadlift * 0.40, level, goal, 'accessory', assessments))
     }
     exercises.push(createExercise('Face Pull', location, equipment, baseLoad.pull * 0.2, level, goal, 'isolation', assessments))
     exercises.push(createExercise('Dead Bug', location, equipment, 0, level, goal, 'core', assessments))
@@ -1546,7 +1546,7 @@ function generateLowerDay(variant, location, equipment, painAreas, assessments, 
 
   if (variant === 'A') {
     exercises.push(createExercise(safeExercise('Squat'), location, equipment, baseLoad.squat, level, goal, 'compound', assessments))
-    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.7, level, goal, 'compound', assessments))
+    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.65, level, goal, 'compound', assessments))
     exercises.push(createExercise('Leg Curl', location, equipment, baseLoad.squat * 0.3, level, goal, 'isolation', assessments))
     exercises.push(createExercise('Leg Extension', location, equipment, baseLoad.squat * 0.3, level, goal, 'isolation', assessments))
     if (!painAreas?.includes('ankles')) {
@@ -1561,10 +1561,10 @@ function generateLowerDay(variant, location, equipment, painAreas, assessments, 
       exercises.push(createExercise('Seated Calf Raises', location, equipment, baseLoad.squat * 0.4, level, goal, 'isolation', assessments))
     }
   } else if (variant === 'C') {
-    exercises.push(createExercise(safeExercise('Sumo Deadlift'), location, equipment, baseLoad.deadlift * 0.9, level, goal, 'compound', assessments))
+    exercises.push(createExercise(safeExercise('Sumo Deadlift'), location, equipment, baseLoad.deadlift * 0.85, level, goal, 'compound', assessments))
     exercises.push(createExercise('Squat Bulgaro', location, equipment, baseLoad.squat * 0.6, level, goal, 'compound', assessments))
     exercises.push(createExercise('Leg Press', location, equipment, baseLoad.squat * 1.3, level, goal, 'accessory', assessments))
-    exercises.push(createExercise('Good Morning', location, equipment, baseLoad.deadlift * 0.5, level, goal, 'accessory', assessments))
+    exercises.push(createExercise('Good Morning', location, equipment, baseLoad.deadlift * 0.40, level, goal, 'accessory', assessments))
     exercises.push(createExercise('Hip Thrust', location, equipment, baseLoad.squat * 0.8, level, goal, 'accessory', assessments))
   }
 
@@ -1615,7 +1615,7 @@ function generatePullDay(variant, location, equipment, painAreas, assessments, l
     exercises.push(createExercise(safeExercise('Curl Bilanciere'), location, equipment, baseLoad.bench * 0.3, level, goal, 'isolation', assessments))
     exercises.push(createExercise(safeExercise('Face Pull'), location, equipment, baseLoad.pull * 0.2, level, goal, 'isolation', assessments))
   } else {
-    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.7, level, goal, 'compound', assessments))
+    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.65, level, goal, 'compound', assessments))
     exercises.push(createExercise('Chin-up', location, equipment, baseLoad.pull * 0.95, level, goal, 'compound', assessments))
     exercises.push(createExercise(safeExercise('Rematore Manubri'), location, equipment, baseLoad.pull * 0.8, level, goal, 'compound', assessments))
     exercises.push(createExercise(safeExercise('Hammer Curl'), location, equipment, baseLoad.bench * 0.3, level, goal, 'isolation', assessments))
@@ -1637,13 +1637,13 @@ function generateLegsDay(variant, location, equipment, painAreas, assessments, l
 
   if (variant === 'A') {
     exercises.push(createExercise(safeExercise('Squat'), location, equipment, baseLoad.squat, level, goal, 'compound', assessments))
-    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.7, level, goal, 'compound', assessments))
+    exercises.push(createExercise(safeExercise('Stacco Rumeno'), location, equipment, baseLoad.deadlift * 0.65, level, goal, 'compound', assessments))
     exercises.push(createExercise('Leg Press', location, equipment, baseLoad.squat * 1.3, level, goal, 'accessory', assessments))
     exercises.push(createExercise('Leg Curl', location, equipment, baseLoad.squat * 0.3, level, goal, 'isolation', assessments))
     exercises.push(createExercise('Leg Extension', location, equipment, baseLoad.squat * 0.3, level, goal, 'isolation', assessments))
   } else {
     exercises.push(createExercise(safeExercise('Front Squat'), location, equipment, baseLoad.squat * 0.8, level, goal, 'compound', assessments))
-    exercises.push(createExercise(safeExercise('Stacco Sumo'), location, equipment, baseLoad.deadlift * 0.9, level, goal, 'compound', assessments))
+    exercises.push(createExercise(safeExercise('Stacco Sumo'), location, equipment, baseLoad.deadlift * 0.85, level, goal, 'compound', assessments))
     exercises.push(createExercise('Squat Bulgaro', location, equipment, baseLoad.squat * 0.6, level, goal, 'accessory', assessments))
     exercises.push(createExercise('Nordic Curl', location, equipment, 0, level, goal, 'accessory', assessments))
     exercises.push(createExercise('Hip Thrust', location, equipment, baseLoad.squat * 0.8, level, goal, 'accessory', assessments))

@@ -95,6 +95,14 @@ export default function Dashboard() {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Serie incrementali state
+  const [incrementalSetsEnabled, setIncrementalSetsEnabled] = useState(() => {
+    return localStorage.getItem('incrementalSets_enabled') === 'true';
+  });
+  const [incrementalSetsMax, setIncrementalSetsMax] = useState(() => {
+    return parseInt(localStorage.getItem('incrementalSets_max') || '6');
+  });
+
   // Deload suggestion state
   const [showDeloadModal, setShowDeloadModal] = useState(false);
   const [pendingAdjustment, setPendingAdjustment] = useState<ProgramAdjustment | null>(null);
@@ -1331,7 +1339,10 @@ export default function Dashboard() {
       userAge: onboarding?.personalInfo?.age || 30,
       quizScore,
       practicalScore,
-      discrepancyType
+      discrepancyType,
+      // Serie incrementali
+      incrementSets: localStorage.getItem('incrementalSets_enabled') === 'true' ? 1 : 0,
+      maxSets: parseInt(localStorage.getItem('incrementalSets_max') || '6') || 6
     });
 
     // ✅ FIX: Controlla se la generazione è stata bloccata dalla validazione
@@ -2226,6 +2237,55 @@ export default function Dashboard() {
                       </div>
                     </motion.div>
                   )}
+
+                  {/* Serie Incrementali Config */}
+                  <div className="mb-4 bg-slate-800/50 border border-slate-600/50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-semibold text-sm text-slate-300">Serie Incrementali</h5>
+                      <button
+                        onClick={() => {
+                          const newVal = !incrementalSetsEnabled;
+                          setIncrementalSetsEnabled(newVal);
+                          localStorage.setItem('incrementalSets_enabled', String(newVal));
+                        }}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${
+                          incrementalSetsEnabled ? 'bg-emerald-500' : 'bg-slate-600'
+                        }`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                          incrementalSetsEnabled ? 'translate-x-5' : ''
+                        }`} />
+                      </button>
+                    </div>
+                    {incrementalSetsEnabled && (
+                      <div className="flex items-center gap-3 mt-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400">+1 serie/sett</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400">Max:</span>
+                          <input
+                            type="number"
+                            min={2}
+                            max={12}
+                            value={incrementalSetsMax || ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
+                              setIncrementalSetsMax(val);
+                              localStorage.setItem('incrementalSets_max', String(val));
+                            }}
+                            className="w-14 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white text-center text-sm"
+                          />
+                          <span className="text-xs text-slate-400">serie</span>
+                        </div>
+                      </div>
+                    )}
+                    {incrementalSetsEnabled && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        W1: base, W2: +1, W3: +2... fino a max {incrementalSetsMax}. Rigenera il programma per applicare.
+                      </p>
+                    )}
+                  </div>
 
                   {/* NUOVO: Visualizza split settimanale se disponibile */}
                   {program.weekly_split?.days?.length > 0 ? (

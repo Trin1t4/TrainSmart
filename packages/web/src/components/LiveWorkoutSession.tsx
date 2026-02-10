@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Play, Pause, SkipForward, X, Info, ThumbsDown, ArrowLeftRight, RefreshCw, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { autoRegulationService } from '@trainsmart/shared';
+import { BETA_FLAGS } from '../config/featureFlags';
 import { supabase } from '../lib/supabaseClient';
 import { useTranslation } from '../lib/i18n';
 import { getExerciseDescription } from '../utils/exerciseDescriptions';
@@ -305,7 +306,16 @@ const adaptExercisesForTime = (
     };
   }
 
-  // 30-44 minuti: crea superset/jumpset per gli accessori
+  // 30-44 minuti: crea superset/jumpset per gli accessori (if enabled)
+  if (!BETA_FLAGS.SUPERSET) {
+    // Supersets disabled — return all exercises as-is
+    return {
+      exercises: [...compoundExercises, ...accessoryExercises],
+      adaptationMode: 'standard',
+      message: `⏱️ ${availableTime} minuti disponibili`
+    };
+  }
+
   // Raggruppa accessori a 2 a 2 in superset (stessa pausa per entrambi)
   const supersetAccessories: Exercise[] = [];
   for (let i = 0; i < accessoryExercises.length; i += 2) {
@@ -529,6 +539,110 @@ export default function LiveWorkoutSession({
     : parseInt(currentExercise?.reps?.split('-')[0] || '10');
   const exerciseInfo = currentExercise ? getExerciseDescription(currentExercise.name) : null;
 
+  // ════════════════════════════════════════════════════════════════════════
+  // STIMA PESO RUNTIME per esercizi senza peso assegnato
+  // Usa i carichi reali dai test (realLoads) + rapporti biomeccanici
+  // ════════════════════════════════════════════════════════════════════════
+  const estimatedWeight = useMemo(() => {
+    if (!currentExercise || currentExercise.weight || isBodyweightExercise(currentExercise.name)) {
+      return null; // Ha già un peso o è bodyweight
+    }
+    if (Object.keys(realLoads).length === 0) return null;
+
+    const name = currentExercise.name.toLowerCase();
+    const pattern = currentExercise.pattern?.toLowerCase() || '';
+
+    // Mappa pattern → chiave realLoads
+    const PATTERN_KEYS: Record<string, string> = {
+      lower_push: 'lower_push', lower_pull: 'lower_pull',
+      horizontal_push: 'horizontal_push', horizontal_pull: 'horizontal_pull',
+      vertical_push: 'vertical_push', vertical_pull: 'vertical_pull',
+      core: 'core'
+    };
+
+    // Ratios esercizio-specifico (conservativi, per difetto)
+    const RATIOS: Record<string, number> = {
+      'stacco': 1.0, 'deadlift': 1.0, 'conventional deadlift': 1.0,
+      'stacco sumo': 0.85, 'sumo deadlift': 0.85,
+      'stacco rumeno': 0.65, 'romanian deadlift': 0.65, 'rdl': 0.65,
+      'good morning': 0.40, 'hip thrust': 0.90, 'leg curl': 0.30,
+      'hyperextension': 0.35, 'glute bridge': 0.70,
+      'panca piana': 1.0, 'bench press': 1.0, 'flat bench': 1.0,
+      'panca inclinata': 0.80, 'incline bench': 0.80, 'incline press': 0.80,
+      'panca declinata': 0.95, 'floor press': 0.85, 'dumbbell press': 0.80,
+      'chest press': 0.85, 'dips': 0.85,
+      'military press': 1.0, 'overhead press': 1.0, 'lento avanti': 1.0,
+      'push press': 1.10, 'arnold press': 0.72,
+      'alzate laterali': 0.25, 'lateral raise': 0.25,
+      'alzate frontali': 0.28, 'front raise': 0.28, 'face pull': 0.30,
+      'barbell row': 1.0, 'rematore': 1.0, 'bent over row': 1.0,
+      'seated row': 0.90, 'cable row': 0.85, 'dumbbell row': 0.50,
+      't-bar row': 0.90, 'lat pulldown': 1.0, 'lat machine': 1.0,
+      'squat': 1.0, 'back squat': 1.0, 'front squat': 0.80,
+      'goblet squat': 0.45, 'leg press': 1.40, 'pressa': 1.40,
+      'hack squat': 1.10, 'squat bulgaro': 0.55, 'bulgarian split squat': 0.55,
+      'affondi': 0.50, 'lunge': 0.50, 'leg extension': 0.35, 'step up': 0.50,
+      'curl bilanciere': 0.35, 'barbell curl': 0.35, 'hammer curl': 0.30,
+      'tricep pushdown': 0.35, 'french press': 0.30, 'skull crusher': 0.30,
+      'croci': 0.25, 'croci cavi': 0.25, 'cable fly': 0.25,
+      'shrugs': 0.55, 'calf raises': 0.50, 'seated calf': 0.40,
+    };
+
+    // Cross-pattern estimation (se il pattern diretto non ha 10RM)
+    const CROSS_PATTERN: Record<string, { source: string; ratio: number }[]> = {
+      lower_pull: [{ source: 'lower_push', ratio: 1.10 }],
+      lower_push: [{ source: 'lower_pull', ratio: 0.88 }],
+      horizontal_pull: [{ source: 'horizontal_push', ratio: 0.70 }, { source: 'vertical_pull', ratio: 0.85 }],
+      vertical_push: [{ source: 'horizontal_push', ratio: 0.65 }],
+      vertical_pull: [{ source: 'horizontal_push', ratio: 0.80 }],
+      horizontal_push: [{ source: 'vertical_push', ratio: 1.50 }],
+    };
+
+    // 1. Trova il 10RM del pattern
+    let patternKey = PATTERN_KEYS[pattern] || '';
+    let weight10RM = realLoads[patternKey] || 0;
+
+    // 2. Se pattern diretto non ha 10RM, inferisci da altri pattern
+    if (!weight10RM && patternKey) {
+      const crossPatterns = CROSS_PATTERN[patternKey];
+      if (crossPatterns) {
+        for (const cp of crossPatterns) {
+          if (realLoads[cp.source]) {
+            weight10RM = Math.round(realLoads[cp.source] * cp.ratio);
+            console.log(`📊 Stima cross-pattern: ${patternKey} da ${cp.source} (${realLoads[cp.source]}kg × ${cp.ratio} = ${weight10RM}kg)`);
+            break;
+          }
+        }
+      }
+    }
+
+    if (!weight10RM) return null;
+
+    // 3. Applica rapporto esercizio-specifico
+    let exerciseRatio = 1.0;
+    let matchKey = '';
+    for (const [key, ratio] of Object.entries(RATIOS)) {
+      if (name.includes(key) && key.length > matchKey.length) {
+        matchKey = key;
+        exerciseRatio = ratio;
+      }
+    }
+
+    // 4. Applica intensità (default 70%)
+    let intensityPct = 0.70;
+    if (currentExercise.intensity) {
+      const m = currentExercise.intensity.match(/(\d+)/);
+      if (m) intensityPct = parseInt(m[1]) / 100;
+    }
+
+    // 5. Calcola e arrotonda a 2.5kg
+    const estimated = Math.round((weight10RM * exerciseRatio * intensityPct) / 2.5) * 2.5;
+    if (estimated < 5) return null;
+
+    console.log(`📊 Stima runtime: ${currentExercise.name} = ${weight10RM}kg × ${exerciseRatio} × ${Math.round(intensityPct * 100)}% = ${estimated}kg`);
+    return estimated;
+  }, [currentExercise, realLoads]);
+
   // Calculate adjusted sets (may be modified by auto-regulation)
   const [adjustedSets, setAdjustedSets] = useState<Record<string, number>>({});
   const currentTargetSets = adjustedSets[currentExercise?.name] || currentExercise?.sets || 3;
@@ -655,6 +769,7 @@ export default function LiveWorkoutSession({
   // Fetch video-based weight suggestion when exercise changes
   useEffect(() => {
     const fetchVideoSuggestion = async () => {
+      if (!BETA_FLAGS.VIDEO_ANALYSIS) return;
       if (!currentExercise || !userId) return;
 
       // Only fetch for non-bodyweight exercises
@@ -1778,7 +1893,7 @@ export default function LiveWorkoutSession({
     // SUPERSET LOGIC: Se è il primo esercizio di un superset, passa direttamente
     // al secondo senza mostrare il feedback RPE (verrà raccolto alla fine)
     // ========================================================================
-    if (isInSuperset && !isLastInSupersetGroup()) {
+    if (BETA_FLAGS.SUPERSET && isInSuperset && !isLastInSupersetGroup()) {
       // Salva il log base senza RPE (verrà completato alla fine del superset)
       const basicSetLog: SetLog = {
         set_number: currentSet,
@@ -2575,7 +2690,7 @@ export default function LiveWorkoutSession({
     // SUPERSET LOGIC: Se siamo nell'ultimo esercizio di un superset,
     // torna al primo esercizio del gruppo per il prossimo set
     // ========================================================================
-    if (isInSuperset && isLastInSupersetGroup()) {
+    if (BETA_FLAGS.SUPERSET && isInSuperset && isLastInSupersetGroup()) {
       // Trova il primo esercizio del superset group
       const currentGroup = currentExercise.supersetGroup;
       const firstInGroup = exercises.find(ex => ex.supersetGroup === currentGroup);
@@ -2601,7 +2716,7 @@ export default function LiveWorkoutSession({
       if (currentExerciseIndex < totalExercises - 1) {
         // Se è superset, salta tutti gli esercizi del gruppo già completati
         let nextIndex = currentExerciseIndex + 1;
-        if (isInSuperset) {
+        if (BETA_FLAGS.SUPERSET && isInSuperset) {
           const currentGroup = currentExercise.supersetGroup;
           // Trova il prossimo esercizio che NON è nel gruppo corrente
           while (nextIndex < totalExercises && exercises[nextIndex].supersetGroup === currentGroup) {
@@ -3990,7 +4105,7 @@ export default function LiveWorkoutSession({
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{ex.name}</p>
                           <p className="text-xs text-slate-400">
-                            {ex.sets}x{ex.reps} {isSuperset && `• Superset ${ex.supersetGroup}`}
+                            {ex.sets}x{ex.reps} {BETA_FLAGS.SUPERSET && isSuperset && `• Superset ${ex.supersetGroup}`}
                           </p>
                         </div>
                         {isCurrent && (
@@ -4079,12 +4194,14 @@ export default function LiveWorkoutSession({
               <p className="text-slate-400 text-sm">Sets</p>
               <p className="text-blue-400 font-bold text-xl">{currentSet}/{currentTargetSets}</p>
             </div>
-            <div>
-              <p className="text-slate-400 text-sm">RIR</p>
-              <p className="text-orange-400 font-bold text-xl">
-                {currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)}
-              </p>
-            </div>
+            {BETA_FLAGS.RPE_RIR_INPUT_UI && (
+              <div>
+                <p className="text-slate-400 text-sm">RIR</p>
+                <p className="text-orange-400 font-bold text-xl">
+                  {currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)}
+                </p>
+              </div>
+            )}
             <div>
               <p className="text-slate-400 text-sm">Rest</p>
               <p className="text-purple-400 font-bold text-xl">{currentExercise.rest}</p>
@@ -4092,14 +4209,16 @@ export default function LiveWorkoutSession({
           </div>
 
           {/* RIR Safety Reminder */}
-          <div className="mt-4 bg-purple-500/10 border border-purple-500/30 rounded-xl p-3">
-            <p className="text-purple-300 text-sm text-center">
-              Fermati quando ti restano <span className="font-bold">~{currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)} reps</span> in tank
-            </p>
-            <p className="text-slate-500 text-xs text-center mt-1">
-              Non forzare le reps a costo di superare questo limite
-            </p>
-          </div>
+          {BETA_FLAGS.RPE_RIR_INPUT_UI && (
+            <div className="mt-4 bg-purple-500/10 border border-purple-500/30 rounded-xl p-3">
+              <p className="text-purple-300 text-sm text-center">
+                Fermati quando ti restano <span className="font-bold">~{currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity)} reps</span> in tank
+              </p>
+              <p className="text-slate-500 text-xs text-center mt-1">
+                Non forzare le reps a costo di superare questo limite
+              </p>
+            </div>
+          )}
 
           {/* Active Tempo Modifier - TUT Aggravante */}
           {currentExercise && activeTempo[currentExercise.name] && !isStandardTempo(activeTempo[currentExercise.name]) && (() => {
@@ -4245,6 +4364,8 @@ export default function LiveWorkoutSession({
                     </span>
                   ) : currentExercise.weight ? (
                     <span className="text-amber-400 font-bold"> - Suggerito: {currentExercise.weight}</span>
+                  ) : estimatedWeight ? (
+                    <span className="text-blue-400 font-bold"> - Stimato: ~{estimatedWeight}kg</span>
                   ) : null}
                   {isLoadingVideoSuggestion && (
                     <span className="text-slate-500 text-xs ml-2">Caricamento...</span>
@@ -4256,10 +4377,10 @@ export default function LiveWorkoutSession({
                   value={currentWeight || ''}
                   onChange={(e) => setCurrentWeight(parseFloat(e.target.value) || 0)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
-                  placeholder={videoSuggestedWeight?.suggestedWeight?.toString() || currentExercise.weight || "0"}
+                  placeholder={videoSuggestedWeight?.suggestedWeight?.toString() || currentExercise.weight || (estimatedWeight ? String(estimatedWeight) : "0")}
                 />
                 {/* Show corrective exercises button if available */}
-                {videoCorrectiveData && videoCorrectiveData.correctiveExercises.length > 0 && (
+                {BETA_FLAGS.VIDEO_ANALYSIS && videoCorrectiveData && videoCorrectiveData.correctiveExercises.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setShowCorrectivesModal(true)}
@@ -4275,6 +4396,12 @@ export default function LiveWorkoutSession({
             <button
               onClick={() => {
                 if (currentReps === 0) return;
+                if (!BETA_FLAGS.RPE_RIR_INPUT_UI) {
+                  // Skip RIR dialog — auto-assume target RIR was respected
+                  const targetRIR = currentExercise.targetRir ?? extractBaseTargetRIR(currentExercise.notes, currentExercise.intensity);
+                  handleRIRValidationAndComplete(targetRIR);
+                  return;
+                }
                 setShowRIRConfirm(true); // Mostra conferma RIR invece di procedere direttamente
               }}
               disabled={currentReps === 0}
@@ -4289,7 +4416,7 @@ export default function LiveWorkoutSession({
         {/* ================================================================
             RIR CONFIRMATION - Post-set safety check
             ================================================================ */}
-        {showRIRConfirm && !showRPEInput && currentExercise && (
+        {BETA_FLAGS.RPE_RIR_INPUT_UI && showRIRConfirm && !showRPEInput && currentExercise && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -4345,7 +4472,7 @@ export default function LiveWorkoutSession({
         )}
 
         {/* RPE & RIR Input - Quando dice "No, diverso" */}
-        {showRPEInput && !suggestion && currentExercise && (
+        {BETA_FLAGS.RPE_RIR_INPUT_UI && showRPEInput && !suggestion && currentExercise && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -4607,7 +4734,7 @@ export default function LiveWorkoutSession({
             )}
 
             {/* Video Upload Button - only for supported exercises */}
-            {isExerciseSupportedInternally(currentExercise.name) && (
+            {BETA_FLAGS.VIDEO_ANALYSIS && isExerciseSupportedInternally(currentExercise.name) && (
               <button
                 onClick={() => setShowVideoUpload(true)}
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 mb-3"
@@ -5022,19 +5149,21 @@ export default function LiveWorkoutSession({
       )}
 
       {/* Video Upload Modal */}
-      <VideoUploadModal
-        open={showVideoUpload}
-        onClose={() => setShowVideoUpload(false)}
-        exerciseName={currentExercise.name}
-        exercisePattern={currentExercise.pattern}
-        setNumber={currentSet}
-        onUploadComplete={(correctionId) => {
-          setShowVideoUpload(false);
-          toast.success('Video caricato! Analisi in corso...', {
-            description: `Riceverai il feedback tra pochi secondi. ID: ${correctionId.substring(0, 8)}...`
-          });
-        }}
-      />
+      {BETA_FLAGS.VIDEO_ANALYSIS && (
+        <VideoUploadModal
+          open={showVideoUpload}
+          onClose={() => setShowVideoUpload(false)}
+          exerciseName={currentExercise.name}
+          exercisePattern={currentExercise.pattern}
+          setNumber={currentSet}
+          onUploadComplete={(correctionId) => {
+            setShowVideoUpload(false);
+            toast.success('Video caricato! Analisi in corso...', {
+              description: `Riceverai il feedback tra pochi secondi. ID: ${correctionId.substring(0, 8)}...`
+            });
+          }}
+        />
+      )}
 
       {/* Exercise Dislike Modal */}
       <ExerciseDislikeModal
@@ -5329,7 +5458,7 @@ export default function LiveWorkoutSession({
 
       {/* Corrective Exercises Modal */}
       <AnimatePresence>
-        {showCorrectivesModal && videoCorrectiveData && (
+        {BETA_FLAGS.VIDEO_ANALYSIS && showCorrectivesModal && videoCorrectiveData && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

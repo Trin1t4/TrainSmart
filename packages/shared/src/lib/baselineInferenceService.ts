@@ -14,6 +14,17 @@ import type { PatternBaselines, PatternBaseline, Level } from '../types';
 // COEFFICIENTI DI CORRELAZIONE
 // ============================================================================
 
+/**
+ * Correlazioni biomeccaniche tra pattern (fonti primarie)
+ *
+ * Ricerca:
+ * - Nuzzo et al. 2008: "Relationship Among Estimated 1RM Strength"
+ * - Comfort et al. 2014: "Squat and Deadlift Strength Relationships"
+ * - Ratamess et al. 2009: NSCA Guidelines
+ * - Hales et al. 2009: "Kinematic analysis of the powerlifting style squat and DL"
+ *
+ * Valori conservativi (per difetto) per sicurezza
+ */
 const PATTERN_CORRELATIONS: Record<string, { source: string; ratio: number; difficultyAdjust?: number }> = {
   // vertical_pull inferito da horizontal_push
   // DIFFICULTY: Le trazioni sono MOLTO più difficili dei push-up → -2 difficoltà
@@ -30,8 +41,79 @@ const PATTERN_CORRELATIONS: Record<string, { source: string; ratio: number; diff
   vertical_push: { source: 'horizontal_push', ratio: 0.65, difficultyAdjust: -2 },
 
   // lower_pull inferito da lower_push
+  // Ref: Comfort et al. 2014 - DL 1RM ≈ 1.2× Squat 1RM
+  // Per 10RM il rapporto si comprime → conservativo 1.10
   lower_pull: { source: 'lower_push', ratio: 1.10, difficultyAdjust: 0 },
 };
+
+/**
+ * Correlazioni secondarie multi-sorgente per stima più accurata
+ * Usate quando la sorgente primaria non è disponibile
+ *
+ * Ref: Symmetric Strength ratios, ExRx strength standards
+ */
+const MULTI_SOURCE_CORRELATIONS: Record<string, Array<{ source: string; ratio: number; confidence: number }>> = {
+  lower_pull: [
+    { source: 'lower_push', ratio: 1.10, confidence: 0.85 },       // Squat → DL (alta correlazione)
+    { source: 'horizontal_push', ratio: 1.50, confidence: 0.55 },  // Bench → DL (correlazione moderata)
+  ],
+  lower_push: [
+    { source: 'lower_pull', ratio: 0.88, confidence: 0.85 },       // DL → Squat
+    { source: 'horizontal_push', ratio: 1.25, confidence: 0.55 },  // Bench → Squat
+  ],
+  horizontal_push: [
+    { source: 'vertical_push', ratio: 1.50, confidence: 0.70 },    // OHP → Bench
+    { source: 'lower_push', ratio: 0.65, confidence: 0.50 },       // Squat → Bench
+  ],
+  vertical_push: [
+    { source: 'horizontal_push', ratio: 0.65, confidence: 0.80 },  // Bench → OHP
+  ],
+  vertical_pull: [
+    { source: 'horizontal_push', ratio: 0.80, confidence: 0.60 },  // Bench → Pull-up
+    { source: 'horizontal_pull', ratio: 1.05, confidence: 0.70 },  // Row → Pull-up
+  ],
+  horizontal_pull: [
+    { source: 'vertical_pull', ratio: 0.85, confidence: 0.70 },    // Pull-up → Row
+    { source: 'horizontal_push', ratio: 0.70, confidence: 0.60 },  // Bench → Row
+  ],
+};
+
+/**
+ * Stima un 10RM usando multiple sorgenti (media pesata per confidenza)
+ * Ritorna il risultato più conservativo se più sorgenti sono disponibili
+ */
+function estimateFromMultipleSources(
+  targetPattern: string,
+  baselines: PatternBaselines
+): number | null {
+  const correlations = MULTI_SOURCE_CORRELATIONS[targetPattern];
+  if (!correlations) return null;
+
+  let weightedSum = 0;
+  let totalConfidence = 0;
+  let minEstimate = Infinity;
+
+  for (const corr of correlations) {
+    const source = baselines[corr.source as keyof PatternBaselines];
+    if (source?.weight10RM && source.weight10RM > 0) {
+      const estimate = source.weight10RM * corr.ratio;
+      weightedSum += estimate * corr.confidence;
+      totalConfidence += corr.confidence;
+      minEstimate = Math.min(minEstimate, estimate);
+      console.log(`[MultiSource] ${targetPattern} da ${corr.source}: ${source.weight10RM}kg × ${corr.ratio} = ${estimate.toFixed(1)}kg (conf: ${corr.confidence})`);
+    }
+  }
+
+  if (totalConfidence === 0) return null;
+
+  const weightedAvg = weightedSum / totalConfidence;
+
+  // Stima conservativa: prendi il minore tra media pesata e stima più bassa
+  const conservativeEstimate = Math.min(weightedAvg, minEstimate);
+  console.log(`[MultiSource] ${targetPattern}: media pesata=${weightedAvg.toFixed(1)}kg, min=${minEstimate.toFixed(1)}kg → conservativo: ${conservativeEstimate.toFixed(1)}kg`);
+
+  return Math.round(conservativeEstimate);
+}
 
 // ============================================================================
 // DATABASE VARIANTI per ogni pattern con difficulty
@@ -296,13 +378,21 @@ export function inferMissingBaselines(
 
     } else if (hasGymData) {
       // === GYM MODE ===
-      const inferredWeight = Math.round(sourceBaseline.weight10RM! * correlation.ratio);
+      // Prova stima multi-sorgente per maggiore accuratezza
+      const multiSourceEstimate = estimateFromMultipleSources(targetPattern as string, baselines);
+      const singleSourceEstimate = Math.round(sourceBaseline.weight10RM! * correlation.ratio);
+
+      // Usa il valore più conservativo tra single-source e multi-source
+      const inferredWeight = multiSourceEstimate
+        ? Math.min(singleSourceEstimate, multiSourceEstimate)
+        : singleSourceEstimate;
+
       inferredDifficulty = estimateDifficultyFromWeight(inferredWeight, userBodyweight);
       inferredReps = 10; // Standard per gym
 
       console.log(`[Inference GYM] ${targetPattern}: ` +
-        `weight=${sourceBaseline.weight10RM}kg × ${correlation.ratio} = ${inferredWeight}kg ` +
-        `→ diff=${inferredDifficulty}`);
+        `single=${singleSourceEstimate}kg, multi=${multiSourceEstimate || 'N/A'}kg ` +
+        `→ conservativo: ${inferredWeight}kg (diff=${inferredDifficulty})`);
 
     } else {
       // Fallback conservativo
@@ -319,7 +409,11 @@ export function inferMissingBaselines(
       variantName: variantInfo.name,
       difficulty: inferredDifficulty,
       reps: inferredReps,
-      weight10RM: hasGymData ? Math.round(sourceBaseline.weight10RM! * correlation.ratio) : 0,
+      weight10RM: hasGymData ? (() => {
+        const single = Math.round(sourceBaseline.weight10RM! * correlation.ratio);
+        const multi = estimateFromMultipleSources(targetPattern as string, baselines);
+        return multi ? Math.min(single, multi) : single;
+      })() : 0,
       testDate: new Date().toISOString(),
       isEstimated: true,
       estimatedFrom: correlation.source + (hasBodyweightData && !hasGymData ? ' (bodyweight)' : ''),

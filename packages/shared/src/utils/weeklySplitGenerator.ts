@@ -457,12 +457,126 @@ function findPatternForExercise(exerciseName: string): string | null {
 }
 
 /**
+ * Coefficienti di aggiustamento peso per esercizio specifico
+ *
+ * Ricerca: Swinton et al. 2011, Escamilla et al. 2002, Hales et al. 2009
+ * Valori conservativi (per difetto) per sicurezza principianti
+ *
+ * Il moltiplicatore si applica al 10RM del pattern di riferimento
+ * Es: lower_pull 10RM = 100kg → Stacco Rumeno = 100 × 0.65 = 65kg
+ */
+const EXERCISE_WEIGHT_RATIOS: Record<string, number> = {
+  // === LOWER_PULL: varianti stacco (relativo a 10RM lower_pull) ===
+  // Ref: Swinton et al. 2011 "Kinematic and kinetic analysis of deadlift"
+  'stacco': 1.0,
+  'deadlift': 1.0,
+  'conventional deadlift': 1.0,
+  'stacco sumo': 0.85,           // Sumo ≈ 88-95% conv. (conservativo: 85%)
+  'sumo deadlift': 0.85,
+  'stacco rumeno': 0.65,          // RDL ≈ 65-75% conv. (conservativo: 65%)
+  'romanian deadlift': 0.65,
+  'rdl': 0.65,
+  'stiff leg deadlift': 0.62,    // Stiff-leg ≈ 60-70% (conservativo: 62%)
+  'good morning': 0.40,           // GM ≈ 40-50% conv. (conservativo: 40%)
+  'hip thrust': 0.90,             // HT ≈ 85-100% conv. (conservativo: 90%)
+  'leg curl': 0.30,               // Isolamento: ~30%
+  'glute bridge': 0.70,           // GB ≈ 65-75% conv.
+  'hyperextension': 0.35,         // Hyperext ≈ 30-40%
+
+  // === HORIZONTAL_PUSH: varianti panca (relativo a 10RM horizontal_push) ===
+  // Ref: Lander et al. 1985, Barnett et al. 1995
+  'panca piana': 1.0,
+  'bench press': 1.0,
+  'flat bench': 1.0,
+  'panca inclinata': 0.80,        // Incline ≈ 80-85% flat (conservativo: 80%)
+  'incline bench': 0.80,
+  'incline press': 0.80,
+  'panca declinata': 0.95,        // Decline ≈ 95-100% flat
+  'decline bench': 0.95,
+  'floor press': 0.85,            // Floor ≈ 85-90%
+  'dumbbell press': 0.80,         // DB ≈ 75-85% barbell (conservativo: 80%)
+  'chest press': 0.85,
+  'dips': 0.85,
+
+  // === VERTICAL_PUSH: varianti spinta verticale (relativo a 10RM vertical_push) ===
+  // Ref: Saeterbakken & Fimland 2013
+  'military press': 1.0,
+  'overhead press': 1.0,
+  'lento avanti': 1.0,
+  'push press': 1.10,             // Push press ≈ 110-120% strict (Kipp et al. 2011)
+  'arnold press': 0.72,           // Arnold ≈ 70-75%
+  'alzate laterali': 0.25,        // Lateral raise ≈ 20-30%
+  'lateral raise': 0.25,
+  'front raise': 0.28,            // Front raise ≈ 25-30%
+  'alzate frontali': 0.28,
+  'face pull': 0.30,
+
+  // === HORIZONTAL_PULL: varianti tirata orizzontale ===
+  'barbell row': 1.0,
+  'rematore': 1.0,
+  'bent over row': 1.0,
+  'seated row': 0.90,             // Seated ≈ 85-95%
+  'cable row': 0.85,
+  'dumbbell row': 0.50,           // DB row (per braccio) ≈ 45-55%
+  't-bar row': 0.90,
+
+  // === VERTICAL_PULL: varianti tirata verticale ===
+  'lat pulldown': 1.0,
+  'lat machine': 1.0,
+  'pull-up': 1.0,                 // Bodyweight - gestito separatamente
+  'trazioni': 1.0,
+
+  // === LOWER_PUSH: varianti squat (relativo a 10RM lower_push) ===
+  // Ref: Caterisano et al. 2002, Wretenberg et al. 1996
+  'squat': 1.0,
+  'back squat': 1.0,
+  'front squat': 0.80,            // Front ≈ 78-85% back (conservativo: 80%)
+  'goblet squat': 0.45,           // Goblet ≈ 40-50%
+  'leg press': 1.40,              // Leg press ≈ 130-160% squat (angolo diverso)
+  'pressa': 1.40,
+  'hack squat': 1.10,             // Hack ≈ 100-120%
+  'bulgarian split squat': 0.55,  // Bulgaro ≈ 50-60% (per gamba)
+  'squat bulgaro': 0.55,
+  'affondi': 0.50,                // Lunge ≈ 45-55% (per gamba)
+  'lunge': 0.50,
+  'leg extension': 0.35,          // Isolamento: ~35%
+  'step up': 0.50,
+};
+
+/**
+ * Trova il coefficiente di aggiustamento peso per un esercizio specifico.
+ * Cerca match parziale nel nome (case-insensitive).
+ * Ritorna 1.0 se nessun match trovato (= usa il baseline del pattern direttamente).
+ */
+function getExerciseWeightRatio(exerciseName: string): number {
+  const nameLower = exerciseName.toLowerCase();
+
+  // Cerca match esatto prima, poi parziale (dal più specifico al più generico)
+  let bestMatch = '';
+  let bestRatio = 1.0;
+
+  for (const [key, ratio] of Object.entries(EXERCISE_WEIGHT_RATIOS)) {
+    if (nameLower.includes(key) && key.length > bestMatch.length) {
+      bestMatch = key;
+      bestRatio = ratio;
+    }
+  }
+
+  if (bestMatch) {
+    console.log(`  📊 Ratio esercizio "${exerciseName}": ${bestRatio} (match: "${bestMatch}")`);
+  }
+
+  return bestRatio;
+}
+
+/**
  * Arricchisce gli esercizi con i pesi calcolati dai patternBaselines
  *
  * Logica:
  * 1. Per ogni esercizio, trova il pattern corrispondente
  * 2. Se esiste un baseline con weight10RM per quel pattern, calcola il peso
- * 3. Formula: peso_lavoro = weight10RM × (intensity% / 100), arrotondato a 2.5kg
+ * 3. Applica coefficiente esercizio-specifico (es: RDL = 65% del 10RM lower_pull)
+ * 4. Formula: peso_lavoro = weight10RM × exerciseRatio × intensity%, arrotondato a 2.5kg
  */
 function enrichExercisesWithWeights(
   exercises: Exercise[],
@@ -518,8 +632,12 @@ function enrichExercisesWithWeights(
       }
     }
 
-    // Calcola peso di lavoro
-    const calculatedWeight = Math.round((baseline.weight10RM * intensityPercent) / 2.5) * 2.5;
+    // Coefficiente esercizio-specifico (es: RDL = 0.65, Sumo = 0.85)
+    const exerciseRatio = getExerciseWeightRatio(exercise.name);
+
+    // Calcola peso di lavoro con formula avanzata:
+    // peso = 10RM_pattern × ratio_esercizio × intensità%, arrotondato a 2.5kg
+    const calculatedWeight = Math.round((baseline.weight10RM * exerciseRatio * intensityPercent) / 2.5) * 2.5;
 
     // Non assegnare pesi < 5kg (probabilmente esercizi a corpo libero)
     if (calculatedWeight < 5) {
@@ -527,12 +645,16 @@ function enrichExercisesWithWeights(
     }
 
     // Costruisci nota sul peso
-    let weightNote = `Peso: ${calculatedWeight}kg (da 10RM: ${baseline.weight10RM}kg)`;
+    let weightNote = `Peso: ${calculatedWeight}kg (10RM: ${baseline.weight10RM}kg`;
+    if (exerciseRatio !== 1.0) {
+      weightNote += ` × ${exerciseRatio}`;
+    }
+    weightNote += ')';
     if (baseline.isEstimated) {
       weightNote += ` [STIMATO da ${baseline.estimatedFrom || 'altro pattern'}]`;
     }
 
-    console.log(`  💪 ${exercise.name}: ${calculatedWeight}kg (${pattern} 10RM: ${baseline.weight10RM}kg @ ${Math.round(intensityPercent * 100)}%)`);
+    console.log(`  💪 ${exercise.name}: ${calculatedWeight}kg (${pattern} 10RM: ${baseline.weight10RM}kg × ${exerciseRatio} @ ${Math.round(intensityPercent * 100)}%)`);
 
     return {
       ...exercise,
@@ -1286,6 +1408,12 @@ function applySupersets(
   exercises: Exercise[],
   targetMinutesToSave: number
 ): { exercises: Exercise[]; totalTimeSaved: number; supersetsApplied: number } {
+  // BETA: Superset feature disabled
+  const BETA_SUPERSET_ENABLED = false;
+  if (!BETA_SUPERSET_ENABLED) {
+    return { exercises, totalTimeSaved: 0, supersetsApplied: 0 };
+  }
+
   const result = [...exercises];
   let totalTimeSaved = 0;
   let supersetsApplied = 0;
@@ -1459,6 +1587,10 @@ interface SplitGeneratorOptions {
   quizScore?: number;           // Score quiz teorico (0-100)
   practicalScore?: number;      // Score test pratici (0-100)
   discrepancyType?: 'intuitive_mover' | 'theory_practice_gap' | null;
+  /** Serie incrementali: +N set per settimana (0 = disabilitato) */
+  incrementSets?: number;
+  /** Numero massimo di serie raggiungibile con serie incrementali */
+  maxSets?: number;
 }
 
 // ============================================================
@@ -3193,8 +3325,8 @@ function generateProgressiveWeeks(
 
   console.log(`\n📈 Generazione 8 settimane con progressive overload (${level}, ${goal})`);
 
-  // Determina strategia progressione
-  const strategy = getProgressionStrategy(level, goal, location);
+  // Determina strategia progressione (con serie incrementali se configurate)
+  const strategy = getProgressionStrategyWithSets(level, goal, location, options.incrementSets, options.maxSets);
   console.log(`   Strategia: ${strategy.type} (${strategy.incrementPercent}% weekly, deload weeks: ${strategy.deloadWeeks.join(', ')})`);
 
   const weeks: WeekProgram[] = [];
@@ -3258,7 +3390,9 @@ function getWeeklyIncrementDescription(strategy: ProgressionStrategy, weekNum: n
 function getProgressionStrategy(
   level: string,
   goal: string,
-  location: 'gym' | 'home' | 'home_gym'
+  location: 'gym' | 'home' | 'home_gym',
+  incrementSets?: number,
+  maxSets?: number
 ): ProgressionStrategy {
 
   const goalLower = (goal || '').toLowerCase();
@@ -3353,6 +3487,28 @@ function getProgressionStrategy(
 }
 
 /**
+ * Wrapper di getProgressionStrategy per iniettare incrementSets/maxSets
+ */
+function getProgressionStrategyWithSets(
+  level: string,
+  goal: string,
+  location: 'gym' | 'home' | 'home_gym',
+  incrementSets?: number,
+  maxSets?: number
+): ProgressionStrategy {
+  const strategy = getProgressionStrategy(level, goal, location, incrementSets, maxSets);
+
+  // Inietta serie incrementali se configurate
+  if (incrementSets && incrementSets > 0) {
+    strategy.incrementSets = incrementSets;
+    strategy.maxSets = maxSets || 8; // Default max: 8 serie
+    console.log(`📈 Serie incrementali attive: +${incrementSets}/settimana (max: ${strategy.maxSets})`);
+  }
+
+  return strategy;
+}
+
+/**
  * Applica progressione agli esercizi di un giorno
  */
 function applyProgressionToExercises(
@@ -3393,17 +3549,35 @@ function applyProgressionToExercises(
     // ================================================================
     // PROGRESSIONE NORMALE
     // ================================================================
+    let progressedEx = ex;
     if (strategy.type === 'linear') {
-      return applyLinearProgression(ex, weekNum, strategy.incrementPercent);
+      progressedEx = applyLinearProgression(ex, weekNum, strategy.incrementPercent);
     } else if (strategy.type === 'double') {
-      return applyDoubleProgression(ex, weekNum, strategy);
+      progressedEx = applyDoubleProgression(ex, weekNum, strategy);
     } else if (strategy.type === 'wave') {
-      return applyWaveProgression(ex, weekNum, strategy.incrementPercent);
+      progressedEx = applyWaveProgression(ex, weekNum, strategy.incrementPercent);
     } else if (strategy.type === 'variant_progression') {
-      return applyVariantProgression(ex, weekNum, strategy, location);
+      progressedEx = applyVariantProgression(ex, weekNum, strategy, location);
     }
 
-    return ex;
+    // ================================================================
+    // SERIE INCREMENTALI: +N set/settimana fino al max
+    // ================================================================
+    if (strategy.incrementSets && strategy.incrementSets > 0 && weekNum > 1) {
+      const baseSets = ex.sets;
+      const maxSets = strategy.maxSets || (baseSets + 4); // Default: +4 dal base
+      const addedSets = (weekNum - 1) * strategy.incrementSets;
+      const newSets = Math.min(baseSets + addedSets, maxSets);
+
+      if (newSets !== progressedEx.sets) {
+        progressedEx = { ...progressedEx };
+        progressedEx.sets = newSets;
+        progressedEx.notes = `${progressedEx.notes || ''} | W${weekNum}: ${newSets} serie (${baseSets}+${addedSets})`.trim();
+        console.log(`   📈 ${ex.name}: serie ${baseSets} → ${newSets} (max: ${maxSets})`);
+      }
+    }
+
+    return progressedEx;
   });
 }
 

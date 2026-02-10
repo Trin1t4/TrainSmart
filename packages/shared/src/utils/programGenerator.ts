@@ -46,6 +46,7 @@ import {
   type RuntimeContext as BaseRuntimeContext,
   type RuntimeAdaptation
 } from './programValidation';
+import { getTargetRIR as getTargetRIRFromCaps } from './safetyCaps';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -96,6 +97,10 @@ export interface ProgramGeneratorOptions {
   volumeRecommendations?: VolumeRecommendation[];
   // Retest baselines override (from end-of-mesocycle retest)
   retestBaselines?: Record<string, { estimated1RM: number; weight10RM: number }>;
+  /** Serie incrementali: +N set per settimana (0 = disabilitato) */
+  incrementSets?: number;
+  /** Numero massimo di serie raggiungibile con serie incrementali */
+  maxSets?: number;
 }
 
 export interface ScreeningResult {
@@ -2926,12 +2931,29 @@ function calculateVolumeBodyweight(
   let notes = '';
 
   // ══════════════════════════════════════════════════════════════════════════
+  // STEP 0: Calcola RIR target per calibrare l'effort
+  // Per esercizi bodyweight: working_reps = max_reps - RIR
+  // Es: max 15 push-up, RIR 4 → lavora a 11 reps (buffer di 4 colpi)
+  // ══════════════════════════════════════════════════════════════════════════
+  const targetRIR = getTargetRIRFromCaps(
+    dayType as any,
+    goal,
+    level as any
+  );
+
+  // Applica RIR al max reps PRIMA dei moltiplicatori DUP
+  // Questo garantisce che l'utente non vada mai a cedimento
+  const rirAdjustedMaxReps = Math.max(3, baselineMaxReps - targetRIR);
+
+  console.log(`[BW Volume] max=${baselineMaxReps}, RIR=${targetRIR} → working max=${rirAdjustedMaxReps} (${dayType}/${goal}/${level})`);
+
+  // ══════════════════════════════════════════════════════════════════════════
   // STEP 1: Applica moltiplicatore DUP per dayType
   // ══════════════════════════════════════════════════════════════════════════
 
   const DUP_MULTIPLIERS: Record<string, number> = {
     heavy: 0.70,    // Meno reps (variante difficile)
-    moderate: 1.00, // Reps baseline
+    moderate: 1.00, // Reps baseline (ora calibrate con RIR)
     volume: 1.35    // Più reps (variante facile)
   };
 
@@ -2941,7 +2963,7 @@ function calculateVolumeBodyweight(
     volume: 1       // +1 set per volume
   };
 
-  const baseReps = Math.round(baselineMaxReps * DUP_MULTIPLIERS[dayType]);
+  const baseReps = Math.round(rirAdjustedMaxReps * DUP_MULTIPLIERS[dayType]);
   const adjustedSets = baseSets + DUP_SETS_ADJUSTMENT[dayType];
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -3776,7 +3798,10 @@ export function generateProgramWithSplit(
     // Pass screening granular data for safety checks
     quizScore: correctedOptions.quizScore,
     practicalScore: correctedOptions.practicalScore,
-    discrepancyType: correctedOptions.discrepancyType
+    discrepancyType: correctedOptions.discrepancyType,
+    // Serie incrementali
+    incrementSets: correctedOptions.incrementSets,
+    maxSets: correctedOptions.maxSets
   });
 
   console.log(`Split generato: ${weeklySplit.splitName}`);
