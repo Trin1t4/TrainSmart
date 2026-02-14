@@ -19,6 +19,9 @@ export * from './exerciseMetadata';
 export * from './exerciseDefinitions';
 export * from './exerciseDefinitionsPart2';
 
+// Issue-to-segment mapping (visual overlay)
+export * from './issueSegmentMapping';
+
 // Analyzers
 export * from './analyzers/squatAnalyzer';
 export * from './analyzers/deadliftAnalyzer';
@@ -35,6 +38,7 @@ export type {
   Morphotype,
   MorphotypeType,
   FrameAnalysis,
+  FrameLandmarkSnapshot,
   Issue,
   IssueSeverity,
   IssueType,
@@ -84,7 +88,8 @@ import type {
   PoseLandmarks,
   SupportedExercise,
   FormAnalysisResult,
-  Morphotype
+  Morphotype,
+  FrameLandmarkSnapshot
 } from '../../types/biomechanics.types';
 
 import { calculateProportions, classifyMorphotype, validateCameraAngle } from './core';
@@ -158,13 +163,17 @@ export function analyzeExercise(
   // Analisi completa in base all'esercizio
   const fullAnalysis = performFullAnalysis(analyzedFrames, config.exercise, morphotype, config.style);
 
+  // Cattura landmark per frame con issues (per visual overlay)
+  const issueLandmarks = captureIssueLandmarks(analyzedFrames, frameSequence, fps);
+
   return {
     exercise: config.exercise,
     duration: frameSequence.length / fps,
     framesAnalyzed: frameSequence.length,
     estimatedProportions: proportions,
     morphotype,
-    ...fullAnalysis
+    ...fullAnalysis,
+    ...(issueLandmarks.length > 0 ? { issueLandmarks } : {})
   };
 }
 
@@ -333,6 +342,40 @@ function performFullAnalysis(
         overallScore: 7
       };
   }
+}
+
+/**
+ * Cattura i landmark dei frame con issues + 2 frame di contesto
+ */
+function captureIssueLandmarks(
+  analyzedFrames: import('../../types/biomechanics.types').FrameAnalysis[],
+  frameSequence: PoseLandmarks[],
+  fps: number
+): FrameLandmarkSnapshot[] {
+  const issueFrameIndices = new Set<number>();
+
+  // Identifica frame con issues
+  for (let i = 0; i < analyzedFrames.length; i++) {
+    if (analyzedFrames[i].issues.length > 0) {
+      // Frame con issue + 2 frame di contesto prima e dopo
+      for (let j = Math.max(0, i - 2); j <= Math.min(analyzedFrames.length - 1, i + 2); j++) {
+        issueFrameIndices.add(j);
+      }
+    }
+  }
+
+  // Limita a max 50 frame per non gonfiare il payload
+  const sortedIndices = Array.from(issueFrameIndices).sort((a, b) => a - b).slice(0, 50);
+
+  return sortedIndices.map(i => ({
+    frameNumber: i,
+    timestamp: i / fps,
+    landmarks: frameSequence[i],
+    issues: analyzedFrames[i].issues.map(issue => ({
+      code: issue.code,
+      severity: issue.severity
+    }))
+  }));
 }
 
 /**

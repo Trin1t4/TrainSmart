@@ -342,6 +342,17 @@ export type SupportedExercise =
   | 'CHEST_PRESS';
 
 // ============================================
+// FRAME LANDMARK SNAPSHOT (per Visual Overlay)
+// ============================================
+
+export interface FrameLandmarkSnapshot {
+  frameNumber: number;
+  timestamp: number;
+  landmarks: PoseLandmarks;
+  issues: Pick<Issue, 'code' | 'severity'>[];
+}
+
+// ============================================
 // RISULTATO ANALISI
 // ============================================
 
@@ -375,6 +386,9 @@ export interface FormAnalysisResult {
 
   // Suggerimenti personalizzati
   recommendations: AnalysisRecommendations;
+
+  // Landmark snapshot per visual overlay (frame con issues)
+  issueLandmarks?: FrameLandmarkSnapshot[];
 }
 
 // ============================================

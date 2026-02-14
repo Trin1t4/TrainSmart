@@ -13,7 +13,7 @@ import {
   type SupportedExercise,
   SUPPORTED_EXERCISES
 } from '@trainsmart/shared';
-import type { FormAnalysisResult, PoseLandmarks } from '@trainsmart/shared';
+import type { FormAnalysisResult, PoseLandmarks, FrameLandmarkSnapshot } from '@trainsmart/shared';
 
 import { getPoseDetector, isPoseDetectionSupported, type VideoAnalysisProgress } from './poseDetectionService';
 import { supabase } from './supabaseClient';
@@ -50,6 +50,9 @@ export interface CorrectionResult {
     type: string;
     note?: string;
   };
+
+  // Visual overlay landmark snapshots
+  issueLandmarks?: FrameLandmarkSnapshot[];
 
   // Metadata
   framesAnalyzed?: number;
@@ -216,6 +219,7 @@ function convertInternalResult(result: FormAnalysisResult, confidence: number): 
       type: result.morphotype.type,
       note: result.morphotype.note
     } : undefined,
+    issueLandmarks: result.issueLandmarks,
     framesAnalyzed: result.framesAnalyzed,
     confidence
   };
@@ -375,7 +379,8 @@ export class VideoCorrectionEngine {
             confidence: result.confidence,
             processingTime: result.processingTime,
             stickingPoint: result.stickingPoint,
-            morphotype: result.morphotype
+            morphotype: result.morphotype,
+            issueLandmarks: result.issueLandmarks
           }
         })
         .eq('id', correctionId);

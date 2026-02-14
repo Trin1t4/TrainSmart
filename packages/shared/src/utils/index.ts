@@ -459,7 +459,16 @@ export {
   analyzeDeadliftFrame,
   analyzeFullDeadlift,
   analyzeBenchFrame,
-  analyzeFullBench
+  analyzeFullBench,
+  // Issue Segment Mapping (visual overlay)
+  getIssueSegmentMap,
+  getVisibleSegments,
+  isLandmarkVisible,
+  ISSUE_SEGMENT_MAP,
+  type IssueSegmentMap,
+  type SegmentDefinition,
+  type LandmarkKey,
+  type CorrectionStrategy
 } from './biomechanics';
 
 // Running Program Generator (Aerobic Training)

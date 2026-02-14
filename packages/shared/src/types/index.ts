@@ -193,6 +193,7 @@ export type {
   RecurringIssue,
   AdaptFlowWarning,
   AdaptFlowIntegration,
+  FrameLandmarkSnapshot,
 } from './biomechanics.types';
 
 // Running / Aerobic Training Types

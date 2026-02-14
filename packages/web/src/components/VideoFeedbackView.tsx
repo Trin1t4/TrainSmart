@@ -2,10 +2,13 @@
  * Video Feedback View - Display AI analysis results
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Star, AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Minus, Play } from 'lucide-react';
+import { Star, AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Minus, Play, Eye, EyeOff } from 'lucide-react';
 import { getVideoCorrection, getVideoSignedUrl, markVideoAsViewed, type VideoCorrection, type FeedbackIssue } from '../lib/videoCorrectionService';
+import type { FrameLandmarkSnapshot } from '@trainsmart/shared';
+import PoseOverlayCanvas from './PoseOverlayCanvas';
+import { BETA_FLAGS } from '../config/featureFlags';
 
 interface VideoFeedbackViewProps {
   correctionId: string;
@@ -16,6 +19,8 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
   const [correction, setCorrection] = useState<VideoCorrection | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [overlayEnabled, setOverlayEnabled] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     loadCorrection();
@@ -70,6 +75,8 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
   const issues = correction.feedback_issues || [];
   const corrections = correction.feedback_corrections || [];
   const warnings = correction.feedback_warnings || [];
+  const issueLandmarks: FrameLandmarkSnapshot[] =
+    (correction.metadata?.issueLandmarks as FrameLandmarkSnapshot[] | undefined) || [];
 
   // Score color
   const getScoreColor = (score: number) => {
@@ -123,16 +130,39 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
                 Video Registrato
               </h2>
               {videoUrl ? (
-                <video
-                  src={videoUrl}
-                  controls
-                  className="w-full rounded-lg"
-                  playsInline
-                />
+                <div className="relative">
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    controls
+                    className="w-full rounded-lg"
+                    playsInline
+                  />
+                  {BETA_FLAGS.VIDEO_OVERLAY && issueLandmarks.length > 0 && (
+                    <PoseOverlayCanvas
+                      videoRef={videoRef}
+                      landmarks={issueLandmarks}
+                      fps={correction.metadata?.fps as number || 30}
+                      enabled={overlayEnabled}
+                    />
+                  )}
+                </div>
               ) : (
                 <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
                   <p className="text-gray-500">Video non disponibile</p>
                 </div>
+              )}
+              {BETA_FLAGS.VIDEO_OVERLAY && issueLandmarks.length > 0 && (
+                <button
+                  onClick={() => setOverlayEnabled(prev => !prev)}
+                  className="mt-3 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  {overlayEnabled ? (
+                    <><Eye className="w-4 h-4" /> Nascondi Correzioni Grafiche</>
+                  ) : (
+                    <><EyeOff className="w-4 h-4" /> Mostra Correzioni Grafiche</>
+                  )}
+                </button>
               )}
             </div>
 

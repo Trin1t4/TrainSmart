@@ -1,5 +1,6 @@
 export const BETA_FLAGS = {
   VIDEO_ANALYSIS: false,
+  VIDEO_OVERLAY: false,
   FULL_SCREENING: false,
   SUPERSET: false,
   RPE_RIR_INPUT_UI: false,

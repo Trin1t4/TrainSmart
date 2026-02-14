@@ -18,6 +18,7 @@ export interface VideoCorrection {
   feedback_corrections?: string[];
   feedback_warnings?: string[];
   load_recommendation?: string;
+  metadata?: Record<string, unknown>;
   created_at: string;
   processed_at?: string;
   viewed_at?: string;
