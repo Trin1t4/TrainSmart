@@ -38,6 +38,7 @@ interface SlimOnboardingData {
 
   // Step 2: Cosa vuoi
   goal: string;
+  sport?: string; // Sport specifico per goal "prestazioni_sportive"
 
   // Step 3: Dove e quanto
   location: 'gym' | 'home';
@@ -71,6 +72,23 @@ const SPECIAL_GOALS = [
   { value: 'pre_partum', label: 'Gravidanza', icon: '🤰', desc: 'Allenamento in gravidanza', disclaimer: 'pregnancy' },
   { value: 'post_partum', label: 'Post-Parto', icon: '👶', desc: 'Ripresa dopo il parto', disclaimer: 'pregnancy' },
   { value: 'disabilita', label: 'Esigenze Speciali', icon: '♿', desc: 'Adattamenti personalizzati', disclaimer: 'disability' },
+];
+
+// Sport per goal "prestazioni_sportive"
+const SPORTS = [
+  { value: 'calcio', label: 'Calcio', icon: '⚽' },
+  { value: 'basket', label: 'Basket', icon: '🏀' },
+  { value: 'tennis', label: 'Tennis', icon: '🎾' },
+  { value: 'volley', label: 'Volley', icon: '🏐' },
+  { value: 'running', label: 'Corsa', icon: '🏃' },
+  { value: 'ciclismo', label: 'Ciclismo', icon: '🚴' },
+  { value: 'nuoto', label: 'Nuoto', icon: '🏊' },
+  { value: 'arti_marziali', label: 'Arti Marziali', icon: '🥋' },
+  { value: 'crossfit', label: 'CrossFit', icon: '💪' },
+  { value: 'arrampicata', label: 'Arrampicata', icon: '🧗' },
+  { value: 'sci', label: 'Sci', icon: '⛷️' },
+  { value: 'rugby', label: 'Rugby', icon: '🏉' },
+  { value: 'altro', label: 'Altro', icon: '🎯' },
 ];
 
 const PAIN_AREAS: Array<{ value: PainArea; label: string; icon: string }> = [
@@ -116,6 +134,7 @@ export default function SlimOnboarding() {
     age: 30,
     weight: undefined,
     goal: '',
+    sport: undefined,
     location: 'gym',
     trainingType: 'equipment', // Default: pesi liberi
     frequency: 3,
@@ -208,6 +227,7 @@ export default function SlimOnboarding() {
         },
         goal: data.goal,
         goals: [data.goal],
+        sport: data.sport, // Sport specifico per goal "prestazioni_sportive"
         trainingLocation: data.location,
         trainingType: data.trainingType,
         frequency: data.frequency,
@@ -277,7 +297,7 @@ export default function SlimOnboarding() {
   // ============================================================================
 
   const isStep1Valid = data.name.trim().length >= 2 && data.age > 0 && data.age >= 14 && data.age <= 100;
-  const isStep2Valid = data.goal !== '';
+  const isStep2Valid = data.goal !== '' && (data.goal !== 'prestazioni_sportive' || (data.sport && data.sport !== ''));
   const isStep3Valid = data.frequency >= 1 && data.frequency <= 7;
 
   const isCurrentStepValid = () => {
@@ -512,6 +532,60 @@ export default function SlimOnboarding() {
                   <p className="text-sm text-slate-300">{disclaimerInfo.message}</p>
                 </div>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Selezione sport per goal "prestazioni_sportive" */}
+        <AnimatePresence>
+          {data.goal === 'prestazioni_sportive' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-4"
+            >
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-white mb-1">Quale sport pratichi?</h3>
+                <p className="text-sm text-slate-400">Scegli il tuo sport principale</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {SPORTS.map(sport => (
+                  <button
+                    key={sport.value}
+                    type="button"
+                    onClick={() => updateData({ sport: sport.value })}
+                    className={`p-3 rounded-lg border-2 transition-all text-center ${
+                      data.sport === sport.value
+                        ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                        : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{sport.icon}</div>
+                    <div className="text-xs font-semibold">{sport.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {data.sport === 'altro' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Specifica il tuo sport
+                  </label>
+                  <input
+                    type="text"
+                    value={data.sport === 'altro' ? '' : data.sport || ''}
+                    onChange={(e) => updateData({ sport: e.target.value })}
+                    placeholder="Es: Padel, Golf, Equitazione..."
+                    className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  />
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

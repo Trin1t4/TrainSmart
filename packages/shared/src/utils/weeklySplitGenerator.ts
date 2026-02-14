@@ -1566,6 +1566,8 @@ interface SplitGeneratorOptions {
   baselines: PatternBaselines;
   painAreas: NormalizedPainArea[];
   muscularFocus?: string; // glutei, addome, petto, dorso, spalle, gambe, braccia, polpacci
+  sport?: string; // Sport specifico per goal "performance" (calcio, basket, tennis, ecc.)
+  sportRole?: any; // Ruolo sportivo dettagliato { sport, role } per programmi sport-specific
   sessionDuration?: number; // Durata sessione disponibile in minuti (15, 20, 30, 45, 60, 90)
   userBodyweight?: number; // Peso corporeo utente in kg - fondamentale per location adapter
   equipmentPreference?: 'prefer_machines' | 'prefer_free_weights' | 'mixed';

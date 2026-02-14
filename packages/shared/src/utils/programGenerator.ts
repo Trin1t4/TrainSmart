@@ -3789,6 +3789,8 @@ export function generateProgramWithSplit(
     baselines: correctedOptions.baselines,
     painAreas: correctedOptions.painAreas,
     muscularFocus: correctedOptions.muscularFocus as string | undefined,
+    sport: correctedOptions.sport,
+    sportRole: correctedOptions.sportRole,
     sessionDuration: correctedOptions.sessionDuration,
     userBodyweight: correctedOptions.userBodyweight,
     // CRITICO: passa equipment per filtro tirate senza attrezzi!
