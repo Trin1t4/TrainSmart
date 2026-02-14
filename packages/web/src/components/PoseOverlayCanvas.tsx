@@ -9,8 +9,8 @@
  */
 
 import React, { useRef, useEffect, useCallback } from 'react';
-import type { FrameLandmarkSnapshot } from '@trainsmart/shared';
-import { PoseOverlayRenderer } from '../lib/poseOverlayRenderer';
+import type { FrameLandmarkSnapshot } from '@/lib/biomechanics/types';
+import { PoseOverlayRenderer } from '@/lib/biomechanics/poseOverlayRenderer';
 
 interface PoseOverlayCanvasProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -46,8 +46,8 @@ export default function PoseOverlayCanvas({
         }
       }
 
-      // Solo se il frame e' entro 1/(fps*2) secondi (mezzo frame di tolleranza)
-      const tolerance = 1 / (fps * 2);
+      // Overlay visibile ±0.5s attorno a ciascun keyframe
+      const tolerance = 0.5;
       return minDelta <= tolerance ? closest : null;
     },
     [landmarks, fps]
@@ -135,7 +135,6 @@ export default function PoseOverlayCanvas({
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
 
-    // ResizeObserver per mantenere dimensioni sincronizzate
     const resizeObserver = new ResizeObserver(() => {
       syncSize();
       lastFrameRef.current = -1;
@@ -168,8 +167,13 @@ export default function PoseOverlayCanvas({
   return (
     <canvas
       ref={canvasRef}
-      className="absolute top-0 left-0 pointer-events-none"
-      style={{ zIndex: 10 }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        zIndex: 10,
+      }}
     />
   );
 }

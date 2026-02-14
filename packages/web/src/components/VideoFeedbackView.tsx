@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Star, AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Minus, Play, Eye, EyeOff } from 'lucide-react';
 import { getVideoCorrection, getVideoSignedUrl, markVideoAsViewed, type VideoCorrection, type FeedbackIssue } from '../lib/videoCorrectionService';
-import type { FrameLandmarkSnapshot } from '@trainsmart/shared';
+import type { FrameLandmarkSnapshot } from '@/lib/biomechanics/types';
 import PoseOverlayCanvas from './PoseOverlayCanvas';
 import { BETA_FLAGS } from '../config/featureFlags';
 
@@ -77,6 +77,7 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
   const warnings = correction.feedback_warnings || [];
   const issueLandmarks: FrameLandmarkSnapshot[] =
     (correction.metadata?.issueLandmarks as FrameLandmarkSnapshot[] | undefined) || [];
+  const videoFps = (correction.metadata?.fps as number) || 30;
 
   // Score color
   const getScoreColor = (score: number) => {
@@ -142,7 +143,7 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
                     <PoseOverlayCanvas
                       videoRef={videoRef}
                       landmarks={issueLandmarks}
-                      fps={correction.metadata?.fps as number || 30}
+                      fps={videoFps}
                       enabled={overlayEnabled}
                     />
                   )}
