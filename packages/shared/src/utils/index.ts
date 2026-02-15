@@ -1262,3 +1262,32 @@ export {
   isTestSafe,
   getSafeTestRM
 } from './oneRepMaxCalculator';
+
+// ============================================================
+// RM CALCULATOR WITH LATERALITY SUPPORT
+// ============================================================
+
+export type {
+  Laterality,
+  ExerciseConversion
+} from './rm-calculator';
+
+export {
+  // Laterality detection
+  getExerciseLaterality,
+  isBilateralDumbbell,
+  isPerSideWeight,
+  // Conversions
+  unilateralToBilateral,
+  bilateralToUnilateral,
+  convertWeightWithLaterality,
+  convertExercise,
+  // Display
+  formatWeightDisplay,
+  formatWeightWithLaterality,
+  // Constants
+  BILATERAL_DEFICIT_FACTOR,
+  UNILATERAL_EXERCISES,
+  BILATERAL_DUMBBELL_EXERCISES,
+  EXERCISE_CONVERSIONS
+} from './rm-calculator';
