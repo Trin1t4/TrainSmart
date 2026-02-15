@@ -50,11 +50,12 @@ interface AggregatedProgressData {
   totalReps: number;
 }
 
-// Calcola E1RM (Estimated 1 Rep Max) con formula Epley
+// Calcola E1RM — delegato al SSOT (oneRepMaxCalculator)
+import { estimate1RM } from '@trainsmart/shared';
 function calculateE1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
   if (reps > 12) reps = 12; // Limita per precisione
-  return weight * (1 + reps / 30);
+  return estimate1RM(weight, reps);
 }
 
 // Calcola volume (peso x reps x sets)

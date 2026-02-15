@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { generateProgram } from '../../packages/shared/src/utils/programGenerator.js';
+import { estimate1RM } from '../../packages/shared/src/utils/oneRepMaxCalculator.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -372,11 +373,8 @@ function convertAssessmentToStandard(assessment, bodyweight, testType) {
   }));
 }
 
-/**
- * Formula Brzycki per calcolo 1RM
- */
+// calculateOneRepMax — delegated to SSOT (oneRepMaxCalculator)
 function calculateOneRepMax(weight, reps) {
-  if (reps === 1) return weight;
   if (weight === 0 || reps === 0) return 0;
-  return weight * (36 / (37 - reps));
+  return estimate1RM(weight, reps);
 }

@@ -20,6 +20,7 @@
  */
 
 import { Level, Goal, Exercise, PatternBaseline } from '../types';
+import { estimate1RM as estimate1RM_SSOT, calculateNRMFrom1RM as calculateNRMFrom1RM_SSOT } from './oneRepMaxCalculator';
 
 // ============================================================
 // CONFIGURAZIONE INFERENZA
@@ -382,14 +383,13 @@ function calculateAdjustedWeight(
   // Effective reps = target + RIR
   const effectiveReps = reps + targetRIR;
   
-  // Formula Brzycki inversa per calcolare peso
-  // weight = weight10RM × (1.0278 - 0.0278 × 10) / (1.0278 - 0.0278 × effectiveReps)
-  const factor10 = 1.0278 - 0.0278 * 10;
-  const factorTarget = 1.0278 - 0.0278 * effectiveReps;
-  
-  if (factorTarget <= 0) return weight10RM * 0.5; // Safety
-  
-  const adjustedWeight = weight10RM * factor10 / factorTarget;
+  // Calcolo peso via SSOT: 10RM → 1RM → targetRM
+  const e1RM = estimate1RM_SSOT(weight10RM, 10);
+  const targetWeight = calculateNRMFrom1RM_SSOT(e1RM, effectiveReps);
+
+  if (targetWeight <= 0) return weight10RM * 0.5; // Safety
+
+  const adjustedWeight = targetWeight;
   
   // Arrotonda a 0.5kg
   return Math.round(adjustedWeight * 2) / 2;

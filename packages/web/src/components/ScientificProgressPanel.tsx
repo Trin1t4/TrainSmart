@@ -57,36 +57,28 @@ interface WorkoutLog {
 }
 
 // ============================================
-// FORMULE SCIENTIFICHE PER IL CALCOLO 1RM
+// FORMULE SCIENTIFICHE PER IL CALCOLO 1RM — SSOT
 // ============================================
+import { calculateOneRM, estimate1RM } from '@trainsmart/shared';
 
-// Epley Formula: peso × (1 + reps/30)
+// Wrapper per backward compatibility con il rendering dettagliato
 function epleyFormula(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  return weight * (1 + reps / 30);
+  const result = calculateOneRM({ weight, reps, formula: 'epley' });
+  return result.estimated1RM;
 }
 
-// Brzycki Formula: peso × (36 / (37 - reps))
 function brzyckiFormula(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  if (reps >= 37) return weight * 2; // Limite
-  return weight * (36 / (37 - reps));
+  const result = calculateOneRM({ weight, reps, formula: 'brzycki' });
+  return result.estimated1RM;
 }
 
-// Lander Formula: (100 × peso) / (101.3 - 2.67123 × reps)
 function landerFormula(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  const divisor = 101.3 - 2.67123 * reps;
-  if (divisor <= 0) return weight * 2;
-  return (100 * weight) / divisor;
+  const result = calculateOneRM({ weight, reps, formula: 'lander' });
+  return result.estimated1RM;
 }
 
-// Media delle formule per maggiore accuratezza
 function averageE1RM(weight: number, reps: number): number {
-  const epley = epleyFormula(weight, reps);
-  const brzycki = brzyckiFormula(weight, reps);
-  const lander = landerFormula(weight, reps);
-  return Math.round((epley + brzycki + lander) / 3);
+  return Math.round(estimate1RM(weight, reps));
 }
 
 // Wilks Score (forza relativa al peso corporeo)

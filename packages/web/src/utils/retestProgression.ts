@@ -330,31 +330,16 @@ export function getRetestSchedule(
   };
 }
 
-/**
- * Calcola 1RM stimato da nRM usando Brzycki
- */
+// 1RM calculations — delegated to SSOT (oneRepMaxCalculator)
+import { estimate1RM, calculateNRMFrom1RM_SSOT } from '@trainsmart/shared';
+
 export function calculateEstimated1RM(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  if (reps > 10) {
-    // Per reps > 10, la formula è meno accurata
-    // Usiamo una versione modificata
-    return weight * (1 + reps / 30);
-  }
-  // Formula di Brzycki
-  return weight * (36 / (37 - reps));
+  return estimate1RM(weight, reps);
 }
 
-/**
- * Calcola il peso target per un dato RM dal 1RM
- */
 export function calculateWeightForRM(estimated1RM: number, targetReps: number): number {
   if (targetReps === 1) return estimated1RM;
-
-  // Brzycki inversa
-  const targetWeight = estimated1RM * ((37 - targetReps) / 36);
-
-  // Arrotonda a 0.5kg
-  return Math.round(targetWeight * 2) / 2;
+  return Math.round(calculateNRMFrom1RM_SSOT(estimated1RM, targetReps) * 2) / 2;
 }
 
 /**

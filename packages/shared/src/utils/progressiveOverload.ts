@@ -145,20 +145,24 @@ function roundToNearestIncrement(weight: number, increment: number = 2.5): numbe
 }
 
 /**
- * Calcola Estimated 1RM usando formula Epley
+ * Calcola Estimated 1RM — delegato al SSOT (oneRepMaxCalculator)
  */
+import { estimate1RM } from './oneRepMaxCalculator';
+
 export function calculateE1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
   if (reps > 15) reps = 15; // Cap per accuratezza
-  return Math.round(weight * (1 + reps / 30));
+  return Math.round(estimate1RM(weight, reps));
 }
 
 /**
- * Calcola peso per un target di reps dato un E1RM
+ * Calcola peso per un target di reps dato un E1RM — delegato al SSOT
  */
+import { calculateNRMFrom1RM } from './oneRepMaxCalculator';
+
 export function weightForReps(e1rm: number, targetReps: number): number {
   if (targetReps === 1) return e1rm;
-  return roundToNearestIncrement(e1rm / (1 + targetReps / 30));
+  return roundToNearestIncrement(calculateNRMFrom1RM(e1rm, targetReps));
 }
 
 /**

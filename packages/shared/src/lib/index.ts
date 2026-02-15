@@ -434,7 +434,7 @@ export {
   generateRetestRecommendations,
   getLatestRetest,
   acceptRetestRecommendations,
-  estimate1RM,
+  // estimate1RM → now exported from utils/oneRepMaxCalculator (SSOT)
   calculateChangePercent,
   type RetestExerciseResult,
   type RetestInput,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
+import { estimate1RM } from '@trainsmart/shared';
 
 // Test pratici di forza
 const EXERCISES = [
@@ -83,9 +84,8 @@ export default function AssessmentFlow({ onComplete }) {
     navigate('/dashboard');
   };
   
-  const calculateOneRepMax = (weight, reps) => {
-    // Formula Brzycki: weight / (1.0278 - 0.0278 * reps)
-    return Math.round(weight / (1.0278 - 0.0278 * reps));
+  const calculateOneRepMax = (weight: number, reps: number) => {
+    return Math.round(estimate1RM(weight, reps));
   };
   
   return (

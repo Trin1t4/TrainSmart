@@ -23,6 +23,7 @@ import {
 import { adaptExercisesForLocation } from './locationAdapter';
 import { getUpgradedExercise } from './exerciseProgression';
 import { isBodyweightExercise } from './exerciseProgressionEngine';
+import { calculate1RMFromNRM as calculate1RMFromNRM_SSOT, calculateNRMFrom1RM as calculateNRMFrom1RM_SSOT } from './oneRepMaxCalculator';
 // Unified safety and goal modules
 import { toCanonicalGoal, getGoalConfig } from './goalMapper';
 import {
@@ -1873,19 +1874,17 @@ export function formatDuration(minutes: number): string {
  */
 
 /**
- * Calcola 1RM da un test nRM usando Brzycki
+ * Calcola 1RM da un test nRM — delegato al SSOT (oneRepMaxCalculator)
  */
 export function calculate1RMFromNRM(weight: number, reps: number): number {
-  if (reps >= 37) return weight; // Limite formula
-  return weight * (36 / (37 - reps));
+  return calculate1RMFromNRM_SSOT(weight, reps);
 }
 
 /**
- * Calcola nRM da 1RM usando Brzycki
+ * Calcola nRM da 1RM — delegato al SSOT (oneRepMaxCalculator)
  */
 export function calculateNRMFrom1RM(oneRM: number, targetReps: number): number {
-  if (targetReps >= 37) return oneRM * 0.5; // Fallback
-  return oneRM * ((37 - targetReps) / 36);
+  return calculateNRMFrom1RM_SSOT(oneRM, targetReps);
 }
 
 /**

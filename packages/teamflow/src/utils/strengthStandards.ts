@@ -28,6 +28,8 @@
 // TYPES
 // ================================================================
 
+import { estimate1RM as estimate1RM_SSOT } from '@trainsmart/shared';
+
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 export type Gender = 'M' | 'F';
 
@@ -150,8 +152,8 @@ export function calculatePatternLevel(
     // Per esercizi bodyweight, usa le reps come "ratio"
     ratio = reps;
   } else {
-    // Calcola 1RM stimato e poi il ratio
-    const estimated1RM = weight * (36 / (37 - reps));
+    // Calcola 1RM stimato e poi il ratio — SSOT
+    const estimated1RM = estimate1RM_SSOT(weight, reps);
     ratio = estimated1RM / bodyweight;
   }
 

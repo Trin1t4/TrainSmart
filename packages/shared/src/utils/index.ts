@@ -1227,3 +1227,38 @@ export {
   // Aggregated export
   OneRepMaxEvidenceBased
 } from './oneRepMaxEvidenceBased';
+
+// ============================================================
+// ONE REP MAX CALCULATOR - SSOT (7 formulas + RPE/RIR + VBT + bias)
+// ============================================================
+
+export type {
+  Formula,
+  ExercisePattern,
+  UserLevel as OneRMUserLevel,
+  OneRMInput,
+  OneRMResult,
+  PercentageTableRow,
+  VBTReference
+} from './oneRepMaxCalculator';
+
+export {
+  // Main calculator (object input, full result)
+  calculate1RM as calculateOneRM,
+  // Quick estimate (number-only result)
+  estimate1RM,
+  // Backward-compatible functions
+  calculate1RMFrom5RM,
+  calculate5RMFrom1RM,
+  calculate1RMFromNRM as calculate1RMFromNRM_SSOT,
+  calculateNRMFrom1RM as calculateNRMFrom1RM_SSOT,
+  calculatePercentage as calculatePercentage1RM,
+  // Percentage table with VBT
+  generatePercentageTable,
+  VBT_REFERENCE_TABLE,
+  estimatePercentageFromVelocity,
+  // Safety
+  MIN_RM_BY_LEVEL,
+  isTestSafe,
+  getSafeTestRM
+} from './oneRepMaxCalculator';

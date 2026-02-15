@@ -5,7 +5,8 @@ import { useTranslation } from '../lib/i18n';
 import {
   getExerciseImageWithFallback,
   calculatePhysicalScoreFromOnboarding,
-  CALISTHENICS_PATTERNS
+  CALISTHENICS_PATTERNS,
+  estimate1RM
 } from '@trainsmart/shared';
 
 // Video disponibili per i test iniziali (SOLO quelli verificati esistenti)
@@ -142,13 +143,10 @@ const SCREENING_VIDEOS: Record<string, string> = {
   'Leg Curl': '/videos/exercises/leg-curl.mp4',
 };
 
-/**
- * Formula di Brzycki per calcolare 1RM da peso e reps
- * 1RM = weight / (1.0278 - 0.0278 × reps)
- */
+// calculateOneRepMax — delegato al SSOT (oneRepMaxCalculator)
 function calculateOneRepMax(weight: number, reps: number): number {
   if (reps === 1) return weight;
-  return weight / (1.0278 - 0.0278 * reps);
+  return estimate1RM(weight, reps);
 }
 
 // ===== PROGRESSIONI CALISTHENICS - IMPORTATE DA SSOT =====

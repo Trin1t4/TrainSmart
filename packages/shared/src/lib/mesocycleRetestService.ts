@@ -314,15 +314,8 @@ export async function acceptRetestRecommendations(
   };
 }
 
-/**
- * Estimate 1RM from a sub-maximal test.
- * Uses Epley formula: 1RM = weight × (1 + reps/30)
- */
-export function estimate1RM(weight: number, reps: number): number {
-  if (reps <= 0 || weight <= 0) return 0;
-  if (reps === 1) return weight;
-  return Math.round(weight * (1 + reps / 30) * 10) / 10;
-}
+// estimate1RM — delegated to SSOT (oneRepMaxCalculator)
+export { estimate1RM } from '../utils/oneRepMaxCalculator';
 
 /**
  * Calculate change percent between old and new max.

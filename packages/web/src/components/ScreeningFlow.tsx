@@ -7,7 +7,8 @@ import {
   calculateLevelFromScreening,
   detectScreeningDiscrepancy,
   calculatePhysicalScoreFromOnboarding,
-  CALISTHENICS_PATTERNS
+  CALISTHENICS_PATTERNS,
+  estimate1RM
 } from '@trainsmart/shared';
 
 // Video disponibili per i test iniziali
@@ -96,42 +97,9 @@ const SCREENING_VIDEOS: Record<string, string> = {
   'Leg Curl': '/videos/exercises/leg-curl.mp4',
 };
 
-/**
- * Calcola 1RM usando formule multiple per maggiore accuratezza
- *
- * - Reps 1-6: Brzycki (più accurata per bassi reps)
- * - Reps 7-10: Media Brzycki + Epley
- * - Reps 11+: Epley (più accurata per alti reps)
- *
- * Nota: Per reps > 15, l'errore può essere significativo.
- * In questi casi, è consigliabile usare pesi più pesanti per il test.
- */
+// calculateOneRepMax — delegato al SSOT (oneRepMaxCalculator)
 function calculateOneRepMax(weight: number, reps: number): number {
-  if (reps === 1) return weight;
-  if (reps <= 0 || weight <= 0) return 0;
-
-  // Formule:
-  // Brzycki: weight * 36 / (37 - reps) oppure weight / (1.0278 - 0.0278 × reps)
-  // Epley: weight * (1 + reps / 30)
-  // Lander: weight * 100 / (101.3 - 2.67 * reps)
-
-  const brzycki = weight / (1.0278 - 0.0278 * reps);
-  const epley = weight * (1 + reps / 30);
-
-  if (reps <= 6) {
-    // Brzycki è più accurata per bassi reps
-    return Math.round(brzycki * 10) / 10;
-  } else if (reps <= 10) {
-    // Media delle due formule
-    return Math.round(((brzycki + epley) / 2) * 10) / 10;
-  } else {
-    // Epley è più accurata per alti reps, ma con warning
-    // Per reps > 15, l'errore può superare il 10%
-    if (reps > 15) {
-      console.warn(`[1RM] High rep count (${reps}) - estimate may be inaccurate (±15%)`);
-    }
-    return Math.round(epley * 10) / 10;
-  }
+  return Math.round(estimate1RM(weight, reps) * 10) / 10;
 }
 
 // ===== PROGRESSIONI CALISTHENICS - IMPORTATE DA SSOT =====

@@ -456,27 +456,8 @@ export default function MaximalsInput({
 // UTILITY FUNCTIONS (exported for use elsewhere)
 // ============================================================================
 
-/**
- * Calcola 1RM da 5RM usando formula di Epley
- * 1RM = weight × (1 + reps/30)
- */
-export function calculate1RMFrom5RM(weight: number): number {
-  return Math.round(weight * (1 + 5/30));
-}
-
-/**
- * Calcola 5RM da 1RM
- */
-export function calculate5RMFrom1RM(weight: number): number {
-  return Math.round(weight / (1 + 5/30));
-}
-
-/**
- * Calcola il peso per un dato % del 1RM
- */
-export function calculatePercentage(oneRM: number, percentage: number): number {
-  return Math.round((oneRM * percentage / 100) / 2.5) * 2.5; // Arrotonda a 2.5kg
-}
+// 1RM utilities — SSOT import from shared
+export { calculate1RMFrom5RM, calculate5RMFrom1RM, calculatePercentage1RM as calculatePercentage } from '@trainsmart/shared';
 
 /**
  * Normalizza i massimali a 1RM per uniformità
