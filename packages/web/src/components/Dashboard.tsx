@@ -1342,7 +1342,11 @@ export default function Dashboard() {
       discrepancyType,
       // Serie incrementali
       incrementSets: localStorage.getItem('incrementalSets_enabled') === 'true' ? 1 : 0,
-      maxSets: parseInt(localStorage.getItem('incrementalSets_max') || '6') || 6
+      maxSets: parseInt(localStorage.getItem('incrementalSets_max') || '6') || 6,
+      // Prescrizioni mediche
+      medicalRestrictions: onboarding?.medicalRestrictions?.hasRestrictions
+        ? onboarding.medicalRestrictions.restrictions
+        : undefined
     });
 
     // ✅ FIX: Controlla se la generazione è stata bloccata dalla validazione
@@ -1963,6 +1967,29 @@ export default function Dashboard() {
           />
         )}
 
+        {/* Medical Restrictions Banner */}
+        {dataStatus.onboarding?.medicalRestrictions?.hasRestrictions && dataStatus.onboarding.medicalRestrictions.restrictions.length > 0 && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4 flex items-center gap-3">
+            <Shield className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <div>
+              <span className="text-sm font-medium text-red-300">
+                Restrizioni mediche attive:{' '}
+                {dataStatus.onboarding.medicalRestrictions.restrictions.map(r => {
+                  const labels: Record<string, string> = {
+                    neck: 'Collo', shoulder: 'Spalla', lower_back: 'Lombare', hip: 'Anca',
+                    knee: 'Ginocchio', ankle: 'Caviglia', wrist: 'Polso', elbow: 'Gomito',
+                    arm: 'Braccio intero', leg: 'Gamba intera'
+                  };
+                  return labels[r.area] || r.area;
+                }).join(', ')}
+              </span>
+              <p className="text-xs text-red-400/70 mt-1">
+                Esercizi per queste zone esclusi dal programma
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Cycle Screening Notification - Dopo ogni ciclo completo */}
         {retestSchedule && showCycleScreening && !cycleScreeningDismissed && hasProgram && (
           <CycleScreeningNotification
@@ -1970,6 +1997,7 @@ export default function Dashboard() {
             currentWeight={dataStatus.onboarding?.personalInfo?.weight || 0}
             currentLocation={dataStatus.onboarding?.trainingLocation === 'home' ? 'home' : 'gym'}
             currentGoal={dataStatus.onboarding?.goal || 'ipertrofia'}
+            currentMedicalRestrictions={dataStatus.onboarding?.medicalRestrictions}
             onComplete={async (data) => {
               console.log('Cycle screening completed:', data);
               // Update local state with new data
@@ -1982,13 +2010,15 @@ export default function Dashboard() {
                   },
                   painAreas: data.painAreas,
                   trainingLocation: data.location,
-                  goal: data.goal
+                  goal: data.goal,
+                  // Aggiorna restrizioni mediche se cambiate
+                  ...(data.medicalRestrictions ? { medicalRestrictions: data.medicalRestrictions } : {})
                 };
                 setDataStatus(prev => ({ ...prev, onboarding: updatedOnboarding }));
                 localStorage.setItem('onboarding_data', JSON.stringify(updatedOnboarding));
 
-                // Se location o goal sono cambiati, rigenera il programma
-                if (data.locationChanged || data.goalChanged) {
+                // Se location, goal o restrizioni mediche sono cambiati, rigenera il programma
+                if (data.locationChanged || data.goalChanged || data.restrictionsChanged) {
                   console.log('🔄 Location or goal changed, regenerating program...');
                   console.log('  - Location changed:', data.locationChanged, '→', data.location);
                   console.log('  - Goal changed:', data.goalChanged, '→', data.goal);

@@ -1019,7 +1019,7 @@ function applyScreeningReductions(plannedSession, screeningResults) {
 // ===== MAIN BRANCHING LOGIC: ENTRY POINT =====
 
 export function generateProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal: rawGoal, disabilityType, sportRole } = input
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal: rawGoal, disabilityType, sportRole, medicalRestrictions } = input
 
   // ✅ NORMALIZZA GOAL (forza → strength, dimagrimento → fat_loss, etc.)
   const goal = normalizeGoal(rawGoal);
@@ -1047,16 +1047,17 @@ export function generateProgram(input) {
 
   // ===== RAMO 3: STANDARD TRAINING (GYM O HOME CON GOAL) =====
   console.log('[PROGRAM] 💪 BRANCHING → STANDARD TRAINING (GOAL-based)')
-  return generateStandardProgram({ 
-    level, 
-    frequency, 
-    location, 
-    equipment, 
-    painAreas, 
-    assessments, 
-    goal, 
-    disabilityType, 
-    sportRole 
+  return generateStandardProgram({
+    level,
+    frequency,
+    location,
+    equipment,
+    painAreas,
+    assessments,
+    goal,
+    disabilityType,
+    sportRole,
+    medicalRestrictions
   })
 }
 
@@ -1309,7 +1310,7 @@ function generateGenericPerformanceProgram(input) {
 // ===== RAMO 3: STANDARD TRAINING PROGRAM =====
 
 function generateStandardProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole } = input
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole, medicalRestrictions } = input
 
   console.log('[PROGRAM] 💪 generateStandardProgram with:', { level, frequency, location })
 
@@ -1338,10 +1339,60 @@ function generateStandardProgram(input) {
   else progression = 'ondulata_giornaliera'
 console.log('[GENERATOR] 🔍 DEBUG - location value:', location);
 console.log('[GENERATOR] 🔍 DEBUG - location || gym result:', location || 'gym');
-  const weeklySchedule = generateWeeklySchedule(
+  let weeklySchedule = generateWeeklySchedule(
     split, daysPerWeek, location || 'gym', equipment, painAreas,
     assessments, level, goal, disabilityType, sportRole
   )
+
+  // ═══ MEDICAL RESTRICTIONS HARD FILTER ═══
+  // Filtro a livello di SINGOLO ESERCIZIO con keyword bilingue (IT+EN)
+  // Ginocchio bloccato → rimuove squat/affondi MA tiene stacchi e hip thrust
+  if (medicalRestrictions && Array.isArray(medicalRestrictions) && medicalRestrictions.length > 0) {
+    const LIMB_EXPANSION = { arm: ['shoulder', 'elbow', 'wrist'], leg: ['hip', 'knee', 'ankle'] }
+    const blockedAreas = new Set()
+    for (const r of medicalRestrictions) {
+      const expansion = LIMB_EXPANSION[r.area]
+      if (expansion) expansion.forEach(a => blockedAreas.add(a))
+      else blockedAreas.add(r.area)
+    }
+    const blockedAreasArray = Array.from(blockedAreas)
+    console.log(`[MEDICAL] Hard block areas: ${blockedAreasArray.join(', ')}`)
+
+    // Mappa MEDICA per-esercizio: area → keywords bilingue
+    // Scientificamente accurata per PRESCRIZIONI MEDICHE
+    const MEDICAL_KEYWORDS = {
+      knee: ['squat', 'lunge', 'affondi', 'leg press', 'leg extension', 'leg curl', 'step', 'pistol', 'split squat', 'bulgaro', 'pressa', 'sissy', 'hack', 'goblet'],
+      hip: ['squat', 'deadlift', 'stacco', 'lunge', 'affondi', 'hip thrust', 'leg press', 'pressa', 'good morning', 'step', 'bulgaro', 'ponte', 'glute bridge', 'kick back', 'abductor', 'adductor'],
+      ankle: ['squat', 'lunge', 'affondi', 'calf', 'polpacci', 'step', 'jump', 'salto', 'pistol', 'bulgaro', 'sissy'],
+      lower_back: ['deadlift', 'stacco', 'squat', 'row', 'rematore', 'good morning', 'back extension', 'iperestensione', 'bent over', 'pendlay', 'clean', 'snatch', 'swing'],
+      shoulder: ['press', 'panca', 'bench', 'raise', 'alzate', 'fly', 'croci', 'dip', 'push', 'pull', 'trazioni', 'row', 'rematore', 'lat', 'facepull', 'arnold', 'military', 'overhead'],
+      elbow: ['curl', 'tricep', 'french', 'press', 'panca', 'bench', 'push', 'dip', 'extension', 'skull', 'pulldown', 'pull', 'trazioni', 'row', 'rematore'],
+      wrist: ['curl', 'press', 'panca', 'bench', 'push', 'deadlift', 'stacco', 'row', 'rematore', 'pull', 'trazioni', 'clean', 'snatch', 'farmer', 'grip'],
+      neck: ['shrug', 'scrollate', 'overhead press', 'military']
+    }
+
+    function isExerciseBlocked(exerciseName) {
+      const name = (exerciseName || '').toLowerCase()
+      for (const area of blockedAreasArray) {
+        const keywords = MEDICAL_KEYWORDS[area] || []
+        if (keywords.some(kw => name.includes(kw))) return true
+      }
+      return false
+    }
+
+    weeklySchedule = weeklySchedule.map(day => ({
+      ...day,
+      exercises: (day.exercises || []).filter(ex => {
+        if (isExerciseBlocked(ex.name)) {
+          console.log(`  [MEDICAL] ❌ Rimosso: ${ex.name}`)
+          return false
+        }
+        return true
+      })
+    })).filter(day => day.exercises && day.exercises.length > 0)
+
+    console.log(`[MEDICAL] Schedule filtrato: ${weeklySchedule.length} giorni rimasti`)
+  }
 
   const includesDeload = level === 'intermediate' || level === 'advanced'
   const deloadFrequency = includesDeload ? 4 : undefined

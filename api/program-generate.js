@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const {
       level, goal, location, frequency, assessmentData,
       userId, assessmentId, bodyweight, painAreas,
-      equipment, disabilityType, sportRole
+      equipment, disabilityType, sportRole, medicalRestrictions
     } = req.body;
 
     console.log('[API] Data received:', {
@@ -74,7 +74,8 @@ export default async function handler(req, res) {
       painAreas: painAreas || [],
       disabilityType: disabilityType || null,
       sportRole: sportRole || null,
-      assessments
+      assessments,
+      medicalRestrictions: medicalRestrictions || null
     });
 
     if (!generatedProgram || !generatedProgram.weeklySchedule) {

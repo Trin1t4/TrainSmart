@@ -185,6 +185,25 @@ export interface InjuryRecord {
   dateOfInjury?: string;
 }
 
+// ═══ PRESCRIZIONI MEDICHE ═══
+export type MedicalRestrictionArea =
+  | 'neck' | 'shoulder' | 'lower_back' | 'hip'
+  | 'knee' | 'ankle' | 'wrist' | 'elbow'
+  | 'arm'   // espande in: shoulder + elbow + wrist
+  | 'leg';  // espande in: hip + knee + ankle
+
+export interface MedicalRestriction {
+  area: MedicalRestrictionArea;
+  reason?: string;            // es. "post-intervento spalla"
+  startDate: string;          // ISO date
+  lastConfirmedDate: string;  // ISO date (aggiornata a ogni mesociclo)
+}
+
+export interface MedicalRestrictionsData {
+  hasRestrictions: boolean;
+  restrictions: MedicalRestriction[];
+}
+
 export interface OnboardingData {
   // Step 1: Personal Info (include Navy Method measurements)
   personalInfo?: PersonalInfo;
@@ -214,6 +233,9 @@ export interface OnboardingData {
 
   // Step 7: Running/Aerobic (optional)
   running?: RunningPreferences;
+
+  // Step 8: Medical Restrictions (prescrizioni mediche)
+  medicalRestrictions?: MedicalRestrictionsData;
 }
 
 /**

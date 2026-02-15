@@ -18,9 +18,9 @@ import { useTranslation } from '../lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Target, MapPin, Dumbbell, Home, Calendar,
-  ChevronRight, ChevronLeft, CheckCircle, AlertCircle
+  ChevronRight, ChevronLeft, CheckCircle, AlertCircle, Shield
 } from 'lucide-react';
-import type { OnboardingData, PainArea, PainEntry } from '../types/onboarding.types';
+import type { OnboardingData, PainArea, PainEntry, MedicalRestrictionArea, MedicalRestrictionsData } from '../types/onboarding.types';
 import HealthDataConsentModal from '../components/HealthDataConsentModal';
 import MedicalDisclaimer from '../components/onboarding/MedicalDisclaimer';
 
@@ -102,6 +102,19 @@ const PAIN_AREAS: Array<{ value: PainArea; label: string; icon: string }> = [
   { value: 'elbow', label: 'Gomito', icon: '💪' },
 ];
 
+const MEDICAL_AREAS: Array<{ value: MedicalRestrictionArea; label: string; icon: string; warning?: string }> = [
+  { value: 'neck', label: 'Collo', icon: '🦴' },
+  { value: 'shoulder', label: 'Spalla', icon: '💪' },
+  { value: 'lower_back', label: 'Lombare', icon: '⬇️' },
+  { value: 'hip', label: 'Anca', icon: '🦴' },
+  { value: 'knee', label: 'Ginocchio', icon: '🦵' },
+  { value: 'ankle', label: 'Caviglia', icon: '👣' },
+  { value: 'wrist', label: 'Polso', icon: '🤚' },
+  { value: 'elbow', label: 'Gomito', icon: '💪' },
+  { value: 'arm', label: 'Braccio intero', icon: '🦾', warning: 'Tutti gli esercizi per parte superiore verranno esclusi' },
+  { value: 'leg', label: 'Gamba intera', icon: '🦿', warning: 'Tutti gli esercizi per parte inferiore verranno esclusi' },
+];
+
 const HOME_EQUIPMENT = [
   { key: 'pullupBar', label: 'Sbarra trazioni', icon: '🔩' },
   { key: 'loopBands', label: 'Elastici', icon: '🔗' },
@@ -148,6 +161,11 @@ export default function SlimOnboarding() {
   const [showPainSelector, setShowPainSelector] = useState(false);
   const [selectedPainAreas, setSelectedPainAreas] = useState<PainArea[]>([]);
 
+  // Medical restrictions state
+  const [showMedicalSelector, setShowMedicalSelector] = useState(false);
+  const [selectedMedicalAreas, setSelectedMedicalAreas] = useState<MedicalRestrictionArea[]>([]);
+  const [medicalReason, setMedicalReason] = useState('');
+
   // Equipment state (for home)
   const [showEquipment, setShowEquipment] = useState(false);
 
@@ -188,6 +206,18 @@ export default function SlimOnboarding() {
     }));
     updateData({ painAreas: painEntries });
     setShowPainSelector(false);
+  };
+
+  const toggleMedicalArea = (area: MedicalRestrictionArea) => {
+    setSelectedMedicalAreas(prev =>
+      prev.includes(area)
+        ? prev.filter(a => a !== area)
+        : [...prev, area]
+    );
+  };
+
+  const confirmMedicalAreas = () => {
+    setShowMedicalSelector(false);
   };
 
   const toggleEquipment = (key: string) => {
@@ -255,6 +285,16 @@ export default function SlimOnboarding() {
         painAreas: data.painAreas,
         equipment: data.equipment,
         screeningType: data.screeningType,
+        // Medical restrictions
+        medicalRestrictions: selectedMedicalAreas.length > 0 ? {
+          hasRestrictions: true,
+          restrictions: selectedMedicalAreas.map(area => ({
+            area,
+            reason: medicalReason || undefined,
+            startDate: new Date().toISOString(),
+            lastConfirmedDate: new Date().toISOString(),
+          })),
+        } : { hasRestrictions: false, restrictions: [] },
       };
 
       // Salva su Supabase
@@ -903,6 +943,152 @@ export default function SlimOnboarding() {
             </div>
           </motion.div>
         )}
+      </div>
+
+      {/* Medical Restrictions */}
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-red-400" />
+            Hai prescrizioni mediche?
+          </div>
+        </label>
+        <p className="text-xs text-slate-500 mb-2">
+          Prescrizioni che ti impediscono di muovere un arto o una zona del corpo
+        </p>
+
+        {!showMedicalSelector ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMedicalAreas([]);
+                setMedicalReason('');
+                setShowMedicalSelector(false);
+              }}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                selectedMedicalAreas.length === 0 && !showMedicalSelector
+                  ? 'border-emerald-500 bg-emerald-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <CheckCircle className="w-6 h-6 mx-auto mb-2" />
+              <div className="font-semibold">No, nessuna</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMedicalSelector(true)}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                selectedMedicalAreas.length > 0
+                  ? 'border-red-500 bg-red-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              <Shield className="w-6 h-6 mx-auto mb-2 text-red-400" />
+              <div className="font-semibold">
+                {selectedMedicalAreas.length > 0
+                  ? `${selectedMedicalAreas.length} zona/e`
+                  : 'Si'}
+              </div>
+            </button>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="bg-slate-800/50 rounded-lg p-4 border border-red-500/30"
+          >
+            <p className="text-sm text-slate-400 mb-3">
+              Seleziona le zone con prescrizione medica
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {MEDICAL_AREAS.map(area => (
+                <button
+                  key={area.value}
+                  type="button"
+                  onClick={() => toggleMedicalArea(area.value)}
+                  className={`p-3 rounded-lg border text-center transition-all ${
+                    selectedMedicalAreas.includes(area.value)
+                      ? 'border-red-500 bg-red-500/20 text-white'
+                      : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="text-xl">{area.icon}</div>
+                  <div className="text-xs mt-1">{area.label}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Warning per limb interi */}
+            <AnimatePresence>
+              {selectedMedicalAreas.some(a => a === 'arm' || a === 'leg') && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+                >
+                  <p className="text-xs text-red-300">
+                    {selectedMedicalAreas.includes('arm') && selectedMedicalAreas.includes('leg')
+                      ? 'Braccio + Gamba: verranno generati solo esercizi di mobilita/core.'
+                      : selectedMedicalAreas.includes('arm')
+                        ? 'Braccio intero: tutti gli esercizi per parte superiore verranno esclusi.'
+                        : 'Gamba intera: tutti gli esercizi per parte inferiore verranno esclusi.'}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Motivo (opzionale) */}
+            <div className="mt-3">
+              <input
+                type="text"
+                value={medicalReason}
+                onChange={(e) => setMedicalReason(e.target.value)}
+                placeholder="Motivo (opzionale, es. post-intervento spalla)"
+                className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+              />
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMedicalSelector(false);
+                  setSelectedMedicalAreas([]);
+                  setMedicalReason('');
+                }}
+                className="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition"
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={confirmMedicalAreas}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold"
+              >
+                Conferma ({selectedMedicalAreas.length})
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Disclaimer rosso */}
+        <AnimatePresence>
+          {selectedMedicalAreas.length > 0 && !showMedicalSelector && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+            >
+              <p className="text-xs text-red-300 flex items-center gap-2">
+                <Shield className="w-4 h-4 flex-shrink-0" />
+                Gli esercizi per queste zone saranno COMPLETAMENTE esclusi dal programma.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

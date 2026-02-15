@@ -13,8 +13,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scale, Activity, X, ChevronRight, AlertCircle, CheckCircle, MapPin, Target } from 'lucide-react';
+import { Scale, Activity, X, ChevronRight, AlertCircle, CheckCircle, MapPin, Target, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import type { MedicalRestrictionArea, MedicalRestrictionsData, MedicalRestriction } from '../types/onboarding.types';
 
 // Body areas for pain tracking
 const BODY_AREAS = [
@@ -26,6 +27,20 @@ const BODY_AREAS = [
   { id: 'hip', label: 'Anca', icon: '🦴' },
   { id: 'knee', label: 'Ginocchio', icon: '🦵' },
   { id: 'ankle', label: 'Caviglia', icon: '🦶' },
+];
+
+// Medical restriction areas
+const MEDICAL_AREAS: Array<{ value: MedicalRestrictionArea; label: string; icon: string }> = [
+  { value: 'neck', label: 'Collo', icon: '🦴' },
+  { value: 'shoulder', label: 'Spalla', icon: '💪' },
+  { value: 'lower_back', label: 'Lombare', icon: '⬇️' },
+  { value: 'hip', label: 'Anca', icon: '🦴' },
+  { value: 'knee', label: 'Ginocchio', icon: '🦵' },
+  { value: 'ankle', label: 'Caviglia', icon: '👣' },
+  { value: 'wrist', label: 'Polso', icon: '🤚' },
+  { value: 'elbow', label: 'Gomito', icon: '💪' },
+  { value: 'arm', label: 'Braccio intero', icon: '🦾' },
+  { value: 'leg', label: 'Gamba intera', icon: '🦿' },
 ];
 
 // Goal options
@@ -41,6 +56,7 @@ interface CycleScreeningNotificationProps {
   currentWeight?: number;
   currentLocation?: 'gym' | 'home';
   currentGoal?: string;
+  currentMedicalRestrictions?: MedicalRestrictionsData;
   onComplete: (data: {
     weight: number;
     painAreas: string[];
@@ -48,6 +64,8 @@ interface CycleScreeningNotificationProps {
     goal: string;
     locationChanged: boolean;
     goalChanged: boolean;
+    medicalRestrictions?: MedicalRestrictionsData;
+    restrictionsChanged: boolean;
   }) => void;
   onDismiss: () => void;
 }
@@ -57,15 +75,32 @@ export default function CycleScreeningNotification({
   currentWeight = 0,
   currentLocation = 'gym',
   currentGoal = 'ipertrofia',
+  currentMedicalRestrictions,
   onComplete,
   onDismiss
 }: CycleScreeningNotificationProps) {
-  const [step, setStep] = useState<'intro' | 'weight' | 'pain' | 'location' | 'goal' | 'confirm'>('intro');
+  const [step, setStep] = useState<'intro' | 'weight' | 'pain' | 'medical' | 'location' | 'goal' | 'confirm'>('intro');
   const [weight, setWeight] = useState(currentWeight);
   const [selectedPainAreas, setSelectedPainAreas] = useState<string[]>([]);
   const [location, setLocation] = useState<'gym' | 'home'>(currentLocation);
   const [goal, setGoal] = useState(currentGoal);
   const [saving, setSaving] = useState(false);
+
+  // Medical restrictions state
+  const hasMedicalRestrictions = currentMedicalRestrictions?.hasRestrictions && currentMedicalRestrictions.restrictions.length > 0;
+  const [medicalAction, setMedicalAction] = useState<'confirm' | 'update' | 'remove'>('confirm');
+  const [selectedMedicalAreas, setSelectedMedicalAreas] = useState<MedicalRestrictionArea[]>(
+    currentMedicalRestrictions?.restrictions?.map(r => r.area) || []
+  );
+  const [medicalRestrictionsChanged, setMedicalRestrictionsChanged] = useState(false);
+
+  const toggleMedicalArea = (area: MedicalRestrictionArea) => {
+    setSelectedMedicalAreas(prev =>
+      prev.includes(area)
+        ? prev.filter(a => a !== area)
+        : [...prev, area]
+    );
+  };
 
   const togglePainArea = (areaId: string) => {
     setSelectedPainAreas(prev =>
@@ -117,8 +152,47 @@ export default function CycleScreeningNotification({
           parsed.goal = goal;
           parsed.lastScreeningDate = new Date().toISOString();
           parsed.lastScreeningCycle = currentCycle;
+          // Update medical restrictions if changed
+          if (medicalRestrictionsChanged) {
+            if (medicalAction === 'remove') {
+              parsed.medicalRestrictions = { hasRestrictions: false, restrictions: [] };
+            } else if (medicalAction === 'update') {
+              parsed.medicalRestrictions = {
+                hasRestrictions: selectedMedicalAreas.length > 0,
+                restrictions: selectedMedicalAreas.map(area => ({
+                  area,
+                  startDate: currentMedicalRestrictions?.restrictions?.find(r => r.area === area)?.startDate || new Date().toISOString(),
+                  lastConfirmedDate: new Date().toISOString(),
+                })),
+              };
+            }
+          }
           localStorage.setItem('onboarding_data', JSON.stringify(parsed));
         }
+      }
+
+      // Build medical restrictions data
+      let finalMedicalRestrictions: MedicalRestrictionsData | undefined;
+      if (medicalAction === 'remove') {
+        finalMedicalRestrictions = { hasRestrictions: false, restrictions: [] };
+      } else if (medicalAction === 'update') {
+        finalMedicalRestrictions = {
+          hasRestrictions: selectedMedicalAreas.length > 0,
+          restrictions: selectedMedicalAreas.map(area => ({
+            area,
+            startDate: currentMedicalRestrictions?.restrictions?.find(r => r.area === area)?.startDate || new Date().toISOString(),
+            lastConfirmedDate: new Date().toISOString(),
+          })),
+        };
+      } else if (hasMedicalRestrictions) {
+        // Confirm: update lastConfirmedDate
+        finalMedicalRestrictions = {
+          hasRestrictions: true,
+          restrictions: (currentMedicalRestrictions?.restrictions || []).map(r => ({
+            ...r,
+            lastConfirmedDate: new Date().toISOString(),
+          })),
+        };
       }
 
       onComplete({
@@ -127,7 +201,9 @@ export default function CycleScreeningNotification({
         location,
         goal,
         locationChanged,
-        goalChanged
+        goalChanged,
+        medicalRestrictions: finalMedicalRestrictions,
+        restrictionsChanged: medicalRestrictionsChanged,
       });
     } catch (error) {
       console.error('Error saving cycle screening:', error);
@@ -188,6 +264,12 @@ export default function CycleScreeningNotification({
                   <AlertCircle className="w-4 h-4 text-amber-400" />
                   <span>Eventuali dolori o fastidi</span>
                 </li>
+                {hasMedicalRestrictions && (
+                  <li className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-red-400" />
+                    <span>Aggiorna prescrizioni mediche</span>
+                  </li>
+                )}
                 <li className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-purple-400" />
                   <span>Conferma location (palestra/casa)</span>
@@ -360,6 +442,150 @@ export default function CycleScreeningNotification({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => setStep(hasMedicalRestrictions ? 'medical' : 'location')}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                Avanti
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* MEDICAL STEP */}
+        {step === 'medical' && (
+          <motion.div
+            key="medical"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="w-6 h-6 text-red-400" />
+                <h4 className="text-lg font-bold text-white">Prescrizioni Mediche</h4>
+              </div>
+
+              <p className="text-sm text-slate-400 mb-4">
+                Hai restrizioni mediche attive. La situazione e' cambiata?
+              </p>
+
+              {/* Chip restrizioni attuali */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(medicalAction === 'update' ? selectedMedicalAreas : currentMedicalRestrictions?.restrictions || []).map((item) => {
+                  const area = typeof item === 'string' ? item : item.area;
+                  const areaInfo = MEDICAL_AREAS.find(a => a.value === area);
+                  return (
+                    <span
+                      key={area}
+                      className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-xs font-medium"
+                    >
+                      {areaInfo?.icon} {areaInfo?.label || area}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* 3 opzioni */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setMedicalAction('confirm');
+                    setMedicalRestrictionsChanged(false);
+                  }}
+                  className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                    medicalAction === 'confirm'
+                      ? 'border-red-500 bg-red-500/20'
+                      : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                  }`}
+                >
+                  <span className={`text-sm font-medium ${medicalAction === 'confirm' ? 'text-red-300' : 'text-slate-300'}`}>
+                    Confermo stesse restrizioni
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMedicalAction('update');
+                    setMedicalRestrictionsChanged(true);
+                  }}
+                  className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                    medicalAction === 'update'
+                      ? 'border-amber-500 bg-amber-500/20'
+                      : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                  }`}
+                >
+                  <span className={`text-sm font-medium ${medicalAction === 'update' ? 'text-amber-300' : 'text-slate-300'}`}>
+                    Aggiorna restrizioni
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMedicalAction('remove');
+                    setSelectedMedicalAreas([]);
+                    setMedicalRestrictionsChanged(true);
+                  }}
+                  className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                    medicalAction === 'remove'
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                  }`}
+                >
+                  <span className={`text-sm font-medium ${medicalAction === 'remove' ? 'text-emerald-300' : 'text-slate-300'}`}>
+                    Rimuovi tutte (il medico ha rimosso le prescrizioni)
+                  </span>
+                </button>
+              </div>
+
+              {/* Selettore zone (solo se "update") */}
+              <AnimatePresence>
+                {medicalAction === 'update' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4"
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      {MEDICAL_AREAS.map(area => (
+                        <button
+                          key={area.value}
+                          onClick={() => toggleMedicalArea(area.value)}
+                          className={`p-3 rounded-xl border-2 text-left transition-all ${
+                            selectedMedicalAreas.includes(area.value)
+                              ? 'border-red-500 bg-red-500/20'
+                              : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{area.icon}</span>
+                            <span className={`text-sm font-medium ${
+                              selectedMedicalAreas.includes(area.value) ? 'text-red-300' : 'text-slate-300'
+                            }`}>
+                              {area.label}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setStep('pain')}
+                className="px-6 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-3 rounded-xl transition-colors"
+              >
+                Indietro
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setStep('location')}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 flex items-center justify-center gap-2"
               >
@@ -438,7 +664,7 @@ export default function CycleScreeningNotification({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setStep('pain')}
+                onClick={() => setStep(hasMedicalRestrictions ? 'medical' : 'pain')}
                 className="px-6 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-3 rounded-xl transition-colors"
               >
                 Indietro
@@ -569,6 +795,34 @@ export default function CycleScreeningNotification({
                     )}
                   </div>
                 </div>
+
+                {/* Medical Restrictions */}
+                {hasMedicalRestrictions && (
+                  <div className="p-3 bg-slate-700/50 rounded-lg">
+                    <span className="text-slate-400 flex items-center gap-2 mb-2">
+                      <Shield className="w-4 h-4 text-red-400" />
+                      Prescrizioni mediche
+                    </span>
+                    {medicalAction === 'remove' ? (
+                      <span className="text-emerald-400 text-sm">Rimosse tutte le restrizioni</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {(medicalAction === 'update' ? selectedMedicalAreas : currentMedicalRestrictions?.restrictions || []).map((item) => {
+                          const area = typeof item === 'string' ? item : item.area;
+                          const areaInfo = MEDICAL_AREAS.find(a => a.value === area);
+                          return (
+                            <span
+                              key={area}
+                              className="px-2 py-1 bg-red-500/20 text-red-300 rounded-full text-xs font-medium"
+                            >
+                              {areaInfo?.icon} {areaInfo?.label || area}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Location */}
                 <div className="flex justify-between items-center p-3 bg-slate-700/50 rounded-lg">

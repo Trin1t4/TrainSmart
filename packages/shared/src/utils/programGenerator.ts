@@ -101,6 +101,8 @@ export interface ProgramGeneratorOptions {
   incrementSets?: number;
   /** Numero massimo di serie raggiungibile con serie incrementali */
   maxSets?: number;
+  /** Prescrizioni mediche: hard block per zone del corpo */
+  medicalRestrictions?: import('../types/onboarding.types').MedicalRestriction[];
 }
 
 export interface ScreeningResult {
@@ -3803,7 +3805,9 @@ export function generateProgramWithSplit(
     discrepancyType: correctedOptions.discrepancyType,
     // Serie incrementali
     incrementSets: correctedOptions.incrementSets,
-    maxSets: correctedOptions.maxSets
+    maxSets: correctedOptions.maxSets,
+    // Prescrizioni mediche
+    medicalRestrictions: correctedOptions.medicalRestrictions
   });
 
   console.log(`Split generato: ${weeklySplit.splitName}`);

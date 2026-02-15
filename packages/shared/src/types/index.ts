@@ -19,6 +19,10 @@ export type {
   OnboardingData,
   CompleteOnboardingData,
   InjuryRecord,
+  // Medical Restrictions
+  MedicalRestrictionArea,
+  MedicalRestriction,
+  MedicalRestrictionsData,
   // Running/Aerobic
   RunningGoal,
   RunningIntegration,

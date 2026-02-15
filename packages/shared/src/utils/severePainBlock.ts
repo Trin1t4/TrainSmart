@@ -303,6 +303,130 @@ export function isStrongWarningLevel(painLevel: number): boolean {
 }
 
 // ============================================================================
+// MEDICAL RESTRICTIONS (Prescrizioni mediche - hard block)
+// ============================================================================
+
+import type { MedicalRestriction } from '../types/onboarding.types';
+
+/** Espande arti interi nelle zone singole */
+const LIMB_EXPANSION: Record<string, string[]> = {
+  arm: ['shoulder', 'elbow', 'wrist'],
+  leg: ['hip', 'knee', 'ankle'],
+};
+
+/** Espande le restrizioni mediche in zone singole */
+export function expandMedicalRestrictions(restrictions: MedicalRestriction[]): string[] {
+  if (!restrictions || restrictions.length === 0) return [];
+  const areas = new Set<string>();
+  for (const r of restrictions) {
+    const expansion = LIMB_EXPANSION[r.area];
+    if (expansion) expansion.forEach(a => areas.add(a));
+    else areas.add(r.area);
+  }
+  return Array.from(areas);
+}
+
+/**
+ * Mappa MEDICA per-esercizio: area → keywords bilingue (IT+EN)
+ *
+ * Diversa dalla AREA_EXERCISE_MAP del pain system:
+ * - Include ENTRAMBE le lingue per ogni area
+ * - Scientificamente accurata per PRESCRIZIONI MEDICHE
+ *   (es. ginocchio NON include stacco/deadlift perché il ginocchio è quasi scarico)
+ *
+ * Fonti: anatomia funzionale - articolazioni primarie sotto carico significativo
+ */
+const MEDICAL_AREA_KEYWORDS: Record<string, string[]> = {
+  // ═══ GINOCCHIO: Flessione/Estensione sotto carico ═══
+  // Bloccati: squat, affondi, leg press, estensioni, curl gambe
+  // NON bloccati: stacco/deadlift (ginocchio quasi statico), hip thrust, calf raise
+  knee: [
+    'squat', 'lunge', 'affondi', 'leg press', 'leg extension', 'leg curl',
+    'step', 'pistol', 'split squat', 'bulgaro', 'pressa', 'sissy',
+    'hack', 'goblet',
+  ],
+
+  // ═══ ANCA: Flessione/Estensione/Rotazione sotto carico ═══
+  // Bloccati: squat, stacco, affondi, hip thrust, good morning
+  // NON bloccati: leg extension, leg curl, calf raise
+  hip: [
+    'squat', 'deadlift', 'stacco', 'lunge', 'affondi', 'hip thrust',
+    'leg press', 'pressa', 'good morning', 'step', 'bulgaro',
+    'ponte', 'glute bridge', 'kick back', 'abductor', 'adductor',
+  ],
+
+  // ═══ CAVIGLIA: Dorsiflessione/Plantarflessione sotto carico ═══
+  // Bloccati: squat (dorsiflessione), affondi, calf raise, salti
+  // NON bloccati: leg press (piede fisso), leg curl/extension, stacco, hip thrust
+  ankle: [
+    'squat', 'lunge', 'affondi', 'calf', 'polpacci',
+    'step', 'jump', 'salto', 'pistol', 'bulgaro', 'sissy',
+  ],
+
+  // ═══ LOMBARE: Carico assiale e flessione/estensione del tronco ═══
+  // Bloccati: stacco, squat pesante, rematore, good morning, back extension
+  // NON bloccati: leg press (supporto schiena), leg curl/ext, pressa, macchine guidate
+  lower_back: [
+    'deadlift', 'stacco', 'squat', 'row', 'rematore', 'good morning',
+    'back extension', 'iperestensione', 'bent over', 'pendlay',
+    'clean', 'snatch', 'swing',
+  ],
+
+  // ═══ SPALLA: Flessione/Abduzione/Rotazione sotto carico ═══
+  // Bloccati: panca, press, alzate, croci, dip, push-up, trazioni, row
+  // NON bloccati: lower body, core (plank OK se spalla non caricata)
+  shoulder: [
+    'press', 'panca', 'bench', 'raise', 'alzate', 'fly', 'croci',
+    'dip', 'push', 'pull', 'trazioni', 'row', 'rematore',
+    'lat', 'facepull', 'arnold', 'military', 'overhead',
+  ],
+
+  // ═══ GOMITO: Flessione/Estensione sotto carico ═══
+  // Bloccati: curl, tricipiti, press, push-up, dip, trazioni
+  // NON bloccati: alzate laterali (gomito fisso), lower body, core
+  elbow: [
+    'curl', 'tricep', 'french', 'press', 'panca', 'bench',
+    'push', 'dip', 'extension', 'skull', 'pulldown',
+    'pull', 'trazioni', 'row', 'rematore',
+  ],
+
+  // ═══ POLSO: Presa/Flessione/Estensione sotto carico ═══
+  // Bloccati: press, curl, stacco (presa), push-up, trazioni
+  // NON bloccati: macchine con maniglie, lower body
+  wrist: [
+    'curl', 'press', 'panca', 'bench', 'push', 'deadlift', 'stacco',
+    'row', 'rematore', 'pull', 'trazioni', 'clean', 'snatch',
+    'farmer', 'grip',
+  ],
+
+  // ═══ COLLO: Compressione cervicale ═══
+  // Bloccati: scrollate, press overhead pesante, stacco pesante
+  // NON bloccati: la maggior parte degli esercizi
+  neck: [
+    'shrug', 'scrollate', 'overhead press', 'military',
+  ],
+};
+
+/**
+ * Verifica se un esercizio è bloccato da una restrizione medica
+ * Usa keyword matching bilingue (IT+EN) per accuratezza
+ */
+export function isExerciseBlockedByMedical(exerciseName: string, blockedAreas: string[]): boolean {
+  if (!blockedAreas || blockedAreas.length === 0 || !exerciseName) return false;
+
+  const name = exerciseName.toLowerCase();
+
+  for (const area of blockedAreas) {
+    const keywords = MEDICAL_AREA_KEYWORDS[area];
+    if (!keywords) continue;
+    if (keywords.some(kw => name.includes(kw))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
@@ -316,7 +440,10 @@ export const SeverePainBlock = {
   isStrongWarning: isStrongWarningLevel,
   HARD_THRESHOLD: HARD_BLOCK_THRESHOLD,
   STRONG_WARNING_THRESHOLD,
-  ACTION_LABELS: BLOCK_ACTION_LABELS
+  ACTION_LABELS: BLOCK_ACTION_LABELS,
+  // Medical restrictions
+  expandMedicalRestrictions,
+  isExerciseBlockedByMedical,
 };
 
 export default SeverePainBlock;

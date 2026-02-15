@@ -42,6 +42,8 @@ import {
   isPregnancyGoal,
   applyPregnancyIntensityCap
 } from './pregnancySafety';
+import { expandMedicalRestrictions, isExerciseBlockedByMedical } from './severePainBlock';
+import type { MedicalRestriction } from '../types/onboarding.types';
 
 /**
  * Lista esercizi isometrici (a tempo, non reps)
@@ -1594,6 +1596,8 @@ interface SplitGeneratorOptions {
   incrementSets?: number;
   /** Numero massimo di serie raggiungibile con serie incrementali */
   maxSets?: number;
+  /** Prescrizioni mediche: hard block per zone del corpo */
+  medicalRestrictions?: MedicalRestriction[];
 }
 
 // ============================================================
@@ -3868,6 +3872,48 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   const distributionNote = getGoalDistributionNote(goals || []);
   if (distributionNote) {
     split.description = `${split.description}\n\n${distributionNote}`;
+  }
+
+  // ============================================
+  // MEDICAL RESTRICTIONS - Hard block per esercizio
+  // ============================================
+  // Filtro a livello di SINGOLO ESERCIZIO (non di pattern).
+  // Ginocchio bloccato → rimuove squat/affondi/leg press MA tiene stacchi e hip thrust.
+  // Usa keyword matching bilingue (IT+EN) per coprire tutti i nomi esercizi.
+  const medicalBlockedAreas = expandMedicalRestrictions(options.medicalRestrictions || []);
+  if (medicalBlockedAreas.length > 0) {
+    console.log(`🏥 Medical restrictions attive: ${medicalBlockedAreas.join(', ')}`);
+
+    split.days.forEach(day => {
+      const before = day.exercises.length;
+      day.exercises = day.exercises.filter(ex => {
+        if (!ex || !ex.name) return true; // Mantieni entry senza nome (correttivi vuoti)
+        if (isExerciseBlockedByMedical(ex.name, medicalBlockedAreas)) {
+          console.log(`  ❌ Rimosso: ${ex.name} (pattern: ${ex.pattern}) - zona medica bloccata`);
+          return false;
+        }
+        return true;
+      });
+      const removed = before - day.exercises.length;
+      if (removed > 0) {
+        console.log(`  📋 ${day.dayName}: rimossi ${removed} esercizi per restrizioni mediche`);
+      }
+    });
+
+    // Se un giorno ha 0 esercizi, rimuovilo
+    split.days = split.days.filter(day => {
+      if (day.exercises.length === 0) {
+        console.log(`  ⚠️ ${day.dayName}: nessun esercizio rimasto, giorno rimosso`);
+        return false;
+      }
+      return true;
+    });
+
+    // Se 0 giorni rimasti, messaggio di impossibilita'
+    if (split.days.length === 0) {
+      console.warn('🏥 ATTENZIONE: Nessun esercizio possibile con le restrizioni mediche attuali');
+      split.description = 'Non è possibile generare un programma con le restrizioni mediche attuali. Consulta il tuo medico per aggiornamenti.';
+    }
   }
 
   // ============================================

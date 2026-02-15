@@ -93,6 +93,25 @@ export interface RunningInterest {
   level?: 'sedentary' | 'beginner' | 'intermediate' | 'advanced';
 }
 
+// ═══ PRESCRIZIONI MEDICHE ═══
+export type MedicalRestrictionArea =
+  | 'neck' | 'shoulder' | 'lower_back' | 'hip'
+  | 'knee' | 'ankle' | 'wrist' | 'elbow'
+  | 'arm'   // espande in: shoulder + elbow + wrist
+  | 'leg';  // espande in: hip + knee + ankle
+
+export interface MedicalRestriction {
+  area: MedicalRestrictionArea;
+  reason?: string;
+  startDate: string;
+  lastConfirmedDate: string;
+}
+
+export interface MedicalRestrictionsData {
+  hasRestrictions: boolean;
+  restrictions: MedicalRestriction[];
+}
+
 export interface OnboardingData {
   // Step 0: Anagrafica (required for Stripe & GDPR)
   anagrafica?: Anagrafica;
@@ -125,6 +144,9 @@ export interface OnboardingData {
   // Legacy / Optional
   activityLevel?: ActivityLevel;
   painAreas?: PainEntry[];
+
+  // Medical Restrictions (prescrizioni mediche)
+  medicalRestrictions?: MedicalRestrictionsData;
 }
 
 /**
