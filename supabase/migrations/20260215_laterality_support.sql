@@ -44,6 +44,21 @@ AND (
   OR LOWER(name) LIKE '%una gamba%'
   OR LOWER(name) LIKE '%1 braccio%'
   OR LOWER(name) LIKE '%1 gamba%'
+  OR LOWER(name) LIKE '%unilateral%'
+  
+  -- Esercizi classicamente unilaterali
+  OR LOWER(name) LIKE '%concentration curl%'
+  OR LOWER(name) LIKE '%curl concentrazione%'
+  OR LOWER(name) LIKE '%pistol squat%'
+  OR LOWER(name) LIKE '%bulgarian split squat%'
+  OR LOWER(name) LIKE '%split squat bulgaro%'
+  OR LOWER(name) LIKE '%affondo bulgaro%'
+  OR LOWER(name) LIKE '%single leg rdl%'
+  OR LOWER(name) LIKE '%single leg hip thrust%'
+  OR LOWER(name) LIKE '%single leg calf raise%'
+  OR LOWER(name) LIKE '%step up%'
+  OR LOWER(name) LIKE '%lunge%'
+  OR LOWER(name) LIKE '%affond%' -- affondi/affondo
   
   -- Esercizi specifici unilaterali per nome esatto
   OR LOWER(name) IN (
@@ -64,6 +79,22 @@ AND (
     'cossack squat',
     'skater squat'
   )
+);
+
+-- NOTA: Esercizi come "Dumbbell Bench Press" o "Dumbbell Shoulder Press"
+-- NON sono unilaterali (si usano 2 manubri insieme).
+-- "Dumbbell Row" / "Rematore Manubrio" invece È tipicamente unilaterale.
+UPDATE exercise_library 
+SET is_unilateral = true 
+WHERE is_unilateral IS NOT true 
+AND (
+  LOWER(name) LIKE '%dumbbell row%'
+  OR LOWER(name) LIKE '%rematore manubrio%'
+  OR LOWER(name) LIKE '%rematore con manubrio%'
+  OR LOWER(name) LIKE '%rematore un braccio%'
+  OR LOWER(name) LIKE '%db row%'
+  OR LOWER(name) LIKE '%kickback%'
+  OR LOWER(name) LIKE '%tricep kickback%'
 );
 
 -- =====================================================
@@ -159,6 +190,93 @@ FROM user_maxes;
 
 COMMENT ON VIEW user_maxes_with_laterality IS
 'Vista che espone i massimali utente con informazioni sulla lateralità per display corretto in UI.';
+
+-- =====================================================
+-- 8. AGGIORNA TABELLA exercise_conversions (se esiste)
+-- =====================================================
+
+-- Aggiungi colonne per indicare la lateralità di sorgente e destinazione
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'exercise_conversions') THEN
+    ALTER TABLE exercise_conversions 
+    ADD COLUMN IF NOT EXISTS source_is_unilateral BOOLEAN DEFAULT false,
+    ADD COLUMN IF NOT EXISTS target_is_unilateral BOOLEAN DEFAULT false;
+    
+    -- Aggiorna le conversioni esistenti con la lateralità corretta
+    -- Bilanciere -> Manubrio singolo (unilaterale)
+    UPDATE exercise_conversions 
+    SET target_is_unilateral = true 
+    WHERE LOWER(target_exercise_name) LIKE '%dumbbell row%' 
+       OR LOWER(target_exercise_name) LIKE '%rematore manubrio%';
+    
+    UPDATE exercise_conversions 
+    SET source_is_unilateral = true 
+    WHERE LOWER(source_exercise_name) LIKE '%dumbbell row%' 
+       OR LOWER(source_exercise_name) LIKE '%rematore manubrio%';
+    
+    -- Sincronizza con exercise_library per le conversioni future
+    UPDATE exercise_conversions ec 
+    SET source_is_unilateral = el.is_unilateral 
+    FROM exercise_library el 
+    WHERE ec.source_exercise_id = el.id 
+      AND el.is_unilateral = true;
+    
+    UPDATE exercise_conversions ec 
+    SET target_is_unilateral = el.is_unilateral 
+    FROM exercise_library el 
+    WHERE ec.target_exercise_id = el.id 
+      AND el.is_unilateral = true;
+  END IF;
+END $$;
+
+-- =====================================================
+-- 9. FUNZIONE: Conversione peso con lateralità
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION converti_peso_con_lateralita(
+  p_source_weight DECIMAL,
+  p_conversion_factor DECIMAL,
+  p_source_is_unilateral BOOLEAN,
+  p_target_is_unilateral BOOLEAN
+) RETURNS JSONB AS $$
+DECLARE
+  v_converted_weight DECIMAL;
+  v_display_note TEXT;
+BEGIN
+  v_converted_weight := ROUND(p_source_weight * p_conversion_factor, 1);
+  
+  -- Caso 1: Bilaterale -> Bilaterale (nessuna correzione)
+  IF NOT p_source_is_unilateral AND NOT p_target_is_unilateral THEN
+    v_display_note := v_converted_weight || 'kg';
+  
+  -- Caso 2: Bilaterale -> Unilaterale
+  -- Il fattore di conversione già dà il peso per singolo arto
+  ELSIF NOT p_source_is_unilateral AND p_target_is_unilateral THEN
+    v_display_note := v_converted_weight || 'kg per lato';
+  
+  -- Caso 3: Unilaterale -> Bilaterale
+  -- Il peso sorgente è per singolo arto, serve raddoppiare prima di convertire
+  ELSIF p_source_is_unilateral AND NOT p_target_is_unilateral THEN
+    -- source_weight è per 1 arto, moltiplica per 2 per avere il totale bilaterale equivalente
+    v_converted_weight := ROUND((p_source_weight * 2) * p_conversion_factor, 1);
+    v_display_note := v_converted_weight || 'kg';
+  
+  -- Caso 4: Unilaterale -> Unilaterale
+  ELSE
+    v_display_note := v_converted_weight || 'kg per lato';
+  END IF;
+  
+  RETURN jsonb_build_object(
+    'weight', v_converted_weight,
+    'display', v_display_note,
+    'is_per_side', p_target_is_unilateral
+  );
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+COMMENT ON FUNCTION converti_peso_con_lateralita IS
+'Converte un peso tra esercizi gestendo correttamente la lateralità (unilaterale/bilaterale). Ritorna JSON con weight, display e is_per_side.';
 
 -- =====================================================
 -- FINE MIGRATION
