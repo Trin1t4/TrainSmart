@@ -11,6 +11,12 @@
 
 import { getAllVariantsForPattern } from '../data/calisthenicsProgressions';
 import type { EquipmentPreference } from '../types/onboarding.types';
+import {
+  getExerciseLaterality,
+  isPerSideWeight,
+  formatWeightWithLaterality,
+  BILATERAL_DEFICIT_FACTOR
+} from './rm-calculator';
 
 export interface ExerciseVariant {
   id: string;
@@ -1517,10 +1523,22 @@ export interface SuggestedParams {
   note?: string;
 }
 
+/**
+ * Calcola peso e reps suggerite per un'alternativa.
+ * 
+ * AGGIORNATO: usa lateralità centralizzata da rm-calculator per gestire
+ * correttamente conversioni bilateral ↔ unilateral.
+ * 
+ * @param originalWeight Peso originale (numero o stringa con "kg")
+ * @param originalReps Reps originali (numero o stringa)
+ * @param alternative Esercizio alternativo con weightFactor/repsFactor
+ * @param sourceExerciseName Nome esercizio sorgente (opzionale, per lateralità)
+ */
 export function calculateSuggestedParams(
   originalWeight: string | number | undefined,
   originalReps: string | number | undefined,
-  alternative: ExerciseAlternative
+  alternative: ExerciseAlternative,
+  sourceExerciseName?: string
 ): SuggestedParams | null {
   // Parse weight
   let weight: number | null = null;
@@ -1559,34 +1577,41 @@ export function calculateSuggestedParams(
   const weightFactor = alternative.weightFactor ?? 1.0;
   const repsFactor = alternative.repsFactor ?? 1.0;
 
-  // Calcola nuovi valori
-  const newWeight = Math.round(weight * weightFactor * 2) / 2; // Arrotonda a 0.5kg
+  // Determina lateralità di sorgente e destinazione
+  const sourceLaterality = sourceExerciseName 
+    ? getExerciseLaterality(sourceExerciseName) 
+    : 'bilateral'; // Assume bilateral se non specificato
+  const targetLaterality = getExerciseLaterality(alternative.name);
+
+  // Calcola nuovo peso considerando lateralità
+  let newWeight: number;
+
+  if (sourceLaterality === 'bilateral' && targetLaterality === 'unilateral') {
+    // Bilateral → Unilateral: il weightFactor già dovrebbe dare il peso per lato
+    newWeight = Math.round(weight * weightFactor * 2) / 2;
+  } else if (sourceLaterality === 'unilateral' && targetLaterality === 'bilateral') {
+    // Unilateral → Bilateral: raddoppia il peso sorgente con bilateral deficit, poi applica fattore
+    const bilateralEquivalent = weight * 2 * BILATERAL_DEFICIT_FACTOR;
+    newWeight = Math.round(bilateralEquivalent * weightFactor * 2) / 2;
+  } else {
+    // Stessa lateralità: conversione diretta
+    newWeight = Math.round(weight * weightFactor * 2) / 2;
+  }
+
+  // Arrotonda a 0.5kg
   const newReps = reps ? Math.round(reps * repsFactor) : null;
 
-  // Determina come mostrare il peso
-  let weightDisplay: string;
-  let note: string | undefined;
-
-  // Se è unilaterale (manubri), mostra "per mano"
-  const isUnilateral = alternative.name.toLowerCase().includes('dumbbell') ||
-                       alternative.name.toLowerCase().includes('manubr') ||
-                       alternative.name.toLowerCase().includes('single leg') ||
-                       alternative.name.toLowerCase().includes('unilateral');
-
-  // Se è esercizio con singolo peso davanti (goblet, sumo db)
-  const isSingleWeight = alternative.name.toLowerCase().includes('goblet') ||
-                         alternative.name.toLowerCase().includes('sumo') && alternative.name.toLowerCase().includes('dumbbell');
-
-  if (isUnilateral && !isSingleWeight) {
-    weightDisplay = `~${newWeight}kg per mano`;
-    note = 'Usa RIR 2-3 per calibrare';
-  } else {
-    weightDisplay = `~${newWeight}kg`;
-    note = 'Punto di partenza - regola con RIR';
-  }
+  // Usa formatWeightWithLaterality per display corretto
+  const perSide = isPerSideWeight(alternative.name);
+  const weightDisplay = `~${formatWeightWithLaterality(newWeight, alternative.name)}`;
 
   // Reps display
   const repsDisplay = newReps ? `${newReps} reps` : '-';
+
+  // Nota appropriata
+  const note = perSide 
+    ? 'Peso per lato - usa RIR 2-3 per calibrare' 
+    : 'Punto di partenza - regola con RIR';
 
   return {
     weight: newWeight,
@@ -1599,7 +1624,8 @@ export function calculateSuggestedParams(
 }
 
 /**
- * Ottiene alternative con parametri calcolati
+ * Ottiene alternative con parametri calcolati.
+ * AGGIORNATO: passa exerciseName a calculateSuggestedParams per lateralità corretta.
  */
 export function getAlternativesWithParams(
   exerciseName: string,
@@ -1611,6 +1637,6 @@ export function getAlternativesWithParams(
 
   return alternatives.map(alt => ({
     ...alt,
-    suggested: calculateSuggestedParams(originalWeight, originalReps, alt) ?? undefined
+    suggested: calculateSuggestedParams(originalWeight, originalReps, alt, exerciseName) ?? undefined
   }));
 }
