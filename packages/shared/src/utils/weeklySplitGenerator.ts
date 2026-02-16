@@ -33,6 +33,7 @@ import {
   type SafetyContext,
   type DayType
 } from './safetyCaps';
+import { generateDefaultBaselines } from './programValidation';
 
 // ============================================================================
 // PREGNANCY SAFETY - Import
@@ -3853,6 +3854,35 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
   if (goals && goals.length > 1) {
     console.log(`Multi-goal detected: ${goals.join(', ')}`);
     console.log(`Volume distribution: ${goals.length === 2 ? '70-30' : '40-30-30'}`);
+  }
+
+  // ============================================
+  // FIX: RIEMPIMENTO BASELINES MANCANTI
+  // ============================================
+  // Se alcuni pattern mancano nei baselines, genera valori di default
+  // per evitare che esercizi vengano filtrati via (es. gambe mancanti in programmi correttivi)
+  const requiredPatterns: Array<keyof PatternBaselines> = [
+    'lower_push',
+    'lower_pull',
+    'horizontal_push',
+    'vertical_push',
+    'vertical_pull',
+    'core'
+  ];
+
+  const defaultBaselines = generateDefaultBaselines();
+  
+  if (!options.baselines) {
+    console.warn('⚠️ Baselines completamente mancanti, usando defaults per tutti i pattern');
+    options.baselines = defaultBaselines;
+  } else {
+    // Riempi solo i pattern mancanti
+    for (const pattern of requiredPatterns) {
+      if (!options.baselines[pattern]) {
+        console.warn(`⚠️ Baseline mancante per ${pattern}, usando default`);
+        options.baselines[pattern] = defaultBaselines[pattern];
+      }
+    }
   }
 
   let split: WeeklySplit;
