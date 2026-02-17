@@ -3286,16 +3286,15 @@ export function generateProgram(options: ProgramGeneratorOptions): Omit<Program,
     console.log(`${exerciseName}: ${finalSets}x${finalReps} @ ${volumeCalc.intensity} ${painNotes ? '(' + painNotes + ')' : ''}`);
   });
 
-  // Aggiungi esercizi correttivi per zone doloranti (MAX 2 per non allungare troppo la sessione)
+  // Aggiungi esercizi correttivi per zone doloranti (MAX 3 TOTALI)
   const correctiveExercises: Exercise[] = [];
   for (const painEntry of painAreas) {
+    if (correctiveExercises.length >= 3) break;
     const painArea = painEntry.area;
     const correctives = getCorrectiveExercises(painArea);
 
-    // Limita a MAX 3 correttivi per zona per non aumentare troppo la durata
-    const selectedCorrectives = correctives.slice(0, 3);
-
-    for (const corrective of selectedCorrectives) {
+    for (const corrective of correctives) {
+      if (correctiveExercises.length >= 3) break;
       correctiveExercises.push({
         pattern: 'corrective',
         name: corrective,

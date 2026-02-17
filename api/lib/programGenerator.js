@@ -357,6 +357,40 @@ const MOTOR_RECOVERY_GOALS = {
   }
 }
 
+// ===== PAIN-AREA EXERCISE FILTER =====
+// Mappa esercizio → aree di dolore che lo controindicano
+const PAIN_CONTRAINDICATIONS = {
+  knee: ['squat', 'leg press', 'leg extension', 'leg curl', 'lunge', 'affondi', 'bulgaro', 'pistol', 'pressa', 'step', 'sissy', 'hack', 'goblet', 'front squat', 'jump'],
+  shoulder: ['panca', 'bench', 'press', 'military', 'arnold', 'push press', 'raise', 'alzate', 'fly', 'croci', 'dips', 'dip', 'push-up', 'french press', 'overhead'],
+  lower_back: ['stacco', 'deadlift', 'good morning', 'back extension', 'iperestensione', 'bent over', 'pendlay', 'clean', 'snatch', 'swing', 'rematore', 'row'],
+  hip: ['squat', 'deadlift', 'stacco', 'lunge', 'affondi', 'hip thrust', 'leg press', 'pressa', 'good morning', 'bulgaro', 'glute bridge'],
+  ankle: ['calf', 'polpacci', 'jump', 'salto', 'box jump'],
+  elbow: ['curl', 'tricep', 'french press', 'pushdown', 'skull'],
+  wrist: ['curl', 'clean', 'snatch', 'farmer', 'grip'],
+  neck: ['shrug', 'scrollate']
+}
+
+function isContraindicatedForPain(exerciseName, painAreas) {
+  if (!painAreas || painAreas.length === 0) return false
+  const name = (exerciseName || '').toLowerCase()
+  for (const area of painAreas) {
+    const keywords = PAIN_CONTRAINDICATIONS[area] || []
+    if (keywords.some(kw => name.includes(kw))) return true
+  }
+  return false
+}
+
+function filterExercisesForPain(exercises, painAreas) {
+  if (!painAreas || painAreas.length === 0) return exercises
+  return exercises.filter(ex => {
+    if (isContraindicatedForPain(ex.name, painAreas)) {
+      console.log(`[PAIN FILTER] ❌ Rimosso: ${ex.name} (dolore: ${painAreas.join(', ')})`)
+      return false
+    }
+    return true
+  })
+}
+
 // ===== HELPER FUNCTIONS (UNICO BLOCCO - NO DUPLICATI) =====
 
 function isBodyweightExercise(exerciseName) {
@@ -1019,7 +1053,10 @@ function applyScreeningReductions(plannedSession, screeningResults) {
 // ===== MAIN BRANCHING LOGIC: ENTRY POINT =====
 
 export function generateProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal: rawGoal, disabilityType, sportRole, medicalRestrictions } = input
+  const { level, frequency, location, equipment, painAreas: rawPainAreas = [], assessments = [], goal: rawGoal, disabilityType, sportRole, medicalRestrictions } = input
+
+  // ✅ NORMALIZZA PAIN AREAS: supporta sia stringhe ['knee'] sia oggetti [{area:'knee', severity:'moderate'}]
+  const painAreas = rawPainAreas.map(p => typeof p === 'string' ? p : p.area).filter(Boolean);
 
   // ✅ NORMALIZZA GOAL (forza → strength, dimagrimento → fat_loss, etc.)
   const goal = normalizeGoal(rawGoal);
@@ -1469,6 +1506,15 @@ function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAre
       { dayName: 'Legs B', location, exercises: generateLegsDay('B', location, equipment, painAreas, assessments, level, goal, disabilityType, sportRole) }
     )
   }
+
+  // ===== PAIN FILTER: rimuovi esercizi controindicati da TUTTI i giorni =====
+  if (painAreas && painAreas.length > 0) {
+    schedule = schedule.map(day => ({
+      ...day,
+      exercises: filterExercisesForPain(day.exercises || [], painAreas)
+    })).filter(day => day.exercises && day.exercises.length > 0)
+  }
+
 // 🎯 Aggiungi cardio per goal fat_loss
   if (goal === 'fat_loss' && schedule.length > 0) {
     const goalConfig = GOAL_CONFIGS.fat_loss
