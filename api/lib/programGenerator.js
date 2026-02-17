@@ -1094,7 +1094,8 @@ export function generateProgram(input) {
     goal,
     disabilityType,
     sportRole,
-    medicalRestrictions
+    medicalRestrictions,
+    bodyweight: input.bodyweight || 70
   })
 }
 
@@ -1347,7 +1348,7 @@ function generateGenericPerformanceProgram(input) {
 // ===== RAMO 3: STANDARD TRAINING PROGRAM =====
 
 function generateStandardProgram(input) {
-  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole, medicalRestrictions } = input
+  const { level, frequency, location, equipment, painAreas = [], assessments = [], goal, disabilityType, sportRole, medicalRestrictions, bodyweight = 70 } = input
 
   console.log('[PROGRAM] 💪 generateStandardProgram with:', { level, frequency, location })
 
@@ -1378,7 +1379,7 @@ console.log('[GENERATOR] 🔍 DEBUG - location value:', location);
 console.log('[GENERATOR] 🔍 DEBUG - location || gym result:', location || 'gym');
   let weeklySchedule = generateWeeklySchedule(
     split, daysPerWeek, location || 'gym', equipment, painAreas,
-    assessments, level, goal, disabilityType, sportRole
+    assessments, level, goal, disabilityType, sportRole, bodyweight
   )
 
   // ═══ MEDICAL RESTRICTIONS HARD FILTER ═══
@@ -1457,7 +1458,7 @@ console.log('[GENERATOR] 🔍 DEBUG - location || gym result:', location || 'gym
 
 // ===== WEEKLY SCHEDULE GENERATOR =====
 
-function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAreas, assessments, level, goal, disabilityType, sportRole) {
+function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAreas, assessments, level, goal, disabilityType, sportRole, bodyweight = 70) {
   let schedule = []
 
   console.log('[PROGRAM] 📅 generateWeeklySchedule:', { split, daysPerWeek, location, level })
@@ -1513,25 +1514,28 @@ function generateWeeklySchedule(split, daysPerWeek, location, equipment, painAre
       ...day,
       exercises: filterExercisesForPain(day.exercises || [], painAreas)
     })).filter(day => day.exercises && day.exercises.length > 0)
+
+    // ===== REPLENISH: aggiungi esercizi safe se un giorno ha < 3 esercizi =====
+    schedule = schedule.map(day => replenishDayIfSparse(day, painAreas, level, goal, assessments, location, equipment))
   }
 
 // 🎯 Aggiungi cardio per goal fat_loss
   if (goal === 'fat_loss' && schedule.length > 0) {
     const goalConfig = GOAL_CONFIGS.fat_loss
-    
+
     schedule.forEach(day => {
       day.exercises = convertToCircuit(day.exercises, goalConfig)
       day.notes = day.notes ? `${day.notes} - Formato circuito` : 'Formato circuito'
     })
-    
+
     if (daysPerWeek >= 4 && goalConfig.includesCardio) {
       const cardioSessions = Math.min(goalConfig.cardioFrequency, Math.floor(daysPerWeek / 3))
-      
+
       for (let i = 0; i < cardioSessions; i++) {
-        schedule = addFatLossCardioDay(schedule, level)
+        schedule = addFatLossCardioDay(schedule, level, bodyweight)
       }
     }
-    
+
     console.log('[PROGRAM] 🔥 Fat loss: circuiti + cardio applicati')
   }
 
@@ -1748,20 +1752,104 @@ function generateLegsDay(variant, location, equipment, painAreas, assessments, l
 
   return exercises
 }
-function addFatLossCardioDay(weeklySchedule, level) {
-  const cardioExercises = [
+// ===== REPLENISH: riempi giorni svuotati dal pain filter =====
+// Esercizi safe per area di dolore che non coinvolgono la zona interessata
+const SAFE_ALTERNATIVES = {
+  // Esercizi lower body che NON stressano il ginocchio
+  knee_safe_lower: [
+    { name: 'Hip Thrust', type: 'compound', multiplier: 0.8 },
+    { name: 'Glute Bridge', type: 'accessory', multiplier: 0 },
+    { name: 'Nordic Curl', type: 'accessory', multiplier: 0 },
+    { name: 'Cable Pull-Through', type: 'accessory', multiplier: 0.4 },
+    { name: 'Hyperextension', type: 'accessory', multiplier: 0 }
+  ],
+  // Esercizi upper body che NON stressano la spalla
+  shoulder_safe_upper: [
+    { name: 'Curl Bilanciere', type: 'isolation', multiplier: 0.3 },
+    { name: 'Hammer Curl', type: 'isolation', multiplier: 0.3 },
+    { name: 'Tricep Pushdown', type: 'isolation', multiplier: 0.3 },
+    { name: 'Shrugs', type: 'isolation', multiplier: 0.4 },
+    { name: 'Face Pull (cavo basso)', type: 'isolation', multiplier: 0.2 }
+  ],
+  // Esercizi che NON stressano la schiena bassa
+  lower_back_safe: [
+    { name: 'Leg Press', type: 'compound', multiplier: 1.3 },
+    { name: 'Leg Extension', type: 'isolation', multiplier: 0.3 },
+    { name: 'Leg Curl', type: 'isolation', multiplier: 0.3 },
+    { name: 'Hip Thrust', type: 'compound', multiplier: 0.8 },
+    { name: 'Calf Raises', type: 'isolation', multiplier: 0.5 }
+  ]
+}
+
+function replenishDayIfSparse(day, painAreas, level, goal, assessments, location, equipment) {
+  const MIN_EXERCISES = 3
+  if (!day.exercises || day.exercises.length >= MIN_EXERCISES) return day
+
+  const needed = MIN_EXERCISES - day.exercises.length
+  const existingNames = new Set(day.exercises.map(e => e.name.toLowerCase()))
+  const dayName = (day.dayName || '').toLowerCase()
+  const baseLoad = getBaseLoads(assessments || [])
+  const baseWeight = baseLoad.squat || 50
+
+  // Determina quale pool di alternative usare
+  let pool = []
+  const hasKneePain = painAreas.includes('knee')
+  const hasShoulderPain = painAreas.includes('shoulder')
+  const hasBackPain = painAreas.includes('lower_back')
+
+  if (dayName.includes('lower') || dayName.includes('leg')) {
+    if (hasKneePain) pool = [...pool, ...SAFE_ALTERNATIVES.knee_safe_lower]
+    if (hasBackPain) pool = [...pool, ...SAFE_ALTERNATIVES.lower_back_safe]
+    // Fallback: usa knee_safe_lower se il pool e' vuoto
+    if (pool.length === 0) pool = SAFE_ALTERNATIVES.knee_safe_lower
+  } else if (dayName.includes('upper') || dayName.includes('push')) {
+    if (hasShoulderPain) pool = [...pool, ...SAFE_ALTERNATIVES.shoulder_safe_upper]
+    if (pool.length === 0) pool = SAFE_ALTERNATIVES.shoulder_safe_upper
+  }
+
+  // Filtra: non aggiungere esercizi gia' presenti o controindicati
+  const safePool = pool.filter(alt =>
+    !existingNames.has(alt.name.toLowerCase()) &&
+    !isContraindicatedForPain(alt.name, painAreas)
+  )
+
+  const toAdd = safePool.slice(0, needed)
+  const newExercises = toAdd.map(alt =>
+    createExercise(alt.name, location, equipment, baseWeight * alt.multiplier, level, goal, alt.type, assessments)
+  )
+
+  if (newExercises.length > 0) {
+    console.log(`[REPLENISH] ${day.dayName}: +${newExercises.length} esercizi safe (${toAdd.map(a => a.name).join(', ')})`)
+  }
+
+  return {
+    ...day,
+    exercises: [...day.exercises, ...newExercises]
+  }
+}
+
+function addFatLossCardioDay(weeklySchedule, level, bodyweight = 70) {
+  // BMI proxy: sovrappeso se bodyweight > 85kg (copre uomini e donne con BMI > 30)
+  const isOverweight = bodyweight >= 85
+
+  const cardioExercises = isOverweight ? [
+    { name: 'Cycling Intervals', sets: 8, reps: '30s on / 30s off', rest: 30, weight: null, notes: 'Cyclette o pedalata - basso impatto' },
+    { name: 'Rowing Machine', sets: 5, reps: '60s', rest: 45, weight: null, notes: 'Vogatore - basso impatto' },
+    { name: 'Incline Walking', sets: 4, reps: '3 min', rest: 30, weight: null, notes: 'Camminata in salita 10-15%' },
+    { name: 'Battle Ropes', sets: 4, reps: '30s', rest: 30, weight: null, notes: 'Cardio upper body' }
+  ] : [
     { name: 'HIIT Intervals', sets: 8, reps: '30s on / 30s off', rest: 30, weight: null, notes: 'Sprint intervals' },
     { name: 'Jump Rope', sets: 5, reps: '60s', rest: 45, weight: null, notes: 'Cardio continuo' },
     { name: 'Burpees', sets: 4, reps: '15', rest: 30, weight: null, notes: 'Full body' },
     { name: 'Mountain Climbers', sets: 4, reps: '30s', rest: 30, weight: null, notes: 'Cardio + core' }
   ]
-  
+
   weeklySchedule.push({
-    dayName: 'Cardio HIIT',
+    dayName: isOverweight ? 'Cardio Low-Impact' : 'Cardio HIIT',
     location: 'home',
     exercises: cardioExercises
   })
-  
+
   return weeklySchedule
 }
 
