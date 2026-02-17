@@ -17,7 +17,8 @@
  */
 
 import { Exercise, DayWorkout } from '../types';
-import { NormalizedPainArea, getCorrectiveExercises } from './painManagement';
+import type { NormalizedPainArea } from './validators';
+import { getCorrectiveExercises } from './painManagement';
 
 // ============================================================
 // CONFIGURAZIONE

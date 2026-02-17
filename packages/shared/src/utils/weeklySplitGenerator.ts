@@ -21,6 +21,7 @@ import {
   ACCESSORY_VARIANTS
 } from './exerciseVariants';
 import { adaptExercisesForLocation } from './locationAdapter';
+import { distributeCorrectivesIntelligently } from './correctiveDistribution';
 import { getUpgradedExercise } from './exerciseProgression';
 import { isBodyweightExercise } from './exerciseProgressionEngine';
 import { calculate1RMFromNRM as calculate1RMFromNRM_SSOT, calculateNRMFrom1RM as calculateNRMFrom1RM_SSOT } from './oneRepMaxCalculator';
@@ -2221,10 +2222,6 @@ function generate3DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('core', baselines.core, 2, options, getIntensityForPattern('core', 6, 2, goal, 3))
   ]);
 
-  // Aggiungi correttivi ALL'INIZIO di tutti i giorni (attivazione/mobilità pre-workout)
-  const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.unshift(...correctives));
-
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
     day.exercises = day.exercises.filter(ex => ex && ex.name && ex.pattern);
@@ -2290,10 +2287,6 @@ function generate2DayFullBody(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('vertical_pull', baselines.vertical_pull, 1, options, getIntensityForPattern('vertical_pull', 5, 1, goal, 2)),
     createExercise('core', baselines.core, 1, options, getIntensityForPattern('core', 6, 1, goal, 2))
   ]);
-
-  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
-  const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2382,10 +2375,6 @@ function generate4DayUpperLower(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('lower_push', baselines.lower_push, 1, options, 'moderate'),
     createExercise('core', baselines.core, 3, options, 'volume')
   ]);
-
-  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
-  const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -2503,10 +2492,6 @@ function generate6DayPPL(options: SplitGeneratorOptions): WeeklySplit {
     createExercise('lower_push', baselines.lower_push, 1, options, 'moderate'),
     createAccessoryExercise('calves', 1, options, 'volume')
   ]);
-
-  // Aggiungi correttivi ALL'INIZIO (attivazione/mobilità pre-workout)
-  const correctives = generateCorrectiveExercises(painAreas, goal);
-  days.forEach(day => day.exercises.unshift(...correctives));
 
   // VALIDAZIONE: Rimuovi esercizi undefined/incompleti
   days.forEach(day => {
@@ -3898,6 +3883,35 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
     split = generate6DayPPL(options);
   }
 
+  // ============================================
+  // DISTRIBUZIONE INTELLIGENTE CORRETTIVI
+  // ============================================
+  // Centralizzata: max 2 correttivi/giorno, distribuiti su giorni diversi
+  const painAreas = options.painAreas;
+  const goal = options.goal;
+  if (painAreas && painAreas.length > 0) {
+    distributeCorrectivesIntelligently(painAreas, split.days, translateExerciseName);
+
+    // Applica filtro pregnancy safety ai correttivi distribuiti
+    if (goal && isPregnancyGoal(goal)) {
+      split.days.forEach(day => {
+        day.exercises = day.exercises.map(ex => {
+          if (ex.pattern === 'corrective') {
+            const filtered = filterExerciseForPregnancy(ex.name, 'corrective', goal);
+            if (filtered.wasReplaced) {
+              return {
+                ...ex,
+                name: translateExerciseName(filtered.name),
+                notes: [filtered.reason || 'Adattato per gravidanza', ex.notes].filter(Boolean).join(' | ')
+              };
+            }
+          }
+          return ex;
+        });
+      });
+    }
+  }
+
   // Aggiungi nota distribuzione obiettivi alla descrizione
   const distributionNote = getGoalDistributionNote(goals || []);
   if (distributionNote) {
@@ -4055,6 +4069,22 @@ export function generateWeeklySplit(options: SplitGeneratorOptions): WeeklySplit
       split.description = `${split.description}\n\n${globalWarning}`;
     }
   }
+
+  // ============================================
+  // SAFETY CAP: MAX ESERCIZI PER GIORNO
+  // ============================================
+  const MAX_EXERCISES: Record<string, number> = { beginner: 8, intermediate: 10, advanced: 12 };
+  const level = options.level || 'intermediate';
+  const maxEx = MAX_EXERCISES[level] || 10;
+  split.days.forEach(day => {
+    if (day.exercises.length > maxEx) {
+      const correctives = day.exercises.filter(e => e.pattern === 'corrective');
+      const others = day.exercises.filter(e => e.pattern !== 'corrective');
+      // Mantieni correttivi + taglia accessori dal fondo
+      day.exercises = [...correctives, ...others.slice(0, maxEx - correctives.length)];
+      console.log(`✂️ ${day.dayName}: tagliato a ${day.exercises.length} esercizi (max ${maxEx} per ${level})`);
+    }
+  });
 
   // Calcola durata media
   const avgDuration = Math.round(
