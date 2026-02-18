@@ -2741,7 +2741,8 @@ function calculateVolumeWeighted(
   if (goalLower === 'forza' || goalLower === 'strength') {
     if (dayType === 'heavy') {
       // Heavy Day: Forza massimale - 3-5 reps con carico alto
-      sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
+      // FIX: Beginner ridotto a 3 serie per adattamento tessuti connettivi
+      sets = level === 'beginner' ? 3 : level === 'intermediate' ? 5 : 6;
       reps = level === 'beginner' ? 5 : level === 'intermediate' ? 4 : 3;
       rest = '3-5min';
       intensity = level === 'beginner' ? '80-85%' : '85-92%';
@@ -2763,22 +2764,30 @@ function calculateVolumeWeighted(
     }
   }
   // IPERTROFIA (weighted)
+  // FIX: Range reps invertito per livello (beginner più reps per apprendimento motorio)
   else if (goalLower === 'massa' || goalLower === 'massa muscolare' || goalLower === 'muscle_gain' || goalLower === 'ipertrofia') {
     if (dayType === 'heavy') {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
-      reps = workingReps <= 6 ? 6 : 8;
+      // Beginner: 10-12 reps, Intermediate: 8-10 reps, Advanced: 6-8 reps
+      reps = level === 'beginner' ? Math.max(10, Math.min(workingReps, 12)) : 
+             level === 'intermediate' ? Math.max(8, Math.min(workingReps, 10)) :
+             Math.max(6, Math.min(workingReps, 8));
       rest = '90-120s';
-      intensity = '80-85%';
+      intensity = level === 'beginner' ? '70-75%' : '80-85%';
       notes = 'Pesante - Tensione meccanica';
     } else if (dayType === 'volume') {
       sets = level === 'beginner' ? 4 : level === 'intermediate' ? 5 : 6;
-      reps = Math.max(10, Math.min(workingReps, 15));
+      // Beginner: 12-15 reps, Intermediate: 10-12 reps, Advanced: 10-12 reps
+      reps = level === 'beginner' ? Math.max(12, Math.min(workingReps, 15)) :
+             Math.max(10, Math.min(workingReps, 12));
       rest = '60-75s';
-      intensity = '65-70%';
+      intensity = level === 'beginner' ? '60-65%' : '65-70%';
       notes = 'Volume - Stress metabolico';
     } else {
       sets = level === 'beginner' ? 3 : level === 'intermediate' ? 4 : 5;
-      reps = Math.max(8, Math.min(workingReps, 12));
+      // Beginner: 10-12 reps, Intermediate: 8-12 reps, Advanced: 8-12 reps
+      reps = level === 'beginner' ? Math.max(10, Math.min(workingReps, 12)) :
+             Math.max(8, Math.min(workingReps, 12));
       rest = '75-90s';
       intensity = '70-80%';
       notes = 'Moderato - Ipertrofia classica';

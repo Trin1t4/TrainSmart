@@ -340,6 +340,187 @@ export function calculateMesocycleVolume(
 }
 
 // ================================================================
+// INTER-MESOCYCLE PROGRESSION
+// ================================================================
+
+/**
+ * Calculate volume for the next mesocycle based on previous mesocycle performance.
+ * 
+ * Progressive tissue adaptation logic:
+ * - Mesocycle 1-3: Never exceed MAV (allow gradual tissue adaptation)
+ * - Mesocycle 4+: Can explore MAV-MRV range if recovery supports it
+ * - Progression rate depends on RPE trend and unscheduled deloads
+ * 
+ * Evidence:
+ * - Muscles adapt in 6-8 weeks
+ * - Tendons/ligaments need 12-16 weeks
+ * - Bone remodeling takes 16-20 weeks
+ * 
+ * @param currentProfile Current volume profile for muscle group
+ * @param mesocycleNumber Which mesocycle (1-based)
+ * @param avgRPELastMeso Average RPE across previous mesocycle
+ * @param hadUnscheduledDeload Whether user needed extra deload
+ * @returns Recommended starting volume for next mesocycle
+ */
+export function calculateNextMesocycleVolume(
+  currentProfile: MuscleVolumeProfile,
+  mesocycleNumber: number,
+  avgRPELastMeso: number,
+  hadUnscheduledDeload: boolean
+): number {
+  const { mev, mav, mrv, current_volume } = currentProfile;
+  
+  // Safety: never start below MEV
+  let nextVolume = Math.max(current_volume, mev);
+  
+  // Determine progression based on tolerance
+  if (!hadUnscheduledDeload && avgRPELastMeso < 7.5) {
+    // Low fatigue → aggressive progression
+    nextVolume += 2;
+  } else if (!hadUnscheduledDeload && avgRPELastMeso <= 8.5) {
+    // Moderate fatigue → conservative progression
+    nextVolume += 1;
+  } else {
+    // High fatigue or forced deload → maintain current volume
+    // No increment
+  }
+  
+  // Apply tissue adaptation cap for first 3 mesocycles
+  if (mesocycleNumber <= 3) {
+    // First 3 mesocycles: cap at MAV (tissue adaptation period)
+    nextVolume = Math.min(nextVolume, mav);
+  } else {
+    // Mesocycle 4+: can explore MAV-MRV range
+    nextVolume = Math.min(nextVolume, mrv);
+  }
+  
+  return Math.round(nextVolume);
+}
+
+/**
+ * Get average RPE for a muscle group across last mesocycle.
+ * Used by calculateNextMesocycleVolume.
+ * 
+ * @param userId User ID
+ * @param muscleGroup Muscle group to analyze
+ * @returns Average RPE or null if insufficient data
+ */
+export async function getAvgRPELastMesocycle(
+  userId: string,
+  muscleGroup: string
+): Promise<number | null> {
+  const client = getClient();
+  
+  // Query last mesocycle sessions (last 4 weeks typical)
+  const { data, error } = await client
+    .from('workout_sessions')
+    .select('exercises')
+    .eq('user_id', userId)
+    .gte('completed_at', new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString())
+    .order('completed_at', { ascending: false });
+  
+  if (error || !data || data.length === 0) {
+    return null;
+  }
+  
+  // Extract RPE values for exercises targeting this muscle group
+  const rpeValues: number[] = [];
+  
+  for (const session of data) {
+    if (!session.exercises) continue;
+    
+    for (const exercise of session.exercises) {
+      // Check if exercise targets this muscle group
+      const pattern = exercise.pattern?.toLowerCase() || '';
+      const muscles = PATTERN_TO_MUSCLES[pattern] || [];
+      
+      if (muscles.includes(muscleGroup) && exercise.rpe) {
+        rpeValues.push(exercise.rpe);
+      }
+    }
+  }
+  
+  if (rpeValues.length === 0) return null;
+  
+  // Return average RPE
+  return rpeValues.reduce((sum, rpe) => sum + rpe, 0) / rpeValues.length;
+}
+
+/**
+ * Check if user had unscheduled deload in last mesocycle.
+ * 
+ * Indicators:
+ * - Explicit deload flag in session
+ * - Large volume reduction (>40%) without planned deload
+ * 
+ * @param userId User ID
+ * @returns True if unscheduled deload occurred
+ */
+export async function checkUnscheduledDeload(
+  userId: string
+): Promise<boolean> {
+  const client = getClient();
+  
+  // Query last mesocycle sessions
+  const { data, error } = await client
+    .from('workout_sessions')
+    .select('deload, total_volume')
+    .eq('user_id', userId)
+    .gte('completed_at', new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString())
+    .order('completed_at', { ascending: true });
+  
+  if (error || !data || data.length < 2) {
+    return false;
+  }
+  
+  // Check for explicit deload flag
+  const hasDeloadFlag = data.some(session => session.deload === true);
+  if (hasDeloadFlag) return true;
+  
+  // Check for large volume drops (>40% reduction)
+  for (let i = 1; i < data.length; i++) {
+    const prevVolume = data[i - 1].total_volume || 0;
+    const currVolume = data[i].total_volume || 0;
+    
+    if (prevVolume > 0 && currVolume < prevVolume * 0.6) {
+      // Volume dropped by >40%
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Update mesocycle number for user.
+ * Called when generating a new program.
+ * 
+ * @param userId User ID
+ * @param newMesocycleNumber New mesocycle number
+ */
+export async function updateMesocycleNumber(
+  userId: string,
+  newMesocycleNumber: number
+): Promise<{ success: boolean; error?: string }> {
+  const client = getClient();
+  
+  const { error } = await client
+    .from('volume_profiles')
+    .update({
+      mesocycle_number: newMesocycleNumber,
+      mesocycle_start_date: new Date().toISOString()
+    })
+    .eq('user_id', userId);
+  
+  if (error) {
+    console.error('[VolumeProfile] Update mesocycle error:', error);
+    return { success: false, error: error.message };
+  }
+  
+  return { success: true };
+}
+
+// ================================================================
 // HELPERS
 // ================================================================
 
