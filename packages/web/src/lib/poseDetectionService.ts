@@ -63,6 +63,7 @@ export interface VideoAnalysisResult {
   fps: number;
   duration: number;
   averageConfidence: number;
+  frameImages?: Map<number, string>; // frameIndex → base64 JPEG
   error?: string;
 }
 
@@ -343,6 +344,9 @@ export class PoseDetector {
       console.log(`[PoseDetector] ⚠️ Skipping first ${(SKIP_START_PERCENT * 100)}% and last ${(SKIP_END_PERCENT * 100)}% to avoid walk-in/walk-out`);
     }
 
+    const frameImages = new Map<number, string>();
+    const CAPTURE_EVERY_N_FRAMES = 5; // cattura 1 frame ogni 5 per performance
+
     onProgress?.({
       currentFrame: 0,
       totalFrames,
@@ -383,6 +387,15 @@ export class PoseDetector {
         }
       }
 
+      // Cattura snapshot del frame ogni N frame (dopo push, per avere indice corretto)
+      if (frameSequence.length > 0 && frameSequence.length % CAPTURE_EVERY_N_FRAMES === 0) {
+        try {
+          frameImages.set(frameSequence.length - 1, canvas.toDataURL('image/jpeg', 0.4));
+        } catch {
+          // canvas tainted o errore — ignora silenziosamente
+        }
+      }
+
       onProgress?.({
         currentFrame: i + 1,
         totalFrames,
@@ -401,6 +414,7 @@ export class PoseDetector {
         fps: targetFps,
         duration: effectiveDuration,
         averageConfidence: 0,
+        frameImages: new Map(),
         error: `Pose detection riuscita solo nel ${Math.round(validPercentage * 100)}% dei frame. Assicurati di essere completamente inquadrato.`
       };
     }
@@ -431,12 +445,22 @@ export class PoseDetector {
 
     console.log(`[PoseDetector] ✅ Analysis complete: ${filteredFrames.length} exercise frames (${Math.round(filteredConfidence * 100)}% confidence)`);
 
+    // Riallinea frameImages ai frame filtrati (mantieni offset originale)
+    const filteredFrameImages = new Map<number, string>();
+    for (const [origIdx, imgData] of frameImages) {
+      const adjustedIdx = origIdx - exerciseWindow.startIndex;
+      if (adjustedIdx >= 0 && adjustedIdx < filteredFrames.length) {
+        filteredFrameImages.set(adjustedIdx, imgData);
+      }
+    }
+
     return {
       success: true,
       frameSequence: filteredFrames,
       fps: targetFps,
       duration: filteredFrames.length / targetFps,
-      averageConfidence: filteredConfidence
+      averageConfidence: filteredConfidence,
+      frameImages: filteredFrameImages,
     };
   }
 

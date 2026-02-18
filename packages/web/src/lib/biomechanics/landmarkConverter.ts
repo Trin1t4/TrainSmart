@@ -57,7 +57,8 @@ export function createLandmarkSnapshot(
   timestamp: number,
   issues: Pick<Issue, 'code' | 'severity'>[],
   status: 'error' | 'correct' = 'error',
-  exerciseSegments?: SegmentDef[]
+  exerciseSegments?: SegmentDef[],
+  frameImage?: string,
 ): FrameLandmarkSnapshot {
   return {
     frameNumber,
@@ -66,5 +67,6 @@ export function createLandmarkSnapshot(
     issues,
     status,
     exerciseSegments,
+    frameImage,
   };
 }

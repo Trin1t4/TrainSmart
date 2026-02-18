@@ -310,7 +310,8 @@ export class VideoCorrectionEngine {
         videoResult.frameSequence,
         analysisResult.perFrameIssues,
         videoResult.fps,
-        supportedExercise
+        supportedExercise,
+        videoResult.frameImages,
       );
 
       this.updateProgress('analyzing', 90, 'Generazione feedback...');
@@ -1107,7 +1108,8 @@ export class VideoCorrectionEngine {
     frameSequence: SharedPoseLandmarks[],
     perFrameIssues: Map<number, { code: string; severity: 'low' | 'medium' | 'high'; description: string }[]>,
     fps: number,
-    exercise: SupportedExercise
+    exercise: SupportedExercise,
+    frameImages?: Map<number, string>,
   ): FrameLandmarkSnapshot[] {
     if (frameSequence.length === 0) {
       return [];
@@ -1131,13 +1133,27 @@ export class VideoCorrectionEngine {
         severity: (fi.severity === 'high' ? 'HIGH' : fi.severity === 'medium' ? 'MEDIUM' : 'LOW') as 'HIGH' | 'MEDIUM' | 'LOW',
       }));
 
+      // Trova l'immagine più vicina al frameIndex
+      let closestImage: string | undefined;
+      if (frameImages && frameImages.size > 0) {
+        let minDist = Infinity;
+        for (const [imgIdx, imgData] of frameImages) {
+          const dist = Math.abs(imgIdx - frameIndex);
+          if (dist < minDist) {
+            minDist = dist;
+            closestImage = imgData;
+          }
+        }
+      }
+
       const snapshot = createLandmarkSnapshot(
         frame,
         frameIndex,
         timestamp,
         issuesCodes,
         hasIssues ? 'error' : 'correct',
-        hasIssues ? undefined : exerciseSegments
+        hasIssues ? undefined : exerciseSegments,
+        closestImage,
       );
 
       // Solo se i landmark principali sono visibili

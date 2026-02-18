@@ -8,6 +8,7 @@ import { Star, AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Minus, Play
 import { getVideoCorrection, getVideoSignedUrl, markVideoAsViewed, type VideoCorrection, type FeedbackIssue } from '../lib/videoCorrectionService';
 import type { FrameLandmarkSnapshot } from '@/lib/biomechanics/types';
 import PoseOverlayCanvas from './PoseOverlayCanvas';
+import KeyframePreview from './KeyframePreview';
 import { BETA_FLAGS } from '../config/featureFlags';
 
 interface VideoFeedbackViewProps {
@@ -166,6 +167,28 @@ export default function VideoFeedbackView({ correctionId, onClose }: VideoFeedba
                 </button>
               )}
             </div>
+
+            {/* Keyframe Snapshots */}
+            {issueLandmarks.length > 0 && (
+              <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mt-6">
+                <h2 className="text-lg font-bold text-white mb-3">
+                  📸 Momenti Chiave Analizzati
+                </h2>
+                <p className="text-sm text-gray-400 mb-4">
+                  Frame catturati durante l'esecuzione con indicatori biomeccanici
+                </p>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                  {issueLandmarks.map((snapshot, idx) => (
+                    <KeyframePreview
+                      key={idx}
+                      snapshot={snapshot}
+                      width={280}
+                      height={210}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Overall Score */}
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-700 mt-6 text-center">

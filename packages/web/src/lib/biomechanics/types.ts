@@ -353,6 +353,8 @@ export interface FrameLandmarkSnapshot {
   status: 'error' | 'correct';
   /** Segmenti corporei da disegnare in verde solido sui keyframe corretti */
   exerciseSegments?: SegmentDef[];
+  /** Screenshot del frame video (base64 JPEG) per visualizzazione sfondo */
+  frameImage?: string;
 }
 
 // ============================================
